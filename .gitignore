@@ -1,4 +1,5 @@
 .next/
-todo
 node_modules
 backend/dist/
+data.db
+todo

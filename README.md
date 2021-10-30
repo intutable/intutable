@@ -7,7 +7,8 @@ Installation
 1. Clone the repo
 2. `cd dekanat-app`
 3. `npm install`
-4. - For dev mode:
+4. `npm run db:setup`
+5. - For dev mode:
      - `npm run build-core`
      - `npm run dev`
    - To build and preview production build:
