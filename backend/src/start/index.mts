@@ -26,7 +26,7 @@ interface ProcessEnd {
 
 // =============================================================================
 // CONSTANTS
-const APP_NAME        = "intutable-next"
+const APP_NAME        = "dekanat-app"
 const CORE_SCRIPT     = "./backend/dist/start/core.mjs"
 const FRONTEND_SCRIPT = "./node_modules/next/dist/bin/next"
 
