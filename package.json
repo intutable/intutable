@@ -6,11 +6,12 @@
     "build": "npm run build-core && next build",
     "dev": "node ./backend/dist/start/index.mjs dev",
     "start": "node ./backend/dist/start start",
-    "build-core": "cd backend/src && tsc && cd ../../..",
+    "build-core": "cd backend/src && tsc && cd ../..",
     "start-core": "node ./backend/dist/start/core",
     "dev-next": "next dev",
     "build-next": "next build",
-    "start-next": "next start"
+    "start-next": "next start",
+    "db:setup": "sqlite3 data.db < backend/database/createDB.sql"
   },
   "dependencies": {
     "next": "12.0.1",
