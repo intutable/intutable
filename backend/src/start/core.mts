@@ -1,8 +1,9 @@
 import path from "path"
 import process from "process"
 
-import { Core } from "@intutable/core"
+import { Core, EventSystem } from "@intutable/core"
 import cors from "cors"
+import { addMiddleware } from "@intutable/http"
 
 import { getFrontendUrl } from "../runtimeconfig.mjs"
 
@@ -18,12 +19,12 @@ main()
  * running and listen for requests.
  */
 async function main(){
-  const core : Core = await Core.create(PLUGIN_PATHS)
+  const events : EventSystem = new EventSystem(true) // debug mode
+  const core : Core = await Core.create(PLUGIN_PATHS, events)
     .catch(e => crash<Core>(e))
-  await core.events.request({ channel: "http", method: "addMiddleware",
-                              handler: cors({
-                                origin : getFrontendUrl()
-                              }) }).catch(crash)
+  await core.events.request(
+    addMiddleware( cors( { origin : getFrontendUrl() }))
+  ).catch(crash)
 }
 
 // The type system apparently knows that process.exit has bottom type!

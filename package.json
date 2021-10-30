@@ -28,7 +28,7 @@
 
     "@intutable/core": "^0.1.3",
     "@intutable/database": "^1.1.1",
-    "@intutable/http": "^0.1.2",
+    "@intutable/http": "^0.1.4",
     "cors": "2.8.5",
 
     "typescript": "^4.5.0-beta"
