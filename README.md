@@ -1,6 +1,9 @@
 Overview
 ================================================================================
-A database front-end for the MathInf Dekanat of Heidelberg University.
+A database editor for the MathInf Dekanat of Heidelberg University. Currently
+consists of a next.js web-app as a front-end and an
+[IntuTable back-end](https://gitlab.com/intutable/core/) which communicate via
+a REST API.
 
 Installation
 ================================================================================
@@ -11,9 +14,9 @@ Installation
 5. - For dev mode:
      - `npm run build-core`
      - `npm run dev`
-   - To build and preview production build:
+   - To build and start production build:
      - `npm run build`
-     - `npm run preview`
+     - `npm run start`
 
 Documentation
 ================================================================================
