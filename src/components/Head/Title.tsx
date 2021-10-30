@@ -1,23 +1,4 @@
-/**
- * @author Heidelberg University
- * @version 0.1.0
- * @file Title.tsx
- * @description Meta Title Tag for <head />
- * @since 29.09.2021
- * @license
- * @copyright © 2021 Heidelberg University
- */
-
-// Node Modules
-
-// Assets
-
-// CSS
-
-// Components
 import Head from "next/head"
-
-// Utils / Types / Api
 
 
 type TitleProps = {

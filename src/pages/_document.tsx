@@ -1,28 +1,13 @@
-/**
- * @author Heidelberg University
- * @version 0.1.0
- * @file _document.tsx
- * @description Custom Next `Document` Page.
- * @since 29.09.2021
- * @license
- * @copyright © 2021 Heidelberg University
- */
-
-// Node Modules
 import React from "react"
-import Document, { Html, Head, Main, NextScript, DocumentContext } from "next/document"
-
-// Assets
-
-// CSS
-
-// Components
-
-// Utils / Types / Api
+import Document, {
+  Html,
+  Head,
+  Main,
+  NextScript,
+  DocumentContext } from "next/document"
 
 
 class MyDocument extends Document {
-
     // compatible w/ SSG
     static async getInitialProps(ctx: DocumentContext) {
 

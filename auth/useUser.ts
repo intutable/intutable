@@ -1,23 +1,4 @@
-/**
- * @author Heidelberg University
- * @version 0.1.0
- * @file useUser.ts
- * @description Custom Hook for User Authentication
- * @since 01.10.2021
- * @license
- * @copyright © 2021 Heidelberg University
- */
-
-// Node Modules
 import { useState, useEffect } from "react"
-
-// Assets
-
-// CSS
-
-// Components
-
-// Utils / Types / Api
 
 type UserCredentials = {
 

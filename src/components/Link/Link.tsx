@@ -1,29 +1,12 @@
-/**
- * @author Heidelberg University
- * @version 0.1.0
- * @file Link.tsx
- * @description Link Component for Internal and External Links. Combines Next's & MUI's Link Component.
- * @since 29.09.2021
- * @license
- * @copyright © 2021 Heidelberg University
- */
-
-// Node Modules
 import React from "react"
-
-// Assets
-
-// CSS
-
-// Components
 import NextLink from "next/link"
-import {
-    Link as MUILink
-} from "@mui/material"
-
-// Utils / Types / Api
 import type { LinkProps } from "next/link"
+
+import {
+  Link as MUILink
+} from "@mui/material"
 import type { LinkTypeMap } from "@mui/material"
+
 
 type CombinedLinkProps = {
     href: string
@@ -43,20 +26,22 @@ type CombinedLinkProps = {
     muiLinkProps?: LinkTypeMap<{}, "a">["props"]
 }
 
+
 /**
  * Combination of NextJS's Link and MUI's Link to provide proper routing AND styling.
  * @param {CombinedLinkProps} param
  * @returns 
  */
-const CombinedLink: React.FC<CombinedLinkProps> = ({ children, href, internal = true, nextLinkProps, muiLinkProps }) => {
-
+const CombinedLink: React.FC<CombinedLinkProps> =
+  ({ children, href, internal = true, nextLinkProps, muiLinkProps }) => {
     if (!internal)
-        return <MUILink href={href} color="inherit" {...muiLinkProps}>{children}</MUILink>
-
-    return <NextLink href={href} passHref {...nextLinkProps}>
+      return ( <MUILink href={href} color="inherit" {...muiLinkProps}>
+        {children}</MUILink> )
+    else
+      return ( <NextLink href={href} passHref {...nextLinkProps}>
         <MUILink color="inherit" {...muiLinkProps}>{children}</MUILink>
-    </NextLink>
-
+      </NextLink> )
 }
+
 
 export default CombinedLink

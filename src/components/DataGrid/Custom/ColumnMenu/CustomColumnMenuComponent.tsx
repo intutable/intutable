@@ -1,20 +1,3 @@
-/**
- * @author Heidelberg University
- * @version 0.1.0
- * @file CustomColumnMenuComponent.tsx
- * @description A Custom ColumnMenu
- * @since 06.10.2021
- * @license
- * @copyright © 2021 Heidelberg University
- */
-
-// Node Modules
-
-// Assets
-
-// CSS
-
-// Components
 import {
     ButtonProps,
     Button,
@@ -26,12 +9,9 @@ import {
     GridColumnMenuContainer,
     GridColumnsMenuItem
 } from "@mui/x-data-grid"
-
-// Utils / Types / Api
 import type {
     GridColumnMenuProps,
 } from "@mui/x-data-grid"
-
 
 
 const ColumnMenuDeleteColButton = (props: MenuItemProps) =>
