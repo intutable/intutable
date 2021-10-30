@@ -35,11 +35,8 @@
       "@auth/*": [
         "auth/*"
       ],
-      "@styles/*": [
-        "styles/*"
-      ],
       "@theme": [
-        "theme/index.ts"
+        "src/theme/index.ts"
       ]
     }
   },
