@@ -160,7 +160,7 @@ const Header = () => {
             </Toolbar>
             <DrawerListItem text="Startseite" href="/" icon={<HomeIcon />} />
             <Divider />
-            <DrawerListItem text="DB" href="/test" icon={<StorageIcon />} />
+            <DrawerListItem text="DB" href="/tables" icon={<StorageIcon />} />
             <Divider />
             <DrawerListItem text="Einstellungen" href="/settings" icon={<SettingsIcon />} />
         </Drawer>

@@ -30,7 +30,7 @@
         "public/*"
       ],
       "@components/*": [
-        "components/*"
+        "src/components/*"
       ],
       "@auth/*": [
         "auth/*"
