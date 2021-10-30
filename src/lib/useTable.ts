@@ -1,12 +1,17 @@
 // Node Modules
 import { useState, useEffect } from "react"
 
-import type { GridColDef, GridValueGetterParams, GridRowData, GridColumns } from "@mui/x-data-grid"
-import { getDataForTable } from "./test_data"
+import type {
+  GridColDef,
+  GridValueGetterParams,
+  GridRowData,
+  GridColumns }            from "@mui/x-data-grid"
+import { getDataForTable } from "./getData"
 
 export const Tables = ["Personen", "Organe", "Rollen"] as const
 export type Table = typeof Tables[number]
-export const isTableType = (str: string): str is Table => Tables.includes(str as Table)
+export const isTableType = (str: string): str is Table =>
+  Tables.includes(str as Table)
 export type DataGridDataType = {
     tableType: Table
     rows: Array<GridRowData>
@@ -28,16 +33,12 @@ export const useTable = (tableType: Table) => {
     const [data, setData] = useState<DataGridDataType>({ tableType: tableType, rows: DataGridDataPlaceholder.row, cols: DataGridDataPlaceholder.col })
 
     useEffect(() => {
-        
         // fetch data related to table type
-        // TODO: implement data fetching
         async function getData() {
             const data = await getDataForTable()
             setData(data as any)
         }
         getData()
-
-
     }, [table])
 
     return { data, setTable }

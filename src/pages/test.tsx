@@ -21,7 +21,7 @@ import {
   CustomToolbar,
   CustomNoRowsOverlay,
 } from "@components/DataGrid/Custom"
-import { useTable, isTableType, Tables, Table } from "@app/test_data/useTable"
+import { useTable, isTableType, Tables, Table } from "@lib/useTable"
 
 
 const TableIconMap: { [key in Table]: React.ReactNode } = {
