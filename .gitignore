@@ -1,0 +1,4 @@
+.next/
+todo
+node_modules
+backend/dist/
