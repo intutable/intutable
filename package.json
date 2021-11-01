@@ -11,13 +11,12 @@
         "dev-next": "next dev",
         "build-next": "next build",
         "start-next": "next start",
-        "db:setup": "rimraf data.db && sqlite3 data.db < backend/database/createDB.sql"
+        "db:setup": "npx rimraf data.db && sqlite3 data.db < backend/database/createDB.sql"
     },
     "dependencies": {
         "next": "12.0.1",
         "react": "17.0.2",
         "react-dom": "17.0.2",
-        "rimraf": "3.0.2",
 
         "@emotion/react": "^11.4.1",
         "@emotion/server": "^11.4.0",
@@ -36,6 +35,7 @@
     },
     "devDependencies": {
         "@types/node": "16.11.6",
-        "@types/react": "17.0.33"
+        "@types/react": "17.0.33",
+        "rimraf": "3.0.2"
     }
 }
