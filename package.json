@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "build": "npm run build-core && next build",
-        "dev": "node ./backend/dist/start/index.mjs dev",
+        "dev": "node ./backend/dist/start/index dev",
         "start": "node ./backend/dist/start start",
         "build-core": "cd backend/src && tsc && cd ../..",
         "start-core": "node ./backend/dist/start/core",
@@ -31,7 +31,7 @@
         "@intutable/http": "^0.1.4",
         "cors": "2.8.5",
 
-        "typescript": "^4.5.0-beta"
+        "typescript": "^4.4.4"
     },
     "devDependencies": {
         "@types/node": "16.11.6",

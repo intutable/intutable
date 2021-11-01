@@ -5,7 +5,7 @@ import { Core, EventSystem } from "@intutable/core"
 import cors from "cors"
 import { addMiddleware } from "@intutable/http"
 
-import { getFrontendUrl } from "../runtimeconfig.mjs"
+import { getFrontendUrl } from "../runtimeconfig"
 
 const PLUGIN_PATHS =
     ["database","http"].map(
