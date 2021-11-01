@@ -32,9 +32,6 @@
       "@components/*": [
         "src/components/*"
       ],
-      "@auth/*": [
-        "auth/*"
-      ],
       "@theme": [
         "src/theme/index.ts"
       ]
