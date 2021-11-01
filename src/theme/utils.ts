@@ -1,19 +1,5 @@
-/**
- * @author Heidelberg University
- * @version 0.1.0
- * @file utils.ts
- * @description Utils for the theme
- * @since 29.09.2021
- * @license
- * @copyright © 2021 Heidelberg University
- */
-
-// Node Modules
-
-// Utils / Types / Api
 import { createTheme, PaletteMode } from "@mui/material"
 import { COLOR_SCHEME } from "./theme"
-
 
 
 interface _Theme {

@@ -1,10 +1,10 @@
 import React from "react"
 import Document, {
-  Html,
-  Head,
-  Main,
-  NextScript,
-  DocumentContext } from "next/document"
+    Html,
+    Head,
+    Main,
+    NextScript,
+    DocumentContext } from "next/document"
 
 
 class MyDocument extends Document {
@@ -38,22 +38,22 @@ class MyDocument extends Document {
         // TODO: implement emotion cache
 
         const initialProps = await Document.getInitialProps(ctx)
-        return { ...initialProps, styles: [...React.Children.toArray(initialProps.styles)] }
+        return { ...initialProps,
+                 styles: [...React.Children.toArray(initialProps.styles)] }
     }
 
     render() {
-
         return (
             <Html lang="en">
                 <Head>
-                    {/* Normally those meta tags a here, instead look into _app.tsx */}
+                    {/* Normally those meta tags a here,
+                        instead look into _app.tsx */}
                 </Head>
                 <body>
                     <Main />
                     <NextScript />
                 </body>
-            </Html>
-        )
+            </Html> )
     }
 }
 

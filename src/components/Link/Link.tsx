@@ -35,12 +35,14 @@ type CombinedLinkProps = {
 const CombinedLink: React.FC<CombinedLinkProps> =
   ({ children, href, internal = true, nextLinkProps, muiLinkProps }) => {
     if (!internal)
-      return ( <MUILink href={href} color="inherit" {...muiLinkProps}>
-        {children}</MUILink> )
+      return (
+        <MUILink href={href} color="inherit" {...muiLinkProps}>
+          {children}</MUILink> )
     else
-      return ( <NextLink href={href} passHref {...nextLinkProps}>
-        <MUILink color="inherit" {...muiLinkProps}>{children}</MUILink>
-      </NextLink> )
+      return (
+        <NextLink href={href} passHref {...nextLinkProps}>
+          <MUILink color="inherit" {...muiLinkProps}>{children}</MUILink>
+        </NextLink> )
 }
 
 

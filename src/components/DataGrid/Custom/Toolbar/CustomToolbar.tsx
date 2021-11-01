@@ -14,18 +14,15 @@ import {
 } from "@mui/x-data-grid"
 
 
-const GridToolbarAddColButton = (props: ButtonProps) =>
+const GridToolbarAddColButton = (props: ButtonProps) => (
     <Button {...props}>
-        <AddIcon /> Add Col
-    </Button>
+        <AddIcon />
+        Add Col
+    </Button> )
 
 // TODO: implement Button in Toolbar to add a col
-export const CustomToolbar = (props: GridToolbarContainerProps) =>
+export const CustomToolbar = (props: GridToolbarContainerProps) => (
     <GridToolbarContainer>
         <GridToolbar {...props} />
-        {/* <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <GridToolbarExport /> */}
         <GridToolbarAddColButton onClick={() => { }} />
-    </GridToolbarContainer>
+    </GridToolbarContainer> )

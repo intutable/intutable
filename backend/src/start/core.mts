@@ -8,8 +8,8 @@ import { addMiddleware } from "@intutable/http"
 import { getFrontendUrl } from "../runtimeconfig.mjs"
 
 const PLUGIN_PATHS =
-  ["database","http"].map(
-    (plugin) => path.join(process.cwd(), "node_modules/@intutable", plugin))
+    ["database","http"].map(
+        (plugin) => path.join(process.cwd(), "node_modules/@intutable", plugin))
 
 
 main()
@@ -19,16 +19,16 @@ main()
  * running and listen for requests.
  */
 async function main(){
-  const events : EventSystem = new EventSystem(true) // debug mode
-  const core : Core = await Core.create(PLUGIN_PATHS, events)
-    .catch(e => crash<Core>(e))
-  await core.events.request(
-    addMiddleware( cors( { origin : getFrontendUrl() }))
-  ).catch(crash)
+    const events : EventSystem = new EventSystem(true) // debug mode
+    const core : Core = await Core.create(PLUGIN_PATHS, events)
+        .catch(e => crash<Core>(e))
+    await core.events.request(
+        addMiddleware( cors( { origin : getFrontendUrl() }))
+    ).catch(crash)
 }
 
 // The type system apparently knows that process.exit has bottom type!
 function crash<A>(e : Error) : A {
-  console.log(e)
-  return process.exit(1)
+    console.log(e)
+    return process.exit(1)
 }

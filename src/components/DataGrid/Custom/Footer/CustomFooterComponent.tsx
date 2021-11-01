@@ -16,23 +16,20 @@ type FooterStatusComponentProps = {
 }
 
 
-const FooterStatusComponent = (props: FooterStatusComponentProps) =>
+const FooterStatusComponent = (props: FooterStatusComponentProps) => (
     <Box sx={{ display: "flex", padding: 2 }}>
         <FiberManualRecordIcon fontSize="small" sx={{
             mr: 1,
-            ...(props.status === "connected" ? {
-                color: "#4caf50"
-            } : {
-                color: "#d9182e"
-            })
+            ...( props.status === "connected"
+               ? { color: "#4caf50" }
+               : { color: "#d9182e"})
         }} />
         {props.status}
-    </Box>
+    </Box> )
 
-
-export const CustomFooterComponent = (props: FooterStatusComponentProps) =>
+export const CustomFooterComponent = (props: FooterStatusComponentProps) => (
     <GridFooterContainer>
         <FooterStatusComponent status={props.status} />
         <GridFooter />
-    </GridFooterContainer>
+    </GridFooterContainer> )
 
