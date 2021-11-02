@@ -6,7 +6,7 @@ import { ChildProcess, spawn } from "child_process"
 // TYPES
 /**
  * Arguments to the program.
- * @param {string} frontendOption - The option (dev or preview) to be passed to
+ * @param {string} frontendOption - The option (e.g. dev, start) to be passed to
  * the front-end script (e.g. next or svelte-kit).
  */
 interface ProgramArgs {
@@ -20,9 +20,6 @@ interface AppComponent {
     process     : ChildProcess
 }
 
-interface ProcessEnd {
-    name : string
-}
 
 // =============================================================================
 // CONSTANTS
@@ -81,9 +78,9 @@ function main(){
     })
 }
 
+
 // =============================================================================
 // PROCEDURES
-
 // program args/options
 function processArgs(args : string[]) : ProgramArgs {
     // first three arguments are either "node debug <script>" or "node <script>"

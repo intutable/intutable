@@ -31,21 +31,14 @@ export async function getDataForTable() {
             { field: "mail", headerName: "E-Mail", editable: true,
               description: "E-Mail-Adresse der Person" },
         ],
-        rows: await fetch("http://localhost:8080/request/database/select", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({table: "members"})
-        }).then(async (res) => {
-            let tmp = await res.json()
-            console.log(tmp)
-            tmp.forEach((val) => {
-                val.id = val._id
-                delete val._id
-            });
-            return tmp
-        }),
+        rows: await fetch("http://localhost:8080/request/database/select",
+                          { method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json' },
+                            body: JSON.stringify({table: "members"})})
+            .then((res) => res.json())
+            .then(rows => rows.map(({ _id, ...values }) =>
+                ({ id: _id, ...values })))
     }
 }
