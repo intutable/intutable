@@ -4,9 +4,9 @@ import {
 } from "@mui/x-data-grid"
 
 
-export const CustomNoRowsOverlay = () =>
+export const CustomNoRowsOverlay = () => (
     <GridOverlay>
         <WarningIcon />
         <div>No Data Found</div>
-    </GridOverlay>
+    </GridOverlay> )
 

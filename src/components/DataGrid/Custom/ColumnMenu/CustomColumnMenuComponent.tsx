@@ -14,16 +14,13 @@ import type {
 } from "@mui/x-data-grid"
 
 
-const ColumnMenuDeleteColButton = (props: MenuItemProps) =>
+const ColumnMenuDeleteColButton = (props: MenuItemProps) => (
     <MenuItem {...props}>
         TEST
-    </MenuItem>
-
+    </MenuItem> )
 
 export const CustomColumnMenuComponent = (props: GridColumnMenuProps) => {
-
     const { hideMenu, currentColumn, color, ...other } = props;
-
     return (
         <GridColumnMenuContainer
             hideMenu={hideMenu}
@@ -36,9 +33,7 @@ export const CustomColumnMenuComponent = (props: GridColumnMenuProps) => {
                 {...other}
             />
             {/* TODO: implement deletion of col here */}
-            {/* <GridColumnsMenuItem column={currentColumn} onClick={() => { }}>TEST</GridColumnsMenuItem> */}
             <ColumnMenuDeleteColButton onClick={() => { }} />
         </GridColumnMenuContainer>
     )
-
 }

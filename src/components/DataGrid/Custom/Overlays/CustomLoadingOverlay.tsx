@@ -1,13 +1,13 @@
 import {
-    LinearProgress,
+   LinearProgress,
 } from "@mui/material"
 import {
     GridOverlay,
 } from "@mui/x-data-grid"
 
-export const CustomLoadingOverlay = () =>
+export const CustomLoadingOverlay = () => (
     <GridOverlay>
         <div style={{ position: 'absolute', top: 0, width: '100%' }}>
             <LinearProgress />
         </div>
-    </GridOverlay>
+    </GridOverlay> )

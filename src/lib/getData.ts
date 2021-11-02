@@ -7,54 +7,38 @@ import { Table, DataGridDataType } from "./useTable"
  * @returns {DataGridDataType} data
  */
 export async function getDataForTable() {
-  return {
-    tableType: "Personen",
-    cols: [
-      { field: "id", headerName: "ID",
-        description: "Eindeutige ID der Person" },
-      { field: "employeeId", headerName: "EID", description: "Test"},
-      { field: "firstName", headerName: "Vorname", editable: true,
-        description: "Vorname der Person" },
-      { field: "lastName", headerName: "Nachname", editable: true,
-        description: "Nachname der Person" },
-      { field: "description", headerName: "Description", description: "Test"},
-      // { field: "geschlecht", headerName: "Geschlecht", editable: true, description: "Geschlecht der Person", type: "singleSelect", valueOptions: ["Herr", "Frau", "Divers"] },
-      { field: "title", headerName: "Titel", editable: true,
-        description: "Akademischer Titel der Person", type: "singleSelect",
-        valueOptions: [
-          { value: "doktor", label: "Dr." },
-          { value: "professor", label: "Prof." },
-          { value: "professordoktor", label: "Prof. Dr." }
-        ]},
-      // { field: "stellung", headerName: "Stellung", editable: true, description: "Stellung der Person innerhalb der Fakultät", type: "singleSelect", valueOptions: ["Professor", "FK-Leitung"] },
-      // { field: "einrichtung", headerName: "Einrichtung", editable: true, description: "Einrichtung die der Person zugeordnet ist", type: "singleSelect", valueOptions: ["Dekanat", "Mathematisches Institut", "Institut für Informatik", "Institut für Angewandte Mathematik", "Institut für Technische Informatik"] },
-      // { field: "abkürzung", headerName: "Abkürzung", editable: true, description: "Abkürzung der Einrichtung die der Person zugeordnet ist", type: "singleSelect", valueOptions: ["FakMathInf", "MI", "IfI", "IAM", "ZITI"] },
-      // { field: "leitung", headerName: "Leitung", editable: true, description: "Leitungsfunktion der Person" },
-      { field: "phone", headerName: "Test", description: "Test"},
-      { field: "mail", headerName: "E-Mail", editable: true,
-        description: "E-Mail-Adresse der Person" },
-      // { field: "email2", headerName: "E-Mail 2", editable: true, description: "Zweite E-Mail-Adresse der Person" },
-      // { field: "telefon", headerName: "Telefon", editable: true, description: "Telefonnummer der Person" },
-      // { field: "raum", headerName: "Raum", editable: true, description: "Raum der Person oder Adresse" },
-      // { field: "aktiv", headerName: "Aktiv", editable: true, description: "Gibt an, ob die Person aktiv ist oder im Ruhestand", type: "boolean" },
-      // { field: "seit", headerName: "Seit", editable: true, description: "Beschäftigungsbeginn der Person", type: "date" },
-      // { field: "bis", headerName: "Bis", editable: true, description: "Beschäftigungsende der Person", type: "date" },
-    ],
-    rows: await fetch("http://localhost:8080/request/database/select", {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({table: "members"})
-    }).then(async (res) => {
-      let tmp = await res.json()
-      console.log(tmp)
-      tmp.forEach((val) => {
-        val.id = val._id
-        delete val._id
-      });
-      return tmp
-    }),
-  }
+    return {
+        tableType: "Personen",
+        cols: [
+            { field: "id", headerName: "ID",
+              description: "Eindeutige ID der Person" },
+            { field: "employeeId", headerName: "EID", description: "Test"},
+            { field: "firstName", headerName: "Vorname", editable: true,
+              description: "Vorname der Person" },
+            { field: "lastName", headerName: "Nachname", editable: true,
+              description: "Nachname der Person" },
+            { field: "description", headerName: "Description",
+              description: "Test"},
+            { field: "title", headerName: "Titel", editable: true,
+              description: "Akademischer Titel der Person",
+              type: "singleSelect",
+              valueOptions: [
+                  { value: "doktor", label: "Dr." },
+                  { value: "professor", label: "Prof." },
+                  { value: "professordoktor", label: "Prof. Dr." }
+              ]},
+            { field: "phone", headerName: "Test", description: "Test"},
+            { field: "mail", headerName: "E-Mail", editable: true,
+              description: "E-Mail-Adresse der Person" },
+        ],
+        rows: await fetch("http://localhost:8080/request/database/select",
+                          { method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json' },
+                            body: JSON.stringify({table: "members"})})
+            .then((res) => res.json())
+            .then(rows => rows.map(({ _id, ...values }) =>
+                ({ id: _id, ...values })))
+    }
 }

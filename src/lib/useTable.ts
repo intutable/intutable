@@ -1,4 +1,3 @@
-// Node Modules
 import { useState, useEffect } from "react"
 
 import type {
@@ -6,12 +5,13 @@ import type {
   GridValueGetterParams,
   GridRowData,
   GridColumns }            from "@mui/x-data-grid"
+
 import { getDataForTable } from "./getData"
 
 export const Tables = ["Personen", "Organe", "Rollen"] as const
 export type Table = typeof Tables[number]
 export const isTableType = (str: string): str is Table =>
-  Tables.includes(str as Table)
+    Tables.includes(str as Table)
 export type DataGridDataType = {
     tableType: Table
     rows: Array<GridRowData>
@@ -28,10 +28,12 @@ const DataGridDataPlaceholder = {
  * @returns {{DataGridDataType,Dispatch<SetStateAction<Table>>}} Object with the data and a function to change the table type.
  */
 export const useTable = (tableType: Table) => {
-
     const [table, setTable] = useState<Table>(tableType)
-    const [data, setData] = useState<DataGridDataType>({ tableType: tableType, rows: DataGridDataPlaceholder.row, cols: DataGridDataPlaceholder.col })
-
+    const [data, setData] = useState<DataGridDataType>({
+        tableType: tableType,
+        rows: DataGridDataPlaceholder.row,
+        cols: DataGridDataPlaceholder.col
+    })
     useEffect(() => {
         // fetch data related to table type
         async function getData() {
