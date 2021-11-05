@@ -58,9 +58,7 @@ export const useProject = (data: Data) => {
     const [tables, setTables] = useState<Array<string>>(data[INITIAL_CHOSEN_PROJECT].tables)
 
     const changeProject = (newproj: string) => {
-        const relatedTables = data.find(proj => {
-            if (proj.project === newproj) return proj
-        })?.tables
+        const relatedTables = data.find(proj => proj.project === newproj)?.tables
         if (projects.includes(newproj) && relatedTables) {
             setProject(newproj)
             setTables(relatedTables)
@@ -72,11 +70,24 @@ export const useProject = (data: Data) => {
         if (tables.includes(tbl)) setTable(tbl)
     }
 
-    const refresh = (newData: Data) => {
-        setProject(newData[INITIAL_CHOSEN_PROJECT].project || null)
+    const refresh = (newData: Data, focus?: { project: string; table?: string }) => {
+        const PROJECT_FOCUS = focus
+            ? newData.findIndex(proj => proj.project === focus.project)
+            : INITIAL_CHOSEN_PROJECT
+        const TABLE_FOCUS = focus?.table
+            ? newData
+                  .find(proj => proj.project === focus.project)
+                  ?.tables.findIndex(tbl => tbl === focus.table)
+            : INITIAL_CHOSEN_TABLE
+
+        setProject(newData[PROJECT_FOCUS ?? INITIAL_CHOSEN_PROJECT].project || null)
         setProjects(newData.map(proj => proj.project))
-        setTable(data[INITIAL_CHOSEN_PROJECT].tables[INITIAL_CHOSEN_TABLE] || null)
-        setTables(data[INITIAL_CHOSEN_PROJECT].tables)
+        setTable(
+            data[PROJECT_FOCUS ?? INITIAL_CHOSEN_PROJECT].tables[
+                TABLE_FOCUS ?? INITIAL_CHOSEN_TABLE
+            ] || null
+        )
+        setTables(data[PROJECT_FOCUS ?? INITIAL_CHOSEN_PROJECT].tables)
     }
 
     return {

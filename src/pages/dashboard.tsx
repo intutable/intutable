@@ -63,23 +63,24 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
     }
     const handleAddProject = (newProject: string) => {
         testData.push({ project: newProject, tables: [] })
-        data.refresh(testData)
-        console.log(data.projects)
+        data.refresh(testData, { project: newProject })
     }
 
     const handleTableChange = (newTable: string | null) => {
         if (newTable) data.changeTable(newTable)
     }
     const handleAddTable = (newTable: string) => {
-        testData.forEach(proj => {
-            if (proj.project === data.project) {
-                proj.tables.push(newTable)
-            }
-        })
-        data.refresh(testData)
+        if (data.project) {
+            testData.forEach(proj => {
+                if (proj.project === data.project) {
+                    proj.tables.push(newTable)
+                }
+            })
+            data.refresh(testData, { project: data.project, table: newTable })
+        } else {
+            alert("Can not create a Table without a Project!")
+        }
     }
-
-    useEffect(() => {}, [])
 
     return (
         <>
@@ -129,12 +130,12 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
 }
 
 type DashboardPage_ServerSideProps = {
-    data: Data
+    data: any
 }
 
 export const getServerSideProps: GetServerSideProps<DashboardPage_ServerSideProps> =
     async context => {
-        const { params, locale, defaultLocale } = context
+        const { params } = context
 
         const data = await getProjects()
         console.log(data)
@@ -145,7 +146,7 @@ export const getServerSideProps: GetServerSideProps<DashboardPage_ServerSideProp
 
         return {
             props: {
-                data: testData,
+                data: data,
             },
         }
     }
