@@ -3,7 +3,7 @@ import type { NextPage } from "next"
 import AddIcon from "@mui/icons-material/Add"
 import { Box, ToggleButtonGroup, ToggleButton, useTheme } from "@mui/material"
 import Title from "@components/Head/Title"
-import { Data, useProject } from "@app/src/lib/useProject"
+import { Data, useProject } from "@app/src/utils/useProject"
 
 const testData: Data = [
     { project: "Projekt1", tables: ["Table1.1", "Table1.2", "Table1.3"] },
