@@ -29,6 +29,7 @@ const Tablist: React.FC<TablistProps> = props => {
         // BUG: when creating a new proj without tables, the add button's value will be null for unknown reason.
         // because of that 'null' is catched and interpreteted as 'ADD_BUTTON_NAME'
         // TODO: fix this
+        // Note: this causes a bug, where clicking on a already selected toggle button will pass the above and prompt
         if ((typeof val === "string" && val === ADD_BUTTON_NAME) || val === null) {
             const name = prompt("Choose new Name")
             if (name) props.onAddHandler(name)
