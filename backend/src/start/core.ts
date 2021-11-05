@@ -8,7 +8,7 @@ import { addMiddleware } from "@intutable/http"
 import { getFrontendUrl } from "../runtimeconfig"
 
 const PLUGIN_PATHS =
-    ["database","http"].map(
+    ["database","http", "project-management"].map(
         (plugin) => path.join(process.cwd(), "node_modules/@intutable", plugin))
 
 
