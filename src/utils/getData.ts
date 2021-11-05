@@ -65,7 +65,7 @@ export async function getDataForTable() {
  */
 export const getProjects = async (...args: any[]): Promise<Record<string, unknown>> => {
     try {
-        const data = await fetch("http://localhost:8080/request/database/select", {
+        const data = await fetch("http://localhost:8080/request/project-management/getProjects", {
             method: "POST",
             headers: {
                 Accept: "application/json",
