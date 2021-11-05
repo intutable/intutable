@@ -184,8 +184,8 @@ insert into columns(name, tableId) values ("leftAt", (select _id from tables whe
 insert into columns(name, tableId) values ("representiveMemberId", (select _id from tables where name="participations"));
 
 insert into tables(name) values("users");
-insert into columns(name, tableId) values("email", (select _id from tables where name="users");
-insert into columns(name, tableId) values("password", (select _id form tables where name="users");
+insert into columns(name, tableId) values("email", (select _id from tables where name="users"));
+insert into columns(name, tableId) values("password", (select _id from tables where name="users"));
 
 insert into members (firstName, lastName, description, title, phone, mail)
 values ("Samuel", "Melm", "HiWi main", "Mr", "000000", "sam@foo.com");
