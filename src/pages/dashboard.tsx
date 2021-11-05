@@ -62,6 +62,10 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
         if (newProject) data.changeProject(newProject)
     }
     const handleAddProject = (newProject: string) => {
+        if (data.projects.map(proj => proj.toLowerCase()).includes(newProject.toLowerCase())) {
+            alert("This name is already in use!")
+            return
+        }
         testData.push({ project: newProject, tables: [] })
         data.refresh(testData, { project: newProject })
     }
@@ -70,6 +74,10 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
         if (newTable) data.changeTable(newTable)
     }
     const handleAddTable = (newTable: string) => {
+        if (data.tables.map(tbl => tbl.toLowerCase()).includes(newTable.toLowerCase())) {
+            alert("This name is already in use!")
+            return
+        }
         if (data.project) {
             testData.forEach(proj => {
                 if (proj.project === data.project) {
