@@ -1,5 +1,5 @@
 // Utils / Types / Api
-import { Table, DataGridDataType } from "./useProject"
+import { Table, DataGridDataType, Data } from "./useProject"
 
 /**
  * Returns data based on table type.
@@ -59,21 +59,24 @@ export async function getDataForTable() {
 }
 
 /**
- * Fetches a Project and returns if succeeded the list of related tables.
+ * Fetches a List of Projects and its Tables
  * // TODO: implement w/ user auth
  * @param args placeholder for params implemented in future
  */
-export const getProjects = async (...args: any[]): Promise<Record<string, unknown>> => {
+export const getProjects = async (...args: any[]): Promise<unknown> => {
     try {
-        const data = await fetch("http://localhost:8080/request/project-management/getProjects", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ user: "nick@baz.org" }),
-        })
-        return await data.json()
+        const projects = await fetch(
+            "http://localhost:8080/request/project-management/getProjects",
+            {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ user: "nick@baz.org" }),
+            }
+        )
+        return await projects.json()
     } catch (error) {
         return Promise.reject(error)
     }

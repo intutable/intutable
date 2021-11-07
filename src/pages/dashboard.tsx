@@ -5,6 +5,7 @@ import { Box, ToggleButtonGroup, ToggleButton, useTheme } from "@mui/material"
 import Title from "@components/Head/Title"
 import { Data, useProject } from "@app/src/utils/useProject"
 import { getProjects } from "../utils/getData"
+import { useAuth } from "../utils/useAuth"
 
 const testData: Data = [
     { project: "Projekt1", tables: ["Table1.1", "Table1.2", "Table1.3"] },
@@ -55,17 +56,16 @@ const Tablist: React.FC<TablistProps> = props => {
 }
 
 const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = props => {
-    const data = useProject(testData)
     // const data = useProject(props.data) // wont work w/ updates
+    const data = useProject(testData)
+    const { user } = useAuth()
 
     const handleProjectChange = (newProject: string | null) => {
         if (newProject) data.changeProject(newProject)
     }
     const handleAddProject = (newProject: string) => {
-        if (data.projects.map(proj => proj.toLowerCase()).includes(newProject.toLowerCase())) {
-            alert("This name is already in use!")
-            return
-        }
+        if (data.projects.map(proj => proj.toLowerCase()).includes(newProject.toLowerCase()))
+            return alert("This name is already in use!")
         testData.push({ project: newProject, tables: [] })
         data.refresh(testData, { project: newProject })
     }
@@ -74,10 +74,8 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
         if (newTable) data.changeTable(newTable)
     }
     const handleAddTable = (newTable: string) => {
-        if (data.tables.map(tbl => tbl.toLowerCase()).includes(newTable.toLowerCase())) {
-            alert("This name is already in use!")
-            return
-        }
+        if (data.tables.map(tbl => tbl.toLowerCase()).includes(newTable.toLowerCase()))
+            return alert("This name is already in use!")
         if (data.project) {
             testData.forEach(proj => {
                 if (proj.project === data.project) {
@@ -85,14 +83,12 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                 }
             })
             data.refresh(testData, { project: data.project, table: newTable })
-        } else {
-            alert("Can not create a Table without a Project!")
-        }
+        } else alert("Can not create a Table without a Project!")
     }
 
     return (
         <>
-            <Title title="Test" />
+            <Title title="Dashboard" />
             <Box>
                 {/* Projects */}
                 <Tablist
