@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react"
-import type { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
+import type { NextPage } from "next"
 import AddIcon from "@mui/icons-material/Add"
 import { Box, ToggleButtonGroup, ToggleButton, useTheme } from "@mui/material"
 import Title from "@components/Head/Title"
-import { Data, useProject } from "@app/src/utils/useProject"
+import { Data, useProject } from "@utils/useProject"
 import { getProjects } from "../utils/getData"
 import { useAuth } from "../utils/useAuth"
 
@@ -55,34 +55,47 @@ const Tablist: React.FC<TablistProps> = props => {
     )
 }
 
-const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = props => {
+const isValidName = (name: string): true | Error => {
+    const letters = /^[a-zA-Z]+$/
+    if (!letters.test(name)) return new Error("The Name must contain only letters!")
+    return true
+}
+const prepareName = (name: string): string => name.trim()
+
+const Dashboard: NextPage = () => {
     // const data = useProject(props.data) // wont work w/ updates
     const data = useProject(testData)
-    const { user } = useAuth()
+    const { user } = useAuth({ name: "nick@baz.org" })
 
     const handleProjectChange = (newProject: string | null) => {
         if (newProject) data.changeProject(newProject)
     }
     const handleAddProject = (newProject: string) => {
-        if (data.projects.map(proj => proj.toLowerCase()).includes(newProject.toLowerCase()))
+        const name = prepareName(newProject)
+        const isvalid = isValidName(name)
+        if (isvalid instanceof Error) return alert(isvalid.message)
+        if (data.projects.map(proj => proj.toLowerCase()).includes(name.toLowerCase()))
             return alert("This name is already in use!")
-        testData.push({ project: newProject, tables: [] })
-        data.refresh(testData, { project: newProject })
+        testData.push({ project: name, tables: [] })
+        data.refresh(testData, { project: name })
     }
 
     const handleTableChange = (newTable: string | null) => {
         if (newTable) data.changeTable(newTable)
     }
     const handleAddTable = (newTable: string) => {
-        if (data.tables.map(tbl => tbl.toLowerCase()).includes(newTable.toLowerCase()))
+        const name = prepareName(newTable)
+        const isvalid = isValidName(name)
+        if (isvalid instanceof Error) return alert(isvalid.message)
+        if (data.tables.map(tbl => tbl.toLowerCase()).includes(name.toLowerCase()))
             return alert("This name is already in use!")
         if (data.project) {
             testData.forEach(proj => {
                 if (proj.project === data.project) {
-                    proj.tables.push(newTable)
+                    proj.tables.push(name)
                 }
             })
-            data.refresh(testData, { project: data.project, table: newTable })
+            data.refresh(testData, { project: data.project, table: name })
         } else alert("Can not create a Table without a Project!")
     }
 
@@ -132,27 +145,5 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
         </>
     )
 }
-
-type DashboardPage_ServerSideProps = {
-    data: any
-}
-
-export const getServerSideProps: GetServerSideProps<DashboardPage_ServerSideProps> =
-    async context => {
-        const { params } = context
-
-        const data = await getProjects()
-        console.log(data)
-
-        // if (false) {
-        //     return { notFound: true }
-        // }
-
-        return {
-            props: {
-                data: data,
-            },
-        }
-    }
 
 export default Dashboard
