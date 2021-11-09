@@ -1,5 +1,4 @@
-// Utils / Types / Api
-import { Table, DataGridDataType, Data } from "./useProject"
+import type { User } from "./useAuth"
 
 /**
  * Returns data based on table type.
@@ -63,21 +62,43 @@ export async function getDataForTable() {
  * // TODO: implement w/ user auth
  * @param args placeholder for params implemented in future
  */
-export const getProjects = async (...args: any[]): Promise<unknown> => {
-    try {
-        const projects = await fetch(
-            "http://localhost:8080/request/project-management/getProjects",
-            {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ user: "nick@baz.org" }),
-            }
-        )
-        return await projects.json()
-    } catch (error) {
-        return Promise.reject(error)
-    }
+export const getProjects = async (user: User): Promise<Array<string>> => {
+    const projects = await fetch("http://localhost:8080/request/project-management/getProjects", {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user: user.name }),
+    })
+    return await projects.json()
+}
+
+export const getTablesOfProject = async (project: string): Promise<Array<string>> => {
+    const projects = await fetch("http://localhost:8080/request/project-management/getTables", {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tables:  }),
+    })
+    return await projects.json()
+}
+export const getDataOfTable = async (table: string): Promise<unknown> => {
+    return Promise.resolve()
+}
+
+type ArrayElement<ArrayType extends readonly unknown[]> =
+    ArrayType extends readonly (infer ElementType)[] ? ElementType : never
+type ProjectsWithTables = Array<{ project: string; tables: Array<string> }>
+export const getAllProjectsWithTables = async (user: User): Promise<ProjectsWithTables> => {
+    const projects = await getProjects(user)
+
+    const returnObject = projects.map(async proj => {
+        const tables = await getTablesOfProject(proj)
+        return <ArrayElement<ProjectsWithTables>>{ project: proj, tables: tables }
+    })
+
+    return Promise.all(returnObject)
 }

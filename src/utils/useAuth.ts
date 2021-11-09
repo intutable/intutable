@@ -4,12 +4,13 @@ export type User = {
     name: string
 }
 
-export const useAuth = () => {
-    const [user, setUser] = useState<User | null>(null)
+export const useAuth = (user?: User) => {
+    const [_user, _setUser] = useState<User | null>(user || null)
 
     useEffect(() => {}, [])
 
     return {
-        user,
+        user: _user,
+        setUser: _setUser,
     }
 }
