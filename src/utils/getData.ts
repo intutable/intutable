@@ -76,7 +76,7 @@ export const getProjects = async (user: User): Promise<Array<string>> => {
 
 export const getTablesOfProject = async (user: User, project: string): Promise<Array<string>> => {
     const projects = await fetch(
-        "http://localhost:8080/requests/project-management/getProjectTables",
+        "http://localhost:8080/request/project-management/getProjectTables",
         {
             method: "POST",
             headers: {
