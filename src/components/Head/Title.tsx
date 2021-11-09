@@ -1,5 +1,5 @@
 import Head from "next/head"
-
+import React from "react"
 
 type TitleProps = {
     /**
@@ -12,7 +12,7 @@ type TitleProps = {
      */
     suffix?: string
     /**
-     * optional affix 
+     * optional affix
      */
     prefix?: string
 }
@@ -20,14 +20,19 @@ type TitleProps = {
 /**
  * `<title></title>` Component with `<Head></Head>`.
  * @param {TitleProps} param
- * @returns 
+ * @returns
  */
 const Title: React.FC<TitleProps> = ({
-  title, prefix, suffix = "| Fakultät für Mathematik und Informatik" }) => (
+    title,
+    prefix,
+    suffix = "| Fakultät für Mathematik und Informatik",
+}) => (
     <Head>
-      <title>
-        {prefix ? prefix + "" : ""}{title} {suffix}
-      </title>
-    </Head> )
+        <title>
+            {prefix ? prefix + "" : ""}
+            {title} {suffix}
+        </title>
+    </Head>
+)
 
 export default Title

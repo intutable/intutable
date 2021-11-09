@@ -11,7 +11,8 @@
         "dev-next": "next dev",
         "build-next": "next build",
         "start-next": "next start",
-        "db:setup": "npx rimraf data.db && sqlite3 data.db < backend/database/createDB.sql"
+        "db:setup": "npx rimraf data.db && sqlite3 data.db < backend/database/createDB.sql",
+        "lint": "next lint --no-cache"
     },
     "dependencies": {
         "@emotion/react": "^11.4.1",
@@ -34,6 +35,9 @@
     "devDependencies": {
         "@types/node": "16.11.6",
         "@types/react": "17.0.33",
+        "eslint": "^7.32.0",
+        "eslint-config-next": "12.0.3",
+        "eslint-config-prettier": "^8.3.0",
         "rimraf": "3.0.2"
     }
 }

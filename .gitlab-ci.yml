@@ -1,29 +1,27 @@
-image: node:latest
+image: node:16.13.0
 
 stages:
-  - lint
-  - build
+    - lint
+    - build
 
 before_script:
-  - npm install
+    - npm install
 
 # Lint source code with es lint
 eslint:
-  stage: lint
-  script:
-    - echo "ESLint Frontend"
-    - cd src && npm run lint
-    - cd ..
-    - echo "ESLint Backend"
-    - echo "TODO implement" # TODO: configure
+    stage: lint
+    script:
+        - echo "ESLint Frontend"
+        - npm run lint
+        - echo "ESLint Backend"
+        - echo "TODO implement" # TODO: configure
 
 # Test the App by building it
 nextBuild:
-  stage: build
-  script:
-    - echo "Test if the Frontend builds successfully"
-    - cd src && npm run build
-    - cd ..
-    - echo "Test if the Backend builds successfully"
-    - echo "TODO implement" # TODO: configure
+    stage: build
+    script:
+        - echo "Test if the Frontend builds successfully"
+        - npm run build-next
+        - echo "Test if the Backend builds successfully"
+        - echo "TODO implement" # TODO: configure
 

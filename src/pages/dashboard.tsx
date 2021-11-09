@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import type { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import AddIcon from "@mui/icons-material/Add"
 import { Box, ToggleButtonGroup, ToggleButton, useTheme } from "@mui/material"
@@ -144,9 +144,9 @@ export const getServerSideProps: GetServerSideProps<DashboardPage_ServerSideProp
         const data = await getProjects()
         console.log(data)
 
-        if (false) {
-            return { notFound: true }
-        }
+        // if (false) {
+        //     return { notFound: true }
+        // }
 
         return {
             props: {
