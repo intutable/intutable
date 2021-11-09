@@ -4,7 +4,7 @@ import AddIcon from "@mui/icons-material/Add"
 import { Box, ToggleButtonGroup, ToggleButton, useTheme } from "@mui/material"
 import Title from "@components/Head/Title"
 import { Data, useProject } from "@utils/useProject"
-import { getProjects } from "../utils/getData"
+import { getTablesOfProject } from "../utils/getData"
 import { useAuth } from "../utils/useAuth"
 
 const testData: Data = [
@@ -98,6 +98,13 @@ const Dashboard: NextPage = () => {
             data.refresh(testData, { project: data.project, table: name })
         } else alert("Can not create a Table without a Project!")
     }
+
+    useEffect(() => {
+        ;(async _ => {
+            const test = await getTablesOfProject(user, "project1")
+            console.log(test)
+        })()
+    }, [])
 
     return (
         <>

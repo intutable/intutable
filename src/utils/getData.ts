@@ -74,15 +74,18 @@ export const getProjects = async (user: User): Promise<Array<string>> => {
     return await projects.json()
 }
 
-export const getTablesOfProject = async (project: string): Promise<Array<string>> => {
-    const projects = await fetch("http://localhost:8080/request/project-management/getTables", {
-        method: "POST",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ tables:  }),
-    })
+export const getTablesOfProject = async (user: User, project: string): Promise<Array<string>> => {
+    const projects = await fetch(
+        "http://localhost:8080/requests/project-management/getProjectTables",
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ user: user.name, projectName: project }),
+        }
+    )
     return await projects.json()
 }
 export const getDataOfTable = async (table: string): Promise<unknown> => {
@@ -96,8 +99,8 @@ export const getAllProjectsWithTables = async (user: User): Promise<ProjectsWith
     const projects = await getProjects(user)
 
     const returnObject = projects.map(async proj => {
-        const tables = await getTablesOfProject(proj)
-        return <ArrayElement<ProjectsWithTables>>{ project: proj, tables: tables }
+        const tables = await getTablesOfProject(user, proj)
+        return { project: proj, tables: tables } as ArrayElement<ProjectsWithTables>
     })
 
     return Promise.all(returnObject)
