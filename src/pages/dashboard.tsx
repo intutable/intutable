@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react"
 import type { NextPage } from "next"
 import AddIcon from "@mui/icons-material/Add"
-import { Box, ToggleButtonGroup, ToggleButton, useTheme } from "@mui/material"
+import { Box, ToggleButtonGroup, ToggleButton, useTheme, CircularProgress } from "@mui/material"
 import Title from "@components/Head/Title"
 import { Data, useProject } from "@utils/useProject"
-import { getTablesOfProject } from "../utils/getData"
+import { getAllProjectsWithTables } from "../utils/getData"
 import { useAuth } from "../utils/useAuth"
 
 const testData: Data = [
@@ -63,10 +63,12 @@ const isValidName = (name: string): true | Error => {
 const prepareName = (name: string): string => name.trim()
 
 const Dashboard: NextPage = () => {
-    // const data = useProject(props.data) // wont work w/ updates
+    // #################### States and Vars ####################
+    const [loading, setLoading] = useState(false)
     const data = useProject(testData)
     const { user } = useAuth({ name: "nick@baz.org" })
 
+    // #################### Handlers ####################
     const handleProjectChange = (newProject: string | null) => {
         if (newProject) data.changeProject(newProject)
     }
@@ -99,12 +101,19 @@ const Dashboard: NextPage = () => {
         } else alert("Can not create a Table without a Project!")
     }
 
-    useEffect(() => {
-        ;(async _ => {
-            const test = await getTablesOfProject(user, "project1")
-            console.log(test)
-        })()
-    }, [])
+    // #################### Lifecycle ####################
+    // TODO: this is for `Sprint 2`
+    // useEffect(() => {
+    //     ;(async _ => {
+    //         // initial fetch to populate
+    //         const initialData = await getAllProjectsWithTables(user)
+    //         console.dir(initialData)
+    //         // data.init(initialData)
+    //     })()
+    // }, [user])
+
+    // #################### Components ####################
+    if (loading) return <CircularProgress />
 
     return (
         <>

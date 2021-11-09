@@ -1,4 +1,5 @@
 import type { User } from "./useAuth"
+import { Data } from "./useProject"
 
 /**
  * Returns data based on table type.
@@ -94,13 +95,12 @@ export const getDataOfTable = async (table: string): Promise<unknown> => {
 
 type ArrayElement<ArrayType extends readonly unknown[]> =
     ArrayType extends readonly (infer ElementType)[] ? ElementType : never
-type ProjectsWithTables = Array<{ project: string; tables: Array<string> }>
-export const getAllProjectsWithTables = async (user: User): Promise<ProjectsWithTables> => {
+export const getAllProjectsWithTables = async (user: User): Promise<Data> => {
     const projects = await getProjects(user)
 
     const returnObject = projects.map(async proj => {
         const tables = await getTablesOfProject(user, proj)
-        return { project: proj, tables: tables } as ArrayElement<ProjectsWithTables>
+        return { project: proj, tables: tables } as ArrayElement<Data>
     })
 
     return Promise.all(returnObject)

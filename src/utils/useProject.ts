@@ -7,16 +7,16 @@ export type Data = Array<{ project: string; tables: Array<string> }>
 const INITIAL_CHOSEN_PROJECT = 0
 const INITIAL_CHOSEN_TABLE = 0
 
-// TODO: this should replace `useTable` and handle both, project and related table names. Should be integrated with user auth hook
-export const useProject = (data: Data) => {
+// this hook will only handle the projects, tables and its data – no user management or stuff related to this
+export const useProject = (data: Data = []) => {
     const [project, setProject] = useState<string | null>(
-        data[INITIAL_CHOSEN_PROJECT].project || null
+        data[INITIAL_CHOSEN_PROJECT]?.project ?? null
     )
     const [projects, setProjects] = useState<Array<string>>(data.map(proj => proj.project))
     const [table, setTable] = useState<string | null>(
-        data[INITIAL_CHOSEN_PROJECT].tables[INITIAL_CHOSEN_TABLE] || null
+        data[INITIAL_CHOSEN_PROJECT]?.tables[INITIAL_CHOSEN_TABLE] ?? null
     )
-    const [tables, setTables] = useState<Array<string>>(data[INITIAL_CHOSEN_PROJECT].tables)
+    const [tables, setTables] = useState<Array<string>>(data[INITIAL_CHOSEN_PROJECT]?.tables ?? [])
 
     const changeProject = (newproj: string) => {
         const relatedTables = data.find(proj => proj.project === newproj)?.tables
@@ -30,6 +30,10 @@ export const useProject = (data: Data) => {
     const changeTable = (tbl: string) => {
         if (tables.includes(tbl)) setTable(tbl)
     }
+
+    useEffect(() => {
+        // TODO: useProject should handle changes and fetch data automatically in `Sprint 2`
+    }, [table])
 
     const refresh = (newData: Data, focus?: { project: string; table?: string }) => {
         const PROJECT_FOCUS = focus
@@ -52,12 +56,16 @@ export const useProject = (data: Data) => {
     }
 
     return {
+        // project
         project,
-        changeProject,
         projects,
+        changeProject,
+        // table
         table,
-        changeTable,
         tables,
+        changeTable,
+        // init or update
         refresh,
+        init: refresh,
     }
 }
