@@ -12,7 +12,7 @@
         "build-next": "next build",
         "start-next": "next start",
         "db:setup": "npx rimraf data.db && sqlite3 data.db < backend/database/createDB.sql",
-        "lint": "next lint --no-cache"
+        "lint": "next lint"
     },
     "dependencies": {
         "@emotion/react": "^11.4.1",
