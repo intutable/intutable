@@ -37,7 +37,7 @@ export const getTablesOfProject = async (user: User, project: string): Promise<A
 export type TableData = {
     tableName: string,
     cols: Array<Column<string, unknown>>,
-    rows: any
+    rows: Array<Record<string, unknown>>
 }
 export const getDataOfTable = async (table: string): Promise<TableData> => {
     // TODO: implement
