@@ -23,8 +23,10 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import StorageIcon from "@mui/icons-material/Storage"
 import SettingsIcon from "@mui/icons-material/Settings"
 import HomeIcon from "@mui/icons-material/Home"
-
-import Link from "@components/Link/Link"
+import LoginButton from "../Login/LoginButton"
+import LoginFormModal from "../Login/LoginFormModal"
+import Link from "../Link/Link"
+import { useAuth } from "../../utils/useAuth"
 
 const drawerWidth: number = 240
 
@@ -83,10 +85,14 @@ const DrawerListItem: React.FC<DrawerListItemProps> = props => {
 }
 
 const Header = () => {
+    const { user } = useAuth()
+
     const theme = useTheme()
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
+    const [loginModalOpen, setLoginModalOpen] = useState<boolean>(false)
 
     const toggleDrawer = () => setDrawerOpen(prev => !prev)
+    const toggleLoginModal = () => setLoginModalOpen(prev => !prev)
 
     return (
         <>
@@ -140,6 +146,7 @@ const Header = () => {
                             </Typography>
                         </Link>
                     </Box>
+                    <LoginButton openLoginFormModalFn={toggleLoginModal} />
                 </Toolbar>
             </AppBar>
 
@@ -164,9 +171,20 @@ const Header = () => {
                 <DrawerListItem text="Startseite" href="/" icon={<HomeIcon />} />
                 <Divider />
                 <DrawerListItem text="Dashboard" href="/dashboard" icon={<StorageIcon />} />
-                <Divider />
-                <DrawerListItem text="Einstellungen" href="/settings" icon={<SettingsIcon />} />
+                {user && (
+                    <>
+                        <Divider />
+                        <DrawerListItem
+                            text="Einstellungen"
+                            href="/settings"
+                            icon={<SettingsIcon />}
+                        />
+                    </>
+                )}
             </Drawer>
+
+            {/* Login Modal */}
+            <LoginFormModal open={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
         </>
     )
 }
