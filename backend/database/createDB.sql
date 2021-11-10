@@ -1,4 +1,3 @@
-
 create table if not exists commissions (
     _id integer primary key autoincrement not null,
     name text not null,
@@ -104,8 +103,12 @@ create table if not exists metaBoolOptions (
     primary key(entityId, entityType)
 );
 
-insert into tables(name) values("commissions");
+create table if not exists users (
+    email text not null,
+    password text not null
+);
 
+insert into tables(name) values("commissions");
 insert into columns(name, tableId) values("_id", (select _id from tables where name="commissions"));
 insert into columns(name, tableId) values("name", (select _id from tables where name="commissions"));
 insert into columns(name, tableId) values("description", (select _id from tables where name="commissions"));
@@ -114,7 +117,6 @@ insert into columns(name, tableId) values("dissolvedAt", (select _id from tables
 
 
 insert into tables(name) values("commissionFunctions");
-
 insert into columns(name, tableId) values("_id", (select _id from tables where name="commissionFunctions"));
 insert into columns(name, tableId) values("content", (select _id from tables where name="commissionFunctions"));
 
@@ -181,11 +183,21 @@ insert into columns(name, tableId) values ("joinedAt", (select _id from tables w
 insert into columns(name, tableId) values ("leftAt", (select _id from tables where name="participations"));
 insert into columns(name, tableId) values ("representiveMemberId", (select _id from tables where name="participations"));
 
+insert into tables(name) values("users");
+insert into columns(name, tableId) values("email", (select _id from tables where name="users"));
+insert into columns(name, tableId) values("password", (select _id from tables where name="users"));
+
 insert into members (firstName, lastName, description, title, phone, mail)
 values ("Samuel", "Melm", "HiWi main", "Mr", "000000", "sam@foo.com");
+-- password: 123
+insert into users (email, password) values ("sam@foo.com", "$argon2i$v=19$m=4096,t=3,p=1$tAGVar4+8ogCSgHgpG+G7Q$BLT02OgGnzuyFd5OvNSwKfN1jkqoFZ+lHrYVPPBf2PU");
 
 insert into members (firstName, lastName, description, title, phone, mail)
-values ("Nikita-Nick", "Funk", "HiWi main", "Mr", "000001", "nick@bar.org");
+values ("Nikita-Nick", "Funk", "HiWi main", "Mr", "000001", "nick@baz.org");
+-- password: password
+insert into users (email, password) values ("nick@baz.org", "$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM");
 
 insert into members (firstName, lastName, description, title, phone, mail)
-values ("Christopher", "Höllriegl", "HiWi main", "Mr", "000002", "christopher@baz.com");
+values ("Christopher", "Höllriegl", "HiWi main", "Mr", "000002", "christopher@bar.com");
+-- password: good_password
+insert into users (email, password) values ("christopher@bar.com", "$argon2i$v=19$m=4096,t=3,p=1$LdzQ5dT9vSamMPD/vYb9nQ$nZpECGbL7Xsi4sJl7s0o6QgkkFQ71UA/uc/gcmBEqWw");
