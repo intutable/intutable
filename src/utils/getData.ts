@@ -1,62 +1,6 @@
+import { Column, Row } from "react-data-grid"
 import type { User } from "./useAuth"
 import { Data } from "./useProject"
-
-/**
- * Returns data based on table type.
- * @param {Table} table table type
- * @returns {DataGridDataType} data
- */
-export async function getDataForTable() {
-    return {
-        tableType: "Personen",
-        cols: [
-            { field: "id", headerName: "ID", description: "Eindeutige ID der Person" },
-            { field: "employeeId", headerName: "EID", description: "Test" },
-            {
-                field: "firstName",
-                headerName: "Vorname",
-                editable: true,
-                description: "Vorname der Person",
-            },
-            {
-                field: "lastName",
-                headerName: "Nachname",
-                editable: true,
-                description: "Nachname der Person",
-            },
-            { field: "description", headerName: "Description", description: "Test" },
-            {
-                field: "title",
-                headerName: "Titel",
-                editable: true,
-                description: "Akademischer Titel der Person",
-                type: "singleSelect",
-                valueOptions: [
-                    { value: "doktor", label: "Dr." },
-                    { value: "professor", label: "Prof." },
-                    { value: "professordoktor", label: "Prof. Dr." },
-                ],
-            },
-            { field: "phone", headerName: "Test", description: "Test" },
-            {
-                field: "mail",
-                headerName: "E-Mail",
-                editable: true,
-                description: "E-Mail-Adresse der Person",
-            },
-        ],
-        rows: await fetch("http://localhost:8080/request/database/select", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ table: "members" }),
-        })
-            .then(res => res.json())
-            .then(rows => rows.map(({ _id, ...values }) => ({ id: _id, ...values }))),
-    }
-}
 
 /**
  * Fetches a List of Projects and its Tables
@@ -89,8 +33,57 @@ export const getTablesOfProject = async (user: User, project: string): Promise<A
     )
     return await projects.json()
 }
-export const getDataOfTable = async (table: string): Promise<unknown> => {
-    return Promise.resolve()
+
+export type TableData = {
+    tableName: string,
+    cols: Array<Column<string, unknown>>,
+    rows: any
+}
+export const getDataOfTable = async (table: string): Promise<TableData> => {
+    // TODO: implement
+    const rowsData = await fetch("http://localhost:8080/request/database/select", {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ table: "members" }),
+    })
+        .then(res => res.json())
+        .then(rows => rows.map(({ _id, ...values }) => ({ id: _id, ...values })))
+
+    const returnObject: TableData = {
+        tableName: "Personen",
+        cols: [
+            { key: "id", name: "ID" },
+            { key: "employeeId", name: "EID" },
+            {
+                key: "firstName",
+                name: "Vorname",
+                editable: true,
+            },
+            {
+                key: "lastName",
+                name: "Nachname",
+                editable: true,
+            },
+            { key: "description", name: "Description"},
+            {
+                key: "title",
+                name: "Titel",
+                editable: true,
+            },
+            { key: "phone", name: "Test" },
+            {
+                key: "mail",
+                name: "E-Mail",
+                editable: true,
+            },
+        ],
+        rows: rowsData
+    }
+    
+    return Promise.resolve(returnObject)
 }
 
 type ArrayElement<ArrayType extends readonly unknown[]> =

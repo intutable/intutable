@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react"
 import type { NextPage } from "next"
 import AddIcon from "@mui/icons-material/Add"
 import { Box, ToggleButtonGroup, ToggleButton, useTheme, CircularProgress } from "@mui/material"
-import Title from "@components/Head/Title"
-import { Data, useProject } from "@utils/useProject"
+import Title from "../components/Head/Title"
+import { Data, useProject } from "../utils/useProject"
 import { getAllProjectsWithTables } from "../utils/getData"
 import { useAuth } from "../utils/useAuth"
+import DataGrid from "react-data-grid"
 
 const testData: Data = [
     { project: "Projekt1", tables: ["Table1.1", "Table1.2", "Table1.3"] },
@@ -103,14 +104,14 @@ const Dashboard: NextPage = () => {
 
     // #################### Lifecycle ####################
     // TODO: this is for `Sprint 2`
-    // useEffect(() => {
-    //     ;(async _ => {
-    //         // initial fetch to populate
-    //         const initialData = await getAllProjectsWithTables(user)
-    //         console.dir(initialData)
-    //         // data.init(initialData)
-    //     })()
-    // }, [user])
+    useEffect(() => {
+        ;(async _ => {
+            // initial fetch to populate
+            const initialData = await getAllProjectsWithTables(user)
+            // console.dir(initialData)
+            data.init(initialData)
+        })()
+    }, [user])
 
     // #################### Components ####################
     if (loading) return <CircularProgress />
@@ -137,25 +138,13 @@ const Dashboard: NextPage = () => {
 
                 {/* Table */}
                 <Box>
-                    {data.project} - {data.table}
-                    {/* <DataGrid
-                        rows={data.rows}
-                        columns={data.cols}
-                        pageSize={25}
-                        autoHeight
-                        rowsPerPageOptions={[5, 25, 50, 100]}
-                        checkboxSelection
-                        disableSelectionOnClick
-                        components={{
-                            Toolbar: CustomToolbar,
-                            NoRowsOverlay: CustomNoRowsOverlay,
-                            Footer: CustomFooterComponent,
-                            ColumnMenu: CustomColumnMenuComponent,
-                        }}
-                        componentsProps={{
-                            footer: { status },
-                        }}
-                    /> */}
+                    {
+                        data.tableData && 
+                            <DataGrid
+                                rows={data.tableData.rows}
+                                columns={data.tableData.cols}
+                            />
+                    }
                 </Box>
             </Box>
         </>

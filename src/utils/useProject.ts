@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import type { GridColDef, GridValueGetterParams, GridRowData, GridColumns } from "@mui/x-data-grid"
-import { getDataForTable } from "./getData"
+import { getDataOfTable, TableData } from "./getData"
 
 // only for dev
 export type Data = Array<{ project: string; tables: Array<string> }>
@@ -16,6 +16,7 @@ export const useProject = (data: Data = []) => {
     const [table, setTable] = useState<string | null>(
         data[INITIAL_CHOSEN_PROJECT]?.tables[INITIAL_CHOSEN_TABLE] ?? null
     )
+    const [tableData, setTableData] = useState<TableData | null>(null)
     const [tables, setTables] = useState<Array<string>>(data[INITIAL_CHOSEN_PROJECT]?.tables ?? [])
 
     const changeProject = (newproj: string) => {
@@ -33,6 +34,12 @@ export const useProject = (data: Data = []) => {
 
     useEffect(() => {
         // TODO: useProject should handle changes and fetch data automatically in `Sprint 2`
+        (async _ => {
+            if (table) {
+                const tableData = await getDataOfTable(table) 
+                setTableData(tableData)
+            }
+        })()
     }, [table])
 
     const refresh = (newData: Data, focus?: { project: string; table?: string }) => {
@@ -62,6 +69,7 @@ export const useProject = (data: Data = []) => {
         changeProject,
         // table
         table,
+        tableData,
         tables,
         changeTable,
         // init or update
