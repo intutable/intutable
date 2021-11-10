@@ -9,8 +9,12 @@ export const useAuth = (user?: User) => {
 
     useEffect(() => {}, [])
 
+    const login = () => {
+        console.log("login!!1")
+    }
     return {
         user: _user,
         setUser: _setUser,
+        login
     }
 }
