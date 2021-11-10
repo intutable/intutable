@@ -6,6 +6,7 @@ import Title from "@components/Head/Title"
 import { Data, useProject } from "@utils/useProject"
 import { getAllProjectsWithTables } from "../utils/getData"
 import { useAuth } from "../utils/useAuth"
+import { useSnackbar } from "notistack"
 
 const testData: Data = [
     { project: "Projekt1", tables: ["Table1.1", "Table1.2", "Table1.3"] },
@@ -64,6 +65,7 @@ const prepareName = (name: string): string => name.trim()
 
 const Dashboard: NextPage = () => {
     // #################### States and Vars ####################
+    const { enqueueSnackbar } = useSnackbar()
     const [loading, setLoading] = useState(false)
     const data = useProject(testData)
     const { user } = useAuth({ name: "nick@baz.org" })
@@ -111,6 +113,10 @@ const Dashboard: NextPage = () => {
     //         // data.init(initialData)
     //     })()
     // }, [user])
+
+    useEffect(() => {
+        enqueueSnackbar("Test")
+    }, [])
 
     // #################### Components ####################
     if (loading) return <CircularProgress />
