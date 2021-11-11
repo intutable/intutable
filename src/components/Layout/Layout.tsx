@@ -14,8 +14,8 @@ const Layout: React.FC = props => {
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    p: theme.spacing(15),
-                    pt: theme.spacing(18), // TODO: hacky bugfix to get the content in main below the appbar, those are overlapping
+                    p: theme.spacing(8),
+                    pt: theme.spacing(14), // TODO: hacky bugfix to get the content in main below the appbar, those are overlapping
                     height: "100vh",
                     overflow: "auto",
                 }}
