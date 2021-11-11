@@ -58,7 +58,7 @@ const ProjectsPage: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
                 "Dieser Name wird bereits für eines deiner Projekte verwendet!",
                 { variant: "error" }
             )
-        // TODO: make a request to backend here and then redirect to project
+        // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
         router.push("/project/" + name)
         enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, { variant: "success" })
     }
