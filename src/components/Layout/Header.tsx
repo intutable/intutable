@@ -20,7 +20,7 @@ import type { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar"
 import { styled, CSSObject, Theme } from "@mui/material/styles"
 import MenuIcon from "@mui/icons-material/Menu"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import StorageIcon from "@mui/icons-material/Storage"
+import WorkspacesIcon from "@mui/icons-material/Workspaces"
 import SettingsIcon from "@mui/icons-material/Settings"
 import HomeIcon from "@mui/icons-material/Home"
 
@@ -163,7 +163,7 @@ const Header = () => {
                 </Toolbar>
                 <DrawerListItem text="Startseite" href="/" icon={<HomeIcon />} />
                 <Divider />
-                <DrawerListItem text="Dashboard" href="/dashboard" icon={<StorageIcon />} />
+                <DrawerListItem text="Projekte" href="/projects" icon={<WorkspacesIcon />} />
                 <Divider />
                 <DrawerListItem text="Einstellungen" href="/settings" icon={<SettingsIcon />} />
             </Drawer>
