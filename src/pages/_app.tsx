@@ -1,14 +1,11 @@
 import type { AppProps } from "next/app"
-
-// style
 import { theme } from "@theme"
-
-// Components
 import Head from "next/head"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 import { CssBaseline } from "@mui/material"
 import Layout from "@components/Layout/Layout"
 import { SnackbarProvider } from "notistack"
+import { AuthProvider } from "../context/AuthContext"
 
 const MyApp = (props: AppProps) => {
     const { Component, pageProps } = props
@@ -24,14 +21,16 @@ const MyApp = (props: AppProps) => {
                 <meta name="theme-color" content={theme.palette.primary.main} />
             </Head>
 
-            <ThemeProvider theme={theme}>
-                <SnackbarProvider maxSnack={5}>
-                    <CssBaseline />
-                    <Layout>
-                        <Component {...pageProps} />
-                    </Layout>
-                </SnackbarProvider>
-            </ThemeProvider>
+            <AuthProvider>
+                <ThemeProvider theme={theme}>
+                    <SnackbarProvider maxSnack={5}>
+                        <CssBaseline />
+                        <Layout>
+                            <Component {...pageProps} />
+                        </Layout>
+                    </SnackbarProvider>
+                </ThemeProvider>
+            </AuthProvider>
         </>
     )
 }
