@@ -4,14 +4,14 @@
     "private": true,
     "scripts": {
         "build": "npm run build-core && next build",
-        "dev": "node ./backend/dist/start/index dev",
-        "start": "node ./backend/dist/start start",
-        "build-core": "cd backend/src && tsc && cd ../..",
-        "start-core": "node ./backend/dist/start/core",
+        "dev": "node ./dist/start/index dev",
+        "start": "node ./dist/start start",
+        "build-core": "cd src/backend && tsc && cd ../..",
+        "start-core": "node ./dist/start/core",
         "dev-next": "next dev",
         "build-next": "next build",
         "start-next": "next start",
-        "db:setup": "npx rimraf data.db && sqlite3 data.db < backend/database/createDB.sql",
+        "db:setup": "npx rimraf data.db && sqlite3 data.db < database/createDB.sql",
         "lint": "next lint"
     },
     "dependencies": {
@@ -22,6 +22,7 @@
         "@intutable/database": "^1.1.1",
         "@intutable/http": "^0.1.4",
         "@intutable/project-management": "^0.1.0",
+        "@intutable/user-authentication": "file:../user-authentication-d",
         "@mui/icons-material": "^5.0.1",
         "@mui/material": "^5.0.2",
         "@mui/styles": "^5.0.1",

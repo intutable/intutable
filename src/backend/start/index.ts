@@ -24,7 +24,7 @@ interface AppComponent {
 // =============================================================================
 // CONSTANTS
 const APP_NAME        = "dekanat-app"
-const CORE_SCRIPT     = "./backend/dist/start/core"
+const CORE_SCRIPT     = "./dist/start/core"
 const FRONTEND_SCRIPT = "./node_modules/next/dist/bin/next"
 
 
