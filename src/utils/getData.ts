@@ -1,6 +1,7 @@
 import { Column, Row } from "react-data-grid"
 import type { User } from "./useAuth"
 import { Data } from "./useProject"
+import { getCoreUrl } from "@app/backend/runtimeconfig"
 
 /**
  * Fetches a List of Projects and its Tables
@@ -8,20 +9,22 @@ import { Data } from "./useProject"
  * @param args placeholder for params implemented in future
  */
 export const getProjects = async (user: User): Promise<Array<string>> => {
-    const projects = await fetch("http://localhost:8080/request/project-management/getProjects", {
-        method: "POST",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user: user.name }),
-    })
+    const projects = await fetch(
+        getCoreUrl() + "/request/project-management/getProjects",
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ user: user.name }),
+        })
     return await projects.json()
 }
 
 export const getTablesOfProject = async (user: User, project: string): Promise<Array<string>> => {
     const projects = await fetch(
-        "http://localhost:8080/request/project-management/getProjectTables",
+        getCoreUrl() + "/request/project-management/getProjectTables",
         {
             method: "POST",
             headers: {
@@ -41,7 +44,8 @@ export type TableData = {
 }
 export const getDataOfTable = async (table: string): Promise<TableData> => {
     // TODO: implement
-    const rowsData = await fetch("http://localhost:8080/request/database/select", {
+    const rowsData = await fetch(
+        getCoreUrl() + "/request/database/select", {
         method: "POST",
         headers: {
             Accept: "application/json",
