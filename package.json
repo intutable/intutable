@@ -22,7 +22,6 @@
         "@intutable/database": "^1.1.1",
         "@intutable/http": "^0.1.4",
         "@intutable/project-management": "^0.1.0",
-        "@intutable/user-authentication": "file:../user-authentication-d",
         "@mui/icons-material": "^5.0.1",
         "@mui/material": "^5.0.2",
         "@mui/styles": "^5.0.1",
