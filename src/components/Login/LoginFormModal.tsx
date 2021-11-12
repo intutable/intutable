@@ -5,6 +5,7 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
+    DialogContentText,
     DialogActions,
     Button,
     Slide,
@@ -30,6 +31,15 @@ const inputFieldStyle: SxProps<Theme> = {
     my: 2,
 }
 
+const errorMessageStyle: SxProps<Theme> = {
+    display: "block",
+    textAlign: "center",
+    color: "#aa8833",
+    paddingBottom: "8px"
+}
+
+
+
 const validateUsername = (username: string): boolean => username.length > 6
 const validatePassword = (password: string): boolean => password.length > 0
 const validateFormData = (username: string, password: string): boolean =>
@@ -53,10 +63,13 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
         username: "",
         password: ""
     })
+    const [attemptError, setAttemptError] = useState<string>("")
 
     const { login } = useAuth()
     const tryLogin = async () => {
         login(formData.username, formData.password)
+            .then(props.onClose)
+            .catch(e => setAttemptError(e))
     }
 
     const handleUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,6 +113,10 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
                     sx={inputFieldStyle}
                 />
             </DialogContent>
+
+            <DialogContentText sx={errorMessageStyle}>
+                {attemptError}
+            </DialogContentText>
 
             <DialogActions>
                 <Button variant="contained" color="error"

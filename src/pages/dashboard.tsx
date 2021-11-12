@@ -111,7 +111,6 @@ const Dashboard: NextPage = () => {
         ;(async _ => {
             // initial fetch to populate
             if (user) {
-                console.log(user)
                 const initialData = await getAllProjectsWithTables(user)
                 // console.dir(initialData)
                 data.init(initialData)

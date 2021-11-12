@@ -146,6 +146,7 @@ const Header = () => {
                             </Typography>
                         </Link>
                     </Box>
+                    { user && <span>{user.name}</span> }
                     <LoginButton openLoginFormModalFn={toggleLoginModal} />
                 </Toolbar>
             </AppBar>

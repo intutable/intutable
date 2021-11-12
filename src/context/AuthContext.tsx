@@ -41,15 +41,16 @@ export const AuthProvider: React.FC = props => {
     }, [])
 
     const login = async (username, password) : Promise<User> => {
-        console.log("login: " + username)
-        setUser({ name : username })
-        return { name : username }
+        if (username.includes("@")){
+            setUser({ name : username })
+            return { name : username }
+        } else
+            return Promise.reject("Ungültige E-Mailadresse")
     }
 
     const logout = async () => {
-        console.log("logout")
         setUser(null)
-        router.push("/login")
+        router.push("/")
     }
 
     return (
