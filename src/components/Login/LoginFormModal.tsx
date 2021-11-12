@@ -31,7 +31,7 @@ const inputFieldStyle: SxProps<Theme> = {
 }
 
 const validateUsername = (username: string): boolean => username.length > 6
-const validatePassword = (password: string): boolean => password.length > 4
+const validatePassword = (password: string): boolean => password.length > 0
 const validateFormData = (username: string, password: string): boolean =>
     validateUsername(username) && validatePassword(password)
 
