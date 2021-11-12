@@ -13,9 +13,10 @@ export const getProjects = async (user: User): Promise<Array<string>> => {
         getCoreUrl() + "/request/project-management/getProjects",
         {
             method: "POST",
+            credentials: "include",
             headers: {
                 Accept: "application/json",
-                "Content-Type": "application/json",
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({ user: user.name }),
         })
@@ -27,6 +28,7 @@ export const getTablesOfProject = async (user: User, project: string): Promise<A
         getCoreUrl() + "/request/project-management/getProjectTables",
         {
             method: "POST",
+            credentials: "include",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
@@ -45,14 +47,16 @@ export type TableData = {
 export const getDataOfTable = async (table: string): Promise<TableData> => {
     // TODO: implement
     const rowsData = await fetch(
-        getCoreUrl() + "/request/database/select", {
-        method: "POST",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ table: "members" }),
-    })
+        getCoreUrl() + "/request/database/select",
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ table: "members" }),
+        })
         .then(res => res.json())
         .then(rows => rows.map(({ _id, ...values }) => ({ id: _id, ...values })))
 

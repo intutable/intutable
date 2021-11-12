@@ -8,7 +8,7 @@ import { addMiddleware } from "@intutable/http"
 import { getFrontendUrl } from "../runtimeconfig"
 
 const PLUGIN_PATHS =
-    ["database","http", "project-management"].map(
+    ["database","http", "user-authentication", "project-management"].map(
         (plugin) => path.join(process.cwd(), "node_modules/@intutable", plugin))
 
 
@@ -23,7 +23,9 @@ async function main(){
     const core : Core = await Core.create(PLUGIN_PATHS, events)
         .catch(e => crash<Core>(e))
     await core.events.request(
-        addMiddleware( cors( { origin : getFrontendUrl() }))
+        addMiddleware(cors({
+            origin : getFrontendUrl(),
+            credentials: true }))
     ).catch(crash)
 }
 

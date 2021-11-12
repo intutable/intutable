@@ -2,6 +2,9 @@ import React, { useContext, useEffect, useState } from "react"
 import Cookie from "js-cookie"
 import { useRouter } from "next/router"
 
+import { coreLogin, coreLogout } from "@utils/coreinterface"
+
+
 export type User = {
     name: string
 }
@@ -41,15 +44,20 @@ export const AuthProvider: React.FC = props => {
     }, [])
 
     const login = async (username, password) : Promise<User> => {
-        if (username.includes("@")){
-            setUser({ name : username })
-            return { name : username }
-        } else
-            return Promise.reject("Ungültige E-Mailadresse")
+        return coreLogin(username, password)
+            .then(username => {
+                console.log("Login successful. username=" + username)
+                setUser({ name : username })
+            }).catch(e => {
+                console.log(e)
+                return Promise.reject(e)
+            })
     }
 
     const logout = async () => {
-        setUser(null)
+        return coreLogout()
+            .then(() => setUser(null))
+            .catch(e => console.log("logout failed: " + e))
         router.push("/")
     }
 
