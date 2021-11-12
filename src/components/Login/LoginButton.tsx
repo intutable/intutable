@@ -2,7 +2,7 @@ import React from "react"
 import LoginIcon from "@mui/icons-material/Login"
 import { IconButton, useTheme } from "@mui/material"
 import UserAvatarButton from "./UserAvatarButton"
-import { useAuth } from "../../utils/useAuth"
+import { useAuth } from "@context/AuthContext"
 
 type LoginButtonProps = {
     openLoginFormModalFn: () => void

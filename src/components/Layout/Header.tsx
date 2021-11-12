@@ -26,7 +26,7 @@ import HomeIcon from "@mui/icons-material/Home"
 import LoginButton from "../Login/LoginButton"
 import LoginFormModal from "../Login/LoginFormModal"
 import Link from "../Link/Link"
-import { useAuth } from "../../utils/useAuth"
+import { useAuth } from "@context/AuthContext"
 
 const drawerWidth: number = 240
 

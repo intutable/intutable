@@ -5,7 +5,7 @@ import { Box, ToggleButtonGroup, ToggleButton, useTheme, CircularProgress } from
 import Title from "../components/Head/Title"
 import { Data, useProject } from "../utils/useProject"
 import { getAllProjectsWithTables } from "../utils/getData"
-import { useAuth } from "../utils/useAuth"
+import { useAuth } from "@context/AuthContext"
 import DataGrid from "react-data-grid"
 import { useSnackbar } from "notistack"
 
@@ -69,8 +69,9 @@ const Dashboard: NextPage = () => {
     const { enqueueSnackbar } = useSnackbar()
     const [loading, setLoading] = useState(false)
     const data = useProject(testData)
-    const { user } = useAuth({ name: "nick@baz.org" })
+    const { user } = useAuth()
 
+    
     // #################### Handlers ####################
     const handleProjectChange = (newProject: string | null) => {
         if (newProject) data.changeProject(newProject)
@@ -109,9 +110,12 @@ const Dashboard: NextPage = () => {
     useEffect(() => {
         ;(async _ => {
             // initial fetch to populate
-            const initialData = await getAllProjectsWithTables(user)
-            // console.dir(initialData)
-            data.init(initialData)
+            if (user) {
+                console.log(user)
+                const initialData = await getAllProjectsWithTables(user)
+                // console.dir(initialData)
+                data.init(initialData)
+            }
         })()
     }, [user])
 

@@ -13,7 +13,7 @@ import {
 import type { TransitionProps } from "@mui/material/transitions"
 import { SxProps, Theme } from "@mui/system"
 
-import { useAuth } from "@utils/useAuth"
+import { useAuth } from "@context/AuthContext"
 
 
 const Transition = React.forwardRef(function Transition(
@@ -55,6 +55,9 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     })
 
     const { login } = useAuth()
+    const tryLogin = async () => {
+        login(formData.username, formData.password)
+    }
 
     const handleUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value
@@ -104,7 +107,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
                     Abbrechen
                 </Button>
                 <Button variant="contained" disabled={!formValid}
-                        color="success" onClick={login}>
+                        color="success" onClick={tryLogin}>
                     Login
                 </Button>
             </DialogActions>

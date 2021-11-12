@@ -1,5 +1,5 @@
 import { Column, Row } from "react-data-grid"
-import type { User } from "./useAuth"
+import type { User } from "@context/AuthContext"
 import { Data } from "./useProject"
 import { getCoreUrl } from "@app/backend/runtimeconfig"
 

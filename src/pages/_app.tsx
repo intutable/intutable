@@ -5,7 +5,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles"
 import { CssBaseline } from "@mui/material"
 import Layout from "@components/Layout/Layout"
 import { SnackbarProvider } from "notistack"
-import { AuthProvider } from "../context/AuthContext"
+import { AuthProvider } from "@context/AuthContext"
 
 const MyApp = (props: AppProps) => {
     const { Component, pageProps } = props

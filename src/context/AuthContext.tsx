@@ -9,7 +9,7 @@ export type User = {
 export type AuthContextProps = {
     user: User | null
     loading: boolean
-    login?: () => void
+    login?: (username, password: string) => Promise<User>
     logout?: () => void
 }
 
@@ -40,16 +40,14 @@ export const AuthProvider: React.FC = props => {
         })()
     }, [])
 
-    const login = async () => {
-        // TODO: implement login
-        const RENAME_THIS_TOKEN = null
-        if (RENAME_THIS_TOKEN) {
-            const user = null
-            if (user) setUser(user)
-        }
+    const login = async (username, password) : Promise<User> => {
+        console.log("login: " + username)
+        setUser({ name : username })
+        return { name : username }
     }
+
     const logout = async () => {
-        // TODO: implement logout
+        console.log("logout")
         setUser(null)
         router.push("/login")
     }
