@@ -1,6 +1,5 @@
 import { Column, Row } from "react-data-grid"
 import type { User } from "./useAuth"
-import { Data } from "./useProject"
 
 /**
  * Fetches a List of Projects and its Tables
@@ -35,12 +34,12 @@ export const getTablesOfProject = async (user: User, project: string): Promise<A
 }
 
 export type TableData = {
-    tableName: string,
-    cols: Array<Column<string, unknown>>,
+    tableName: string
+    cols: Array<Column<string, unknown>>
     rows: Array<Record<string, unknown>>
 }
 export const getDataOfTable = async (table: string): Promise<TableData> => {
-    // TODO: implement
+    if (table === "test") return Promise.reject() // TODO: implement
     const rowsData = await fetch("http://localhost:8080/request/database/select", {
         method: "POST",
         headers: {
@@ -67,7 +66,7 @@ export const getDataOfTable = async (table: string): Promise<TableData> => {
                 name: "Nachname",
                 editable: true,
             },
-            { key: "description", name: "Description"},
+            { key: "description", name: "Description" },
             {
                 key: "title",
                 name: "Titel",
@@ -80,21 +79,8 @@ export const getDataOfTable = async (table: string): Promise<TableData> => {
                 editable: true,
             },
         ],
-        rows: rowsData
+        rows: rowsData,
     }
-    
+
     return Promise.resolve(returnObject)
-}
-
-type ArrayElement<ArrayType extends readonly unknown[]> =
-    ArrayType extends readonly (infer ElementType)[] ? ElementType : never
-export const getAllProjectsWithTables = async (user: User): Promise<Data> => {
-    const projects = await getProjects(user)
-
-    const returnObject = projects.map(async proj => {
-        const tables = await getTablesOfProject(user, proj)
-        return { project: proj, tables: tables } as ArrayElement<Data>
-    })
-
-    return Promise.all(returnObject)
 }
