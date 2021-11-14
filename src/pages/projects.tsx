@@ -1,13 +1,56 @@
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import Title from "../components/Head/Title"
-import { CircularProgress, Grid, Card, CardContent, Typography } from "@mui/material"
-import React from "react"
+import {
+    CircularProgress,
+    Grid,
+    Card,
+    CardContent,
+    Typography,
+    Menu,
+    MenuItem,
+    Box,
+    Divider,
+} from "@mui/material"
+import React, { useState } from "react"
 import { useRouter } from "next/dist/client/router"
 import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "../utils/validateName"
 import { useSnackbar } from "notistack"
 import { getProjects } from "../utils/getData"
+
+type ProjectContextMenuProps = {
+    anchorEL: Element
+    open: boolean
+    onClose: () => void
+    children: Array<React.ReactNode> | React.ReactNode // overwrite implicit `children`
+}
+const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
+    const theme = useTheme()
+
+    return (
+        <Menu
+            elevation={0}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            // transformOrigin={{ vertical: "top", horizontal: "right" }}
+            open={props.open}
+            anchorEl={props.anchorEL}
+            keepMounted={true}
+            onClose={props.onClose}
+            PaperProps={{
+                sx: {
+                    boxShadow: theme.shadows[1],
+                },
+            }}
+        >
+            {Array.isArray(props.children) ? (
+                props.children.map((item, i) => <MenuItem key={i}>{item}</MenuItem>)
+            ) : (
+                <MenuItem>{props.children}</MenuItem>
+            )}
+        </Menu>
+    )
+}
 
 type ProjectCardProps = {
     url?: string
@@ -17,23 +60,55 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const router = useRouter()
     const theme = useTheme()
 
+    const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
+
+    const handleOpenContextMenu = event => {
+        event.preventDefault()
+        setAnchorEL(event.currentTarget)
+    }
+    const handleCloseContextMenu = () => setAnchorEL(null)
+
+    const handleRenameProject = () => {
+        alert("Not implemented yet")
+        // TODO: implement
+    }
+    const handleDeleteProject = () => {
+        alert("Not implemented yet")
+        // TODO: implement
+    }
+
     return (
-        <Card
-            onClick={props.onClick || (_ => props.url && router.push("/project/" + props.url))}
-            sx={{
-                minWidth: 150,
-                minHeight: 150,
-                cursor: "pointer",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                "&:hover": {
-                    bgcolor: theme.palette.action.hover,
-                },
-            }}
-        >
-            <CardContent>{props.children}</CardContent>
-        </Card>
+        <>
+            <Card
+                onClick={props.onClick || (_ => props.url && router.push("/project/" + props.url))}
+                onContextMenu={props.url && handleOpenContextMenu}
+                sx={{
+                    minWidth: 150,
+                    minHeight: 150,
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    "&:hover": {
+                        bgcolor: theme.palette.action.hover,
+                    },
+                }}
+            >
+                <CardContent>{props.children}</CardContent>
+            </Card>
+            {props.url && (
+                <ProjectContextMenu
+                    anchorEL={anchorEL}
+                    open={anchorEL != null}
+                    onClose={handleCloseContextMenu}
+                >
+                    <Box onClick={handleRenameProject}>Rename</Box>
+                    <Box onClick={handleDeleteProject} sx={{ color: theme.palette.warning.main }}>
+                        Delete
+                    </Box>
+                </ProjectContextMenu>
+            )}
+        </>
     )
 }
 
