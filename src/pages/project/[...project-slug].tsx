@@ -46,6 +46,15 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
         enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, { variant: "success" })
     }
 
+    const handleRenameTable = () => {
+        alert("Not implemented yet")
+        // TODO: implement
+    }
+    const handleDeleteTable = () => {
+        alert("Not implemented yet")
+        // TODO: implement
+    }
+
     useEffect(() => {
         ;(async _ => {
             try {
@@ -74,6 +83,12 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
                 data={_tables}
                 onChangeHandler={handleTableChange}
                 onAddHandler={handleAddTable}
+                contextMenuItems={[
+                    <Box onClick={handleRenameTable}>Rename</Box>,
+                    <Box onClick={handleDeleteTable} sx={{ color: theme.palette.warning.main }}>
+                        Delete
+                    </Box>,
+                ]}
             />
             {loading ? (
                 <CircularProgress />
