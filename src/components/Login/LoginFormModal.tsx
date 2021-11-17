@@ -83,10 +83,12 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
         setFormValid(validateFormData(formData.username, formData.password))
     }
 
+    const ENTER_KEY = 13
     return (
         <Dialog
             open={props.open}
             onClose={props.onClose}
+            onKeyDown={(e) => (e.keyCode === ENTER_KEY) ? tryLogin() : null }
             TransitionComponent={Transition}
             keepMounted
             aria-describedby="login-dialog"
