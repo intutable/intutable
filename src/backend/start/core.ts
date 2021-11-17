@@ -22,11 +22,6 @@ async function main(){
     const events : EventSystem = new EventSystem(true) // debug mode
     const core : Core = await Core.create(PLUGIN_PATHS, events)
         .catch(e => crash<Core>(e))
-    await core.events.request(
-        addMiddleware(cors({
-            origin : getFrontendUrl(),
-            credentials: true }))
-    ).catch(crash)
 }
 
 // The type system apparently knows that process.exit has bottom type!
