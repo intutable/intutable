@@ -20,7 +20,7 @@ import type { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar"
 import { styled, CSSObject, Theme } from "@mui/material/styles"
 import MenuIcon from "@mui/icons-material/Menu"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import StorageIcon from "@mui/icons-material/Storage"
+import WorkspacesIcon from "@mui/icons-material/Workspaces"
 import SettingsIcon from "@mui/icons-material/Settings"
 import HomeIcon from "@mui/icons-material/Home"
 import LoginButton from "../Login/LoginButton"
@@ -169,23 +169,19 @@ const Header = () => {
                         <ChevronLeftIcon />
                     </IconButton>
                 </Toolbar>
-                <DrawerListItem text="Startseite" href="/" icon={<HomeIcon />} />
+                <DrawerListItem text="Startseite" href="/"
+                                icon={<HomeIcon />} />
                 <Divider />
-                <DrawerListItem text="Dashboard" href="/dashboard" icon={<StorageIcon />} />
-                {user && (
-                    <>
-                        <Divider />
-                        <DrawerListItem
-                            text="Einstellungen"
-                            href="/settings"
-                            icon={<SettingsIcon />}
-                        />
-                    </>
-                )}
+                <DrawerListItem text="Projekte" href="/projects"
+                                icon={<WorkspacesIcon />} />
+                <Divider />
+                <DrawerListItem text="Einstellungen" href="/settings"
+                                icon={<SettingsIcon />} />
             </Drawer>
 
             {/* Login Modal */}
-            <LoginFormModal open={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
+            <LoginFormModal open = {loginModalOpen}
+                            onClose = {() => setLoginModalOpen(false)} />
         </>
     )
 }
