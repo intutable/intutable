@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react"
 import Cookie from "js-cookie"
 import { useRouter } from "next/router"
 
-import { coreLogin, coreLogout } from "@utils/coreinterface"
+import { coreLogin, coreLogout } from "@utils/coreinterface/login"
 
 
 export type User = {
@@ -45,7 +45,7 @@ export const AuthProvider: React.FC = props => {
 
     const login = async (username, password) : Promise<User> => {
         return coreLogin(username, password)
-            .then(username => {
+            .then(() => {
                 console.log("Login successful. username=" + username)
                 setUser({ name : username })
             }).catch(e => {
@@ -57,8 +57,8 @@ export const AuthProvider: React.FC = props => {
     const logout = async () => {
         return coreLogout()
             .then(() => setUser(null))
+            .then(() => router.push("/"))
             .catch(e => console.log("logout failed: " + e))
-        router.push("/")
     }
 
     return (
