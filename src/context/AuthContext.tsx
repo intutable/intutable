@@ -1,8 +1,12 @@
 import React, { useContext, useEffect, useState } from "react"
-import Cookie from "js-cookie"
+import Cookies from "js-cookie"
 import { useRouter } from "next/router"
 
-import { coreLogin, coreLogout } from "@utils/coreinterface/login"
+import { coreLogin,
+         coreLogout,
+         isAuthenticated
+} from "@utils/coreinterface/login"
+
 
 export type User = {
     name: string
@@ -15,15 +19,21 @@ export type AuthContextProps = {
     logout?: () => void
 }
 
+
 const initialState: AuthContextProps = {
     user: null,
     loading: true,
 }
 
 const AuthContext = React.createContext<AuthContextProps>(initialState)
+
 export const useAuth = () => React.useContext(AuthContext)
+
 export const AuthProvider: React.FC = props => {
+    const USER_COOKIE_KEY = "dekanat.mathinf.user"
+    
     const router = useRouter()
+
     const [loading, setLoading] = useState<
         Pick<AuthContextProps, "loading">["loading"]
     >(initialState.loading)
@@ -32,23 +42,27 @@ export const AuthProvider: React.FC = props => {
     )
 
     useEffect(() => {
-        // checks if a user is already logged in
+        // check if a user is already logged in
         ;(async _ => {
-            // TODO: implement this
-            const RENAME_THIS_TOKEN = Cookie.get("")
-            if (RENAME_THIS_TOKEN) {
-                const user = null
-                if (user) setUser(user)
-            }
+            // TODO: don't store username in plaintext as cookie
+            const currentUser = Cookies.get(USER_COOKIE_KEY)
+            if (currentUser && await isAuthenticated())
+                setUser({ name: currentUser })
+            else
+                logout()
             setLoading(false)
         })()
-    }, [])
+    }, [])        
+
+    const isLoggedIn = async () => {
+        return !!user
+    }
 
     const login = async (username, password): Promise<User> => {
         return coreLogin(username, password)
             .then(() => {
-                console.log("Login successful. username=" + username)
                 setUser({ name: username })
+                Cookies.set(USER_COOKIE_KEY, username, { sameSite: "Strict" })
             })
             .catch(e => {
                 console.log(e)
@@ -58,8 +72,11 @@ export const AuthProvider: React.FC = props => {
 
     const logout = async () => {
         return coreLogout()
-            .then(() => setUser(null))
-            .then(() => router.push("/"))
+            .then(() => {
+                setUser(null)
+                Cookies.remove(USER_COOKIE_KEY)
+                router.push("/login")
+            })
             .catch(e => console.log("logout failed: " + e))
     }
 
@@ -70,6 +87,7 @@ export const AuthProvider: React.FC = props => {
                 loading,
                 login,
                 logout,
+                isLoggedIn
             }}
         >
             {props.children}

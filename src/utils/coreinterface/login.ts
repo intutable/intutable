@@ -1,6 +1,7 @@
 import { getCoreUrl } from "@app/backend/runtimeconfig"
+import { coreRequest } from "./json"
 
-export const AUTH_COOKIE_KEY = "connect.sid"
+export { AUTH_COOKIE_KEY } from "./constants"
 
 /**
  * Log in to core via a HTTP form request.
@@ -15,7 +16,12 @@ export async function coreLogin(username, password: string): Promise<void> {
         },
         credentials: "include",
         body: `username=${username}&password=${password}`,
-    }).then(loginSucceeded)
+    }).catch(e => {
+        console.log(e)
+        return Promise.reject("Interner Fehler. Kontaktieren Sie bitte den" +
+            " Support.")
+    })
+        .then(loginSucceeded)
 }
 
 /**
@@ -33,6 +39,20 @@ export async function coreLogout(): Promise<void> {
             : Promise.resolve()
     )
 }
+
+/**
+ * Check if logged into core by using the session cookie.
+ */
+export async function isAuthenticated(authCookie?: string): Promise<bool> {
+    // we could have called any channel or method
+    return coreRequest("user-authentication", "hashPassword",
+                       { password: "12345678" }, authCookie)
+        .then(() => Promise.resolve(true))
+        .catch(err => [301, 302].includes(err.status)
+            ? Promise.resolve(false)
+            : Promise.reject(err))
+}
+
 
 // TEMP
 // plugin currently uses static redirects so this is how we have to deal with
