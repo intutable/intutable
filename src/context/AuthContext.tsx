@@ -4,7 +4,6 @@ import { useRouter } from "next/router"
 
 import { coreLogin, coreLogout } from "@utils/coreinterface/login"
 
-
 export type User = {
     name: string
 }
@@ -25,10 +24,12 @@ const AuthContext = React.createContext<AuthContextProps>(initialState)
 export const useAuth = () => React.useContext(AuthContext)
 export const AuthProvider: React.FC = props => {
     const router = useRouter()
-    const [loading, setLoading] = useState<Pick<AuthContextProps, "loading">["loading"]>(
-        initialState.loading
+    const [loading, setLoading] = useState<
+        Pick<AuthContextProps, "loading">["loading"]
+    >(initialState.loading)
+    const [user, setUser] = useState<Pick<AuthContextProps, "user">["user"]>(
+        initialState.user
     )
-    const [user, setUser] = useState<Pick<AuthContextProps, "user">["user"]>(initialState.user)
 
     useEffect(() => {
         // checks if a user is already logged in
@@ -43,12 +44,13 @@ export const AuthProvider: React.FC = props => {
         })()
     }, [])
 
-    const login = async (username, password) : Promise<User> => {
+    const login = async (username, password): Promise<User> => {
         return coreLogin(username, password)
             .then(() => {
                 console.log("Login successful. username=" + username)
-                setUser({ name : username })
-            }).catch(e => {
+                setUser({ name: username })
+            })
+            .catch(e => {
                 console.log(e)
                 return Promise.reject(e)
             })

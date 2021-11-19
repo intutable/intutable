@@ -9,19 +9,29 @@ import { coreRequest } from "@utils/coreinterface"
  * // TODO: implement w/ user auth
  * @param args placeholder for params implemented in future
  */
-export const getProjects =
-    async (user: User, authCookie?: string): Promise<Array<string>> => {
-        return coreRequest("project-management", "getProjects",
-                           { user: user.name }, authCookie)
+export const getProjects = async (
+    user: User,
+    authCookie?: string
+): Promise<Array<string>> => {
+    return coreRequest(
+        "project-management",
+        "getProjects",
+        { user: user.name },
+        authCookie
+    )
 }
 
-export const getTablesOfProject =
-    async (user: User, project: string,
-           authCookie?: string): Promise<Array<string>> => {
-        return coreRequest("project-management", "getProjectTables",
-                           { user:        user.name,
-                             projectName: project },
-                           authCookie)
+export const getTablesOfProject = async (
+    user: User,
+    project: string,
+    authCookie?: string
+): Promise<Array<string>> => {
+    return coreRequest(
+        "project-management",
+        "getProjectTables",
+        { user: user.name, projectName: project },
+        authCookie
+    )
 }
 
 export type TableData = {
@@ -30,13 +40,16 @@ export type TableData = {
     rows: Array<Record<string, unknown>>
 }
 
-export const getDataOfTable =
-    async (table: string, authCookie?: string): Promise<TableData> => {
-    const rowsData = await coreRequest("database", "select",
-                                       { table: "members" },
-                                       authCookie)
-        .then(rows => rows.map(({ _id, ...values }) =>
-            ({ id: _id, ...values })))
+export const getDataOfTable = async (
+    table: string,
+    authCookie?: string
+): Promise<TableData> => {
+    const rowsData = await coreRequest(
+        "database",
+        "select",
+        { table: "members" },
+        authCookie
+    ).then(rows => rows.map(({ _id, ...values }) => ({ id: _id, ...values })))
 
     const returnObject: TableData = {
         tableName: "Personen",
