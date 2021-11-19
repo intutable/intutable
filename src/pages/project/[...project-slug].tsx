@@ -7,6 +7,7 @@ import DataGrid from "react-data-grid"
 import { getDataOfTable, getTablesOfProject, TableData } from "../../utils/getData"
 import { useSnackbar } from "notistack"
 import { isValidName, prepareName } from "../../utils/validateName"
+import { AUTH_COOKIE_KEY } from "@utils/coreinterface"
 
 type ProjectSlugPageProps = {
     project: string
@@ -90,18 +91,21 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
 }
 
 export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> = async context => {
-    const { params } = context
+    const { params, req } = context
+    const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
     const user = { name: "nick@baz.org" } // TODO: get user
 
-    const serverRequet = await getTablesOfProject(user, params["project-slug"][0])
+    const serverRequest = await getTablesOfProject(user,
+                                                   params["project-slug"][0],
+                                                   authCookie)
 
     const data: ProjectSlugPageProps = {
         project: params["project-slug"][0],
-        tables: serverRequet,
+        tables: serverRequest,
     }
 
-    const error = serverRequet == null
+    const error = serverRequest == null
     if (error) return { notFound: true }
 
     return {

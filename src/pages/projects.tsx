@@ -7,7 +7,9 @@ import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "../utils/validateName"
 import { useSnackbar } from "notistack"
-import { getProjects } from "../utils/getData"
+
+import { getProjects } from "@utils/getData"
+import { AUTH_COOKIE_KEY } from "@utils/coreinterface"
 
 type ProjectCardProps = {
     url?: string
@@ -86,11 +88,12 @@ const ProjectsPage: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
 }
 
 export const getServerSideProps: GetServerSideProps<ProjectsPageProps> = async context => {
-    const { params } = context
+    const { params, req } = context
+    const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
     const user = { name: "nick@baz.org" } // TODO: get user
 
-    const serverRequest = await getProjects(user)
+    const serverRequest = await getProjects(user, authCookie)
 
     const data: ProjectsPageProps = {
         projects: serverRequest,
