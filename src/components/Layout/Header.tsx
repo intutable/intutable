@@ -23,8 +23,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import WorkspacesIcon from "@mui/icons-material/Workspaces"
 import SettingsIcon from "@mui/icons-material/Settings"
 import HomeIcon from "@mui/icons-material/Home"
-import LoginButton from "../Login/LoginButton"
-import LoginFormModal from "../Login/LoginFormModal"
+import LogoutButton from "../Login/LogoutButton"
 import Link from "../Link/Link"
 import { useAuth } from "@context/AuthContext"
 
@@ -89,10 +88,8 @@ const Header = () => {
 
     const theme = useTheme()
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
-    const [loginModalOpen, setLoginModalOpen] = useState<boolean>(false)
 
     const toggleDrawer = () => setDrawerOpen(prev => !prev)
-    const toggleLoginModal = () => setLoginModalOpen(prev => !prev)
 
     return (
         <>
@@ -146,8 +143,10 @@ const Header = () => {
                             </Typography>
                         </Link>
                     </Box>
-                    { user && <span>{user.name}</span> }
-                    <LoginButton openLoginFormModalFn={toggleLoginModal} />
+                    { user && <>
+                        <span>{user.name}</span>
+                        <LogoutButton />
+                    </> }
                 </Toolbar>
             </AppBar>
 
@@ -178,10 +177,6 @@ const Header = () => {
                 <DrawerListItem text="Einstellungen" href="/settings"
                                 icon={<SettingsIcon />} />
             </Drawer>
-
-            {/* Login Modal */}
-            <LoginFormModal open = {loginModalOpen}
-                            onClose = {() => setLoginModalOpen(false)} />
         </>
     )
 }

@@ -1,7 +1,6 @@
 import type { NextPage } from "next"
 
 import Title from "@components/Head/Title"
-import Link from "@components/Link/Link"
 
 
 const Home: NextPage = () => {
@@ -11,3 +10,4 @@ const Home: NextPage = () => {
 }
 
 export default Home
+ 

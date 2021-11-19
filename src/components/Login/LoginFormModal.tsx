@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { useRouter } from "next/router"
 import {
     useTheme,
     Box,
@@ -28,17 +29,30 @@ const Transition = React.forwardRef(function Transition(
 
 const inputFieldStyle: SxProps<Theme> = {
     display: "block",
+    width: "100%",
     my: 2,
 }
 
-const errorMessageStyle: SxProps<Theme> = {
+const errorBoxStyle: SxProps<Theme> = {
     display: "block",
+    minHeight: "4em",
+    position: "relative"
+}
+const errorMessageStyle: SxProps<Theme> = {
     textAlign: "center",
-    color: "#aa8833",
-    paddingBottom: "8px"
+    fontSize: "0.9em",
+    color: "#000022",
+    backgroundColor: "#ffdddd",
+    border: "1px solid red",
+    padding: "0.3em",
+    position: "absolute",
+    height: "100%",
+    width: "100%"
 }
 
-
+const buttonStyle: SxProps<Theme> = {
+    width:"100%"
+}
 
 const validateUsername = (username: string): boolean => username.length > 6
 const validatePassword = (password: string): boolean => password.length > 0
@@ -51,8 +65,7 @@ type FormData = {
 }
 
 type LoginFormModalProps = {
-    open: boolean
-    onClose: () => void
+    successRedirect: string
 }
 
 const LoginFormModal: React.FC<LoginFormModalProps> = props => {
@@ -64,11 +77,12 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
         password: ""
     })
     const [attemptError, setAttemptError] = useState<string>("")
+    const router = useRouter()
 
     const { login } = useAuth()
     const tryLogin = async () => {
         login(formData.username, formData.password)
-            .then(props.onClose)
+            .then(() => router.push(props.successRedirect || "/"))
             .catch(e => setAttemptError(e))
     }
 
@@ -86,17 +100,28 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     const ENTER_KEY = 13
     return (
         <Dialog
-            open={props.open}
-            onClose={props.onClose}
+            open={true}
             onKeyDown={(e) => (e.keyCode === ENTER_KEY) ? tryLogin() : null }
             TransitionComponent={Transition}
             keepMounted
             aria-describedby="login-dialog"
+            fullWidth={true}
+            maxWidth="xs"
         >
             <DialogTitle sx={{ textTransform: "uppercase" }}>Login</DialogTitle>
 
+
             <DialogContent>
+                <Box sx={errorBoxStyle}>
+                    <DialogContentText sx={{
+                        ...errorMessageStyle,
+                        ...(attemptError === "" && { visibility: "hidden" })
+                    }}>
+                        {attemptError}
+                    </DialogContentText>
+                </Box>
                 <TextField
+                    autoFocus
                     value={formData.username}
                     onChange={handleUsername}
                     label="E-Mail"
@@ -104,6 +129,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
                     type="email"
                     required
                     sx={inputFieldStyle}
+                    fullWidth={true}
                 />
                 <TextField
                     value={formData.password}
@@ -113,21 +139,19 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
                     type="password"
                     required
                     sx={inputFieldStyle}
+                    fullWidth={true}
                 />
             </DialogContent>
 
-            <DialogContentText sx={errorMessageStyle}>
-                {attemptError}
-            </DialogContentText>
-
-            <DialogActions>
-                <Button variant="contained" color="error"
-                        onClick={props.onClose}>
-                    Abbrechen
-                </Button>
+            <DialogActions sx={{ flexWrap: "wrap" }}>
                 <Button variant="contained" disabled={!formValid}
-                        color="success" onClick={tryLogin}>
+                        color="success" onClick={tryLogin}
+                        sx={buttonStyle}>
                     Login
+                </Button>
+                <Button variant="text" color="secondary"
+                        sx={{ ...buttonStyle, fontSize: "0.8em" }}>
+                    Passwort vergessen?
                 </Button>
             </DialogActions>
         </Dialog>
