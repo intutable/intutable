@@ -1,42 +1,27 @@
 import { Column, Row } from "react-data-grid"
+
 import type { User } from "@context/AuthContext"
-import { Data } from "./useProject"
 import { getCoreUrl } from "@app/backend/runtimeconfig"
+import { coreRequest } from "@utils/coreinterface"
 
 /**
  * Fetches a List of Projects and its Tables
  * // TODO: implement w/ user auth
  * @param args placeholder for params implemented in future
  */
-export const getProjects = async (user: User): Promise<Array<string>> => {
-    const projects = await fetch(
-        getCoreUrl() + "/request/project-management/getProjects",
-        {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ user: user.name }),
-        })
-    return await projects.json()
+export const getProjects =
+    async (user: User, authCookie?: string): Promise<Array<string>> => {
+        return coreRequest("project-management", "getProjects",
+                           { user: user.name }, authCookie)
 }
 
-export const getTablesOfProject = async (user: User, project: string): Promise<Array<string>> => {
-    const projects = await fetch(
-        getCoreUrl() + "/request/project-management/getProjectTables",
-        {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ user: user.name, projectName: project }),
-        }
-    )
-    return await projects.json()
+export const getTablesOfProject =
+    async (user: User, project: string,
+           authCookie?: string): Promise<Array<string>> => {
+        return coreRequest("project-management", "getProjectTables",
+                           { user:        user.name,
+                             projectName: project },
+                           authCookie)
 }
 
 export type TableData = {
@@ -44,19 +29,12 @@ export type TableData = {
     cols: Array<Column<string, unknown>>
     rows: Array<Record<string, unknown>>
 }
-export const getDataOfTable = async (table: string): Promise<TableData> => {
-    const rowsData = await fetch(
-        getCoreUrl() + "/request/database/select",
-        {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ table: "members" }),
-        })
-        .then(res => res.json())
+
+export const getDataOfTable =
+    async (table: string, authCookie?: string): Promise<TableData> => {
+    const rowsData = await coreRequest("database", "select",
+                                       { table: "members" },
+                                       authCookie)
         .then(rows => rows.map(({ _id, ...values }) =>
             ({ id: _id, ...values })))
 

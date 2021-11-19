@@ -1,47 +1,71 @@
 import { getCoreUrl } from "@app/backend/runtimeconfig"
+import { AUTH_COOKIE_KEY } from "./login"
 
-/**
- * Log in to core via a HTTP form request.
- * @return {Promise<string>} the username given, if the login was successful.
- * Rejects with a string error message otherwise.
- */
-export async function coreLogin(username, password: string) : Promise<string> {
-    return fetch(getCoreUrl() + "/login", {
-        method: "post",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded" },
-        credentials: "include",
-        body: `username=${username}&password=${password}`
-    })
-        .then(loginSucceeded)
-        .then(() => username)
-}
 
-/**
- * Log out of core via HTTP request.
- * @return {Promise<void>} Empty resolve. Rejects with the response's status
- * code if it isn't a success-y status.
- */
-export async function coreLogout() {
-    return fetch(getCoreUrl() + "/logout", {
-        method: "post",
-        credentials: "include" })
-        .then((res) => (! [200, 302, 303].includes(res.status))
-            ? Promise.reject(res.status)
-            : Promise.resolve())
+export { AUTH_COOKIE_KEY } from "./login"
+
+
+export interface CoreCallError {
+    status:  number
+    message: string
 }
 
 
-// plugin currently uses static redirects so this is how we have to deal with
-// this.
-async function loginSucceeded(res : Response) {
-    if (res.status !== 200)
-        return Promise.reject("Netzwerkfehler, Status = "
-            + res.status.toString())
-    else
-        return res.text()
-            .then(contents => contents.includes("secret")
-                ? Promise.resolve()
-                : Promise.reject("Kombination von Nutzername und Passwort"
-                    + " nicht gefunden"))
+/**
+ * Make a request to Core and return the response parsed from JSON as an object.
+ */
+export async function coreRequest(channel, method: string,
+                                  body: object,
+                                  authCookie?: string) : Promise<object>{
+    return fetch(getCoreUrl() + "/request/" + channel + "/" + method,
+                 { method: "post",
+                   headers: {
+                       "Content-Type": "application/json",
+                       "Accept": "application/json",
+                       ...(!!authCookie && {
+                           "Cookie": AUTH_COOKIE_KEY + "=" + authCookie }) },
+                   credentials: "include",
+                   redirect: "manual",
+                   body: JSON.stringify(body) })
+        .then(passedLogin)
+        .then(wasSuccessful)
+        .then(res => res.json())
+}
+
+export async function coreNotification(channel, method: string,
+                                       body: object,
+                                       authCookie?: string) : Promise<void>{
+    return fetch(getCoreUrl() + "/notification/" + channel + "/" + method,
+                 { method: "post",
+                   headers: {
+                       "Content-Type": "application/json",
+                       "Accept": "application/json",
+                       ...(!!authCookie && {
+                           "Cookie": AUTH_COOKIE_KEY + "=" + authCookie }) },
+                   credentials: "include",
+                   redirect: "manual",
+                   body: JSON.stringify(body) })
+        .then(passedLogin)
+        .then(wasSuccessful)
+        .then(Promise.resolve())
+}
+
+
+// TEMP
+// Set of error checking functions that are intended to operate by
+// fall-through principle
+function passedLogin(res : Response) : Promise<Response> {
+    return ([301, 302].includes(res.status))
+        ? Promise.reject({
+            status: res.status,
+            message: "core call blocked by authentication middleware" })
+        : res 
+}
+
+async function wasSuccessful(res : Response) : Promse<Response> {
+    return (res.status === 200)
+        ? res
+        : Promise.reject({
+            status: res.status,
+            message: await res.text() })
 }
