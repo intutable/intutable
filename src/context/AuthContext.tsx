@@ -44,7 +44,6 @@ export const AuthProvider: React.FC = props => {
     useEffect(() => {
         // check if a user is already logged in
         ;(async _ => {
-            // TODO: don't store username in plaintext as cookie
             const currentUser = Cookies.get(USER_COOKIE_KEY)
             if (currentUser && await isAuthenticated())
                 setUser({ name: currentUser })
@@ -52,12 +51,14 @@ export const AuthProvider: React.FC = props => {
                 logout()
             setLoading(false)
         })()
-    }, [])        
+    }, [])
 
-    const isLoggedIn = async () => {
-        return !!user
-    }
-
+    /*
+       As of now, there are 3 stateful components to being logged in: The core
+       authentication (managed via a passport js cookie), the currentUser
+       cookie (front-end remembering who was logged in), and the `user` hook
+       (for keeping graphical elements up to date)
+     */
     const login = async (username, password): Promise<User> => {
         return coreLogin(username, password)
             .then(() => {
@@ -65,7 +66,6 @@ export const AuthProvider: React.FC = props => {
                 Cookies.set(USER_COOKIE_KEY, username, { sameSite: "Strict" })
             })
             .catch(e => {
-                console.log(e)
                 return Promise.reject(e)
             })
     }
@@ -86,8 +86,7 @@ export const AuthProvider: React.FC = props => {
                 user,
                 loading,
                 login,
-                logout,
-                isLoggedIn
+                logout
             }}
         >
             {props.children}

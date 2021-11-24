@@ -11,7 +11,7 @@ import {
 } from "../../utils/getData"
 import { useSnackbar } from "notistack"
 import { isValidName, prepareName } from "../../utils/validateName"
-import { AUTH_COOKIE_KEY } from "@utils/coreinterface"
+import { isAuthenticated, AUTH_COOKIE_KEY } from "@utils/coreinterface"
 
 type ProjectSlugPageProps = {
     project: string
@@ -111,22 +111,26 @@ export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
         const { params, req } = context
         const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
-        const user = { name: "nick@baz.org" } // TODO: get user
+        if(!(await isAuthenticated(authCookie).catch(e => false)))
+            return {
+                redirect: {
+                    permanent: false,
+                    destination: "/login"
+                }
+            }
 
+        const user = { name: "nick@baz.org" } // TODO: get user
         const serverRequest = await getTablesOfProject(
             user,
             params["project-slug"][0],
             authCookie
         )
-
         const data: ProjectSlugPageProps = {
             project: params["project-slug"][0],
             tables: serverRequest,
         }
-
         const error = serverRequest == null
         if (error) return { notFound: true }
-
         return {
             props: data,
         }
