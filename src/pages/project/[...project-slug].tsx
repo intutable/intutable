@@ -12,11 +12,15 @@ import {
 import { useSnackbar } from "notistack"
 import { isValidName, prepareName } from "../../utils/validateName"
 import { isAuthenticated, AUTH_COOKIE_KEY } from "@utils/coreinterface"
+import { User, USER_COOKIE_KEY } from "@context/AuthContext"
+
 
 type ProjectSlugPageProps = {
     project: string
     tables: Array<string>
 }
+
+
 const ProjectSlugPage: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = props => {
@@ -110,7 +114,6 @@ export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
     async context => {
         const { params, req } = context
         const authCookie = req.cookies[AUTH_COOKIE_KEY]
-
         if(!(await isAuthenticated(authCookie).catch(e => false)))
             return {
                 redirect: {
@@ -119,7 +122,7 @@ export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
                 }
             }
 
-        const user = { name: "nick@baz.org" } // TODO: get user
+        const user : User = { name: req.cookies[USER_COOKIE_KEY] }
         const serverRequest = await getTablesOfProject(
             user,
             params["project-slug"][0],

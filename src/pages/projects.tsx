@@ -15,7 +15,8 @@ import { isValidName, prepareName } from "../utils/validateName"
 import { useSnackbar } from "notistack"
 
 import { getProjects } from "@utils/getData"
-import { isAuthenticated, AUTH_COOKIE_KEY } from "@utils/coreinterface"
+import { AUTH_COOKIE_KEY, isAuthenticated } from "@utils/coreinterface"
+import { User, USER_COOKIE_KEY } from "@context/AuthContext"
 
 type ProjectCardProps = {
     url?: string
@@ -105,7 +106,6 @@ export const getServerSideProps: GetServerSideProps<ProjectsPageProps> =
     async context => {
         const { params, req } = context
         const authCookie = req.cookies[AUTH_COOKIE_KEY]
-
         if(!(await isAuthenticated(authCookie).catch(e => false)))
             return {
                 redirect: {
@@ -114,7 +114,7 @@ export const getServerSideProps: GetServerSideProps<ProjectsPageProps> =
                 }
             }
 
-        const user = { name: "nick@baz.org" } // TODO: get user
+        const user : User = { name: req.cookies[USER_COOKIE_KEY] }
         const serverRequest = await getProjects(user, authCookie)
         const data: ProjectsPageProps = {
             projects: serverRequest,

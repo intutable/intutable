@@ -8,6 +8,9 @@ import { coreLogin,
 } from "@utils/coreinterface/login"
 
 
+export const USER_COOKIE_KEY = "dekanat.mathinf.user"
+
+
 export type User = {
     name: string
 }
@@ -30,8 +33,6 @@ const AuthContext = React.createContext<AuthContextProps>(initialState)
 export const useAuth = () => React.useContext(AuthContext)
 
 export const AuthProvider: React.FC = props => {
-    const USER_COOKIE_KEY = "dekanat.mathinf.user"
-    
     const router = useRouter()
 
     const [loading, setLoading] = useState<
