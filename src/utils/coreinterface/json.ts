@@ -1,12 +1,10 @@
 import { getCoreUrl } from "@app/backend/runtimeconfig"
 import { AUTH_COOKIE_KEY } from "./constants"
 
-
 export interface CoreCallError {
     status: number
     message: string
 }
-
 
 /**
  * Make a request to Core and return the response parsed from JSON as an object.
@@ -63,7 +61,7 @@ export async function coreNotification(
 // Set of error checking functions that are intended to operate by
 // fall-through principle
 function passedLogin(res: Response): Promise<Response> {
-    return (res.type === "opaqueredirect" || [301, 302].includes(res.status))
+    return res.type === "opaqueredirect" || [301, 302].includes(res.status)
         ? Promise.reject({
               status: 302,
               message: "core call blocked by authentication middleware",

@@ -16,11 +16,13 @@ export async function coreLogin(username, password: string): Promise<void> {
         },
         credentials: "include",
         body: `username=${username}&password=${password}`,
-    }).catch(e => {
-        console.log(e)
-        return Promise.reject("Interner Fehler. Kontaktieren Sie bitte den" +
-            " Support.")
     })
+        .catch(e => {
+            console.log(e)
+            return Promise.reject(
+                "Interner Fehler. Kontaktieren Sie bitte den" + " Support."
+            )
+        })
         .then(loginSucceeded)
 }
 
@@ -45,14 +47,19 @@ export async function coreLogout(): Promise<void> {
  */
 export async function isAuthenticated(authCookie?: string): Promise<bool> {
     // we could have called any channel or method
-    return coreRequest("user-authentication", "hashPassword",
-                       { password: "12345678" }, authCookie)
+    return coreRequest(
+        "user-authentication",
+        "hashPassword",
+        { password: "12345678" },
+        authCookie
+    )
         .then(() => Promise.resolve(true))
-        .catch(err => [301, 302].includes(err.status)
-            ? Promise.resolve(false)
-            : Promise.reject(err))
+        .catch(err =>
+            [301, 302].includes(err.status)
+                ? Promise.resolve(false)
+                : Promise.reject(err)
+        )
 }
-
 
 // TEMP
 // plugin currently uses static redirects so this is how we have to deal with

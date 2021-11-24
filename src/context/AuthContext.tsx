@@ -2,14 +2,13 @@ import React, { useContext, useEffect, useState } from "react"
 import Cookies from "js-cookie"
 import { useRouter } from "next/router"
 
-import { coreLogin,
-         coreLogout,
-         isAuthenticated
+import {
+    coreLogin,
+    coreLogout,
+    isAuthenticated,
 } from "@utils/coreinterface/login"
 
-
 export const USER_COOKIE_KEY = "dekanat.mathinf.user"
-
 
 export type User = {
     name: string
@@ -21,7 +20,6 @@ export type AuthContextProps = {
     login?: (username, password: string) => Promise<User>
     logout?: () => void
 }
-
 
 const initialState: AuthContextProps = {
     user: null,
@@ -46,10 +44,9 @@ export const AuthProvider: React.FC = props => {
         // check if a user is already logged in
         ;(async _ => {
             const currentUser = Cookies.get(USER_COOKIE_KEY)
-            if (currentUser && await isAuthenticated())
+            if (currentUser && (await isAuthenticated()))
                 setUser({ name: currentUser })
-            else
-                logout()
+            else logout()
             setLoading(false)
         })()
     }, [])
@@ -88,7 +85,7 @@ export const AuthProvider: React.FC = props => {
                 user,
                 loading,
                 login,
-                logout
+                logout,
             }}
         >
             {props.children}
