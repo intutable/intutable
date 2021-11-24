@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import Title from "../../components/Head/Title"
-import { CircularProgress, Typography, useTheme, Box } from "@mui/material"
+import { Typography, useTheme, Box, Skeleton } from "@mui/material"
+import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
 import { Tablist, ADD_BUTTON_TOKEN } from "../../components/TabList/TabList"
 import DataGrid from "react-data-grid"
 import { getDataOfTable, getTablesOfProject, TableData } from "../../utils/getData"
 import { useSnackbar } from "notistack"
 import { isValidName, prepareName } from "../../utils/validateName"
+import Toolbar from "../../components/DataGrid/Toolbar/Toolbar"
+import * as TItem from "../../components/DataGrid/Toolbar/ToolbarItems"
 
 type ProjectSlugPageProps = {
     project: string
@@ -63,6 +66,15 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
         })()
     }, [currentTable])
 
+    const summaryRows = useMemo(() => {
+        if (!tableData) return []
+        const summaryRow = {
+            id: "total_0",
+            totalCount: tableData.rows.length,
+        }
+        return [summaryRow]
+    }, [tableData])
+
     return (
         <>
             <Title title={props.project} />
@@ -76,14 +88,32 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
                 onAddHandler={handleAddTable}
             />
             {loading ? (
-                <CircularProgress />
-            ) : tableData ? (
-                // TODO: seperate this into a new component which takes care of sending updates to the backend
-                <Box>
-                    <DataGrid rows={tableData.rows} columns={tableData.cols} />
-                </Box>
+                <LoadingSkeleton />
             ) : (
-                <>Could not load the Table!</>
+                <>
+                    <Toolbar>
+                        <TItem.AddCol addCol={() => {}} />
+                        <Toolbar.Item onClickHandler={() => {}}>Tool 1</Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>Tool 2</Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>Tool 3</Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>Tool 4</Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>Tool 5</Toolbar.Item>
+                        <TItem.FileDownload />
+                    </Toolbar>
+                    <Box>
+                        <DataGrid
+                            className={theme.themeMode === "light" ? "rdg-light" : "rdg-dark"}
+                            rows={tableData.rows}
+                            summaryRow={summaryRows}
+                            columns={tableData.cols}
+                        />
+                    </Box>
+                    <Toolbar>
+                        <TItem.Connection status={"connected"} />
+                        <Toolbar.Item onClickHandler={() => {}}>Tool 1</Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>Tool 2</Toolbar.Item>
+                    </Toolbar>
+                </>
             )}
         </>
     )
