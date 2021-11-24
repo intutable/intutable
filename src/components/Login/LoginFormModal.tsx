@@ -55,7 +55,7 @@ const buttonStyle: SxProps<Theme> = {
 }
 
 const validateUsername = (username: string): boolean => username.length > 6
-const validatePassword = (password: string): boolean => password.length > 0
+const validatePassword = (password: string): boolean => password.length > 2
 const validateFormData = (username: string, password: string): boolean =>
     validateUsername(username) && validatePassword(password)
 
@@ -89,12 +89,12 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     const handleUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value
         setFormData(prev => ({ username: value, password: prev.password }))
-        setFormValid(validateFormData(formData.username, formData.password))
+        setFormValid(validateFormData(value, formData.password))
     }
     const handlePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value
         setFormData(prev => ({ username: prev.username, password: value }))
-        setFormValid(validateFormData(formData.username, formData.password))
+        setFormValid(validateFormData(formData.username, value))
     }
 
     const ENTER_KEY = 13
