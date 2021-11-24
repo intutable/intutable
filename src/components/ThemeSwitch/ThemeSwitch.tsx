@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Typography, Button, Switch, FormControlLabel, useTheme, PaletteMode } from "@mui/material"
 
 type ThemeSwitchProps = {
