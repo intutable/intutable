@@ -61,6 +61,7 @@ export const AuthProvider: React.FC = props => {
        (for keeping graphical elements up to date)
      */
     const login = async (username, password): Promise<User> => {
+        await coreLogout()
         return coreLogin(username, password)
             .then(() => {
                 setUser({ name: username })
