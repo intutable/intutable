@@ -1,2 +1,2 @@
-export { lightTheme as theme } from "./theme"
-export type { MUIThemeCustomTypes } from "./utils"
+export { lightTheme, darkTheme, getDesignToken } from "./theme"
+export type { MUIThemeCustomTypes, default as createTheme } from "./utils"
