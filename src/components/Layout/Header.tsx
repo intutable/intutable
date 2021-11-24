@@ -165,7 +165,7 @@ const Header = () => {
                 <DrawerListItem text="Startseite" href="/" icon={<HomeIcon />} />
                 <DrawerListItem text="Projekte" href="/projects" icon={<WorkspacesIcon />} />
                 <Divider />
-                <DrawerListItem text="Support" href="/development" icon={<SupportAgentIcon />} />
+                <DrawerListItem text="Support" href="/service-desk" icon={<SupportAgentIcon />} />
                 <DrawerListItem text="Einstellungen" href="/settings" icon={<SettingsIcon />} />
             </Drawer>
         </>

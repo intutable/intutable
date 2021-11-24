@@ -2,12 +2,12 @@ import type { NextPage } from "next"
 import Title from "@components/Head/Title"
 import { Divider, Typography, Box, useTheme, IconButton } from "@mui/material"
 
-const Home: NextPage = () => {
+const ServiceDesk: NextPage = () => {
     const theme = useTheme()
     return (
         <>
-            <Title title="Dev" />
-            <Typography variant={"h4"}>Development-/Support-Seite</Typography>
+            <Title title="Service Desk" />
+            <Typography variant={"h4"}>Service Desk</Typography>
             <Divider />
             <Typography sx={{ mt: theme.spacing(8), color: theme.palette.text.secondary }}>
                 Bugs oder Feature-Requests können mit einer detaillierten Beschreibung an diese{" "}
@@ -20,4 +20,4 @@ const Home: NextPage = () => {
     )
 }
 
-export default Home
+export default ServiceDesk
