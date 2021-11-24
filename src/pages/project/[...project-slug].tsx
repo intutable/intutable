@@ -10,6 +10,7 @@ import { useSnackbar } from "notistack"
 import { isValidName, prepareName } from "../../utils/validateName"
 import Toolbar from "../../components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "../../components/DataGrid/Toolbar/ToolbarItems"
+import NoRowsRenderer from "../../components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 
 type ProjectSlugPageProps = {
     project: string
@@ -98,14 +99,15 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
                         <Toolbar.Item onClickHandler={() => {}}>Tool 3</Toolbar.Item>
                         <Toolbar.Item onClickHandler={() => {}}>Tool 4</Toolbar.Item>
                         <Toolbar.Item onClickHandler={() => {}}>Tool 5</Toolbar.Item>
-                        <TItem.FileDownload />
+                        <TItem.FileDownload getData={() => []} />
                     </Toolbar>
                     <Box>
                         <DataGrid
                             className={theme.themeMode === "light" ? "rdg-light" : "rdg-dark"}
-                            rows={tableData.rows}
+                            rows={tableData ? tableData.rows : []}
                             summaryRow={summaryRows}
-                            columns={tableData.cols}
+                            columns={tableData ? tableData.cols : [{ key: "id", name: "ID" }]}
+                            noRowsFallback={<NoRowsRenderer />}
                         />
                     </Box>
                     <Toolbar>
