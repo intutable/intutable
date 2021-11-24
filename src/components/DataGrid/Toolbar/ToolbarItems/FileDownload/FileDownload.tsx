@@ -1,7 +1,9 @@
-import type { PredefinedToolbarItem } from "../types"
-import { IconButton, useTheme, Menu, MenuItem } from "@mui/material"
+import type { PredefinedToolbarItem } from "../../types"
+import { IconButton, useTheme, Menu, MenuItem, Box } from "@mui/material"
 import FileDownloadIcon from "@mui/icons-material/FileDownload"
 import React, { useState } from "react"
+import { exportTo, FileFormat } from "./export"
+import { useSnackbar } from "notistack"
 
 type FileDownoadContextMenuProps = {
     anchorEL: Element
@@ -36,13 +38,19 @@ const FileDownloadContextMenu: React.FC<FileDownoadContextMenuProps> = props => 
     )
 }
 
-type FileDownloadProps = {}
+const triggerDownload = (content: any, filename: string) => {}
+
+export type FileDownloadProps = {
+    getData: () => Array<unknown>
+}
 
 /**
  * Button w/ options for exporting the data to several file formats
  */
 const FileDownload: PredefinedToolbarItem<FileDownloadProps> = props => {
     const theme = useTheme()
+
+    const { enqueueSnackbar } = useSnackbar()
 
     const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
 
@@ -51,6 +59,13 @@ const FileDownload: PredefinedToolbarItem<FileDownloadProps> = props => {
         setAnchorEL(event.currentTarget)
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
+
+    const handleExport = async (fileFormat: FileFormat) => {
+        // await exportTo(fileFormat, props.getData())
+        enqueueSnackbar("This feature in not implemented yet!", { variant: "warning" })
+        // triggerDownload()
+        setAnchorEL(null)
+    }
 
     return (
         <>
@@ -62,7 +77,9 @@ const FileDownload: PredefinedToolbarItem<FileDownloadProps> = props => {
                 open={anchorEL != null}
                 onClose={handleCloseContextMenu}
             >
-                Test
+                <Box onClick={() => handleExport("CSV")}>CSV</Box>
+                <Box onClick={() => handleExport("PDF")}>PDF</Box>
+                <Box onClick={() => handleExport("XLSX")}>EXCEL</Box>
             </FileDownloadContextMenu>
         </>
     )
