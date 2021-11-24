@@ -23,7 +23,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import WorkspacesIcon from "@mui/icons-material/Workspaces"
 import SettingsIcon from "@mui/icons-material/Settings"
 import HomeIcon from "@mui/icons-material/Home"
-
+import SupportAgentIcon from "@mui/icons-material/SupportAgent"
 import Link from "@components/Link/Link"
 
 const drawerWidth: number = 240
@@ -163,9 +163,9 @@ const Header = () => {
                     </IconButton>
                 </Toolbar>
                 <DrawerListItem text="Startseite" href="/" icon={<HomeIcon />} />
-                <Divider />
                 <DrawerListItem text="Projekte" href="/projects" icon={<WorkspacesIcon />} />
                 <Divider />
+                <DrawerListItem text="Support" href="/development" icon={<SupportAgentIcon />} />
                 <DrawerListItem text="Einstellungen" href="/settings" icon={<SettingsIcon />} />
             </Drawer>
         </>
