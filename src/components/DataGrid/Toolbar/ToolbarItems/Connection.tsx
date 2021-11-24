@@ -2,7 +2,7 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord"
 import { Box, useTheme } from "@mui/material"
 import type { PredefinedToolbarItem } from "../types"
 
-const getColorForConnectionStatus = (status: ConnectionStatus) => {
+const useConnectionStatusColor = (status: ConnectionStatus) => {
     const theme = useTheme()
     switch (status) {
         case "connected":
@@ -32,7 +32,7 @@ const Connection: PredefinedToolbarItem<ConnectionProps> = props => (
             fontSize="small"
             sx={{
                 mr: 1,
-                color: getColorForConnectionStatus(props.status),
+                color: useConnectionStatusColor(props.status),
             }}
         />
         {props.status}

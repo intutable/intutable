@@ -53,9 +53,9 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
         enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, { variant: "success" })
     }
 
-    function handleFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
-        return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] }
-    }
+    // function handleFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
+    //     return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] }
+    // }
 
     useEffect(() => {
         ;(async _ => {
@@ -109,9 +109,9 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
                             rowKeyGetter={rowKeyGetter}
                             // onColumnResize={}
                             // onRowDoubleClick={}
-                            onFill={handleFill}
-                            selectedRows={selectedRows}
-                            onSelectedRowsChange={setSelectedRows}
+                            // onFill={handleFill}
+                            // selectedRows={selectedRows}
+                            // onSelectedRowsChange={setSelectedRows}
                         />
                     </Box>
                     <Toolbar position="bottom">
