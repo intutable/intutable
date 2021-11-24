@@ -12,6 +12,8 @@ import Toolbar from "../../components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "../../components/DataGrid/Toolbar/ToolbarItems"
 import NoRowsRenderer from "../../components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 
+const rowKeyGetter = (row: any) => row.id
+
 type ProjectSlugPageProps = {
     project: string
     tables: Array<string>
@@ -24,6 +26,7 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
     const { enqueueSnackbar } = useSnackbar()
 
     const [tableData, setTableData] = useState<TableData | null>(null)
+    const [selectedRows, setSelectedRows] = useState<Set>(new Set())
     const [currentTable, setCurrentTable] = useState<string>(_tables[0] || ADD_BUTTON_TOKEN)
     const [loading, setLoading] = useState<boolean>(true)
 
@@ -50,6 +53,10 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
         enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, { variant: "success" })
     }
 
+    function handleFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
+        return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] }
+    }
+
     useEffect(() => {
         ;(async _ => {
             try {
@@ -66,15 +73,6 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
             }
         })()
     }, [currentTable])
-
-    const summaryRows = useMemo(() => {
-        if (!tableData) return []
-        const summaryRow = {
-            id: "total_0",
-            totalCount: tableData.rows.length,
-        }
-        return [summaryRow]
-    }, [tableData])
 
     return (
         <>
@@ -103,11 +101,17 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
                     </Toolbar>
                     <Box>
                         <DataGrid
-                            className={theme.themeMode === "light" ? "rdg-light" : "rdg-dark"}
+                            className={theme.palette.mode === "light" ? "rdg-light" : "rdg-dark"}
                             rows={tableData ? tableData.rows : []}
-                            summaryRow={summaryRows}
+                            summaryRows={[{ id: "total_0" }]}
                             columns={tableData ? tableData.cols : [{ key: "id", name: "ID" }]}
                             noRowsFallback={<NoRowsRenderer />}
+                            rowKeyGetter={rowKeyGetter}
+                            // onColumnResize={}
+                            // onRowDoubleClick={}
+                            onFill={handleFill}
+                            selectedRows={selectedRows}
+                            onSelectedRowsChange={setSelectedRows}
                         />
                     </Box>
                     <Toolbar position="bottom">
