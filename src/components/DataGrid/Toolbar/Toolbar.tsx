@@ -17,6 +17,10 @@ const T: Toolbar<TProps> = props => {
                 ...theme.mixins.toolbar,
                 overflowX: "scroll",
                 px: theme.spacing(1),
+                borderTopLeftRadius: props.position === "top" ? theme.shape.borderRadius : 0,
+                borderTopRightRadius: props.position === "top" ? theme.shape.borderRadius : 0,
+                borderBottomLeftRadius: props.position === "bottom" ? theme.shape.borderRadius : 0,
+                borderBottomRightRadius: props.position === "bottom" ? theme.shape.borderRadius : 0,
             }}
             disableGutters
         >

@@ -92,7 +92,7 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
                 <LoadingSkeleton />
             ) : (
                 <>
-                    <Toolbar>
+                    <Toolbar position="top">
                         <TItem.AddCol addCol={() => {}} />
                         <Toolbar.Item onClickHandler={() => {}}>Tool 1</Toolbar.Item>
                         <Toolbar.Item onClickHandler={() => {}}>Tool 2</Toolbar.Item>
@@ -110,7 +110,7 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
                             noRowsFallback={<NoRowsRenderer />}
                         />
                     </Box>
-                    <Toolbar>
+                    <Toolbar position="bottom">
                         <TItem.Connection status={"connected"} />
                         <Toolbar.Item onClickHandler={() => {}}>Tool 1</Toolbar.Item>
                         <Toolbar.Item onClickHandler={() => {}}>Tool 2</Toolbar.Item>

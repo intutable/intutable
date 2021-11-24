@@ -7,6 +7,7 @@ import React from "react"
  */
 export type ToolbarProps = {
     children: React.ReactNode | Array<React.ReactNode>
+    position: "top" | "bottom"
 } // obligatory props each compinent must have
 
 /**
