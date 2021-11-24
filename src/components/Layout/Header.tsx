@@ -113,6 +113,7 @@ const Header = () => {
                     sx={{
                         // keeps right padding when drawer closed
                         pr: "24px",
+                        // ...theme.mixins.toolbar,
                     }}
                 >
                     <IconButton
