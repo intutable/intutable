@@ -8,7 +8,10 @@ export { AUTH_COOKIE_KEY } from "./constants"
  * @return {Promise<void>} if login was successful. Rejects with an error
  * (in string form) otherwise.
  */
-export async function coreLogin(username, password: string): Promise<void> {
+export async function coreLogin(
+    username: string,
+    password: string
+): Promise<void> {
     return fetch(getCoreUrl() + "/login", {
         method: "post",
         headers: {
@@ -45,7 +48,7 @@ export async function coreLogout(): Promise<void> {
 /**
  * Check if logged into core by using the session cookie.
  */
-export async function isAuthenticated(authCookie?: string): Promise<bool> {
+export async function isAuthenticated(authCookie?: string): Promise<boolean> {
     // we could have called any channel or method
     return coreRequest(
         "user-authentication",
