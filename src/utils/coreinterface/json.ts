@@ -1,5 +1,5 @@
-const getCoreUrl = (): string => "http://localhost:8080"
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLI_AUTH_COOKIE_KEY!
+const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 export interface CoreCallError {
     status: number

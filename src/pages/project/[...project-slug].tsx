@@ -132,7 +132,7 @@ const ProjectSlugPage: NextPage<
 export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
     async context => {
         const { params, req } = context
-        const AUTH_COOKIE_KEY = process.env.NEXT_PUBLI_AUTH_COOKIE_KEY!
+        const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
         const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
 
         if (!(await isAuthenticated(authCookie).catch(e => false)))

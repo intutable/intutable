@@ -1,6 +1,6 @@
-const getCoreUrl = (): string => "http://localhost:8080"
+const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 import { coreRequest } from "./json"
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLI_AUTH_COOKIE_KEY!
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 /**
  * Log in to core via a HTTP form request.
