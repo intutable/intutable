@@ -4,23 +4,36 @@ import Title from "../../components/Head/Title"
 import { CircularProgress, Typography, useTheme, Box } from "@mui/material"
 import { Tablist, ADD_BUTTON_TOKEN } from "../../components/TabList/TabList"
 import DataGrid from "react-data-grid"
-import { getDataOfTable, getTablesOfProject, TableData } from "../../utils/getData"
+import {
+    getDataOfTable,
+    getTablesOfProject,
+    TableData,
+} from "../../utils/getData"
 import { useSnackbar } from "notistack"
 import { isValidName, prepareName } from "../../utils/validateName"
+import { isAuthenticated, AUTH_COOKIE_KEY } from "@utils/coreinterface"
+import { User, USER_COOKIE_KEY } from "@context/AuthContext"
+
 
 type ProjectSlugPageProps = {
     project: string
     tables: Array<string>
 }
-const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = props => {
-    const [_tables, _setTables] = useState<Pick<ProjectSlugPageProps, "tables">["tables"]>(
-        props.tables
-    )
+
+
+const ProjectSlugPage: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = props => {
+    const [_tables, _setTables] = useState<
+        Pick<ProjectSlugPageProps, "tables">["tables"]
+    >(props.tables)
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
     const [tableData, setTableData] = useState<TableData | null>(null)
-    const [currentTable, setCurrentTable] = useState<string>(_tables[0] || ADD_BUTTON_TOKEN)
+    const [currentTable, setCurrentTable] = useState<string>(
+        _tables[0] || ADD_BUTTON_TOKEN
+    )
     const [loading, setLoading] = useState<boolean>(true)
 
     const handleTableChange = (newTable: string | null) => {
@@ -30,8 +43,11 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
     const handleAddTable = (newTableName: string) => {
         const name = prepareName(newTableName)
         const isValid = isValidName(name)
-        if (isValid instanceof Error) return enqueueSnackbar(isValid.message, { variant: "error" })
-        const nameIsTaken = _tables.map(tbl => tbl.toLowerCase()).includes(name.toLowerCase())
+        if (isValid instanceof Error)
+            return enqueueSnackbar(isValid.message, { variant: "error" })
+        const nameIsTaken = _tables
+            .map(tbl => tbl.toLowerCase())
+            .includes(name.toLowerCase())
         if (nameIsTaken)
             return enqueueSnackbar(
                 "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
@@ -43,7 +59,9 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
         _setTables(prev => [...prev, name])
         setTableData(null)
         setCurrentTable(name)
-        enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, { variant: "success" })
+        enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+            variant: "success",
+        })
     }
 
     useEffect(() => {
@@ -53,9 +71,12 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
                 const serverRequest = await getDataOfTable(currentTable)
                 setTableData(serverRequest)
             } catch (error) {
-                enqueueSnackbar("Fehler: Die Tabelle konnte nicht geladen werden!", {
-                    variant: "error",
-                })
+                enqueueSnackbar(
+                    "Fehler: Die Tabelle konnte nicht geladen werden!",
+                    {
+                        variant: "error",
+                    }
+                )
                 setTableData(null)
             } finally {
                 setLoading(false)
@@ -89,24 +110,33 @@ const ProjectSlugPage: NextPage<InferGetServerSidePropsType<typeof getServerSide
     )
 }
 
-export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> = async context => {
-    const { params } = context
+export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
+    async context => {
+        const { params, req } = context
+        const authCookie = req.cookies[AUTH_COOKIE_KEY]
+        if(!(await isAuthenticated(authCookie).catch(e => false)))
+            return {
+                redirect: {
+                    permanent: false,
+                    destination: "/login"
+                }
+            }
 
-    const user = { name: "nick@baz.org" } // TODO: get user
-
-    const serverRequet = await getTablesOfProject(user, params["project-slug"][0])
-
-    const data: ProjectSlugPageProps = {
-        project: params["project-slug"][0],
-        tables: serverRequet,
+        const user : User = { name: req.cookies[USER_COOKIE_KEY] }
+        const serverRequest = await getTablesOfProject(
+            user,
+            params["project-slug"][0],
+            authCookie
+        )
+        const data: ProjectSlugPageProps = {
+            project: params["project-slug"][0],
+            tables: serverRequest,
+        }
+        const error = serverRequest == null
+        if (error) return { notFound: true }
+        return {
+            props: data,
+        }
     }
-
-    const error = serverRequet == null
-    if (error) return { notFound: true }
-
-    return {
-        props: data,
-    }
-}
 
 export default ProjectSlugPage

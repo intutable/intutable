@@ -21,7 +21,7 @@
             "@public/*": ["public/*"],
             "@components/*": ["src/components/*"],
             "@theme": ["src/theme/index.ts"],
-            "@backend/*": ["backend/*"]
+            "@context/*": ["./src/context/*"]
         }
     },
     "include": ["next-env.d.ts"],

@@ -23,8 +23,9 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import WorkspacesIcon from "@mui/icons-material/Workspaces"
 import SettingsIcon from "@mui/icons-material/Settings"
 import HomeIcon from "@mui/icons-material/Home"
-
-import Link from "@components/Link/Link"
+import LogoutButton from "../Login/LogoutButton"
+import Link from "../Link/Link"
+import { useAuth } from "@context/AuthContext"
 
 const drawerWidth: number = 240
 
@@ -83,6 +84,8 @@ const DrawerListItem: React.FC<DrawerListItemProps> = props => {
 }
 
 const Header = () => {
+    const { user } = useAuth()
+
     const theme = useTheme()
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 
@@ -140,6 +143,10 @@ const Header = () => {
                             </Typography>
                         </Link>
                     </Box>
+                    { user && <>
+                        <span>{user.name}</span>
+                        <LogoutButton />
+                    </> }
                 </Toolbar>
             </AppBar>
 
@@ -161,11 +168,14 @@ const Header = () => {
                         <ChevronLeftIcon />
                     </IconButton>
                 </Toolbar>
-                <DrawerListItem text="Startseite" href="/" icon={<HomeIcon />} />
+                <DrawerListItem text="Startseite" href="/"
+                                icon={<HomeIcon />} />
                 <Divider />
-                <DrawerListItem text="Projekte" href="/projects" icon={<WorkspacesIcon />} />
+                <DrawerListItem text="Projekte" href="/projects"
+                                icon={<WorkspacesIcon />} />
                 <Divider />
-                <DrawerListItem text="Einstellungen" href="/settings" icon={<SettingsIcon />} />
+                <DrawerListItem text="Einstellungen" href="/settings"
+                                icon={<SettingsIcon />} />
             </Drawer>
         </>
     )
