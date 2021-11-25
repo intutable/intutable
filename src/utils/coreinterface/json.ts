@@ -1,5 +1,5 @@
-import { getCoreUrl } from "@app/backend/runtimeconfig"
-import { AUTH_COOKIE_KEY } from "./constants"
+const getCoreUrl = (): string => "http://localhost:8080"
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLI_AUTH_COOKIE_KEY!
 
 export interface CoreCallError {
     status: number

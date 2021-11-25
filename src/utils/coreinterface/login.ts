@@ -1,7 +1,6 @@
-import { getCoreUrl } from "@app/backend/runtimeconfig"
+const getCoreUrl = (): string => "http://localhost:8080"
 import { coreRequest } from "./json"
-
-export { AUTH_COOKIE_KEY } from "./constants"
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLI_AUTH_COOKIE_KEY!
 
 /**
  * Log in to core via a HTTP form request.

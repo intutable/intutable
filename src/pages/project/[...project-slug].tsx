@@ -8,7 +8,7 @@ import DataGrid from "react-data-grid"
 import { getTableData, getListWithTables, TableData } from "@api"
 import { useSnackbar } from "notistack"
 import { isValidName, prepareName } from "@utils/validateName"
-import { isAuthenticated, AUTH_COOKIE_KEY } from "@utils/coreinterface"
+import { isAuthenticated } from "@utils/coreinterface"
 import { User, USER_COOKIE_KEY } from "@context/AuthContext"
 
 type ProjectSlugPageProps = {
@@ -132,7 +132,8 @@ const ProjectSlugPage: NextPage<
 export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
     async context => {
         const { params, req } = context
-        const authCookie = req.cookies[AUTH_COOKIE_KEY]
+        const AUTH_COOKIE_KEY = process.env.NEXT_PUBLI_AUTH_COOKIE_KEY!
+        const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
 
         if (!(await isAuthenticated(authCookie).catch(e => false)))
             return {
