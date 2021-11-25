@@ -14,12 +14,10 @@ import { isValidName, prepareName } from "../../utils/validateName"
 import { isAuthenticated, AUTH_COOKIE_KEY } from "@utils/coreinterface"
 import { User, USER_COOKIE_KEY } from "@context/AuthContext"
 
-
 type ProjectSlugPageProps = {
     project: string
     tables: Array<string>
 }
-
 
 const ProjectSlugPage: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -105,8 +103,14 @@ const ProjectSlugPage: NextPage<
                 onChangeHandler={handleTableChange}
                 onAddHandler={handleAddTable}
                 contextMenuItems={[
-                    <Box onClick={handleRenameTable}>Rename</Box>,
-                    <Box onClick={handleDeleteTable} sx={{ color: theme.palette.warning.main }}>
+                    <Box onClick={handleRenameTable} key={0}>
+                        Rename
+                    </Box>,
+                    <Box
+                        onClick={handleDeleteTable}
+                        key={1}
+                        sx={{ color: theme.palette.warning.main }}
+                    >
                         Delete
                     </Box>,
                 ]}
@@ -129,15 +133,15 @@ export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
     async context => {
         const { params, req } = context
         const authCookie = req.cookies[AUTH_COOKIE_KEY]
-        if(!(await isAuthenticated(authCookie).catch(e => false)))
+        if (!(await isAuthenticated(authCookie).catch(e => false)))
             return {
                 redirect: {
                     permanent: false,
-                    destination: "/login"
-                }
+                    destination: "/login",
+                },
             }
 
-        const user : User = { name: req.cookies[USER_COOKIE_KEY] }
+        const user: User = { name: req.cookies[USER_COOKIE_KEY] }
         const serverRequest = await getTablesOfProject(
             user,
             params["project-slug"][0],
