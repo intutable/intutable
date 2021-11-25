@@ -1,7 +1,6 @@
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import Title from "../components/Head/Title"
+import Title from "@components/Head/Title"
 import {
-    CircularProgress,
     Grid,
     Card,
     CardContent,
@@ -9,15 +8,15 @@ import {
     Menu,
     MenuItem,
     Box,
-    Divider,
 } from "@mui/material"
 import React, { useState } from "react"
 import { useRouter } from "next/dist/client/router"
 import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
-import { isValidName, prepareName } from "../utils/validateName"
+import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
 import { getProjects } from "@utils/getData"
+import { getListWithProjects } from "@api"
 import { AUTH_COOKIE_KEY, isAuthenticated } from "@utils/coreinterface"
 import { User, USER_COOKIE_KEY } from "@context/AuthContext"
 
@@ -63,22 +62,33 @@ type ProjectCardProps = {
 const ProjectCard: React.FC<ProjectCardProps> = props => {
     const router = useRouter()
     const theme = useTheme()
+    const { enqueueSnackbar } = useSnackbar()
 
-    const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
+    const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
-    const handleOpenContextMenu = event => {
+    const handleOpenContextMenu = (event: any) => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleRenameProject = () => {
-        alert("Not implemented yet")
+        handleCloseContextMenu()
+        const newName = prompt("Gib einen neuen Namen für dein Projekt ein:")
+        if (!newName) return
         // TODO: implement
+        // enqueueSnackbar("Das Projekt wurde umbenannt.", { variant: "success" })
+        // enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", { variant: "error" })
+        alert("Not implemented yet")
     }
     const handleDeleteProject = () => {
-        alert("Not implemented yet")
+        handleCloseContextMenu()
+        const confirmed = confirm("Möchtest du dein Projekt wirklich löschen?")
+        if (!confirmed) return
         // TODO: implement
+        // enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
+        // enqueueSnackbar("Projekt konnte nicht gelöscht werden!", { variant: "error" })
+        alert("Not implemented yet")
     }
 
     return (
@@ -88,7 +98,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                     props.onClick ||
                     (_ => props.url && router.push("/project/" + props.url))
                 }
-                onContextMenu={props.url && handleOpenContextMenu}
+                onContextMenu={props.url ? handleOpenContextMenu : undefined}
                 sx={{
                     minWidth: 150,
                     minHeight: 150,
@@ -103,7 +113,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             >
                 <CardContent>{props.children}</CardContent>
             </Card>
-            {props.url && (
+            {props.url && anchorEL && (
                 <ProjectContextMenu
                     anchorEL={anchorEL}
                     open={anchorEL != null}
@@ -134,6 +144,7 @@ const ProjectsPage: NextPage<
 
     const handleAddProject = () => {
         const namePrompt = prompt("Benenne Dein neues Projekt!")
+        if (!namePrompt) return
         const name = prepareName(namePrompt)
         const isValid = isValidName(name)
         if (isValid instanceof Error)
@@ -188,7 +199,7 @@ export const getServerSideProps: GetServerSideProps<ProjectsPageProps> =
             }
 
         const user: User = { name: req.cookies[USER_COOKIE_KEY] }
-        const serverRequest = await getProjects(user, authCookie)
+        const serverRequest = await getListWithProjects(user, authCookie)
         const data: ProjectsPageProps = {
             projects: serverRequest,
         }
