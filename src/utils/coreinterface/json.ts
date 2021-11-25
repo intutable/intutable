@@ -7,14 +7,21 @@ export interface CoreCallError {
 }
 
 /**
- * Make a request to Core and return the response parsed from JSON as an object.
+ * Makes a request to Core and returns the response parsed from JSON as an object.
+ * Built up on `fetch`.
+ * @async
+ * @param {string} channel - The channel to make the request to.
+ * @param {string} method - The method to call on the channel.
+ * @param {object} body - The body of the request.
+ * @param {string} authCookie - The auth cookie to send with the request. Optional.
+ * @returns {Promise<object>} - The response parsed from JSON as an object.
  */
 export async function coreRequest(
-    channel,
+    channel: string,
     method: string,
-    body: object,
+    body: Record<string, unknown>,
     authCookie?: string
-): Promise<object> {
+): Promise<Record<string, unknown>> {
     return fetch(getCoreUrl() + "/request/" + channel + "/" + method, {
         method: "post",
         headers: {
