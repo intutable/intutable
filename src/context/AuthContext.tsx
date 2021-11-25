@@ -18,8 +18,8 @@ export type AuthContextProps = {
     user: User | null
     getUserAuthCookie?: () => string | null
     loading: boolean
-    login?: (username: string, password: string) => void
-    logout?: () => void
+    login?: (username: string, password: string) => Promise<void>
+    logout?: () => Promise<void>
 }
 
 const initialState: AuthContextProps = {
