@@ -16,14 +16,15 @@
         "incremental": true,
         "baseUrl": ".",
         "paths": {
-            "@app/*": ["./src/*"],
+            "@app/*": ["src/*"],
             "@utils/*": ["src/utils/*"],
             "@public/*": ["public/*"],
             "@components/*": ["src/components/*"],
             "@theme": ["src/theme/index.ts"],
-            "@context/*": ["./src/context/*"]
+            "@context/*": ["src/context/*"],
+            "@datagrid/*": ["src/components/DataGrid/*"]
         }
     },
-    "include": ["next-env.d.ts"],
+    "include": ["src"],
     "exclude": ["node_modules", "backend"]
 }
