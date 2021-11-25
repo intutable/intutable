@@ -54,7 +54,7 @@ export async function coreNotification(
     })
         .then(passedLogin)
         .then(wasSuccessful)
-        .then(Promise.resolve())
+        .then(() => Promise.resolve())
 }
 
 // TEMP
@@ -66,10 +66,10 @@ function passedLogin(res: Response): Promise<Response> {
               status: 302,
               message: "core call blocked by authentication middleware",
           })
-        : res
+        : Promise.resolve(res)
 }
 
-async function wasSuccessful(res: Response): Promse<Response> {
+async function wasSuccessful(res: Response): Promise<Response> {
     return res.status === 200
         ? res
         : Promise.reject({
