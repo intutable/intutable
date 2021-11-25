@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from "react"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import Title from "../../components/Head/Title"
+import Title from "@components/Head/Title"
 import { CircularProgress, Typography, useTheme, Box } from "@mui/material"
-import { Tablist, ADD_BUTTON_TOKEN } from "../../components/TabList/TabList"
+import { Tablist, ADD_BUTTON_TOKEN } from "@components/TabList/TabList"
 import DataGrid from "react-data-grid"
-import {
-    getDataOfTable,
-    getTablesOfProject,
-    TableData,
-} from "../../utils/getData"
+
+import { getTableData, getListWithTables, TableData } from "@api"
 import { useSnackbar } from "notistack"
-import { isValidName, prepareName } from "../../utils/validateName"
+import { isValidName, prepareName } from "@utils/validateName"
 import { isAuthenticated, AUTH_COOKIE_KEY } from "@utils/coreinterface"
 import { User, USER_COOKIE_KEY } from "@context/AuthContext"
 
@@ -75,7 +72,7 @@ const ProjectSlugPage: NextPage<
         ;(async _ => {
             try {
                 setLoading(true)
-                const serverRequest = await getDataOfTable(currentTable)
+                const serverRequest = await getTableData(currentTable)
                 setTableData(serverRequest)
             } catch (error) {
                 enqueueSnackbar(
@@ -120,7 +117,10 @@ const ProjectSlugPage: NextPage<
             ) : tableData ? (
                 // TODO: seperate this into a new component which takes care of sending updates to the backend
                 <Box>
-                    <DataGrid rows={tableData.rows} columns={tableData.cols} />
+                    <DataGrid
+                        rows={tableData.rows as any}
+                        columns={tableData.cols}
+                    />
                 </Box>
             ) : (
                 <>Could not load the Table!</>
@@ -133,6 +133,7 @@ export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
     async context => {
         const { params, req } = context
         const authCookie = req.cookies[AUTH_COOKIE_KEY]
+
         if (!(await isAuthenticated(authCookie).catch(e => false)))
             return {
                 redirect: {
@@ -142,20 +143,35 @@ export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
             }
 
         const user: User = { name: req.cookies[USER_COOKIE_KEY] }
-        const serverRequest = await getTablesOfProject(
-            user,
-            params["project-slug"][0],
-            authCookie
-        )
-        const data: ProjectSlugPageProps = {
-            project: params["project-slug"][0],
-            tables: serverRequest,
+
+        if (params && Object.hasOwnProperty.call(params, "project-slug")) {
+            const _projectName = params["project-slug"]
+            if (
+                _projectName &&
+                Array.isArray(_projectName) &&
+                _projectName.length > 0
+            ) {
+                const projectName = _projectName[0] as string
+                const serverRequest = await getListWithTables(
+                    user,
+                    projectName,
+                    authCookie
+                )
+
+                const data: ProjectSlugPageProps = {
+                    project: projectName,
+                    tables: serverRequest,
+                }
+
+                const error = serverRequest == null
+                if (error) return { notFound: true }
+
+                return {
+                    props: data,
+                }
+            }
         }
-        const error = serverRequest == null
-        if (error) return { notFound: true }
-        return {
-            props: data,
-        }
+        return { notFound: true }
     }
 
 export default ProjectSlugPage
