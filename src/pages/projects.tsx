@@ -1,4 +1,8 @@
-import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
+import type {
+    GetServerSideProps,
+    InferGetServerSidePropsType,
+    NextPage,
+} from "next"
 import Title from "@components/Head/Title"
 import {
     Grid,
@@ -15,10 +19,9 @@ import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
-import { getProjects } from "@utils/getData"
-import { getListWithProjects } from "@api"
+import { getListWithProjects, addProject } from "@api"
 import { AUTH_COOKIE_KEY, isAuthenticated } from "@utils/coreinterface"
-import { User, USER_COOKIE_KEY } from "@context/AuthContext"
+import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -142,6 +145,8 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
+    const { user } = useAuth()
+
     const handleAddProject = () => {
         const namePrompt = prompt("Benenne Dein neues Projekt!")
         if (!namePrompt) return
@@ -157,7 +162,12 @@ const ProjectsPage: NextPage<
                 "Dieser Name wird bereits für eines deiner Projekte verwendet!",
                 { variant: "error" }
             )
+        if (!user)
+            return enqueueSnackbar("Bitte melde dich erneut an!", {
+                variant: "error",
+            })
         // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
+        const success = addProject(user, name)
         router.push("/project/" + name)
         enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
             variant: "success",
