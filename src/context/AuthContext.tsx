@@ -16,8 +16,9 @@ export type User = {
 
 export type AuthContextProps = {
     user: User | null
+    getUserAuthCookie?: () => string | null
     loading: boolean
-    login?: (username, password: string) => Promise<User>
+    login?: (username: string, password: string) => void
     logout?: () => void
 }
 
@@ -57,32 +58,44 @@ export const AuthProvider: React.FC = props => {
        cookie (front-end remembering who was logged in), and the `user` hook
        (for keeping graphical elements up to date)
      */
-    const login = async (username, password): Promise<User> => {
+    const login = async (username: string, password: string) => {
+        setLoading(true)
         await coreLogout()
         return coreLogin(username, password)
             .then(() => {
-                setUser({ name: username })
                 Cookies.set(USER_COOKIE_KEY, username, { sameSite: "Strict" })
+                setUser({ name: username })
             })
             .catch(e => {
                 return Promise.reject(e)
             })
+            .finally(() => setLoading(false))
     }
 
     const logout = async () => {
+        setLoading(true)
         return coreLogout()
             .then(() => {
-                setUser(null)
                 Cookies.remove(USER_COOKIE_KEY)
+                setUser(null)
                 router.push("/login")
             })
             .catch(e => console.log("logout failed: " + e))
+            .finally(() => setLoading(false))
     }
+
+    /**
+     * Returns the current user auth cookie, or null if not logged in.
+     * @returns {string} user auth cookie.
+     */
+    const getUserAuthCookie = (): string | null =>
+        Cookies.get(USER_COOKIE_KEY) ?? null
 
     return (
         <AuthContext.Provider
             value={{
                 user,
+                getUserAuthCookie,
                 loading,
                 login,
                 logout,
