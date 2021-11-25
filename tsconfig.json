@@ -26,6 +26,6 @@
             "@api": ["src/api/index.ts"]
         }
     },
-    "include": ["src"],
-    "exclude": ["node_modules", "backend"]
+    "include": ["src", "next-env.d.ts"],
+    "exclude": ["node_modules", "backend", "src/backend", "database"]
 }
