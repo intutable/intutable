@@ -17,7 +17,9 @@ import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "../utils/validateName"
 import { useSnackbar } from "notistack"
-import { getProjects } from "../utils/getData"
+import { getProjects } from "@utils/getData"
+import { AUTH_COOKIE_KEY, isAuthenticated } from "@utils/coreinterface"
+import { User, USER_COOKIE_KEY } from "@context/AuthContext"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -44,7 +46,9 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
             }}
         >
             {Array.isArray(props.children) ? (
-                props.children.map((item, i) => <MenuItem key={i}>{item}</MenuItem>)
+                props.children.map((item, i) => (
+                    <MenuItem key={i}>{item}</MenuItem>
+                ))
             ) : (
                 <MenuItem>{props.children}</MenuItem>
             )}
@@ -80,7 +84,10 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     return (
         <>
             <Card
-                onClick={props.onClick || (_ => props.url && router.push("/project/" + props.url))}
+                onClick={
+                    props.onClick ||
+                    (_ => props.url && router.push("/project/" + props.url))
+                }
                 onContextMenu={props.url && handleOpenContextMenu}
                 sx={{
                     minWidth: 150,
@@ -103,7 +110,10 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                     onClose={handleCloseContextMenu}
                 >
                     <Box onClick={handleRenameProject}>Rename</Box>
-                    <Box onClick={handleDeleteProject} sx={{ color: theme.palette.warning.main }}>
+                    <Box
+                        onClick={handleDeleteProject}
+                        sx={{ color: theme.palette.warning.main }}
+                    >
                         Delete
                     </Box>
                 </ProjectContextMenu>
@@ -115,7 +125,9 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 type ProjectsPageProps = {
     projects: Array<string>
 }
-const ProjectsPage: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = props => {
+const ProjectsPage: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = props => {
     const theme = useTheme()
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
@@ -124,7 +136,8 @@ const ProjectsPage: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
         const namePrompt = prompt("Benenne Dein neues Projekt!")
         const name = prepareName(namePrompt)
         const isValid = isValidName(name)
-        if (isValid instanceof Error) return enqueueSnackbar(isValid.message, { variant: "error" })
+        if (isValid instanceof Error)
+            return enqueueSnackbar(isValid.message, { variant: "error" })
         const nameIsTaken = props.projects
             .map(proj => proj.toLowerCase())
             .includes(name.toLowerCase())
@@ -135,7 +148,9 @@ const ProjectsPage: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
             )
         // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
         router.push("/project/" + name)
-        enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, { variant: "success" })
+        enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+            variant: "success",
+        })
     }
 
     return (
@@ -160,23 +175,28 @@ const ProjectsPage: NextPage<InferGetServerSidePropsType<typeof getServerSidePro
     )
 }
 
-export const getServerSideProps: GetServerSideProps<ProjectsPageProps> = async context => {
-    const { params } = context
+export const getServerSideProps: GetServerSideProps<ProjectsPageProps> =
+    async context => {
+        const { params, req } = context
+        const authCookie = req.cookies[AUTH_COOKIE_KEY]
+        if (!(await isAuthenticated(authCookie).catch(e => false)))
+            return {
+                redirect: {
+                    permanent: false,
+                    destination: "/login",
+                },
+            }
 
-    const user = { name: "nick@baz.org" } // TODO: get user
-
-    const serverRequest = await getProjects(user)
-
-    const data: ProjectsPageProps = {
-        projects: serverRequest,
+        const user: User = { name: req.cookies[USER_COOKIE_KEY] }
+        const serverRequest = await getProjects(user, authCookie)
+        const data: ProjectsPageProps = {
+            projects: serverRequest,
+        }
+        const error = serverRequest == null
+        if (error) return { notFound: true }
+        return {
+            props: data,
+        }
     }
-
-    const error = serverRequest == null
-    if (error) return { notFound: true }
-
-    return {
-        props: data,
-    }
-}
 
 export default ProjectsPage
