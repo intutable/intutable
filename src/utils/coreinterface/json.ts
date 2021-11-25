@@ -41,7 +41,7 @@ export async function coreRequest(
 }
 
 export async function coreNotification(
-    channel,
+    channel: string,
     method: string,
     body: object,
     authCookie?: string
