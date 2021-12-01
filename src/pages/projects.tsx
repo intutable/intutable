@@ -20,8 +20,9 @@ import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
 import { getListWithProjects, addProject } from "@api"
-import { AUTH_COOKIE_KEY, isAuthenticated } from "@utils/coreinterface"
+import { isAuthenticated } from "@utils/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 type ProjectContextMenuProps = {
     anchorEL: Element
