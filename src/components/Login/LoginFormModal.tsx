@@ -17,14 +17,14 @@ import { SxProps, Theme } from "@mui/system"
 
 import { useAuth } from "@context/AuthContext"
 
-const Transition = React.forwardRef(function Transition(
-    props: TransitionProps & {
-        children?: React.ReactElement<any, any>
-    },
-    ref: React.Ref<unknown>
-) {
-    return <Slide direction="up" ref={ref} {...props} /> // eslint-disable-line react/jsx-props-no-spreading
-})
+const Transition = React.forwardRef(
+    (
+        props: TransitionProps & {
+            children: React.ReactElement<any, any>
+        },
+        ref: React.Ref<unknown>
+    ) => <Slide direction="up" ref={ref} {...props} />
+)
 
 const inputFieldStyle: SxProps<Theme> = {
     display: "block",
@@ -101,7 +101,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     return (
         <Dialog
             open={true}
-            onKeyDown={e => (e.keyCode === ENTER_KEY ? tryLogin() : null)}
+            onKeyDown={e => (e.key === "Enter" ? tryLogin() : null)}
             TransitionComponent={Transition}
             keepMounted
             aria-describedby="login-dialog"
