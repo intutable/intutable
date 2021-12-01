@@ -5,11 +5,11 @@ import { CircularProgress, Typography, useTheme, Box } from "@mui/material"
 import { Tablist, ADD_BUTTON_TOKEN } from "@components/TabList/TabList"
 import DataGrid from "react-data-grid"
 
-import { getTableData, getListWithTables, TableData } from "@api"
+import { getTableData, getListWithTables, TableData, addTable } from "@api"
 import { useSnackbar } from "notistack"
 import { isValidName, prepareName } from "@utils/validateName"
 import { isAuthenticated } from "@utils/coreinterface"
-import { User, USER_COOKIE_KEY } from "@context/AuthContext"
+import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 
 type ProjectSlugPageProps = {
     project: string
@@ -25,6 +25,8 @@ const ProjectSlugPage: NextPage<
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
+    const { user, getUserAuthCookie } = useAuth()
+
     const [tableData, setTableData] = useState<TableData | null>(null)
     const [currentTable, setCurrentTable] = useState<string>(
         _tables[0] || ADD_BUTTON_TOKEN
@@ -35,7 +37,7 @@ const ProjectSlugPage: NextPage<
         if (newTable) setCurrentTable(newTable)
     }
 
-    const handleAddTable = (newTableName: string) => {
+    const handleAddTable = async (newTableName: string) => {
         const name = prepareName(newTableName)
         const isValid = isValidName(name)
         if (isValid instanceof Error)
@@ -51,6 +53,21 @@ const ProjectSlugPage: NextPage<
         // NOTE: this request is blocking (the useEffect on `currentTable` wont be called until this fetch finished).
         // NOTE: this request must also create an empty table in the backend which gets fetched right after, otherwise this will lead to an error
         // TODO: make a request to backend here and then select new table
+        if (!(user && getUserAuthCookie))
+            return enqueueSnackbar("Du musst dich zuvor erneut anmelden!", {
+                variant: "error",
+            })
+        const success = await addTable(
+            user,
+            props.project,
+            name,
+            getUserAuthCookie() ?? undefined
+        )
+        if (!success)
+            return enqueueSnackbar(
+                "Die Tabelle konnte nicht erstellt werden!",
+                { variant: "error" }
+            )
         _setTables(prev => [...prev, name])
         setTableData(null)
         setCurrentTable(name)

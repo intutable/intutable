@@ -97,3 +97,26 @@ export const getTableData = async (
 
     return Promise.resolve(returnObject)
 }
+/*
+ * Adds a table to a project.
+ * // TODO: implement
+ * @param user
+ * @param table
+ * @param authCookie
+ * @returns
+ */
+export const addTable = async (
+    user: User,
+    project: string,
+    table: string,
+    authCookie?: string
+): Promise<true> => {
+    const channel = "project-management"
+    const method = "addTableToProject"
+    const body = { user: user.name, projectName: project, table: table }
+    const cookie = authCookie
+
+    const coreResponse = await coreRequest(channel, method, body, cookie)
+
+    return Promise.resolve(true)
+}

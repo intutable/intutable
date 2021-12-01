@@ -38,13 +38,15 @@ export const addProject = async (
     user: User,
     project: string,
     authCookie?: string
-): Promise<any> => {
+): Promise<true> => {
     const channel = "project-management"
     const method = "addProject"
-    const body = { user: user.name, project: project }
+    const body = { user: user.name, newProject: project }
     const cookie = authCookie
 
     const coreResponse = await coreRequest(channel, method, body, cookie)
+
+    return Promise.resolve(true)
 }
 
 // TODO: implement

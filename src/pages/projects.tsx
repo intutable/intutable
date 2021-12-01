@@ -146,33 +146,40 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user } = useAuth()
+    const { user, getUserAuthCookie } = useAuth()
 
-    const handleAddProject = () => {
-        const namePrompt = prompt("Benenne Dein neues Projekt!")
-        if (!namePrompt) return
-        const name = prepareName(namePrompt)
-        const isValid = isValidName(name)
-        if (isValid instanceof Error)
-            return enqueueSnackbar(isValid.message, { variant: "error" })
-        const nameIsTaken = props.projects
-            .map(proj => proj.toLowerCase())
-            .includes(name.toLowerCase())
-        if (nameIsTaken)
+    const handleAddProject = async () => {
+        try {
+            const namePrompt = prompt("Benenne Dein neues Projekt!")
+            if (!namePrompt) return
+            const name = prepareName(namePrompt)
+            const isValid = isValidName(name)
+            if (isValid instanceof Error)
+                return enqueueSnackbar(isValid.message, { variant: "error" })
+            const nameIsTaken = props.projects
+                .map(proj => proj.toLowerCase())
+                .includes(name.toLowerCase())
+            if (nameIsTaken)
+                return enqueueSnackbar(
+                    "Dieser Name wird bereits für eines deiner Projekte verwendet!",
+                    { variant: "error" }
+                )
+            if (!(user && getUserAuthCookie))
+                return enqueueSnackbar("Bitte melde dich erneut an!", {
+                    variant: "error",
+                })
+            // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
+            await addProject(user, name, getUserAuthCookie() ?? undefined)
+            router.push("/project/" + name)
+            enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+                variant: "success",
+            })
+        } catch (error) {
             return enqueueSnackbar(
-                "Dieser Name wird bereits für eines deiner Projekte verwendet!",
+                "Das Projekt konnte nicht erstellt werden!",
                 { variant: "error" }
             )
-        if (!user)
-            return enqueueSnackbar("Bitte melde dich erneut an!", {
-                variant: "error",
-            })
-        // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
-        const success = addProject(user, name)
-        router.push("/project/" + name)
-        enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-            variant: "success",
-        })
+        }
     }
 
     return (
