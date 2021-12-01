@@ -17,7 +17,8 @@ import { SxProps, Theme } from "@mui/system"
 
 import { useAuth } from "@context/AuthContext"
 
-const Transition = React.forwardRef(
+/* eslint-disable */
+const PopupTransition = React.forwardRef(
     (
         props: TransitionProps & {
             children: React.ReactElement<any, any>
@@ -25,6 +26,7 @@ const Transition = React.forwardRef(
         ref: React.Ref<unknown>
     ) => <Slide direction="up" ref={ref} {...props} />
 )
+/* eslint-enable */
 
 const inputFieldStyle: SxProps<Theme> = {
     display: "block",
@@ -102,7 +104,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
         <Dialog
             open={true}
             onKeyDown={e => (e.key === "Enter" ? tryLogin() : null)}
-            TransitionComponent={Transition}
+            TransitionComponent={PopupTransition}
             keepMounted
             aria-describedby="login-dialog"
             fullWidth={true}
