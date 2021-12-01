@@ -25,6 +25,8 @@ import SettingsIcon from "@mui/icons-material/Settings"
 import HomeIcon from "@mui/icons-material/Home"
 import SupportAgentIcon from "@mui/icons-material/SupportAgent"
 import Link from "@components/Link/Link"
+import LogoutButton from "@components/Login/LogoutButton"
+import { useAuth } from "@context/AuthContext"
 
 const drawerWidth: number = 240
 
@@ -49,22 +51,22 @@ const closedMixin = (theme: Theme): CSSObject => ({
     },
 })
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: prop => prop !== "open" })(
-    ({ theme, open }) => ({
-        width: drawerWidth,
-        flexShrink: 0,
-        whiteSpace: "nowrap",
-        boxSizing: "border-box",
-        ...(open && {
-            ...openedMixin(theme),
-            "& .MuiDrawer-paper": openedMixin(theme),
-        }),
-        ...(!open && {
-            ...closedMixin(theme),
-            "& .MuiDrawer-paper": closedMixin(theme),
-        }),
-    })
-)
+const Drawer = styled(MuiDrawer, {
+    shouldForwardProp: prop => prop !== "open",
+})(({ theme, open }) => ({
+    width: drawerWidth,
+    flexShrink: 0,
+    whiteSpace: "nowrap",
+    boxSizing: "border-box",
+    ...(open && {
+        ...openedMixin(theme),
+        "& .MuiDrawer-paper": openedMixin(theme),
+    }),
+    ...(!open && {
+        ...closedMixin(theme),
+        "& .MuiDrawer-paper": closedMixin(theme),
+    }),
+}))
 
 type DrawerListItemProps = {
     icon: React.ReactNode
@@ -83,6 +85,8 @@ const DrawerListItem: React.FC<DrawerListItemProps> = props => {
 }
 
 const Header = () => {
+    const { user } = useAuth()
+
     const theme = useTheme()
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 
@@ -102,10 +106,14 @@ const Header = () => {
                     ...(drawerOpen && {
                         marginLeft: drawerWidth,
                         width: `calc(100% - ${drawerWidth}px)`,
-                        transition: theme.transitions.create(["width", "margin"], {
-                            easing: theme.transitions.easing.sharp,
-                            duration: theme.transitions.duration.enteringScreen,
-                        }),
+                        transition: theme.transitions.create(
+                            ["width", "margin"],
+                            {
+                                easing: theme.transitions.easing.sharp,
+                                duration:
+                                    theme.transitions.duration.enteringScreen,
+                            }
+                        ),
                     }),
                 }}
             >
@@ -135,12 +143,20 @@ const Header = () => {
                                 component="h1"
                                 color="inherit"
                                 noWrap
-                                sx={{ fontWeight: theme.typography.fontWeightBold }}
+                                sx={{
+                                    fontWeight: theme.typography.fontWeightBold,
+                                }}
                             >
                                 Dekanatsverwaltung
                             </Typography>
                         </Link>
                     </Box>
+                    {user && (
+                        <>
+                            <span>{user.name}</span>
+                            <LogoutButton />
+                        </>
+                    )}
                 </Toolbar>
             </AppBar>
 
@@ -162,11 +178,27 @@ const Header = () => {
                         <ChevronLeftIcon />
                     </IconButton>
                 </Toolbar>
-                <DrawerListItem text="Startseite" href="/" icon={<HomeIcon />} />
-                <DrawerListItem text="Projekte" href="/projects" icon={<WorkspacesIcon />} />
+                <DrawerListItem
+                    text="Startseite"
+                    href="/"
+                    icon={<HomeIcon />}
+                />
+                <DrawerListItem
+                    text="Projekte"
+                    href="/projects"
+                    icon={<WorkspacesIcon />}
+                />
                 <Divider />
-                <DrawerListItem text="Support" href="/service-desk" icon={<SupportAgentIcon />} />
-                <DrawerListItem text="Einstellungen" href="/settings" icon={<SettingsIcon />} />
+                <DrawerListItem
+                    text="Support"
+                    href="/service-desk"
+                    icon={<SupportAgentIcon />}
+                />
+                <DrawerListItem
+                    text="Einstellungen"
+                    href="/settings"
+                    icon={<SettingsIcon />}
+                />
             </Drawer>
         </>
     )
