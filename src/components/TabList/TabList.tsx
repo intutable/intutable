@@ -1,6 +1,13 @@
 import React, { useState } from "react"
 import AddIcon from "@mui/icons-material/Add"
-import { Box, ToggleButtonGroup, ToggleButton, useTheme, Menu, MenuItem } from "@mui/material"
+import {
+    Box,
+    ToggleButtonGroup,
+    ToggleButton,
+    useTheme,
+    Menu,
+    MenuItem,
+} from "@mui/material"
 
 type TablistItemContextMenuProps = {
     anchorEL: Element
@@ -27,7 +34,9 @@ const TablistItemContextMenu: React.FC<TablistItemContextMenuProps> = props => {
             }}
         >
             {Array.isArray(props.children) ? (
-                props.children.map((item, i) => <MenuItem key={i}>{item}</MenuItem>)
+                props.children.map((item, i) => (
+                    <MenuItem key={i}>{item}</MenuItem>
+                ))
             ) : (
                 <MenuItem>{props.children}</MenuItem>
             )}
@@ -48,7 +57,10 @@ export const Tablist: React.FC<TablistProps> = props => {
     const theme = useTheme()
 
     const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
-    const handleOpenContextMenu = event => {
+    const handleOpenContextMenu = (event: {
+        preventDefault: () => void
+        currentTarget: React.SetStateAction<HTMLElement | null>
+    }) => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
@@ -59,7 +71,10 @@ export const Tablist: React.FC<TablistProps> = props => {
         // because of that 'null' is catched and interpreteted as 'ADD_BUTTON_NAME'
         // TODO: fix this
         // NOTE: this causes a bug, where clicking on a already selected toggle button will pass the below if and prompt for adding a new entitiy
-        if ((typeof val === "string" && val === ADD_BUTTON_TOKEN) || val === null) {
+        if (
+            (typeof val === "string" && val === ADD_BUTTON_TOKEN) ||
+            val === null
+        ) {
             const name = prompt("Choose new Name")
             if (name) props.onAddHandler(name)
         } else props.onChangeHandler(val)
@@ -75,7 +90,11 @@ export const Tablist: React.FC<TablistProps> = props => {
                 sx={{ display: "block", mb: theme.spacing(5) }}
             >
                 {props.data.map((element, index) => (
-                    <ToggleButton key={index} value={element} onContextMenu={handleOpenContextMenu}>
+                    <ToggleButton
+                        key={index}
+                        value={element}
+                        onContextMenu={handleOpenContextMenu}
+                    >
                         {element}
                     </ToggleButton>
                 ))}
@@ -84,13 +103,15 @@ export const Tablist: React.FC<TablistProps> = props => {
                 </ToggleButton>
             </ToggleButtonGroup>
 
-            <TablistItemContextMenu
-                anchorEL={anchorEL}
-                open={anchorEL != null}
-                onClose={handleCloseContextMenu}
-            >
-                {props.contextMenuItems}
-            </TablistItemContextMenu>
+            {anchorEL && (
+                <TablistItemContextMenu
+                    anchorEL={anchorEL}
+                    open={anchorEL != null}
+                    onClose={handleCloseContextMenu}
+                >
+                    {props.contextMenuItems}
+                </TablistItemContextMenu>
+            )}
         </>
     )
 }
