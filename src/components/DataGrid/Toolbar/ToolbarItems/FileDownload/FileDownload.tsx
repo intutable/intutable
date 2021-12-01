@@ -11,32 +11,35 @@ type FileDownoadContextMenuProps = {
     onClose: () => void
     children: Array<React.ReactNode> | React.ReactNode // overwrite implicit `children`
 }
-const FileDownloadContextMenu: React.FC<FileDownoadContextMenuProps> = props => {
-    const theme = useTheme()
+const FileDownloadContextMenu: React.FC<FileDownoadContextMenuProps> =
+    props => {
+        const theme = useTheme()
 
-    return (
-        <Menu
-            elevation={0}
-            anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            // transformOrigin={{ vertical: "top", horizontal: "right" }}
-            open={props.open}
-            anchorEl={props.anchorEL}
-            keepMounted={true}
-            onClose={props.onClose}
-            PaperProps={{
-                sx: {
-                    boxShadow: theme.shadows[1],
-                },
-            }}
-        >
-            {Array.isArray(props.children) ? (
-                props.children.map((item, i) => <MenuItem key={i}>{item}</MenuItem>)
-            ) : (
-                <MenuItem>{props.children}</MenuItem>
-            )}
-        </Menu>
-    )
-}
+        return (
+            <Menu
+                elevation={0}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                // transformOrigin={{ vertical: "top", horizontal: "right" }}
+                open={props.open}
+                anchorEl={props.anchorEL}
+                keepMounted={true}
+                onClose={props.onClose}
+                PaperProps={{
+                    sx: {
+                        boxShadow: theme.shadows[1],
+                    },
+                }}
+            >
+                {Array.isArray(props.children) ? (
+                    props.children.map((item, i) => (
+                        <MenuItem key={i}>{item}</MenuItem>
+                    ))
+                ) : (
+                    <MenuItem>{props.children}</MenuItem>
+                )}
+            </Menu>
+        )
+    }
 
 const triggerDownload = (content: any, filename: string) => {}
 
@@ -54,7 +57,10 @@ const FileDownload: PredefinedToolbarItem<FileDownloadProps> = props => {
 
     const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
 
-    const handleOnClick = event => {
+    const handleOnClick = (event: {
+        preventDefault: () => void
+        currentTarget: React.SetStateAction<HTMLElement | null>
+    }) => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
@@ -62,7 +68,9 @@ const FileDownload: PredefinedToolbarItem<FileDownloadProps> = props => {
 
     const handleExport = async (fileFormat: FileFormat) => {
         // await exportTo(fileFormat, props.getData())
-        enqueueSnackbar("This feature in not implemented yet!", { variant: "warning" })
+        enqueueSnackbar("This feature in not implemented yet!", {
+            variant: "warning",
+        })
         // triggerDownload()
         setAnchorEL(null)
     }
@@ -72,15 +80,17 @@ const FileDownload: PredefinedToolbarItem<FileDownloadProps> = props => {
             <IconButton onClick={handleOnClick}>
                 <FileDownloadIcon />
             </IconButton>
-            <FileDownloadContextMenu
-                anchorEL={anchorEL}
-                open={anchorEL != null}
-                onClose={handleCloseContextMenu}
-            >
-                <Box onClick={() => handleExport("CSV")}>CSV</Box>
-                <Box onClick={() => handleExport("PDF")}>PDF</Box>
-                <Box onClick={() => handleExport("XLSX")}>EXCEL</Box>
-            </FileDownloadContextMenu>
+            {anchorEL && (
+                <FileDownloadContextMenu
+                    anchorEL={anchorEL}
+                    open={anchorEL != null}
+                    onClose={handleCloseContextMenu}
+                >
+                    <Box onClick={() => handleExport("CSV")}>CSV</Box>
+                    <Box onClick={() => handleExport("PDF")}>PDF</Box>
+                    <Box onClick={() => handleExport("XLSX")}>EXCEL</Box>
+                </FileDownloadContextMenu>
+            )}
         </>
     )
 }
