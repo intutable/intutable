@@ -2,7 +2,7 @@
 
 import { coreRequest } from "@utils/coreinterface/json"
 import type { User } from "@context/AuthContext"
-import type { Column } from "react-data-grid"
+import type { TableData } from "./types"
 
 /**
  * Fetches a list with the names of the tables of a project.
@@ -27,15 +27,6 @@ export const getListWithTables = async (
         coreResponse.every(element => typeof element === "string")
         ? Promise.resolve(coreResponse)
         : Promise.reject(new Error())
-}
-
-/**
- * Defines the type of a table.
- */
-export type TableData = {
-    tableName: string
-    cols: Array<Column<string, unknown>>
-    rows: Array<Record<string, unknown>>
 }
 
 /**

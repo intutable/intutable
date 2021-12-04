@@ -12,14 +12,14 @@ import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import { isValidName, prepareName } from "@utils/validateName"
-import { isAuthenticated } from "@utils/coreinterface"
+import { coreRequest, isAuthenticated } from "@utils/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
-
-const rowKeyGetter = (row: any) => row.id
+import { rowKeyGetter } from "@datagrid/utils"
 
 type ProjectSlugPageProps = {
     project: string
     tables: Array<string>
+    table: { data: TableData; name: string } | null
 }
 
 const ProjectSlugPage: NextPage<
@@ -30,13 +30,12 @@ const ProjectSlugPage: NextPage<
     >(props.tables)
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
-
     const { user, getUserAuthCookie } = useAuth()
-
-    const [tableData, setTableData] = useState<TableData | null>(null)
-    const [selectedRows, setSelectedRows] = useState<Set<any>>(new Set())
+    const [tableData, setTableData] = useState<TableData | null>(
+        props.table ? props.table.data : null
+    )
     const [currentTable, setCurrentTable] = useState<string>(
-        _tables[0] || ADD_BUTTON_TOKEN
+        props.table ? props.table.name : ADD_BUTTON_TOKEN
     )
     const [loading, setLoading] = useState<boolean>(true)
 
@@ -81,6 +80,7 @@ const ProjectSlugPage: NextPage<
         enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
             variant: "success",
         })
+        console.log(tableData)
     }
 
     const handleRenameTable = () => {
@@ -96,6 +96,7 @@ const ProjectSlugPage: NextPage<
     //     return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] }
     // }
 
+    // loads the data for the current table, if the table gets changed
     useEffect(() => {
         ;(async _ => {
             try {
@@ -144,26 +145,26 @@ const ProjectSlugPage: NextPage<
                 <LoadingSkeleton />
             ) : (
                 <>
-                    <Toolbar position="top">
-                        <TItem.AddCol addCol={() => {}} />
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 1
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 2
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 3
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 4
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 5
-                        </Toolbar.Item>
-                        <TItem.FileDownload getData={() => []} />
-                    </Toolbar>
                     <Box>
+                        <Toolbar position="top">
+                            <TItem.AddCol addCol={() => {}} />
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 1
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 2
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 3
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 4
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 5
+                            </Toolbar.Item>
+                            <TItem.FileDownload getData={() => []} />
+                        </Toolbar>
                         <DataGrid
                             className={
                                 theme.palette.mode === "light"
@@ -171,7 +172,6 @@ const ProjectSlugPage: NextPage<
                                     : "rdg-dark"
                             }
                             rows={tableData ? (tableData.rows as any) : []}
-                            summaryRows={[{ id: "total_0" }]}
                             columns={
                                 tableData
                                     ? tableData.cols
@@ -179,22 +179,26 @@ const ProjectSlugPage: NextPage<
                             }
                             noRowsFallback={<NoRowsRenderer />}
                             rowKeyGetter={rowKeyGetter}
+                            defaultColumnOptions={{
+                                sortable: true,
+                                resizable: true,
+                            }}
                             // onColumnResize={}
                             // onRowDoubleClick={}
                             // onFill={handleFill}
                             // selectedRows={selectedRows}
                             // onSelectedRowsChange={setSelectedRows}
                         />
+                        <Toolbar position="bottom">
+                            <TItem.Connection status={"connected"} />
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 1
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 2
+                            </Toolbar.Item>
+                        </Toolbar>
                     </Box>
-                    <Toolbar position="bottom">
-                        <TItem.Connection status={"connected"} />
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 1
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 2
-                        </Toolbar.Item>
-                    </Toolbar>
                 </>
             )}
         </>
@@ -231,9 +235,20 @@ export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
                     authCookie
                 )
 
+                let dataOfFirstTable
+                if (serverRequest.length > 0)
+                    dataOfFirstTable = await getTableData(
+                        serverRequest[0],
+                        authCookie
+                    )
+                else dataOfFirstTable = null
+
                 const data: ProjectSlugPageProps = {
                     project: projectName,
                     tables: serverRequest,
+                    table: dataOfFirstTable
+                        ? { data: dataOfFirstTable, name: serverRequest[0] }
+                        : null,
                 }
 
                 const error = serverRequest == null

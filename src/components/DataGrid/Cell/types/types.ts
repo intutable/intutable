@@ -34,10 +34,36 @@ type _CellTypeMap = {
     complex: object
 }
 
+// Note: keep this up to date with the types in `_CellTypeMap`
+const _RuntimeCellTypeMap = [
+    "string",
+    "number",
+    "percentage",
+    "currency",
+    "boolean",
+    "date",
+    "datetime",
+    "time",
+    "avatar",
+    "link",
+    "email",
+    "select",
+    "multiSelect",
+    "complex",
+] as const
+
 /**
  * Types that can be used in a cell.
  */
 export type CellType = keyof _CellTypeMap
+
+/**
+ * Checks if a value if of cell type.
+ * @param value The value to check
+ * @returns
+ */
+export const isCellType = (value: any): value is CellType =>
+    _RuntimeCellTypeMap.includes(value)
 
 /**
  * Specifies the type of a CellType; e.g. (`string` -> string) or ("currency" -> Currency Class)
@@ -51,7 +77,7 @@ export type CellData<T extends string> = T extends keyof _CellTypeMap
  * Tells nothing about the cell's visibility to other users.
  * @default editable
  */
-export type CellAccessType = "readonly" | "editable"
+export type CellAccess = "readonly" | "editable"
 
 /**
  * Position of the cell's content.
