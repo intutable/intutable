@@ -1,6 +1,7 @@
+import { Currency } from "./Currency"
+import { Avatar } from "./Avatar"
 /**
  * Types that can be used in a cell.
- * @default string
  * • `string` is stored as a string
  * • `number` is stored as a number
  * • `percentage` is stored as a number with a percentage symbol e.g. `12,34 %` (german format with comma as decimal separator)
@@ -16,48 +17,34 @@
  * • `multiSelect` is stored as an array of strings which represents a selectable list of options (multiple options can be selected)
  * • `complex` is stored as a complex object
  */
-export type CellType =
-    | "string"
-    | "number"
-    | "percentage"
-    | "currency"
-    | "boolean"
-    | "date"
-    | "datetime"
-    | "time"
-    | "avatar"
-    | "link"
-    | "email"
-    | "select"
-    | "multiSelect"
-    | "complex"
-
-/**
- * Date format
- * @default dd.mm.yyyy
- */
-export type DateFormat = "dd.mm.yyyy" | "dd/mm/yyyy"
-
-/**
- * Time format
- * @default 24h
- */
-export type TimeFormat = "12h" | "24h"
-
-/**
- * Date time format
- * @default 'dd.mm.yyyy 24h'
- */
-export type DateTimeFormat = {
-    dateformat: DateFormat
-    timeformat: TimeFormat
+type _CellTypeMap = {
+    string: string
+    number: number
+    percentage: string
+    currency: Currency
+    boolean: boolean
+    date: Date
+    datetime: Date
+    time: Date
+    avatar: Avatar
+    link: string
+    email: string
+    select: string[]
+    multiSelect: string[]
+    complex: object
 }
 
 /**
- * Currency format
- * @default EURO
+ * Types that can be used in a cell.
  */
-export type CurrencyFormat = "EURO" | "DOLLAR" | "YEN" | "POUND" | "RUBLE" | "WON"
+export type CellType = keyof _CellTypeMap
+
+/**
+ * Specifies the type of a CellType; e.g. (`string` -> string) or ("currency" -> Currency Class)
+ */
+export type CellData<T extends string> = T extends keyof _CellTypeMap
+    ? _CellTypeMap[T]
+    : never
 
 /**
  * Manages how a user can access a cell.
