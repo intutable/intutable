@@ -1,7 +1,7 @@
 import React from "react"
 import { CellType, CellData } from "./types"
 import { CellComponents } from "@datagrid/Cell/CellComponents"
-import { CellComponent } from "./CellComponents/types"
+import type { CellComponent } from "./CellComponents/types"
 
 const CellTypeComponentMap: {
     [key in CellType]: CellComponent
@@ -22,14 +22,14 @@ const CellTypeComponentMap: {
     complex: CellComponents.ComplexCell,
 }
 
-// TODO: (04.12.21): 1) forward to the data to the component and 2) instead return jsx
-
 /**
  * Returns the adequate cell component for the given cell type.
  * @param {CellType} forType returns the cell component based on this type specification
  * @returns cell component
  */
-export const Cell = (
-    forType: CellType,
-    withData: CellData<CellType>
-): CellComponent => CellTypeComponentMap[forType]
+const Cell: CellComponent = props => {
+    const Component = CellTypeComponentMap[props.type]
+    return <Component {...props} />
+}
+
+export default Cell
