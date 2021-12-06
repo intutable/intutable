@@ -15,6 +15,7 @@ import { isValidName, prepareName } from "@utils/validateName"
 import { coreRequest, isAuthenticated } from "@utils/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 import { rowKeyGetter } from "@datagrid/utils"
+import { getColumns, transformHelper } from "@datagrid/utils"
 
 type ProjectSlugPageProps = {
     project: string
@@ -174,7 +175,9 @@ const ProjectSlugPage: NextPage<
                             rows={tableData ? (tableData.rows as any) : []}
                             columns={
                                 tableData
-                                    ? tableData.cols
+                                    ? getColumns(
+                                          transformHelper(tableData.cols)
+                                      )
                                     : [{ key: "id", name: "ID" }]
                             }
                             noRowsFallback={<NoRowsRenderer />}

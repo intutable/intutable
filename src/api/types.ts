@@ -16,4 +16,5 @@ export type ServerColumn = {
     name: string
     key: string
     editor: string
+    editorOptions: Column<unknown>["editorOptions"]
 }

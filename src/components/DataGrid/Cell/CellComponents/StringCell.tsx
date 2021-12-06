@@ -1,5 +1,5 @@
 import React from "react"
 import type { CellComponent } from "./types"
-import { EditableCell } from "./EditableCell"
+import { EditableTextCell } from "./EditableTextCell"
 
-export const StringCell: CellComponent = props => null
+export const StringCell: CellComponent = props => <EditableTextCell />
