@@ -1,8 +1,8 @@
 import type { ServerColumn } from "@api"
 import { isCellType, CellType } from "@datagrid/Cell/types"
-import type { Column, EditorProps } from "react-data-grid"
+import type { Column, EditorProps, HeaderRendererProps } from "react-data-grid"
 import { Cell } from "@datagrid/Cell"
-
+import { ColumnHeader } from "@datagrid/ColumnHeader"
 // TODO: (04.12.21): test this function and implement the components for each cell type
 
 /**
@@ -39,6 +39,14 @@ export const getColumns = (
             : undefined,
         editorOptions: {
             editOnClick: true,
+        },
+        headerRenderer: (props: HeaderRendererProps<any>) => {
+            return (
+                <ColumnHeader
+                    label={props.column.name as string}
+                    type={serverColumn.editor as CellType}
+                />
+            )
         },
     }))
 

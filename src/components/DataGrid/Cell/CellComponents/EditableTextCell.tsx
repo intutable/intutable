@@ -1,47 +1,15 @@
-import React from "react"
-import { useTheme, styled } from "@mui/material"
-import { InputUnstyled, useInput, UseInputProps } from "@mui/base"
-
-const StyledInputElement = styled("input")`
-    width: 200px;
-    font-size: 1rem;
-    font-family: IBM Plex Sans, sans-serif;
-    font-weight: 400;
-    line-height: 1.4375em;
-    background: rgb(243, 246, 249);
-    border: 1px solid #e5e8ec;
-    border-radius: 10px;
-    padding: 6px 10px;
-    color: #20262d;
-    transition: width 300ms ease;
-
-    &:hover {
-        background: #eaeef3;
-        border-color: #e5e8ec;
-    }
-
-    &:focus {
-        outline: none;
-        width: 220px;
-        transition: width 200ms ease-out;
-    }
-`
-
-const Input = React.forwardRef(
-    (props: UseInputProps, ref: React.Ref<HTMLInputElement> | undefined) => {
-        const { getRootProps, getInputProps } = useInput(props, ref)
-
-        return (
-            <div {...getRootProps()}>
-                <StyledInputElement {...props} {...getInputProps()} />
-            </div>
-        )
-    }
-)
+import React, { useEffect, useState, useMemo } from "react"
+import { Input } from "./CustomInputField"
 
 type EditableCellProps = {
-    // children: React.ReactNode
-    // onChange: (value: string) => void
+    /**
+     * value of the cell
+     */
+    children: string
+    /**
+     * called when the value of the cell is changed
+     */
+    onChange: (newValue: string) => void
     /**
      * @default false
      */
@@ -49,5 +17,39 @@ type EditableCellProps = {
 }
 
 export const EditableTextCell: React.FC<EditableCellProps> = props => {
-    return <Input />
+    const [value, setValue] = useState<string>(props.children)
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setValue(e.target.value.trim())
+    }
+
+    // TODO: https://github.com/adazzle/react-data-grid/blob/0074e4107f91d5dff48b4ba43864cf0718ac1282/src/editors/TextEditor.tsx#L37
+    const handleUpdate = () => {
+        if (value !== props.children) {
+            props.onChange(value)
+        }
+    }
+
+    const handleKeypress = (e: any) => {
+        if (e.key == "Enter") {
+            handleUpdate()
+        }
+    }
+
+    // TODO: not working
+    // useEffect(() => {
+    //     if (document) document.addEventListener("keyup", handleKeypress)
+    //     return () => {
+    //         if (document) document.removeEventListener("keyup", handleKeypress)
+    //     }
+    // }, [])
+
+    return (
+        <Input
+            onChange={handleChange}
+            onBlur={handleUpdate}
+            value={value}
+            disabled={props.readonly ?? false}
+        />
+    )
 }
