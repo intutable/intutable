@@ -2,7 +2,8 @@
 
 import { coreRequest } from "@utils/coreinterface/json"
 import type { User } from "@context/AuthContext"
-import type { Column } from "react-data-grid"
+import type { TableData } from "./types"
+import { isOfTypeTableData } from "./utils"
 
 /**
  * Fetches a list with the names of the tables of a project.
@@ -30,15 +31,6 @@ export const getListWithTables = async (
 }
 
 /**
- * Defines the type of a table.
- */
-export type TableData = {
-    tableName: string
-    cols: Array<Column<string, unknown>>
-    rows: Array<Record<string, unknown>>
-}
-
-/**
  * Fetches the data of a table.
  * @param table table name.
  * @param authCookie auth cookie. Optional.
@@ -53,18 +45,21 @@ export const getTableData = async (
     const method = "getTableData"
     const body = { projectName: project, tableName: table }
     const cookie = authCookie
-    
-    const coreResponse: unknown = await coreRequest(channel, method, body, cookie) as Omit<TableData, "tableName">
-    
-    if ("cols" in coreResponse && "rows" in coreResponse) {
-        const _coreResponse = coreResponse as Partial<Omit<TableData, "tableName">>
-        if (_coreResponse.cols.length > )
-    }
+
+    const coreResponse: unknown = (await coreRequest(
+        channel,
+        method,
+        body,
+        cookie
+    )) as Omit<TableData, "tableName">
+
+    if (!isOfTypeTableData(coreResponse))
+        return Promise.reject(new Error("Invalid server response"))
 
     const returnObject: TableData = {
         tableName: project,
         cols: coreResponse.cols,
-        rows: coreResponse.rows
+        rows: coreResponse.rows,
     }
     return Promise.resolve(returnObject)
 }
