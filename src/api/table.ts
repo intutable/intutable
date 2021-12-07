@@ -17,7 +17,7 @@ export const getListWithTables = async (
     authCookie?: string
 ): Promise<Array<string>> => {
     const channel = "project-management"
-    const method = "getProjectTables"
+    const method = "getTablesFromProject"
     const body = { user: user.name, projectName: project }
     const cookie = authCookie
 
@@ -48,53 +48,28 @@ export const getTableData = async (
     table: string,
     authCookie?: string
 ): Promise<TableData> => {
-    const channel = "database"
-    const method = "select"
-    const body = { table: "members" }
+    const channel = "project-management"
+    const method = "getTableData"
+    const body = { projectName: "Personal", tableName: table }
     const cookie = authCookie
 
     // TODO: implement
 
-    const coreResponse = await coreRequest(channel, method, body, cookie)
+    const coreResponse: any = await coreRequest(channel, method, body, cookie)
 
-    if (!Array.isArray(coreResponse)) return Promise.reject(new Error())
+    // if (!Array.isArray(coreResponse)) return Promise.reject(new Error())
 
-    const rows = coreResponse.map(({ _id, ...values }) => ({
-        id: _id,
-        ...values,
-    }))
+    // const rows = coreResponse.map(({ _id, ...values }) => ({
+    //     id: _id,
+    //     ...values,
+    // }))
 
     const returnObject: TableData = {
         tableName: "Personen",
-        cols: [
-            { key: "id", name: "ID" },
-            { key: "employeeId", name: "EID" },
-            {
-                key: "firstName",
-                name: "Vorname",
-                editable: true,
-            },
-            {
-                key: "lastName",
-                name: "Nachname",
-                editable: true,
-            },
-            { key: "description", name: "Description" },
-            {
-                key: "title",
-                name: "Titel",
-                editable: true,
-            },
-            { key: "phone", name: "Test" },
-            {
-                key: "mail",
-                name: "E-Mail",
-                editable: true,
-            },
-        ],
-        rows: rows,
+        cols: coreResponse.columns,
+        rows: coreResponse.rows
     }
-
+    console.log(returnObject)
     return Promise.resolve(returnObject)
 }
 /*

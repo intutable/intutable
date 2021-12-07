@@ -175,6 +175,7 @@ const ProjectsPage: NextPage<
                 variant: "success",
             })
         } catch (error) {
+            console.log(error)
             return enqueueSnackbar(
                 "Das Projekt konnte nicht erstellt werden!",
                 { variant: "error" }
