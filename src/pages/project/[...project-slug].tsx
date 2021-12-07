@@ -86,21 +86,23 @@ const ProjectSlugPage: NextPage<
     }
 
     useEffect(() => {
-        ;(async _ => {
-            try {
-                setLoading(true)
-                const serverRequest = await getTableData(currentTable)
-                setTableData(serverRequest)
-            } catch (error) {
-                enqueueSnackbar(
-                    "Fehler: Die Tabelle konnte nicht geladen werden!",
-                    {
-                        variant: "error",
-                    }
-                )
-                setTableData(null)
-            } finally {
-                setLoading(false)
+        (async _ => {
+            if (currentTable !== ADD_BUTTON_TOKEN) {
+                try {
+                    setLoading(true)
+                    const serverRequest = await getTableData(currentTable, props.project)
+                    setTableData(serverRequest)
+                } catch (error) {
+                    enqueueSnackbar(
+                        "Fehler: Die Tabelle konnte nicht geladen werden!",
+                        {
+                            variant: "error",
+                        }
+                    )
+                    setTableData(null)
+                } finally {
+                    setLoading(false)
+                }
             }
         })()
     }, [currentTable])

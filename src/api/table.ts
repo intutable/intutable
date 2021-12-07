@@ -46,30 +46,26 @@ export type TableData = {
  */
 export const getTableData = async (
     table: string,
+    project: string,
     authCookie?: string
 ): Promise<TableData> => {
     const channel = "project-management"
     const method = "getTableData"
-    const body = { projectName: "Personal", tableName: table }
+    const body = { projectName: project, tableName: table }
     const cookie = authCookie
-
-    // TODO: implement
-
-    const coreResponse: any = await coreRequest(channel, method, body, cookie)
-
-    // if (!Array.isArray(coreResponse)) return Promise.reject(new Error())
-
-    // const rows = coreResponse.map(({ _id, ...values }) => ({
-    //     id: _id,
-    //     ...values,
-    // }))
+    
+    const coreResponse: unknown = await coreRequest(channel, method, body, cookie) as Omit<TableData, "tableName">
+    
+    if ("cols" in coreResponse && "rows" in coreResponse) {
+        const _coreResponse = coreResponse as Partial<Omit<TableData, "tableName">>
+        if (_coreResponse.cols.length > )
+    }
 
     const returnObject: TableData = {
-        tableName: "Personen",
-        cols: coreResponse.columns,
+        tableName: project,
+        cols: coreResponse.cols,
         rows: coreResponse.rows
     }
-    console.log(returnObject)
     return Promise.resolve(returnObject)
 }
 /*
