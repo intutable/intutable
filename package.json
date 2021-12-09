@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "build": "npm run build-core && next build",
-        "dev": "node ./dist/start/index dev",
+        "dev": "npm run build-core && npm run db:setup && node ./dist/start/index dev",
         "start": "node ./dist/start start",
         "build-core": "cd src/backend && tsc && cd ../..",
         "start-core": "node ./dist/start/core",
