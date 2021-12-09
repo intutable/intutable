@@ -1,5 +1,7 @@
 import { Currency } from "./Currency"
+import { Percentage } from "./Percentage"
 import { Avatar } from "./Avatar"
+
 /**
  * Types that can be used in a cell.
  * • `string` is stored as a string
@@ -20,7 +22,7 @@ import { Avatar } from "./Avatar"
 type _CellTypeMap = {
     string: string
     number: number
-    percentage: string
+    percentage: Percentage
     currency: Currency
     boolean: boolean
     date: Date
@@ -31,11 +33,11 @@ type _CellTypeMap = {
     email: string
     select: string[]
     multiSelect: string[]
-    complex: object
+    complex: Record<string, unknown>
 }
 
 // Note: keep this up to date with the types in `_CellTypeMap`
-const _RuntimeCellTypeMap = [
+export const _RuntimeCellTypeMap = [
     "string",
     "number",
     "percentage",
