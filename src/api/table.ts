@@ -46,25 +46,16 @@ export const getTableData = async (
     const body = { projectName: project, tableName: table }
     const cookie = authCookie
 
-    const coreResponse: TableData = (await coreRequest(
-        channel,
-        method,
-        body,
-        cookie
-    )) as TableData
+    // Type: ServerTableData
+    const coreResponse: any = await coreRequest(channel, method, body, cookie)
 
-    // coreResponse.columns.map(item => ({
-
-    // }))
-
-    coreResponse.columns.map(item => {
+    coreResponse.columns.map((item: any) => {
         item.key = item.columnName
         item.name = item.key
         delete item.columnName
         return item
     })
-
-    return Promise.resolve(coreResponse)
+    return Promise.resolve(coreResponse as TableData)
 }
 /*
  * Adds a table to a project.
