@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
+import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
 import Title from "@components/Head/Title"
 import { CircularProgress, Typography, useTheme, Box } from "@mui/material"
 import { Tablist, ADD_BUTTON_TOKEN } from "@components/TabList/TabList"
@@ -7,9 +8,14 @@ import DataGrid from "react-data-grid"
 
 import { getTableData, getListWithTables, TableData, addTable } from "@api"
 import { useSnackbar } from "notistack"
+import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
+import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
+import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import { isValidName, prepareName } from "@utils/validateName"
 import { isAuthenticated } from "@utils/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
+
+const rowKeyGetter = (row: any) => row.id
 
 type ProjectSlugPageProps = {
     project: string
@@ -28,6 +34,7 @@ const ProjectSlugPage: NextPage<
     const { user, getUserAuthCookie } = useAuth()
 
     const [tableData, setTableData] = useState<TableData | null>(null)
+    const [selectedRows, setSelectedRows] = useState<Set<any>>(new Set())
     const [currentTable, setCurrentTable] = useState<string>(
         _tables[0] || ADD_BUTTON_TOKEN
     )
@@ -85,6 +92,10 @@ const ProjectSlugPage: NextPage<
         // TODO: implement
     }
 
+    // function handleFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
+    //     return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] }
+    // }
+
     useEffect(() => {
         (async _ => {
             if (currentTable !== ADD_BUTTON_TOKEN) {
@@ -132,17 +143,61 @@ const ProjectSlugPage: NextPage<
                 ]}
             />
             {loading ? (
-                <CircularProgress />
-            ) : tableData ? (
-                // TODO: seperate this into a new component which takes care of sending updates to the backend
-                <Box>
-                    <DataGrid
-                        rows={tableData.rows as any}
-                        columns={tableData.columns as any}
-                    />
-                </Box>
+                <LoadingSkeleton />
             ) : (
-                <>Could not load the Table!</>
+                <>
+                    <Toolbar position="top">
+                        <TItem.AddCol addCol={() => {}} />
+                        <Toolbar.Item onClickHandler={() => {}}>
+                            Tool 1
+                        </Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>
+                            Tool 2
+                        </Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>
+                            Tool 3
+                        </Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>
+                            Tool 4
+                        </Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>
+                            Tool 5
+                        </Toolbar.Item>
+                        <TItem.FileDownload getData={() => []} />
+                    </Toolbar>
+                    <Box>
+                        <DataGrid
+                            className={
+                                theme.palette.mode === "light"
+                                    ? "rdg-light"
+                                    : "rdg-dark"
+                            }
+                            rows={tableData ? (tableData.rows as any) : []}
+                            summaryRows={[{ id: "total_0" }]}
+                            columns={
+                                tableData
+                                    ? tableData.cols
+                                    : [{ key: "id", name: "ID" }]
+                            }
+                            noRowsFallback={<NoRowsRenderer />}
+                            rowKeyGetter={rowKeyGetter}
+                            // onColumnResize={}
+                            // onRowDoubleClick={}
+                            // onFill={handleFill}
+                            // selectedRows={selectedRows}
+                            // onSelectedRowsChange={setSelectedRows}
+                        />
+                    </Box>
+                    <Toolbar position="bottom">
+                        <TItem.Connection status={"connected"} />
+                        <Toolbar.Item onClickHandler={() => {}}>
+                            Tool 1
+                        </Toolbar.Item>
+                        <Toolbar.Item onClickHandler={() => {}}>
+                            Tool 2
+                        </Toolbar.Item>
+                    </Toolbar>
+                </>
             )}
         </>
     )
