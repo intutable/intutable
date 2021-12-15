@@ -97,11 +97,14 @@ const ProjectSlugPage: NextPage<
     // }
 
     useEffect(() => {
-        (async _ => {
+        ;(async _ => {
             if (currentTable !== ADD_BUTTON_TOKEN) {
                 try {
                     setLoading(true)
-                    const serverRequest = await getTableData(currentTable, props.project)
+                    const serverRequest = await getTableData(
+                        currentTable,
+                        props.project
+                    )
                     setTableData(serverRequest)
                 } catch (error) {
                     enqueueSnackbar(
@@ -176,7 +179,7 @@ const ProjectSlugPage: NextPage<
                             summaryRows={[{ id: "total_0" }]}
                             columns={
                                 tableData
-                                    ? tableData.cols
+                                    ? tableData.columns
                                     : [{ key: "id", name: "ID" }]
                             }
                             noRowsFallback={<NoRowsRenderer />}
