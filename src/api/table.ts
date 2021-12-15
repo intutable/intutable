@@ -3,6 +3,7 @@
 import { coreRequest } from "@utils/coreinterface/json"
 import type { User } from "@context/AuthContext"
 import type { TableData } from "./types"
+import { isOfTypeTableData } from "./utils"
 
 /**
  * Fetches a list with the names of the tables of a project.
@@ -17,7 +18,7 @@ export const getListWithTables = async (
     authCookie?: string
 ): Promise<Array<string>> => {
     const channel = "project-management"
-    const method = "getProjectTables"
+    const method = "getTablesFromProject"
     const body = { user: user.name, projectName: project }
     const cookie = authCookie
 
@@ -37,56 +38,24 @@ export const getListWithTables = async (
  */
 export const getTableData = async (
     table: string,
+    project: string,
     authCookie?: string
 ): Promise<TableData> => {
-    const channel = "database"
-    const method = "select"
-    const body = { table: "members" }
+    const channel = "project-management"
+    const method = "getTableData"
+    const body = { projectName: project, tableName: table }
     const cookie = authCookie
 
-    // TODO: implement
+    // Type: ServerTableData
+    const coreResponse: any = await coreRequest(channel, method, body, cookie)
 
-    const coreResponse = await coreRequest(channel, method, body, cookie)
-
-    if (!Array.isArray(coreResponse)) return Promise.reject(new Error())
-
-    const rows = coreResponse.map(({ _id, ...values }) => ({
-        id: _id,
-        ...values,
-    }))
-
-    const returnObject: TableData = {
-        tableName: "Personen",
-        cols: [
-            { key: "id", name: "ID" },
-            { key: "employeeId", name: "EID" },
-            {
-                key: "firstName",
-                name: "Vorname",
-                editable: true,
-            },
-            {
-                key: "lastName",
-                name: "Nachname",
-                editable: true,
-            },
-            { key: "description", name: "Description" },
-            {
-                key: "title",
-                name: "Titel",
-                editable: true,
-            },
-            { key: "phone", name: "Test" },
-            {
-                key: "mail",
-                name: "E-Mail",
-                editable: true,
-            },
-        ],
-        rows: rows,
-    }
-
-    return Promise.resolve(returnObject)
+    coreResponse.columns.map((item: any) => {
+        item.key = item.columnName
+        item.name = item.key
+        delete item.columnName
+        return item
+    })
+    return Promise.resolve(coreResponse as TableData)
 }
 /*
  * Adds a table to a project.
@@ -105,6 +74,60 @@ export const addTable = async (
     const channel = "project-management"
     const method = "addTableToProject"
     const body = { user: user.name, projectName: project, table: table }
+    const cookie = authCookie
+
+    const coreResponse = await coreRequest(channel, method, body, cookie)
+
+    return Promise.resolve(true)
+}
+
+/**
+ *
+ * @param user
+ * @param project
+ * @param table
+ * @param authCookie
+ * @returns
+ */
+export const deleteTable = async (
+    user: User,
+    project: string,
+    table: string,
+    authCookie?: string
+): Promise<true> => {
+    const channel = "project-management"
+    const method = "removeTableFromProject"
+    const body = { projectName: project, table: table }
+    const cookie = authCookie
+
+    const coreResponse = await coreRequest(channel, method, body, cookie)
+
+    return Promise.resolve(true)
+}
+
+/**
+ *
+ * @param user
+ * @param project
+ * @param newProject
+ * @param authCookie
+ * @returns
+ */
+export const renameTable = async (
+    user: User,
+    project: string,
+    table: string,
+    newTable: string,
+    authCookie?: string
+): Promise<true> => {
+    const channel = "project-management"
+    const method = "changeTableName"
+    const body = {
+        user: user.name,
+        project: project,
+        oldName: table,
+        newName: newTable,
+    }
     const cookie = authCookie
 
     const coreResponse = await coreRequest(channel, method, body, cookie)

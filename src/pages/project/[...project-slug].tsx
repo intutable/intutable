@@ -100,20 +100,25 @@ const ProjectSlugPage: NextPage<
     // loads the data for the current table, if the table gets changed
     useEffect(() => {
         ;(async _ => {
-            try {
-                setLoading(true)
-                const serverRequest = await getTableData(currentTable)
-                setTableData(serverRequest)
-            } catch (error) {
-                enqueueSnackbar(
-                    "Fehler: Die Tabelle konnte nicht geladen werden!",
-                    {
-                        variant: "error",
-                    }
-                )
-                setTableData(null)
-            } finally {
-                setLoading(false)
+            if (currentTable !== ADD_BUTTON_TOKEN) {
+                try {
+                    setLoading(true)
+                    const serverRequest = await getTableData(
+                        currentTable,
+                        props.project
+                    )
+                    setTableData(serverRequest)
+                } catch (error) {
+                    enqueueSnackbar(
+                        "Fehler: Die Tabelle konnte nicht geladen werden!",
+                        {
+                            variant: "error",
+                        }
+                    )
+                    setTableData(null)
+                } finally {
+                    setLoading(false)
+                }
             }
         })()
     }, [currentTable])
@@ -176,7 +181,7 @@ const ProjectSlugPage: NextPage<
                             columns={
                                 tableData
                                     ? getColumns(
-                                          transformHelper(tableData.cols)
+                                          transformHelper(tableData.columns)
                                       )
                                     : [{ key: "id", name: "ID" }]
                             }
