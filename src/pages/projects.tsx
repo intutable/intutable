@@ -19,7 +19,13 @@ import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
-import { getListWithProjects, addProject } from "@api"
+import {
+    getListWithProjects,
+    addProject,
+    deleteProject,
+    renameProject,
+    deleteTable,
+} from "@api"
 import { isAuthenticated } from "@utils/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
@@ -68,6 +74,8 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
+    const { user, getUserAuthCookie } = useAuth()
+
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
     const handleOpenContextMenu = (event: any) => {
@@ -85,14 +93,32 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
         // enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", { variant: "error" })
         alert("Not implemented yet")
     }
-    const handleDeleteProject = () => {
-        handleCloseContextMenu()
-        const confirmed = confirm("Möchtest du dein Projekt wirklich löschen?")
-        if (!confirmed) return
-        // TODO: implement
-        // enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
-        // enqueueSnackbar("Projekt konnte nicht gelöscht werden!", { variant: "error" })
-        alert("Not implemented yet")
+
+    const handleDeleteProject = async () => {
+        try {
+            if (typeof props.children !== "string") return
+            handleCloseContextMenu()
+            const confirmed = confirm(
+                "Möchtest du dein Projekt wirklich löschen?"
+            )
+            if (!confirmed) return
+            if (!(user && getUserAuthCookie))
+                return enqueueSnackbar("Bitte melde dich erneut an!", {
+                    variant: "error",
+                })
+            await deleteProject(
+                user,
+                props.children as string,
+                getUserAuthCookie() ?? undefined
+            )
+            // TODO: reload the project page
+            enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
+        } catch (error) {
+            console.log(error)
+            enqueueSnackbar("Projekt konnte nicht gelöscht werden!", {
+                variant: "error",
+            })
+        }
     }
 
     return (

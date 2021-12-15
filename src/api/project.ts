@@ -49,7 +49,48 @@ export const addProject = async (
     return Promise.resolve(true)
 }
 
-// TODO: implement
-export const deleteProject = async () => {}
-// TODO: implement
-export const renameProject = async () => {}
+/**
+ *
+ * @param user
+ * @param project
+ * @param authCookie
+ * @returns
+ */
+export const deleteProject = async (
+    user: User,
+    project: string,
+    authCookie?: string
+): Promise<true> => {
+    const channel = "project-management"
+    const method = "removeProject"
+    const body = { user: user.name, project: project }
+    const cookie = authCookie
+
+    const coreResponse = await coreRequest(channel, method, body, cookie)
+
+    return Promise.resolve(true)
+}
+
+/**
+ *
+ * @param user
+ * @param project
+ * @param newProject
+ * @param authCookie
+ * @returns
+ */
+export const renameProject = async (
+    user: User,
+    project: string,
+    newProject: string,
+    authCookie?: string
+): Promise<true> => {
+    const channel = "project-management"
+    const method = "removeProject"
+    const body = { user: user.name, oldName: project, newName: newProject }
+    const cookie = authCookie
+
+    const coreResponse = await coreRequest(channel, method, body, cookie)
+
+    return Promise.resolve(true)
+}

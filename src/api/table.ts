@@ -45,13 +45,17 @@ export const getTableData = async (
     const method = "getTableData"
     const body = { projectName: project, tableName: table }
     const cookie = authCookie
-    
+
     const coreResponse: TableData = (await coreRequest(
         channel,
         method,
         body,
         cookie
     )) as TableData
+
+    // coreResponse.columns.map(item => ({
+
+    // }))
 
     coreResponse.columns.map(item => {
         item.key = item.columnName
@@ -79,6 +83,60 @@ export const addTable = async (
     const channel = "project-management"
     const method = "addTableToProject"
     const body = { user: user.name, projectName: project, table: table }
+    const cookie = authCookie
+
+    const coreResponse = await coreRequest(channel, method, body, cookie)
+
+    return Promise.resolve(true)
+}
+
+/**
+ *
+ * @param user
+ * @param project
+ * @param table
+ * @param authCookie
+ * @returns
+ */
+export const deleteTable = async (
+    user: User,
+    project: string,
+    table: string,
+    authCookie?: string
+): Promise<true> => {
+    const channel = "project-management"
+    const method = "removeTableFromProject"
+    const body = { projectName: project, table: table }
+    const cookie = authCookie
+
+    const coreResponse = await coreRequest(channel, method, body, cookie)
+
+    return Promise.resolve(true)
+}
+
+/**
+ *
+ * @param user
+ * @param project
+ * @param newProject
+ * @param authCookie
+ * @returns
+ */
+export const renameTable = async (
+    user: User,
+    project: string,
+    table: string,
+    newTable: string,
+    authCookie?: string
+): Promise<true> => {
+    const channel = "project-management"
+    const method = "changeTableName"
+    const body = {
+        user: user.name,
+        project: project,
+        oldName: table,
+        newName: newTable,
+    }
     const cookie = authCookie
 
     const coreResponse = await coreRequest(channel, method, body, cookie)
