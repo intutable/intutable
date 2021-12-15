@@ -138,7 +138,7 @@ const ProjectSlugPage: NextPage<
                 <Box>
                     <DataGrid
                         rows={tableData.rows as any}
-                        columns={tableData.cols}
+                        columns={tableData.columns as any}
                     />
                 </Box>
             ) : (

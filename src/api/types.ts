@@ -5,7 +5,7 @@ import type { Column } from "react-data-grid"
  */
 export type TableData = {
     tableName: string
-    cols: Array<Column<string, unknown>>
+    columns: Array<Record<string, unknown>>
     rows: Array<Record<string, unknown>>
 }
 

@@ -22,9 +22,9 @@ export const isOfTypeTableData = (data: unknown): data is TableData => {
         return false
 
     if (
-        emptyTable.cols == null ||
-        !Array.isArray(emptyTable.cols) ||
-        emptyTable.cols.length < 1
+        emptyTable.columns == null ||
+        !Array.isArray(emptyTable.columns) ||
+        emptyTable.columns.length < 1
     )
         return false
 

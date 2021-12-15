@@ -22,7 +22,7 @@
         "@intutable/database": "^1.1.1",
         "@intutable/http": "0.1.4",
         "@intutable/http-cors": "0.1.0",
-        "@intutable/project-management": "0.3.0",
+        "@intutable/project-management": "0.3.5",
         "@intutable/user-authenticationuser-authentication": "0.1.1",
         "@mui/icons-material": "^5.0.1",
         "@mui/material": "^5.0.2",
