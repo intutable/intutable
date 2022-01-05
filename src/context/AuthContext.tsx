@@ -6,7 +6,7 @@ import {
     coreLogin,
     coreLogout,
     isAuthenticated,
-} from "@utils/coreinterface/login"
+} from "@app/api/coreinterface/login"
 
 export const USER_COOKIE_KEY = "dekanat.mathinf.user"
 

@@ -26,7 +26,7 @@ import {
     renameProject,
     deleteTable,
 } from "@api"
-import { isAuthenticated } from "@utils/coreinterface"
+import { isAuthenticated } from "@app/api/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
@@ -231,28 +231,29 @@ const ProjectsPage: NextPage<
     )
 }
 
-export const getServerSideProps: GetServerSideProps<ProjectsPageProps> =
-    async context => {
-        const { params, req } = context
-        const authCookie = req.cookies[AUTH_COOKIE_KEY]
-        if (!(await isAuthenticated(authCookie).catch(e => false)))
-            return {
-                redirect: {
-                    permanent: false,
-                    destination: "/login",
-                },
-            }
-
-        const user: User = { name: req.cookies[USER_COOKIE_KEY] }
-        const serverRequest = await getListWithProjects(user, authCookie)
-        const data: ProjectsPageProps = {
-            projects: serverRequest,
-        }
-        const error = serverRequest == null
-        if (error) return { notFound: true }
+export const getServerSideProps: GetServerSideProps<
+    ProjectsPageProps
+> = async context => {
+    const { params, req } = context
+    const authCookie = req.cookies[AUTH_COOKIE_KEY]
+    if (!(await isAuthenticated(authCookie).catch(e => false)))
         return {
-            props: data,
+            redirect: {
+                permanent: false,
+                destination: "/login",
+            },
         }
+
+    const user: User = { name: req.cookies[USER_COOKIE_KEY] }
+    const serverRequest = await getListWithProjects(user, authCookie)
+    const data: ProjectsPageProps = {
+        projects: serverRequest,
     }
+    const error = serverRequest == null
+    if (error) return { notFound: true }
+    return {
+        props: data,
+    }
+}
 
 export default ProjectsPage

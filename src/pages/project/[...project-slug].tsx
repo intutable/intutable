@@ -12,7 +12,7 @@ import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import { isValidName, prepareName } from "@utils/validateName"
-import { coreRequest, isAuthenticated } from "@utils/coreinterface"
+import { coreRequest, isAuthenticated } from "@app/api/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 import { rowKeyGetter } from "@datagrid/utils"
 import { getColumns, transformHelper } from "@datagrid/utils"
@@ -213,61 +213,62 @@ const ProjectSlugPage: NextPage<
     )
 }
 
-export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
-    async context => {
-        const { params, req } = context
-        const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
-        const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+export const getServerSideProps: GetServerSideProps<
+    ProjectSlugPageProps
+> = async context => {
+    const { params, req } = context
+    const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
+    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
 
-        if (!(await isAuthenticated(authCookie).catch(e => false)))
-            return {
-                redirect: {
-                    permanent: false,
-                    destination: "/login",
-                },
-            }
+    if (!(await isAuthenticated(authCookie).catch(e => false)))
+        return {
+            redirect: {
+                permanent: false,
+                destination: "/login",
+            },
+        }
 
-        const user: User = { name: req.cookies[USER_COOKIE_KEY] }
+    const user: User = { name: req.cookies[USER_COOKIE_KEY] }
 
-        if (params && Object.hasOwnProperty.call(params, "project-slug")) {
-            const _projectName = params["project-slug"]
-            if (
-                _projectName &&
-                Array.isArray(_projectName) &&
-                _projectName.length > 0
-            ) {
-                const projectName = _projectName[0] as string
-                const serverRequest = await getListWithTables(
-                    user,
-                    projectName,
+    if (params && Object.hasOwnProperty.call(params, "project-slug")) {
+        const _projectName = params["project-slug"]
+        if (
+            _projectName &&
+            Array.isArray(_projectName) &&
+            _projectName.length > 0
+        ) {
+            const projectName = _projectName[0] as string
+            const serverRequest = await getListWithTables(
+                user,
+                projectName,
+                authCookie
+            )
+
+            let dataOfFirstTable
+            if (serverRequest.length > 0)
+                dataOfFirstTable = await getTableData(
+                    serverRequest[0],
                     authCookie
                 )
+            else dataOfFirstTable = null
 
-                let dataOfFirstTable
-                if (serverRequest.length > 0)
-                    dataOfFirstTable = await getTableData(
-                        serverRequest[0],
-                        authCookie
-                    )
-                else dataOfFirstTable = null
+            const data: ProjectSlugPageProps = {
+                project: projectName,
+                tables: serverRequest,
+                table: dataOfFirstTable
+                    ? { data: dataOfFirstTable, name: serverRequest[0] }
+                    : null,
+            }
 
-                const data: ProjectSlugPageProps = {
-                    project: projectName,
-                    tables: serverRequest,
-                    table: dataOfFirstTable
-                        ? { data: dataOfFirstTable, name: serverRequest[0] }
-                        : null,
-                }
+            const error = serverRequest == null
+            if (error) return { notFound: true }
 
-                const error = serverRequest == null
-                if (error) return { notFound: true }
-
-                return {
-                    props: data,
-                }
+            return {
+                props: data,
             }
         }
-        return { notFound: true }
     }
+    return { notFound: true }
+}
 
 export default ProjectSlugPage

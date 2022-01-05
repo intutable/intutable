@@ -1,6 +1,6 @@
 // This file contains api methods related to tables of projects, e.g. GET POST PUT DELETE
 
-import { coreRequest } from "@utils/coreinterface/json"
+import { coreRequest } from "@app/api/coreinterface/json"
 import type { User } from "@context/AuthContext"
 import type { TableData } from "./types"
 import { isOfTypeTableData } from "./utils"
