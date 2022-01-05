@@ -10,6 +10,8 @@ import {
 
 export const USER_COOKIE_KEY = "dekanat.mathinf.user"
 
+// TODO: add authcookie to user
+
 export type User = {
     name: string
 }
@@ -37,6 +39,7 @@ export const AuthProvider: React.FC = props => {
     const [loading, setLoading] = useState<
         Pick<AuthContextProps, "loading">["loading"]
     >(initialState.loading)
+
     const [user, setUser] = useState<Pick<AuthContextProps, "user">["user"]>(
         initialState.user
     )
