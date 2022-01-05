@@ -57,19 +57,16 @@ const ProjectSlugPage: NextPage<
                 "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
                 { variant: "error" }
             )
+        if (!getUserAuthCookie) throw new Error("")
+        const authCookie = getUserAuthCookie()
+        if (!user || !authCookie)
+            return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
+                variant: "error",
+            })
         // NOTE: this request is blocking (the useEffect on `currentTable` wont be called until this fetch finished).
         // NOTE: this request must also create an empty table in the backend which gets fetched right after, otherwise this will lead to an error
         // TODO: make a request to backend here and then select new table
-        if (!(user && getUserAuthCookie))
-            return enqueueSnackbar("Du musst dich zuvor erneut anmelden!", {
-                variant: "error",
-            })
-        const success = await addTable(
-            user,
-            props.project,
-            name,
-            getUserAuthCookie() ?? undefined
-        )
+        const success = await addTable(user, props.project, name, authCookie)
         if (!success)
             return enqueueSnackbar(
                 "Die Tabelle konnte nicht erstellt werden!",
@@ -102,10 +99,18 @@ const ProjectSlugPage: NextPage<
         ;(async _ => {
             if (currentTable !== ADD_BUTTON_TOKEN) {
                 try {
+                    if (!getUserAuthCookie) throw new Error("")
+                    const authCookie = getUserAuthCookie()
+                    if (!authCookie)
+                        return enqueueSnackbar(
+                            "Du musst dich zuerst neu anmelden!",
+                            { variant: "error" }
+                        )
                     setLoading(true)
                     const serverRequest = await getTableData(
                         currentTable,
-                        props.project
+                        props.project,
+                        authCookie
                     )
                     setTableData(serverRequest)
                 } catch (error) {
@@ -248,6 +253,7 @@ export const getServerSideProps: GetServerSideProps<
             if (serverRequest.length > 0)
                 dataOfFirstTable = await getTableData(
                     serverRequest[0],
+                    projectName,
                     authCookie
                 )
             else dataOfFirstTable = null
