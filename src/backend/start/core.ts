@@ -11,7 +11,7 @@ const PLUGIN_PATHS = [
     "database",
     "http",
     "http-cors",
-    "user-authenticationuser-authentication",
+    "user-authentication",
     "project-management",
 ].map(plugin => path.join(process.cwd(), "node_modules/@intutable", plugin))
 
