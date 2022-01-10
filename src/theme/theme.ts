@@ -12,6 +12,25 @@ export const COLOR_SCHEME = {}
  * Light Theme for the App
  */
 export const lightTheme = createTheme({
-    themeMode: "light",
     colorScheme: { ...COLOR_SCHEME },
 })
+
+/**
+ * Dark Theme for the App
+ */
+export const darkTheme = createTheme({
+    colorScheme: { ...COLOR_SCHEME },
+    palette: {
+        primary: {
+            main: "#333",
+        },
+        secondary: {
+            main: "#fff",
+        },
+        background: {
+            default: "#333",
+        },
+    },
+})
+
+export const getDesignToken = (mode: PaletteMode) => (mode === "light" ? lightTheme : darkTheme)

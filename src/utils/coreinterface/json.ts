@@ -1,5 +1,5 @@
-import { getCoreUrl } from "@app/backend/runtimeconfig"
-import { AUTH_COOKIE_KEY } from "./constants"
+const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 export interface CoreCallError {
     status: number
@@ -7,14 +7,21 @@ export interface CoreCallError {
 }
 
 /**
- * Make a request to Core and return the response parsed from JSON as an object.
+ * Makes a request to Core and returns the response parsed from JSON as an object.
+ * Built up on `fetch`.
+ * @async
+ * @param {string} channel - The channel to make the request to.
+ * @param {string} method - The method to call on the channel.
+ * @param {object} body - The body of the request.
+ * @param {string} authCookie - The auth cookie to send with the request. Optional.
+ * @returns {Promise<object>} - The response parsed from JSON as an object.
  */
 export async function coreRequest(
-    channel,
+    channel: string,
     method: string,
-    body: object,
+    body: Record<string, unknown>,
     authCookie?: string
-): Promise<object> {
+): Promise<Record<string, unknown>> {
     return fetch(getCoreUrl() + "/request/" + channel + "/" + method, {
         method: "post",
         headers: {
@@ -34,7 +41,7 @@ export async function coreRequest(
 }
 
 export async function coreNotification(
-    channel,
+    channel: string,
     method: string,
     body: object,
     authCookie?: string
@@ -54,7 +61,7 @@ export async function coreNotification(
     })
         .then(passedLogin)
         .then(wasSuccessful)
-        .then(Promise.resolve())
+        .then(() => Promise.resolve())
 }
 
 // TEMP
@@ -66,10 +73,10 @@ function passedLogin(res: Response): Promise<Response> {
               status: 302,
               message: "core call blocked by authentication middleware",
           })
-        : res
+        : Promise.resolve(res)
 }
 
-async function wasSuccessful(res: Response): Promse<Response> {
+async function wasSuccessful(res: Response): Promise<Response> {
     return res.status === 200
         ? res
         : Promise.reject({

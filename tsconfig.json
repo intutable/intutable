@@ -16,14 +16,16 @@
         "incremental": true,
         "baseUrl": ".",
         "paths": {
-            "@app/*": ["./src/*"],
+            "@app/*": ["src/*"],
             "@utils/*": ["src/utils/*"],
             "@public/*": ["public/*"],
             "@components/*": ["src/components/*"],
             "@theme": ["src/theme/index.ts"],
-            "@context/*": ["./src/context/*"]
+            "@context/*": ["src/context/*"],
+            "@datagrid/*": ["src/components/DataGrid/*"],
+            "@api": ["src/api/index.ts"]
         }
     },
-    "include": ["next-env.d.ts"],
-    "exclude": ["node_modules", "backend"]
+    "include": ["src", "next-env.d.ts"],
+    "exclude": ["node_modules", "backend", "src/backend", "database"]
 }

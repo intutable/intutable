@@ -1,14 +1,16 @@
-import { getCoreUrl } from "@app/backend/runtimeconfig"
+const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 import { coreRequest } from "./json"
-
-export { AUTH_COOKIE_KEY } from "./constants"
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 /**
  * Log in to core via a HTTP form request.
  * @return {Promise<void>} if login was successful. Rejects with an error
  * (in string form) otherwise.
  */
-export async function coreLogin(username, password: string): Promise<void> {
+export async function coreLogin(
+    username: string,
+    password: string
+): Promise<void> {
     return fetch(getCoreUrl() + "/login", {
         method: "post",
         headers: {
@@ -45,7 +47,7 @@ export async function coreLogout(): Promise<void> {
 /**
  * Check if logged into core by using the session cookie.
  */
-export async function isAuthenticated(authCookie?: string): Promise<bool> {
+export async function isAuthenticated(authCookie?: string): Promise<boolean> {
     // we could have called any channel or method
     return coreRequest(
         "user-authentication",

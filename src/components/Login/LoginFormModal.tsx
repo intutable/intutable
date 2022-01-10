@@ -17,15 +17,16 @@ import { SxProps, Theme } from "@mui/system"
 
 import { useAuth } from "@context/AuthContext"
 
-
-const Transition = React.forwardRef(function Transition(
-    props: TransitionProps & {
-        children?: React.ReactElement<any, any>
-    },
-    ref: React.Ref<unknown>
-) {
-    return <Slide direction="up" ref={ref} {...props} />
-})
+/* eslint-disable */
+const PopupTransition = React.forwardRef(
+    (
+        props: TransitionProps & {
+            children: React.ReactElement<any, any>
+        },
+        ref: React.Ref<unknown>
+    ) => <Slide direction="up" ref={ref} {...props} />
+)
+/* eslint-enable */
 
 const inputFieldStyle: SxProps<Theme> = {
     display: "block",
@@ -36,7 +37,7 @@ const inputFieldStyle: SxProps<Theme> = {
 const errorBoxStyle: SxProps<Theme> = {
     display: "block",
     minHeight: "4em",
-    position: "relative"
+    position: "relative",
 }
 const errorMessageStyle: SxProps<Theme> = {
     textAlign: "center",
@@ -47,11 +48,11 @@ const errorMessageStyle: SxProps<Theme> = {
     padding: "0.3em",
     position: "absolute",
     height: "100%",
-    width: "100%"
+    width: "100%",
 }
 
 const buttonStyle: SxProps<Theme> = {
-    width:"100%"
+    width: "100%",
 }
 
 const validateUsername = (username: string): boolean => username.length > 6
@@ -74,16 +75,17 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     const [formValid, setFormValid] = useState<boolean>(false)
     const [formData, setFormData] = useState<FormData>({
         username: "",
-        password: ""
+        password: "",
     })
     const [attemptError, setAttemptError] = useState<string>("")
     const router = useRouter()
 
     const { login } = useAuth()
     const tryLogin = async () => {
-        login(formData.username, formData.password)
-            .then(() => router.push(props.successRedirect || "/"))
-            .catch(e => setAttemptError(e))
+        if (login)
+            login(formData.username, formData.password)
+                .then(() => router.push(props.successRedirect || "/"))
+                .catch(e => setAttemptError(e))
     }
 
     const handleUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,8 +103,8 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     return (
         <Dialog
             open={true}
-            onKeyDown={(e) => (e.keyCode === ENTER_KEY) ? tryLogin() : null }
-            TransitionComponent={Transition}
+            onKeyDown={e => (e.key === "Enter" ? tryLogin() : null)}
+            TransitionComponent={PopupTransition}
             keepMounted
             aria-describedby="login-dialog"
             fullWidth={true}
@@ -110,13 +112,16 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
         >
             <DialogTitle sx={{ textTransform: "uppercase" }}>Login</DialogTitle>
 
-
             <DialogContent>
                 <Box sx={errorBoxStyle}>
-                    <DialogContentText sx={{
-                        ...errorMessageStyle,
-                        ...(attemptError === "" && { visibility: "hidden" })
-                    }}>
+                    <DialogContentText
+                        sx={{
+                            ...errorMessageStyle,
+                            ...(attemptError === "" && {
+                                visibility: "hidden",
+                            }),
+                        }}
+                    >
                         {attemptError}
                     </DialogContentText>
                 </Box>
@@ -144,13 +149,20 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
             </DialogContent>
 
             <DialogActions sx={{ flexWrap: "wrap" }}>
-                <Button variant="contained" disabled={!formValid}
-                        color="success" onClick={tryLogin}
-                        sx={buttonStyle}>
+                <Button
+                    variant="contained"
+                    disabled={!formValid}
+                    color="success"
+                    onClick={tryLogin}
+                    sx={buttonStyle}
+                >
                     Login
                 </Button>
-                <Button variant="text" color="secondary"
-                        sx={{ ...buttonStyle, fontSize: "0.8em" }}>
+                <Button
+                    variant="text"
+                    color="secondary"
+                    sx={{ ...buttonStyle, fontSize: "0.8em" }}
+                >
                     Passwort vergessen?
                 </Button>
             </DialogActions>
