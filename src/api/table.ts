@@ -46,18 +46,8 @@ export const getTableData = async (
     const body = { projectName: project, tableName: table }
     const cookie = authCookie
 
-    let coreResponse: any
-    try {
-        console.log("channel:", channel)
-        console.log("method:", method)
-        console.log("body:", body)
-        console.log("cookie:", cookie)
-        // Type: ServerTableData
-        coreResponse = await coreRequest(channel, method, body, cookie)
-    } catch (error) {
-        if (error instanceof CoreRequestError) throw error
-        else console.error(error)
-    }
+    // Type: ServerTableData
+    const coreResponse: any = await coreRequest(channel, method, body, cookie)
 
     coreResponse.columns.map((item: any) => {
         item.key = item.columnName

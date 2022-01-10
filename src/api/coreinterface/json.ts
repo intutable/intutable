@@ -58,12 +58,14 @@ export const coreRequest = (
         .then(passedLogin)
         .then(checkError)
         .then(res => res.json())
-        .catch(error => {
-            // Fetch API only throws on network errors
-            // TODO: handle network error
-            console.error(error)
-            throw new error()
-        })
+// .catch(error => {
+//     // Fetch API only throws on network errors
+//     // TODO: handle network error
+//     if (error) {
+//         console.error(error)
+//         throw new error()
+//     }
+// })
 
 export async function coreNotification(
     channel: string,
@@ -103,6 +105,5 @@ function passedLogin(res: Response): Promise<Response> {
 
 const checkError = async (res: Response): Promise<Response> => {
     if (res.ok) return res
-    console.log(res)
     return Promise.reject(new CoreRequestError(await res.text(), res.status))
 }

@@ -101,10 +101,12 @@ const ProjectSlugPage: NextPage<
     // #################### life cycle methods ####################
 
     useEffect(() => {
-        if (error instanceof Error)
+        if (error) {
+            console.log(error)
             enqueueSnackbar("Die Tabelle konnte nicht geladen werden!", {
                 variant: "error",
             })
+        }
     }, [error])
 
     // #################### component ####################

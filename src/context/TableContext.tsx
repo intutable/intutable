@@ -75,7 +75,16 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
 
             setData(newData)
         } catch (error) {
-            if (error instanceof Error) setError(error)
+            console.info(error)
+            setError(
+                error instanceof Error
+                    ? error
+                    : new Error(
+                          typeof error === "string"
+                              ? error
+                              : "Internal Unknown Error: Could not load the Table!"
+                      )
+            )
         } finally {
             setLoading(false)
         }
