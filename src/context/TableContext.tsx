@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { getListWithProjects, getTableData, TableData } from "@app/api"
+import { getListWithTables, getTableData, TableData } from "@app/api"
 import { useAuth } from "./AuthContext"
 
 export type TableContextProps = {
@@ -57,25 +57,34 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
 
             const authCookie = getUserAuthCookie() || undefined
 
-            const projectList = await getListWithProjects(user, authCookie)
+            const tablesInProject = await getListWithTables(
+                user,
+                props.projectName,
+                authCookie
+            )
+
             const newData: T["data"] = {
                 __projectName: props.projectName,
-                projectTables: projectList,
-                currentTable: projectList.length > 0 ? projectList[0] : null,
+                projectTables: tablesInProject,
+                currentTable:
+                    tablesInProject.length > 0 ? tablesInProject[0] : null,
                 table: null,
             }
-            if (projectList[0].length > 0) {
+
+            if (tablesInProject[0].length > 0) {
                 const tableData: TableData = await getTableData(
-                    projectList[0],
+                    tablesInProject[0],
                     props.projectName,
                     authCookie
                 )
                 newData.table = tableData
             }
 
+            console.log("data:", newData)
+
             setData(newData)
         } catch (error) {
-            console.info(error)
+            console.error(error)
             setError(
                 error instanceof Error
                     ? error
@@ -93,7 +102,11 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
     // #################### life cycle methods ####################
 
     useEffect(() => {
-        fetchData()
+        // initial loading
+        if (data === null) {
+            console.count("Initial Loading Data")
+            fetchData()
+        }
     }, [fetchData])
 
     // #################### public methods ####################

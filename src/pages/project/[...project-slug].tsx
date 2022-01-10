@@ -118,6 +118,8 @@ const ProjectSlugPage: NextPage<
                 {props.project}
             </Typography>
 
+            {console.log(data)}
+
             <TableProvider projectName={props.project}>
                 {error instanceof Error ? (
                     // Error
