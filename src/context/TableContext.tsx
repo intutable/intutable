@@ -3,8 +3,25 @@ import { useRouter } from "next/router"
 import { getTableData, TableData } from "@app/api"
 import { useAuth } from "./AuthContext"
 
-export type TableContextProps = {}
-const initialState: TableContextProps = {}
+export type TableContextProps = {
+    loading: boolean
+    error: null | Error
+    tableData: null | TableData
+    currentTable: null | string
+    projectTables: string[]
+    refresh: () => void
+    changeTable: (table: string | null) => void
+}
+type T = TableContextProps
+const initialState: TableContextProps = {
+    loading: false,
+    error: null,
+    tableData: null,
+    currentTable: null,
+    projectTables: [],
+    refresh: () => {},
+    changeTable: () => {},
+}
 const TableContext = React.createContext<TableContextProps>(initialState)
 
 type TableProviderProps = {
@@ -23,13 +40,13 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
 
     // #################### states ####################
 
-    const [projectTables, setProjectTables] = useState<string[]>(
+    const [projectTables, setProjectTables] = useState<T["projectTables"]>(
         props.projectTables
     ) // all available tables in a project
-    const [currentTable, setCurrentTable] = useState<string | null>(null) // the current table, if 'null' it is loading or the project has no tables
-    const [tableData, setTableData] = useState<TableData | null>(null) // data of the current table
-    const [loading, setLoading] = useState<boolean>(false)
-    const [error, setError] = useState<null | Error>(null)
+    const [currentTable, setCurrentTable] = useState<T["currentTable"]>(null) // the current table, if 'null' it is loading or the project has no tables
+    const [tableData, setTableData] = useState<T["tableData"]>(null) // data of the current table
+    const [loading, setLoading] = useState<T["loading"]>(false)
+    const [error, setError] = useState<T["error"]>(null)
 
     // #################### private methods ####################
 
@@ -68,7 +85,8 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
      * Changes the current tables and loads the data.
      * @param {string} table must be in the list of available project tables.
      */
-    const changeTable = (table: string): void => {
+    const changeTable = (table: string | null): void => {
+        if (table === null) return setCurrentTable(null)
         if (!projectTables.includes(table))
             throw new RangeError(
                 `Table '${table} is not a member of the current project!`
@@ -86,7 +104,7 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
     return (
         <TableContext.Provider
             value={{
-                availableTables: projectTables,
+                projectTables,
                 currentTable,
                 tableData,
                 loading,
