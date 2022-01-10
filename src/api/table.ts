@@ -1,6 +1,6 @@
 // This file contains api methods related to tables of projects, e.g. GET POST PUT DELETE
 
-import { coreRequest } from "@app/api/coreinterface/json"
+import { coreRequest, CoreRequestError } from "@app/api/coreinterface/json"
 import type { User } from "@context/AuthContext"
 import type { TableData } from "./types"
 import { isOfTypeTableData } from "./utils"
@@ -10,13 +10,13 @@ import { isOfTypeTableData } from "./utils"
  * @param {User} user user object.
  * @param {string} project project name.
  * @param {string} authCookie auth cookie. Optional.
- * @returns {Promise<Array<string>>} list of table names in case of success, otherwise an error object with error description.
+ * @returns {Promise<string[]>} list of table names in case of success, otherwise an error object with error description.
  */
 export const getListWithTables = async (
     user: User,
     project: string,
     authCookie?: string
-): Promise<Array<string>> => {
+): Promise<string[]> => {
     const channel = "project-management"
     const method = "getTablesFromProject"
     const body = { user: user.name, projectName: project }
@@ -46,8 +46,18 @@ export const getTableData = async (
     const body = { projectName: project, tableName: table }
     const cookie = authCookie
 
-    // Type: ServerTableData
-    const coreResponse: any = await coreRequest(channel, method, body, cookie)
+    let coreResponse: any
+    try {
+        console.log("channel:", channel)
+        console.log("method:", method)
+        console.log("body:", body)
+        console.log("cookie:", cookie)
+        // Type: ServerTableData
+        coreResponse = await coreRequest(channel, method, body, cookie)
+    } catch (error) {
+        if (error instanceof CoreRequestError) throw error
+        else console.error(error)
+    }
 
     coreResponse.columns.map((item: any) => {
         item.key = item.columnName
@@ -55,6 +65,7 @@ export const getTableData = async (
         delete item.columnName
         return item
     })
+
     return Promise.resolve(coreResponse as TableData)
 }
 /*
@@ -70,15 +81,14 @@ export const addTable = async (
     project: string,
     table: string,
     authCookie?: string
-): Promise<true> => {
+): Promise<void> => {
     const channel = "project-management"
-    const method = "addTableToProject"
+    const method = "createTableInProject"
     const body = { user: user.name, projectName: project, table: table }
     const cookie = authCookie
 
-    const coreResponse = await coreRequest(channel, method, body, cookie)
-
-    return Promise.resolve(true)
+    await coreRequest(channel, method, body, cookie)
+    return Promise.resolve()
 }
 
 /**
@@ -94,15 +104,14 @@ export const deleteTable = async (
     project: string,
     table: string,
     authCookie?: string
-): Promise<true> => {
+): Promise<void> => {
     const channel = "project-management"
     const method = "removeTableFromProject"
     const body = { projectName: project, table: table }
     const cookie = authCookie
 
-    const coreResponse = await coreRequest(channel, method, body, cookie)
-
-    return Promise.resolve(true)
+    await coreRequest(channel, method, body, cookie)
+    return Promise.resolve()
 }
 
 /**
@@ -117,20 +126,19 @@ export const renameTable = async (
     user: User,
     project: string,
     table: string,
-    newTable: string,
+    newTableName: string,
     authCookie?: string
-): Promise<true> => {
+): Promise<void> => {
     const channel = "project-management"
     const method = "changeTableName"
     const body = {
         user: user.name,
         project: project,
         oldName: table,
-        newName: newTable,
+        newName: newTableName,
     }
     const cookie = authCookie
 
-    const coreResponse = await coreRequest(channel, method, body, cookie)
-
-    return Promise.resolve(true)
+    await coreRequest(channel, method, body, cookie)
+    return Promise.resolve()
 }

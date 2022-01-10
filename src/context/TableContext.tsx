@@ -1,32 +1,32 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { getTableData, TableData } from "@app/api"
+import { getListWithProjects, getTableData, TableData } from "@app/api"
 import { useAuth } from "./AuthContext"
 
 export type TableContextProps = {
     loading: boolean
     error: null | Error
-    tableData: null | TableData
-    currentTable: null | string
-    projectTables: string[]
-    refresh: () => void
+    data: {
+        __projectName: string
+        projectTables: string[]
+        currentTable: string | null
+        table: TableData | null
+    } | null
+    refresh: () => Promise<void>
     changeTable: (table: string | null) => void
 }
 type T = TableContextProps
 const initialState: TableContextProps = {
-    loading: false,
+    loading: true,
     error: null,
-    tableData: null,
-    currentTable: null,
-    projectTables: [],
-    refresh: () => {},
-    changeTable: () => {},
+    data: null,
+    refresh: () => Promise.reject(new Error("Internal Error")),
+    changeTable: () => new Error("Internal Error"),
 }
 const TableContext = React.createContext<TableContextProps>(initialState)
 
 type TableProviderProps = {
     projectName: string
-    projectTables: string[]
 }
 
 /**
@@ -36,48 +36,56 @@ type TableProviderProps = {
  */
 export const TableProvider: React.FC<TableProviderProps> = props => {
     const router = useRouter()
-    const { getUserAuthCookie } = useAuth()
+    const { user, getUserAuthCookie } = useAuth()
 
     // #################### states ####################
 
-    const [projectTables, setProjectTables] = useState<T["projectTables"]>(
-        props.projectTables
-    ) // all available tables in a project
-    const [currentTable, setCurrentTable] = useState<T["currentTable"]>(null) // the current table, if 'null' it is loading or the project has no tables
-    const [tableData, setTableData] = useState<T["tableData"]>(null) // data of the current table
-    const [loading, setLoading] = useState<T["loading"]>(false)
-    const [error, setError] = useState<T["error"]>(null)
+    const [data, setData] = useState<T["data"]>(initialState.data)
+    const [loading, setLoading] = useState<T["loading"]>(initialState.loading)
+    const [error, setError] = useState<T["error"]>(initialState.error)
 
     // #################### private methods ####################
 
     const fetchData = useCallback(async () => {
         setLoading(true)
-        if (getUserAuthCookie && getUserAuthCookie() && currentTable) {
-            const authCookie = getUserAuthCookie() || undefined
-            const fetchedData = await getTableData(
-                currentTable,
-                props.projectName,
-                authCookie
-            )
-            setTableData(fetchedData)
-        } else {
-            setError(
-                new Error(
-                    "Could not get the user cookie in 'TableContext.tsx:fetchData'!"
+        setError(null)
+        try {
+            if (!(user && getUserAuthCookie && getUserAuthCookie()))
+                throw new Error(
+                    "Could not get the user or user cookie in 'TableContext.tsx:fetchData'!"
                 )
-            )
-        }
-        setLoading(false)
-    }, [currentTable, getUserAuthCookie])
 
-    // #################### life cycle ####################
+            const authCookie = getUserAuthCookie() || undefined
+
+            const projectList = await getListWithProjects(user, authCookie)
+            const newData: T["data"] = {
+                __projectName: props.projectName,
+                projectTables: projectList,
+                currentTable: projectList.length > 0 ? projectList[0] : null,
+                table: null,
+            }
+            if (projectList[0].length > 0) {
+                const tableData: TableData = await getTableData(
+                    projectList[0],
+                    props.projectName,
+                    authCookie
+                )
+                newData.table = tableData
+            }
+
+            setData(newData)
+        } catch (error) {
+            if (error instanceof Error) setError(error)
+        } finally {
+            setLoading(false)
+        }
+    }, [getUserAuthCookie, props.projectName, user])
+
+    // #################### life cycle methods ####################
 
     useEffect(() => {
-        if (!currentTable && tableData != null) setTableData(null)
-        if (currentTable) {
-            fetchData()
-        }
-    }, [currentTable])
+        fetchData()
+    }, [fetchData])
 
     // #################### public methods ####################
 
@@ -85,28 +93,48 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
      * Changes the current tables and loads the data.
      * @param {string} table must be in the list of available project tables.
      */
-    const changeTable = (table: string | null): void => {
-        if (table === null) return setCurrentTable(null)
-        if (!projectTables.includes(table))
-            throw new RangeError(
-                `Table '${table} is not a member of the current project!`
+    const changeTable = async (table: string | null): Promise<void> => {
+        if (table && table.length < 1)
+            return Promise.reject(
+                new RangeError(`Received argument 'table' is empty: ${table}`)
             )
-        setCurrentTable(table)
+
+        if (table === null) {
+            setData(prev => ({
+                __projectName: props.projectName,
+                projectTables: prev!.projectTables,
+                currentTable: null,
+                table: null,
+            }))
+            return Promise.resolve()
+        }
+
+        if (!data!.projectTables.includes(table))
+            return Promise.reject(
+                new RangeError(
+                    `Table '${table} is not a member of the current project!`
+                )
+            )
+
+        await fetchData()
     }
 
     /**
      * Reloads the data.
      */
-    const refresh = () => {}
+    const refresh = async (switchToTable?: string): Promise<void> => {
+        await fetchData()
+        setError(null)
+        if (switchToTable && switchToTable?.length > 0)
+            changeTable(switchToTable)
+    }
 
     // #################### provider ####################
 
     return (
         <TableContext.Provider
             value={{
-                projectTables,
-                currentTable,
-                tableData,
+                data,
                 loading,
                 error,
                 changeTable,

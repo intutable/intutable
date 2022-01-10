@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
 import Title from "@components/Head/Title"
-import { CircularProgress, Typography, useTheme, Box } from "@mui/material"
+import { CircularProgress, useTheme, Box, Typography } from "@mui/material"
 import { Tablist, ADD_BUTTON_TOKEN } from "@components/TabList/TabList"
 import DataGrid from "react-data-grid"
 import { useTable, TableProvider } from "@context/TableContext"
@@ -26,56 +26,68 @@ type ProjectSlugPageProps = {
 const ProjectSlugPage: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = props => {
-    const {
-        error,
-        loading,
-        tableData,
-        currentTable,
-        projectTables,
-        refresh,
-        changeTable,
-    } = useTable()
-
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
+
+    // #################### states ####################
+
+    const { error, loading, data, refresh, changeTable } = useTable()
     const { user, getUserAuthCookie } = useAuth()
+
+    // #################### private methods ####################
 
     const handleTablistChange = (newTable: string | null) => {
         if (newTable === ADD_BUTTON_TOKEN) return changeTable(null)
         changeTable(newTable)
     }
 
-    const handleAddTable = async (newTableName: string) => {
-        const name = prepareName(newTableName)
-        const isValid = isValidName(name)
-        if (isValid instanceof Error)
-            return enqueueSnackbar(isValid.message, { variant: "error" })
-        const nameIsTaken = projectTables
-            .map(tbl => tbl.toLowerCase())
-            .includes(name.toLowerCase())
-        if (nameIsTaken)
-            return enqueueSnackbar(
-                "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
-                { variant: "error" }
-            )
-        if (!getUserAuthCookie) throw new Error("")
-        const authCookie = getUserAuthCookie()
-        if (!user || !authCookie)
-            return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
-                variant: "error",
-            })
-        const success = await addTable(user, props.project, name, authCookie)
-        if (!success)
-            return enqueueSnackbar(
-                "Die Tabelle konnte nicht erstellt werden!",
-                { variant: "error" }
-            )
-        refresh()
-        changeTable(name)
-        enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-            variant: "success",
-        })
-    }
+    const handleAddTable = useCallback(
+        async (newTableName: string) => {
+            const name = prepareName(newTableName)
+            const isValid = isValidName(name)
+            if (isValid instanceof Error)
+                return enqueueSnackbar(isValid.message, { variant: "error" })
+            const nameIsTaken = data?.projectTables
+                .map(tbl => tbl.toLowerCase().trim())
+                .includes(name.toLowerCase().trim())
+            if (nameIsTaken)
+                return enqueueSnackbar(
+                    "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
+                    { variant: "error" }
+                )
+            if (!getUserAuthCookie)
+                throw new Error(
+                    "Internal Error: Der Benutzer-Cookie konnte nicht abgerufen werden!"
+                )
+            const authCookie = getUserAuthCookie()
+            if (!user || !authCookie)
+                return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
+                    variant: "error",
+                })
+            try {
+                await addTable(user, props.project, name, authCookie)
+                await refresh()
+                changeTable(name)
+                enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+                    variant: "success",
+                })
+            } catch (error) {
+                console.error(error)
+                enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
+                    variant: "error",
+                })
+            }
+        },
+        [
+            changeTable,
+            data?.projectTables,
+            enqueueSnackbar,
+            getUserAuthCookie,
+            props.project,
+            refresh,
+            user,
+        ]
+    )
 
     const handleRenameTable = () => {
         alert("Not implemented yet")
@@ -86,6 +98,17 @@ const ProjectSlugPage: NextPage<
         // TODO: implement
     }
 
+    // #################### life cycle methods ####################
+
+    useEffect(() => {
+        if (error instanceof Error)
+            enqueueSnackbar("Die Tabelle konnte nicht geladen werden!", {
+                variant: "error",
+            })
+    }, [error])
+
+    // #################### component ####################
+
     return (
         <>
             <Title title={props.project} />
@@ -93,32 +116,40 @@ const ProjectSlugPage: NextPage<
                 {props.project}
             </Typography>
 
-            <TableProvider
-                projectName={props.project}
-                projectTables={props.tables}
-            >
-                <Tablist
-                    value={currentTable}
-                    data={projectTables}
-                    onChangeHandler={handleTablistChange}
-                    onAddHandler={handleAddTable}
-                    contextMenuItems={[
-                        <Box onClick={handleRenameTable} key={0}>
-                            Rename
-                        </Box>,
-                        <Box
-                            onClick={handleDeleteTable}
-                            key={1}
-                            sx={{ color: theme.palette.warning.main }}
-                        >
-                            Delete
-                        </Box>,
-                    ]}
-                />
-                {loading ? (
+            <TableProvider projectName={props.project}>
+                {error instanceof Error ? (
+                    // Error
+                    <Typography>
+                        Error: Could not load the Table (reason: {error.message}
+                        )!
+                    </Typography>
+                ) : // Loading
+                loading ? (
                     <LoadingSkeleton />
+                ) : // data is null
+                data == null ? (
+                    <>Table null</>
                 ) : (
+                    // Table
                     <>
+                        <Tablist
+                            value={data.currentTable}
+                            data={data.projectTables}
+                            onChangeHandler={handleTablistChange}
+                            onAddHandler={handleAddTable}
+                            contextMenuItems={[
+                                <Box onClick={handleRenameTable} key={0}>
+                                    Rename
+                                </Box>,
+                                <Box
+                                    onClick={handleDeleteTable}
+                                    key={1}
+                                    sx={{ color: theme.palette.warning.main }}
+                                >
+                                    Delete
+                                </Box>,
+                            ]}
+                        />
                         <Box>
                             <Toolbar position="top">
                                 <TItem.AddCol addCol={() => {}} />
@@ -145,11 +176,15 @@ const ProjectSlugPage: NextPage<
                                         ? "rdg-light"
                                         : "rdg-dark"
                                 }
-                                rows={tableData ? (tableData.rows as any) : []}
+                                rows={
+                                    data.table ? (data.table.rows as any) : []
+                                }
                                 columns={
-                                    tableData
+                                    data!.table
                                         ? getColumns(
-                                              transformHelper(tableData.columns)
+                                              transformHelper(
+                                                  data.table.columns
+                                              )
                                           )
                                         : [{ key: "id", name: "ID" }]
                                 }
