@@ -10,15 +10,13 @@ import {
 
 export const USER_COOKIE_KEY = "dekanat.mathinf.user"
 
-// TODO: add authcookie to user
-
 export type User = {
     name: string
+    cookie: string
 }
 
 export type AuthContextProps = {
     user: User | null
-    getUserAuthCookie?: () => string | null
     loading: boolean
     login?: (username: string, password: string) => Promise<void>
     logout?: () => Promise<void>
@@ -49,8 +47,11 @@ export const AuthProvider: React.FC = props => {
         ;(async _ => {
             const currentUser = Cookies.get(USER_COOKIE_KEY)
             if (currentUser && (await isAuthenticated()))
-                setUser({ name: currentUser })
-            else logout()
+                setUser({
+                    name: currentUser,
+                    cookie: currentUser,
+                })
+            // else logout()
             setLoading(false)
         })()
     }, [])
@@ -66,11 +67,11 @@ export const AuthProvider: React.FC = props => {
         await coreLogout()
         return coreLogin(username, password)
             .then(() => {
-                Cookies.set(USER_COOKIE_KEY, username, { sameSite: "Strict" })
-                setUser({ name: username })
-            })
-            .catch(e => {
-                return Promise.reject(e)
+                const cookie = Cookies.set(USER_COOKIE_KEY, username, {
+                    sameSite: "Strict",
+                })
+                if (!cookie) throw new Error("Could not set the User Cookie!")
+                setUser({ name: username, cookie: cookie })
             })
             .finally(() => setLoading(false))
     }
@@ -83,22 +84,13 @@ export const AuthProvider: React.FC = props => {
                 setUser(null)
                 router.push("/login")
             })
-            .catch(e => console.log("logout failed: " + e))
             .finally(() => setLoading(false))
     }
-
-    /**
-     * Returns the current user auth cookie, or null if not logged in.
-     * @returns {string} user auth cookie.
-     */
-    const getUserAuthCookie = (): string | null =>
-        Cookies.get(USER_COOKIE_KEY) ?? null
 
     return (
         <AuthContext.Provider
             value={{
                 user,
-                getUserAuthCookie,
                 loading,
                 login,
                 logout,

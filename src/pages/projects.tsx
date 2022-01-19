@@ -74,7 +74,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user, getUserAuthCookie } = useAuth()
+    const { user } = useAuth()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
@@ -102,15 +102,11 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            if (!(user && getUserAuthCookie))
+            if (!user)
                 return enqueueSnackbar("Bitte melde dich erneut an!", {
                     variant: "error",
                 })
-            await deleteProject(
-                user,
-                props.children as string,
-                getUserAuthCookie() ?? undefined
-            )
+            await deleteProject(user, props.children as string)
             // TODO: reload the project page
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
@@ -172,7 +168,7 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user, getUserAuthCookie } = useAuth()
+    const { user } = useAuth()
 
     const handleAddProject = async () => {
         try {
@@ -190,12 +186,12 @@ const ProjectsPage: NextPage<
                     "Dieser Name wird bereits für eines deiner Projekte verwendet!",
                     { variant: "error" }
                 )
-            if (!(user && getUserAuthCookie))
+            if (!user)
                 return enqueueSnackbar("Bitte melde dich erneut an!", {
                     variant: "error",
                 })
             // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
-            await addProject(user, name, getUserAuthCookie() ?? undefined)
+            await addProject(user, name)
             router.push("/project/" + name)
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
@@ -244,8 +240,11 @@ export const getServerSideProps: GetServerSideProps<
             },
         }
 
-    const user: User = { name: req.cookies[USER_COOKIE_KEY] }
-    const serverRequest = await getListWithProjects(user, authCookie)
+    const user: User = {
+        name: req.cookies[USER_COOKIE_KEY],
+        cookie: authCookie,
+    }
+    const serverRequest = await getListWithProjects(user)
     const data: ProjectsPageProps = {
         projects: serverRequest,
     }

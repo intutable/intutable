@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { getListWithTables, getTableData, TableData } from "@app/api"
+import { getListWithTables, getTableData } from "@api/endpoints"
+import type { TableData } from "@api/types"
 import { useAuth } from "./AuthContext"
 
 export type TableContextProps = {
@@ -20,8 +21,11 @@ const initialState: TableContextProps = {
     loading: true,
     error: null,
     data: null,
-    refresh: () => Promise.reject(new Error("Internal Error")),
-    changeTable: () => new Error("Internal Error"),
+    refresh: () =>
+        Promise.reject(
+            new Error("TableContext: Initial State: Internal Error")
+        ),
+    changeTable: () => new Error("TableContext: Initial State: Internal Error"),
 }
 const TableContext = React.createContext<TableContextProps>(initialState)
 
@@ -35,8 +39,7 @@ type TableProviderProps = {
  * @returns
  */
 export const TableProvider: React.FC<TableProviderProps> = props => {
-    const router = useRouter()
-    const { user, getUserAuthCookie } = useAuth()
+    const { user } = useAuth()
 
     // #################### states ####################
 
@@ -46,21 +49,15 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
 
     // #################### private methods ####################
 
-    const fetchData = useCallback(async () => {
-        setLoading(true)
-        setError(null)
+    const fetchData = /*useCallback(*/ async () => {
         try {
-            if (!(user && getUserAuthCookie && getUserAuthCookie()))
-                throw new Error(
-                    "Could not get the user or user cookie in 'TableContext.tsx:fetchData'!"
-                )
-
-            const authCookie = getUserAuthCookie() || undefined
+            setLoading(true)
+            setError(null)
+            if (!user) throw new Error("The user is not logged in!")
 
             const tablesInProject = await getListWithTables(
                 user,
-                props.projectName,
-                authCookie
+                props.projectName
             )
 
             const newData: T["data"] = {
@@ -73,14 +70,16 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
 
             if (tablesInProject[0].length > 0) {
                 const tableData: TableData = await getTableData(
+                    user,
                     tablesInProject[0],
-                    props.projectName,
-                    authCookie
+                    props.projectName
                 )
                 newData.table = tableData
             }
 
             console.log("data:", newData)
+
+            // TODO: data is correct, but either setData doesnt work properly or the data doesnt arrive in project-slug
 
             setData(newData)
         } catch (error) {
@@ -97,7 +96,7 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
         } finally {
             setLoading(false)
         }
-    }, [getUserAuthCookie, props.projectName, user])
+    } /*, [getUserAuthCookie, props.projectName, user])*/
 
     // #################### life cycle methods ####################
 

@@ -3,23 +3,21 @@
 import { coreRequest } from "@app/api/endpoints/coreinterface/json"
 import type { User } from "@context/AuthContext"
 
+const channel = "project-management"
+
 /**
  * Fetches a list with the names of the projects of a user.
  * @param {User} user user object.
- * @param {string} authCookie auth cookie. Optional.
  * @returns {Promise<string[]>} list of project names in case of success, otherwise an error object with error description.
  * @throws {RangeError} if the returned data does not math the type.
  */
-export const getListWithProjects = async (
-    user: User,
-    authCookie?: string
-): Promise<string[]> => {
-    const channel = "project-management"
-    const method = "getProjects"
-    const body = { user: user.name }
-    const cookie = authCookie
-
-    const coreResponse = await coreRequest(channel, method, body, cookie)
+export const getListWithProjects = async (user: User): Promise<string[]> => {
+    const coreResponse = await coreRequest(
+        channel,
+        "getProjects",
+        { user: user.name },
+        user.cookie
+    )
 
     return Array.isArray(coreResponse) &&
         coreResponse.every(e => typeof e === "string")
@@ -32,64 +30,55 @@ export const getListWithProjects = async (
 /**
  * Adds a project to the database.
  * @param user
- * @param project
- * @param authCookie
+ * @param newProject
  * @returns {Promise<void>}
  */
 export const addProject = async (
     user: User,
-    project: string,
-    authCookie?: string
+    newProject: string
 ): Promise<void> => {
-    const channel = "project-management"
-    const method = "createProject"
-    const body = { user: user.name, newProject: project }
-    const cookie = authCookie
-
-    await coreRequest(channel, method, body, cookie)
-    return Promise.resolve()
+    await coreRequest(
+        channel,
+        "createProject",
+        { user: user.name, newProject },
+        user.cookie
+    )
 }
 
 /**
  *
  * @param user
  * @param project
- * @param authCookie
  * @returns
  */
 export const deleteProject = async (
     user: User,
-    project: string,
-    authCookie?: string
+    project: string
 ): Promise<void> => {
-    const channel = "project-management"
-    const method = "removeProject"
-    const body = { user: user.name, project: project }
-    const cookie = authCookie
-
-    await coreRequest(channel, method, body, cookie)
-    return Promise.resolve()
+    await coreRequest(
+        channel,
+        "removeProject",
+        { user: user.name, project },
+        user.cookie
+    )
 }
 
 /**
  *
  * @param user
- * @param project
- * @param newProjectName
- * @param authCookie
+ * @param oldName
+ * @param newName
  * @returns
  */
 export const renameProject = async (
     user: User,
-    project: string,
-    newProjectName: string,
-    authCookie?: string
+    oldName: string,
+    newName: string
 ): Promise<void> => {
-    const channel = "project-management"
-    const method = "changeProjectName"
-    const body = { user: user.name, oldName: project, newName: newProjectName }
-    const cookie = authCookie
-
-    await coreRequest(channel, method, body, cookie)
-    return Promise.resolve()
+    await coreRequest(
+        channel,
+        "changeProjectName",
+        { user: user.name, oldName, newName },
+        user.cookie
+    )
 }

@@ -33,7 +33,7 @@ const ProjectSlugPage: NextPage<
     // #################### states ####################
 
     const { error, loading, data, refresh, changeTable } = useTable()
-    const { user, getUserAuthCookie } = useAuth()
+    const { user } = useAuth()
 
     // #################### private methods ####################
 
@@ -56,17 +56,12 @@ const ProjectSlugPage: NextPage<
                     "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
                     { variant: "error" }
                 )
-            if (!getUserAuthCookie)
-                throw new Error(
-                    "Internal Error: Der Benutzer-Cookie konnte nicht abgerufen werden!"
-                )
-            const authCookie = getUserAuthCookie()
-            if (!user || !authCookie)
+            if (!user)
                 return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
                     variant: "error",
                 })
             try {
-                await addTable(user, props.project, name, authCookie)
+                await addTable(user, props.project, name)
                 await refresh()
                 changeTable(name)
                 enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
@@ -83,7 +78,6 @@ const ProjectSlugPage: NextPage<
             changeTable,
             data?.projectTables,
             enqueueSnackbar,
-            getUserAuthCookie,
             props.project,
             refresh,
             user,
@@ -110,6 +104,10 @@ const ProjectSlugPage: NextPage<
         }
     }, [error])
 
+    useEffect(() => {
+        console.log(data)
+    }, [data])
+
     // #################### component ####################
 
     return (
@@ -118,8 +116,6 @@ const ProjectSlugPage: NextPage<
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
                 {props.project}
             </Typography>
-
-            {console.log(data)}
 
             <TableProvider projectName={props.project}>
                 {error instanceof Error ? (
@@ -237,7 +233,10 @@ export const getServerSideProps: GetServerSideProps<
             },
         }
 
-    const user: User = { name: req.cookies[USER_COOKIE_KEY] }
+    const user: User = {
+        name: req.cookies[USER_COOKIE_KEY],
+        cookie: authCookie,
+    }
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {
         const _projectName = params["project-slug"]
@@ -247,18 +246,14 @@ export const getServerSideProps: GetServerSideProps<
             _projectName.length > 0
         ) {
             const projectName = _projectName[0] as string
-            const serverRequest = await getListWithTables(
-                user,
-                projectName,
-                authCookie
-            )
+            const serverRequest = await getListWithTables(user, projectName)
 
             let dataOfFirstTable
             if (serverRequest.length > 0)
                 dataOfFirstTable = await getTableData(
+                    user,
                     serverRequest[0],
-                    projectName,
-                    authCookie
+                    projectName
                 )
             else dataOfFirstTable = null
 

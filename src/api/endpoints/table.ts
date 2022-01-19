@@ -8,24 +8,25 @@ import type { User } from "@context/AuthContext"
 import type { TableData } from "../types"
 import { isOfTypeTableData } from "../utils"
 
+const channel = "project-management"
+
 /**
  * Fetches a list with the names of the tables of a project.
  * @param {User} user user object.
- * @param {string} project project name.
+ * @param {string} projectName project name.
  * @param {string} authCookie auth cookie. Optional.
  * @returns {Promise<string[]>} list of table names in case of success, otherwise an error object with error description.
  */
 export const getListWithTables = async (
     user: User,
-    project: string,
-    authCookie?: string
+    projectName: string
 ): Promise<string[]> => {
-    const channel = "project-management"
-    const method = "getTablesFromProject"
-    const body = { user: user.name, projectName: project }
-    const cookie = authCookie
-
-    const coreResponse = await coreRequest(channel, method, body, cookie)
+    const coreResponse = await coreRequest(
+        channel,
+        "getTablesFromProject",
+        { user: user.name, projectName },
+        user.cookie
+    )
 
     return Array.isArray(coreResponse) &&
         coreResponse.every(element => typeof element === "string")
@@ -35,22 +36,22 @@ export const getListWithTables = async (
 
 /**
  * Fetches the data of a table.
- * @param table table name.
+ * @param tableName table name.
  * @param authCookie auth cookie. Optional.
  * @returns {TableData} table data in case of success, otherwise an error object with error description.
  */
 export const getTableData = async (
-    table: string,
-    project: string,
-    authCookie?: string
+    user: User,
+    tableName: string,
+    projectName: string
 ): Promise<TableData> => {
-    const channel = "project-management"
-    const method = "getTableData"
-    const body = { projectName: project, tableName: table }
-    const cookie = authCookie
-
-    // Type: ServerTableData
-    const coreResponse: any = await coreRequest(channel, method, body, cookie)
+    // TODO: set type: ServerTableData
+    const coreResponse: any = await coreRequest(
+        channel,
+        "getTableData",
+        { projectName, tableName },
+        user.cookie
+    )
 
     coreResponse.columns.map((item: any) => {
         item.key = item.columnName
@@ -71,40 +72,36 @@ export const getTableData = async (
  */
 export const addTable = async (
     user: User,
-    project: string,
-    table: string,
-    authCookie?: string
-): Promise<void> => {
-    const channel = "project-management"
-    const method = "createTableInProject"
-    const body = { user: user.name, projectName: project, table: table }
-    const cookie = authCookie
-
-    await coreRequest(channel, method, body, cookie)
-    return Promise.resolve()
+    projectName: string,
+    table: string
+) => {
+    await coreRequest(
+        channel,
+        "createTableInProject",
+        { user: user.name, projectName, table },
+        user.cookie
+    )
 }
 
 /**
  *
  * @param user
- * @param project
+ * @param projectName
  * @param table
  * @param authCookie
  * @returns
  */
 export const deleteTable = async (
     user: User,
-    project: string,
-    table: string,
-    authCookie?: string
-): Promise<void> => {
-    const channel = "project-management"
-    const method = "removeTableFromProject"
-    const body = { projectName: project, table: table }
-    const cookie = authCookie
-
-    await coreRequest(channel, method, body, cookie)
-    return Promise.resolve()
+    projectName: string,
+    table: string
+) => {
+    await coreRequest(
+        channel,
+        "removeTableFromProject",
+        { projectName, table },
+        user.cookie
+    )
 }
 
 /**
@@ -118,20 +115,18 @@ export const deleteTable = async (
 export const renameTable = async (
     user: User,
     project: string,
-    table: string,
-    newTableName: string,
-    authCookie?: string
-): Promise<void> => {
-    const channel = "project-management"
-    const method = "changeTableName"
-    const body = {
-        user: user.name,
-        project: project,
-        oldName: table,
-        newName: newTableName,
-    }
-    const cookie = authCookie
-
-    await coreRequest(channel, method, body, cookie)
-    return Promise.resolve()
+    oldName: string,
+    newName: string
+) => {
+    await coreRequest(
+        channel,
+        "changeTableName",
+        {
+            user: user.name,
+            project,
+            oldName,
+            newName,
+        },
+        user.cookie
+    )
 }
