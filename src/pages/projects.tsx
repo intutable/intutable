@@ -232,7 +232,19 @@ export const getServerSideProps: GetServerSideProps<
 > = async context => {
     const { params, req } = context
     const cookie = req.cookies[AUTH_COOKIE_KEY]
-    if (!(await isAuthenticated(cookie).catch(e => false)))
+
+    if (
+        !(await isAuthenticated(cookie).catch(e => {
+            console.error(e)
+            Promise.resolve({
+                redirect: {
+                    permanent: false,
+                    destination: "/500",
+                },
+            })
+            return false
+        }))
+    )
         return {
             redirect: {
                 permanent: false,
@@ -241,7 +253,7 @@ export const getServerSideProps: GetServerSideProps<
         }
 
     const user: User = {
-        name: cookie,
+        name: req.cookies[USER_COOKIE_KEY],
         cookie,
     }
     const serverRequest = await getProjects(user)

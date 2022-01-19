@@ -17,10 +17,10 @@ import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import { isValidName, prepareName } from "@utils/validateName"
 import { isAuthenticated } from "@app/api/endpoints/coreinterface"
-import { useAuth, User } from "@context/AuthContext"
+import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 import { rowKeyGetter } from "@datagrid/utils"
 import { getColumns, transformHelper } from "@datagrid/utils"
-import { useProject, Data as UseProject_Data } from "@context/useProject"
+import { useProject } from "@context/useProject"
 
 type ProjectSlugPageProps = {
     project: string
@@ -230,7 +230,7 @@ export const getServerSideProps: GetServerSideProps<
         }
 
     const user: User = {
-        name: cookie,
+        name: req.cookies[USER_COOKIE_KEY],
         cookie,
     }
 

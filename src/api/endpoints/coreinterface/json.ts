@@ -13,7 +13,7 @@ export class CoreRequestError extends Error {
     constructor(message: string, statusCode: number) {
         super(message)
         this.name = this.constructor.name
-        this.stack = new Error().stack
+        // this.stack = new Error().stack
         this.statusCode = statusCode
     }
 }
