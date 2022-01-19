@@ -35,12 +35,12 @@ export const getTablesFromProject = async (
             t => typeof t === "string" && t.length > 0
         )
         if (parsed.length !== coreResponse.length)
-            return Promise.reject(
+            console.log(
                 new RangeError(
-                    `Could not parse the response! At least one table could not be read! Response ${inspect(
+                    `Could not parse the response! At least one table could not be read! Response: '${inspect(
                         coreResponse,
                         { depth: null }
-                    )}`
+                    )}'`
                 )
             )
         return Promise.resolve(parsed)
