@@ -6,7 +6,11 @@ import { CircularProgress, useTheme, Box, Typography } from "@mui/material"
 import { Tablist, ADD_BUTTON_TOKEN } from "@components/TabList/TabList"
 import DataGrid from "react-data-grid"
 import { useTable, TableProvider } from "@context/TableContext"
-import { getTableData, getListWithTables, addTable } from "@api/endpoints"
+import {
+    getTableData,
+    getTablesFromProject,
+    createTableInProject,
+} from "@api/endpoints"
 import type { TableData } from "@api/types"
 import { useSnackbar } from "notistack"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
@@ -61,7 +65,7 @@ const ProjectSlugPage: NextPage<
                     variant: "error",
                 })
             try {
-                await addTable(user, props.project, name)
+                await createTableInProject(user, props.project, name)
                 await refresh()
                 changeTable(name)
                 enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
@@ -223,9 +227,9 @@ export const getServerSideProps: GetServerSideProps<
 > = async context => {
     const { params, req } = context
     const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
-    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+    const cookie: string = req.cookies[AUTH_COOKIE_KEY]
 
-    if (!(await isAuthenticated(authCookie).catch(e => false)))
+    if (!(await isAuthenticated(cookie).catch(e => false)))
         return {
             redirect: {
                 permanent: false,
@@ -234,8 +238,8 @@ export const getServerSideProps: GetServerSideProps<
         }
 
     const user: User = {
-        name: req.cookies[USER_COOKIE_KEY],
-        cookie: authCookie,
+        name: cookie,
+        cookie,
     }
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {
@@ -246,7 +250,7 @@ export const getServerSideProps: GetServerSideProps<
             _projectName.length > 0
         ) {
             const projectName = _projectName[0] as string
-            const serverRequest = await getListWithTables(user, projectName)
+            const serverRequest = await getTablesFromProject(user, projectName)
 
             let dataOfFirstTable
             if (serverRequest.length > 0)

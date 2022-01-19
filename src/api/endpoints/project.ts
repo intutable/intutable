@@ -11,10 +11,10 @@ const channel = "project-management"
  * @returns {Promise<string[]>} list of project names in case of success, otherwise an error object with error description.
  * @throws {RangeError} if the returned data does not math the type.
  */
-export const getListWithProjects = async (user: User): Promise<string[]> => {
+export const getProjects = async (user: User): Promise<string[]> => {
     const coreResponse = await coreRequest(
         channel,
-        "getProjects",
+        getProjects.name,
         { user: user.name },
         user.cookie
     )
@@ -27,57 +27,38 @@ export const getListWithProjects = async (user: User): Promise<string[]> => {
           )
 }
 
-/**
- * Adds a project to the database.
- * @param user
- * @param newProject
- * @returns {Promise<void>}
- */
-export const addProject = async (
+export const createProject = async (
     user: User,
     newProject: string
 ): Promise<void> => {
     await coreRequest(
         channel,
-        "createProject",
+        createProject.name,
         { user: user.name, newProject },
         user.cookie
     )
 }
 
-/**
- *
- * @param user
- * @param project
- * @returns
- */
-export const deleteProject = async (
+export const removeProject = async (
     user: User,
     project: string
 ): Promise<void> => {
     await coreRequest(
         channel,
-        "removeProject",
+        removeProject.name,
         { user: user.name, project },
         user.cookie
     )
 }
 
-/**
- *
- * @param user
- * @param oldName
- * @param newName
- * @returns
- */
-export const renameProject = async (
+export const changeProjectName = async (
     user: User,
     oldName: string,
     newName: string
 ): Promise<void> => {
     await coreRequest(
         channel,
-        "changeProjectName",
+        changeProjectName.name,
         { user: user.name, oldName, newName },
         user.cookie
     )

@@ -20,11 +20,11 @@ import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
 import {
-    getListWithProjects,
-    addProject,
-    deleteProject,
-    renameProject,
-    deleteTable,
+    getProjects,
+    createProject,
+    removeProject,
+    changeProjectName,
+    removeTableFromProject,
 } from "@api/endpoints"
 import { isAuthenticated } from "@app/api/endpoints/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
@@ -106,7 +106,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                 return enqueueSnackbar("Bitte melde dich erneut an!", {
                     variant: "error",
                 })
-            await deleteProject(user, props.children as string)
+            await removeProject(user, props.children as string)
             // TODO: reload the project page
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
@@ -191,7 +191,7 @@ const ProjectsPage: NextPage<
                     variant: "error",
                 })
             // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
-            await addProject(user, name)
+            await createProject(user, name)
             router.push("/project/" + name)
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
@@ -231,8 +231,8 @@ export const getServerSideProps: GetServerSideProps<
     ProjectsPageProps
 > = async context => {
     const { params, req } = context
-    const authCookie = req.cookies[AUTH_COOKIE_KEY]
-    if (!(await isAuthenticated(authCookie).catch(e => false)))
+    const cookie = req.cookies[AUTH_COOKIE_KEY]
+    if (!(await isAuthenticated(cookie).catch(e => false)))
         return {
             redirect: {
                 permanent: false,
@@ -241,10 +241,10 @@ export const getServerSideProps: GetServerSideProps<
         }
 
     const user: User = {
-        name: req.cookies[USER_COOKIE_KEY],
-        cookie: authCookie,
+        name: cookie,
+        cookie,
     }
-    const serverRequest = await getListWithProjects(user)
+    const serverRequest = await getProjects(user)
     const data: ProjectsPageProps = {
         projects: serverRequest,
     }

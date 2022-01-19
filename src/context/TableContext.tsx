@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { getListWithTables, getTableData } from "@api/endpoints"
+import { getTablesFromProject, getTableData } from "@api/endpoints"
 import type { TableData } from "@api/types"
 import { useAuth } from "./AuthContext"
 
@@ -55,7 +55,7 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
             setError(null)
             if (!user) throw new Error("The user is not logged in!")
 
-            const tablesInProject = await getListWithTables(
+            const tablesInProject = await getTablesFromProject(
                 user,
                 props.projectName
             )

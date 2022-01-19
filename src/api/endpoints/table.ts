@@ -17,13 +17,13 @@ const channel = "project-management"
  * @param {string} authCookie auth cookie. Optional.
  * @returns {Promise<string[]>} list of table names in case of success, otherwise an error object with error description.
  */
-export const getListWithTables = async (
+export const getTablesFromProject = async (
     user: User,
     projectName: string
 ): Promise<string[]> => {
     const coreResponse = await coreRequest(
         channel,
-        "getTablesFromProject",
+        getTablesFromProject.name,
         { user: user.name, projectName },
         user.cookie
     )
@@ -48,7 +48,7 @@ export const getTableData = async (
     // TODO: set type: ServerTableData
     const coreResponse: any = await coreRequest(
         channel,
-        "getTableData",
+        getTableData.name,
         { projectName, tableName },
         user.cookie
     )
@@ -70,14 +70,14 @@ export const getTableData = async (
  * @param authCookie
  * @returns
  */
-export const addTable = async (
+export const createTableInProject = async (
     user: User,
     projectName: string,
     table: string
 ) => {
     await coreRequest(
         channel,
-        "createTableInProject",
+        createTableInProject.name,
         { user: user.name, projectName, table },
         user.cookie
     )
@@ -91,14 +91,14 @@ export const addTable = async (
  * @param authCookie
  * @returns
  */
-export const deleteTable = async (
+export const removeTableFromProject = async (
     user: User,
     projectName: string,
     table: string
 ) => {
     await coreRequest(
         channel,
-        "removeTableFromProject",
+        removeTableFromProject.name,
         { projectName, table },
         user.cookie
     )
@@ -112,7 +112,7 @@ export const deleteTable = async (
  * @param authCookie
  * @returns
  */
-export const renameTable = async (
+export const changeTableName = async (
     user: User,
     project: string,
     oldName: string,
@@ -120,7 +120,7 @@ export const renameTable = async (
 ) => {
     await coreRequest(
         channel,
-        "changeTableName",
+        changeTableName.name,
         {
             user: user.name,
             project,
