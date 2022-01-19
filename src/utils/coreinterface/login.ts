@@ -52,7 +52,7 @@ export async function isAuthenticated(authCookie?: string): Promise<boolean> {
     return coreRequest(
         "user-authentication",
         "hashPassword",
-        { password: "12345678" },
+        { password: "amILoggedIn?" },
         authCookie
     )
         .then(() => Promise.resolve(true))
