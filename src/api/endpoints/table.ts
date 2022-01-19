@@ -1,5 +1,4 @@
-// This file contains api methods related to tables of projects, e.g. GET POST PUT DELETE
-
+import { inspect } from "util"
 import {
     coreRequest,
     CoreRequestError,
@@ -21,17 +20,33 @@ export const getTablesFromProject = async (
     user: User,
     projectName: string
 ): Promise<string[]> => {
-    const coreResponse = await coreRequest(
+    const coreResponse = (await coreRequest(
         channel,
         getTablesFromProject.name,
         { user: user.name, projectName },
         user.cookie
-    )
+    )) as unknown
 
-    return Array.isArray(coreResponse) &&
-        coreResponse.every(element => typeof element === "string")
-        ? Promise.resolve(coreResponse)
-        : Promise.reject(new Error())
+    if (typeof coreResponse === "string" && coreResponse.length > 0)
+        return Promise.resolve([coreResponse])
+
+    if (Array.isArray(coreResponse)) {
+        const parsed = coreResponse.filter(
+            t => typeof t === "string" && t.length > 0
+        )
+        if (parsed.length !== coreResponse.length)
+            return Promise.reject(
+                new RangeError(
+                    `Could not parse the response! At least one table could not be read! Response ${inspect(
+                        coreResponse,
+                        { depth: null }
+                    )}`
+                )
+            )
+        return Promise.resolve(parsed)
+    }
+
+    return Promise.reject(new Error("Could not parse the response!"))
 }
 
 /**

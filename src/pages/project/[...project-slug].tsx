@@ -51,37 +51,39 @@ const ProjectSlugPage: NextPage<
         changeTable(newTable)
     }
 
-    const handleAddTable = useCallback(async (newTableName: string) => {
-        const name = prepareName(newTableName)
-        const isValid = isValidName(name)
-        if (isValid instanceof Error)
-            return enqueueSnackbar(isValid.message, { variant: "error" })
-        const nameIsTaken = state.project?.tables
-            .map(tbl => tbl.toLowerCase().trim())
-            .includes(name.toLowerCase().trim())
-        if (nameIsTaken)
-            return enqueueSnackbar(
-                "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
-                { variant: "error" }
-            )
-        if (!user)
-            return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
-                variant: "error",
-            })
-        try {
-            await createTableInProject(user, props.project, name)
-            await reload(name)
-            changeTable(name)
-            enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-                variant: "success",
-            })
-        } catch (error) {
-            console.error(error)
-            enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
-                variant: "error",
-            })
-        }
-    }, [])
+    const handleAddTable = useCallback(
+        async (newTableName: string) => {
+            const name = prepareName(newTableName)
+            const isValid = isValidName(name)
+            if (isValid instanceof Error)
+                return enqueueSnackbar(isValid.message, { variant: "error" })
+            const nameIsTaken = state.project?.tables
+                .map(tbl => tbl.toLowerCase().trim())
+                .includes(name.toLowerCase().trim())
+            if (nameIsTaken)
+                return enqueueSnackbar(
+                    "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
+                    { variant: "error" }
+                )
+            if (!user)
+                return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
+                    variant: "error",
+                })
+            try {
+                await createTableInProject(user, props.project, name)
+                await reload(name)
+                enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+                    variant: "success",
+                })
+            } catch (error) {
+                console.error(error)
+                enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
+                    variant: "error",
+                })
+            }
+        },
+        [enqueueSnackbar, props.project, reload, state.project?.tables, user]
+    )
 
     const handleRenameTable = () => {
         alert("Not implemented yet")
@@ -242,6 +244,7 @@ export const getServerSideProps: GetServerSideProps<
             _projectName.length > 0
         ) {
             const projectName = _projectName[0] as string
+            console.log(projectName, user)
             const serverRequest = await getTablesFromProject(user, projectName)
 
             let dataOfFirstTable
