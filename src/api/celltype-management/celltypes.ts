@@ -62,31 +62,12 @@ export type CellType = keyof _CellTypeMap
  * @param value The value to check
  * @returns
  */
-export const isCellType = (value: any): value is CellType => _RuntimeCellTypeMap.includes(value)
+export const isCellType = (value: any): value is CellType =>
+    _RuntimeCellTypeMap.includes(value)
 
 /**
  * Specifies the type of a CellType; e.g. (`string` -> string) or ("currency" -> Currency Class)
  */
-export type CellData<T extends string> = T extends keyof _CellTypeMap ? _CellTypeMap[T] : never
-
-/**
- * Manages how a user can access a cell.
- * Tells nothing about the cell's visibility to other users.
- * @default editable
- */
-export type CellAccess = "readonly" | "editable"
-/**
- *
- * @param value
- * @returns
- */
-export const booleanToCellAccessType = (value: boolean | number): CellAccess => {
-    if (typeof value === "boolean") return value ? "editable" : "readonly"
-    return value === 0 ? "readonly" : "editable"
-}
-
-/**
- * Position of the cell's content.
- * @default left
- */
-export type CellContentPosition = "left" | "right" | "center"
+export type CellData<T extends string> = T extends keyof _CellTypeMap
+    ? _CellTypeMap[T]
+    : never

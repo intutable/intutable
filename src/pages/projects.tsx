@@ -25,8 +25,8 @@ import {
     deleteProject,
     renameProject,
     deleteTable,
-} from "@api"
-import { isAuthenticated } from "@app/api/coreinterface"
+} from "@api/endpoints"
+import { isAuthenticated } from "@app/api/endpoints/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 

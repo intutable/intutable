@@ -1,9 +1,12 @@
 // This file contains api methods related to tables of projects, e.g. GET POST PUT DELETE
 
-import { coreRequest, CoreRequestError } from "@app/api/coreinterface/json"
+import {
+    coreRequest,
+    CoreRequestError,
+} from "@app/api/endpoints/coreinterface/json"
 import type { User } from "@context/AuthContext"
-import type { TableData } from "./types"
-import { isOfTypeTableData } from "./utils"
+import type { TableData } from "../types"
+import { isOfTypeTableData } from "../utils"
 
 /**
  * Fetches a list with the names of the tables of a project.

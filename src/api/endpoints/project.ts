@@ -1,6 +1,6 @@
 // This file contains api methods related to projects, e.g. GET POST PUT DELETE
 
-import { coreRequest } from "@app/api/coreinterface/json"
+import { coreRequest } from "@app/api/endpoints/coreinterface/json"
 import type { User } from "@context/AuthContext"
 
 /**
