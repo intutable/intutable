@@ -17,10 +17,11 @@ import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import { isValidName, prepareName } from "@utils/validateName"
-import { coreRequest, isAuthenticated } from "@app/api/endpoints/coreinterface"
-import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
+import { isAuthenticated } from "@app/api/endpoints/coreinterface"
+import { useAuth, User } from "@context/AuthContext"
 import { rowKeyGetter } from "@datagrid/utils"
 import { getColumns, transformHelper } from "@datagrid/utils"
+import { useProject, Data as UseProject_Data } from "@context/useProject"
 
 type ProjectSlugPageProps = {
     project: string
@@ -36,57 +37,52 @@ const ProjectSlugPage: NextPage<
 
     // #################### states ####################
 
-    const { error, loading, data, refresh, changeTable } = useTable()
     const { user } = useAuth()
+    // const { error, loading, data, refresh, changeTable } = useTable()
+    const { state } = useProject(props.project, {
+        tables: props.tables,
+        currentTable: props.table?.name || "",
+        data: props.table?.data || null,
+    })
 
     // #################### private methods ####################
 
     const handleTablistChange = (newTable: string | null) => {
-        if (newTable === ADD_BUTTON_TOKEN) return changeTable(null)
-        changeTable(newTable)
+        // if (newTable === ADD_BUTTON_TOKEN) return changeTable(null)
+        // changeTable(newTable)
     }
 
-    const handleAddTable = useCallback(
-        async (newTableName: string) => {
-            const name = prepareName(newTableName)
-            const isValid = isValidName(name)
-            if (isValid instanceof Error)
-                return enqueueSnackbar(isValid.message, { variant: "error" })
-            const nameIsTaken = data?.projectTables
-                .map(tbl => tbl.toLowerCase().trim())
-                .includes(name.toLowerCase().trim())
-            if (nameIsTaken)
-                return enqueueSnackbar(
-                    "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
-                    { variant: "error" }
-                )
-            if (!user)
-                return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
-                    variant: "error",
-                })
-            try {
-                await createTableInProject(user, props.project, name)
-                await refresh()
-                changeTable(name)
-                enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-                    variant: "success",
-                })
-            } catch (error) {
-                console.error(error)
-                enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
-                    variant: "error",
-                })
-            }
-        },
-        [
-            changeTable,
-            data?.projectTables,
-            enqueueSnackbar,
-            props.project,
-            refresh,
-            user,
-        ]
-    )
+    const handleAddTable = useCallback(async (newTableName: string) => {
+        // const name = prepareName(newTableName)
+        // const isValid = isValidName(name)
+        // if (isValid instanceof Error)
+        //     return enqueueSnackbar(isValid.message, { variant: "error" })
+        // const nameIsTaken = data?.projectTables
+        //     .map(tbl => tbl.toLowerCase().trim())
+        //     .includes(name.toLowerCase().trim())
+        // if (nameIsTaken)
+        //     return enqueueSnackbar(
+        //         "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
+        //         { variant: "error" }
+        //     )
+        // if (!user)
+        //     return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
+        //         variant: "error",
+        //     })
+        // try {
+        //     await createTableInProject(user, props.project, name)
+        //     await refresh()
+        //     changeTable(name)
+        //     enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+        //         variant: "success",
+        //     })
+        // } catch (error) {
+        //     console.error(error)
+        //     enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
+        //         variant: "error",
+        //     })
+        // }
+    }, [])
 
     const handleRenameTable = () => {
         alert("Not implemented yet")
@@ -100,17 +96,13 @@ const ProjectSlugPage: NextPage<
     // #################### life cycle methods ####################
 
     useEffect(() => {
-        if (error) {
-            console.log(error)
+        if (state.error instanceof Error) {
+            console.log(state.error)
             enqueueSnackbar("Die Tabelle konnte nicht geladen werden!", {
                 variant: "error",
             })
         }
-    }, [error])
-
-    useEffect(() => {
-        console.log(data)
-    }, [data])
+    }, [state.error])
 
     // #################### component ####################
 
@@ -121,103 +113,106 @@ const ProjectSlugPage: NextPage<
                 {props.project}
             </Typography>
 
-            <TableProvider projectName={props.project}>
-                {error instanceof Error ? (
-                    // Error
-                    <Typography>
-                        Error: Could not load the Table (reason: {error.message}
-                        )!
-                    </Typography>
-                ) : // Loading
-                loading ? (
-                    <LoadingSkeleton />
-                ) : // data is null
-                data == null ? (
-                    <>Table null</>
-                ) : (
-                    // Table
-                    <>
-                        <Tablist
-                            value={data.currentTable}
-                            data={data.projectTables}
-                            onChangeHandler={handleTablistChange}
-                            onAddHandler={handleAddTable}
-                            contextMenuItems={[
-                                <Box onClick={handleRenameTable} key={0}>
-                                    Rename
-                                </Box>,
-                                <Box
-                                    onClick={handleDeleteTable}
-                                    key={1}
-                                    sx={{ color: theme.palette.warning.main }}
-                                >
-                                    Delete
-                                </Box>,
-                            ]}
-                        />
-                        <Box>
-                            <Toolbar position="top">
-                                <TItem.AddCol addCol={() => {}} />
-                                <Toolbar.Item onClickHandler={() => {}}>
-                                    Tool 1
-                                </Toolbar.Item>
-                                <Toolbar.Item onClickHandler={() => {}}>
-                                    Tool 2
-                                </Toolbar.Item>
-                                <Toolbar.Item onClickHandler={() => {}}>
-                                    Tool 3
-                                </Toolbar.Item>
-                                <Toolbar.Item onClickHandler={() => {}}>
-                                    Tool 4
-                                </Toolbar.Item>
-                                <Toolbar.Item onClickHandler={() => {}}>
-                                    Tool 5
-                                </Toolbar.Item>
-                                <TItem.FileDownload getData={() => []} />
-                            </Toolbar>
-                            <DataGrid
-                                className={
-                                    theme.palette.mode === "light"
-                                        ? "rdg-light"
-                                        : "rdg-dark"
-                                }
-                                rows={
-                                    data.table ? (data.table.rows as any) : []
-                                }
-                                columns={
-                                    data!.table
-                                        ? getColumns(
-                                              transformHelper(
-                                                  data.table.columns
-                                              )
+            <TableProvider projectName={props.project}></TableProvider>
+            {console.log(state)}
+            {state.error instanceof Error ? (
+                // Error
+                <Typography>
+                    Error: Could not load the Table (reason:{" "}
+                    {state.error.message}
+                    )!
+                </Typography>
+            ) : // Loading
+            state.loading ? (
+                <LoadingSkeleton />
+            ) : // data is null
+            state.project == null ? (
+                <>Table null {state}</>
+            ) : (
+                // Table
+                <>
+                    <Tablist
+                        value={state.project.currentTable}
+                        data={state.project.tables}
+                        onChangeHandler={handleTablistChange}
+                        onAddHandler={handleAddTable}
+                        contextMenuItems={[
+                            <Box onClick={handleRenameTable} key={0}>
+                                Rename
+                            </Box>,
+                            <Box
+                                onClick={handleDeleteTable}
+                                key={1}
+                                sx={{ color: theme.palette.warning.main }}
+                            >
+                                Delete
+                            </Box>,
+                        ]}
+                    />
+                    <Box>
+                        <Toolbar position="top">
+                            <TItem.AddCol addCol={() => {}} />
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 1
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 2
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 3
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 4
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 5
+                            </Toolbar.Item>
+                            <TItem.FileDownload getData={() => []} />
+                        </Toolbar>
+                        <DataGrid
+                            className={
+                                theme.palette.mode === "light"
+                                    ? "rdg-light"
+                                    : "rdg-dark"
+                            }
+                            rows={
+                                state.project.data
+                                    ? (state.project.data.rows as any)
+                                    : []
+                            }
+                            columns={
+                                state.project.data
+                                    ? getColumns(
+                                          transformHelper(
+                                              state.project.data.columns
                                           )
-                                        : [{ key: "id", name: "ID" }]
-                                }
-                                noRowsFallback={<NoRowsRenderer />}
-                                rowKeyGetter={rowKeyGetter}
-                                defaultColumnOptions={{
-                                    sortable: true,
-                                    resizable: true,
-                                }}
-                                // onColumnResize={}
-                                // onRowDoubleClick={}
-                                // onFill={handleFill}
-                                // selectedRows={selectedRows}
-                                // onSelectedRowsChange={setSelectedRows}
-                            />
-                            <Toolbar position="bottom">
-                                <TItem.Connection status={"connected"} />
-                                <Toolbar.Item onClickHandler={() => {}}>
-                                    Tool 1
-                                </Toolbar.Item>
-                                <Toolbar.Item onClickHandler={() => {}}>
-                                    Tool 2
-                                </Toolbar.Item>
-                            </Toolbar>
-                        </Box>
-                    </>
-                )}
-            </TableProvider>
+                                      )
+                                    : [{ key: "id", name: "ID" }]
+                            }
+                            noRowsFallback={<NoRowsRenderer />}
+                            rowKeyGetter={rowKeyGetter}
+                            defaultColumnOptions={{
+                                sortable: true,
+                                resizable: true,
+                            }}
+                            // onColumnResize={}
+                            // onRowDoubleClick={}
+                            // onFill={handleFill}
+                            // selectedRows={selectedRows}
+                            // onSelectedRowsChange={setSelectedRows}
+                        />
+                        <Toolbar position="bottom">
+                            <TItem.Connection status={"connected"} />
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 1
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 2
+                            </Toolbar.Item>
+                        </Toolbar>
+                    </Box>
+                </>
+            )}
         </>
     )
 }

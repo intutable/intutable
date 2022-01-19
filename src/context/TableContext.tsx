@@ -18,7 +18,7 @@ export type TableContextProps = {
 }
 type T = TableContextProps
 const initialState: TableContextProps = {
-    loading: true,
+    loading: false,
     error: null,
     data: null,
     refresh: () =>
@@ -43,13 +43,13 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
 
     // #################### states ####################
 
-    const [data, setData] = useState<T["data"]>(initialState.data)
-    const [loading, setLoading] = useState<T["loading"]>(initialState.loading)
-    const [error, setError] = useState<T["error"]>(initialState.error)
+    const [data, setData] = useState<T["data"]>(null)
+    const [loading, setLoading] = useState<T["loading"]>(false)
+    const [error, setError] = useState<T["error"]>(null)
 
     // #################### private methods ####################
 
-    const fetchData = /*useCallback(*/ async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
@@ -82,8 +82,10 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
             // TODO: data is correct, but either setData doesnt work properly or the data doesnt arrive in project-slug
 
             setData(newData)
+            setLoading(false)
         } catch (error) {
             console.error(error)
+            setLoading(false)
             setError(
                 error instanceof Error
                     ? error
@@ -93,20 +95,18 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
                               : "Internal Unknown Error: Could not load the Table!"
                       )
             )
-        } finally {
-            setLoading(false)
         }
-    } /*, [getUserAuthCookie, props.projectName, user])*/
+    }, [props.projectName, user])
 
     // #################### life cycle methods ####################
 
     useEffect(() => {
         // initial loading
-        if (data === null) {
+        if (data === null && user) {
             console.count("Initial Loading Data")
             fetchData()
         }
-    }, [fetchData])
+    }, [data, fetchData, user])
 
     // #################### public methods ####################
 
@@ -114,54 +114,59 @@ export const TableProvider: React.FC<TableProviderProps> = props => {
      * Changes the current tables and loads the data.
      * @param {string} table must be in the list of available project tables.
      */
-    const changeTable = async (table: string | null): Promise<void> => {
-        if (table && table.length < 1)
-            return Promise.reject(
-                new RangeError(`Received argument 'table' is empty: ${table}`)
-            )
-
-        if (table === null) {
-            setData(prev => ({
-                __projectName: props.projectName,
-                projectTables: prev!.projectTables,
-                currentTable: null,
-                table: null,
-            }))
-            return Promise.resolve()
-        }
-
-        if (!data!.projectTables.includes(table))
-            return Promise.reject(
-                new RangeError(
-                    `Table '${table} is not a member of the current project!`
+    const changeTable = useCallback(
+        async (table: string | null): Promise<void> => {
+            if (table && table.length < 1)
+                return Promise.reject(
+                    new RangeError(
+                        `Received argument 'table' is empty: ${table}`
+                    )
                 )
-            )
 
-        await fetchData()
-    }
+            if (table === null) {
+                setData(prev => ({
+                    __projectName: props.projectName,
+                    projectTables: prev!.projectTables,
+                    currentTable: null,
+                    table: null,
+                }))
+                return Promise.resolve()
+            }
+
+            if (!data!.projectTables.includes(table))
+                return Promise.reject(
+                    new RangeError(
+                        `Table '${table} is not a member of the current project!`
+                    )
+                )
+
+            await fetchData()
+        },
+        [data, fetchData, props.projectName]
+    )
 
     /**
      * Reloads the data.
      */
-    const refresh = async (switchToTable?: string): Promise<void> => {
-        await fetchData()
-        setError(null)
-        if (switchToTable && switchToTable?.length > 0)
-            changeTable(switchToTable)
-    }
+    const refresh = useCallback(
+        async (switchToTable?: string): Promise<void> => {
+            await fetchData()
+            setError(null)
+            if (switchToTable && switchToTable?.length > 0)
+                changeTable(switchToTable)
+        },
+        [changeTable, fetchData]
+    )
 
     // #################### provider ####################
 
+    const getContextValue = useCallback(
+        () => ({ data, loading, error, changeTable, refresh }),
+        [data, loading, error, changeTable, refresh]
+    )
+
     return (
-        <TableContext.Provider
-            value={{
-                data,
-                loading,
-                error,
-                changeTable,
-                refresh,
-            }}
-        >
+        <TableContext.Provider value={getContextValue()}>
             {props.children}
         </TableContext.Provider>
     )
