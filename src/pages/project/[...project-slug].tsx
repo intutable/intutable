@@ -38,8 +38,7 @@ const ProjectSlugPage: NextPage<
     // #################### states ####################
 
     const { user } = useAuth()
-    // const { error, loading, data, refresh, changeTable } = useTable()
-    const { state } = useProject(props.project, {
+    const { state, changeTable, reload } = useProject(props.project, {
         tables: props.tables,
         currentTable: props.table?.name || "",
         data: props.table?.data || null,
@@ -48,8 +47,9 @@ const ProjectSlugPage: NextPage<
     // #################### private methods ####################
 
     const handleTablistChange = (newTable: string | null) => {
-        // if (newTable === ADD_BUTTON_TOKEN) return changeTable(null)
-        // changeTable(newTable)
+        if (newTable === null || newTable === ADD_BUTTON_TOKEN)
+            return changeTable("")
+        changeTable(newTable)
     }
 
     const handleAddTable = useCallback(async (newTableName: string) => {

@@ -16,6 +16,15 @@ export type State = {
     error: Error | null
 }
 
+const makeError = (error: unknown): Error =>
+    error instanceof Error
+        ? error
+        : new Error(
+              typeof error === "string"
+                  ? error
+                  : "Internal Unknown Error: Could not load the Table!"
+          )
+
 export const useProject = (project: string, initialData: Data) => {
     const { user } = useAuth()
 
@@ -25,56 +34,75 @@ export const useProject = (project: string, initialData: Data) => {
         error: null,
     })
 
-    // useEffect(() => {
-    //     if (user) {
-    //         try {
-    //             ;(async _ => {
-    //                 const tablesInProject = await getTablesFromProject(
-    //                     user,
-    //                     project
-    //                 )
+    const _fetch = useCallback(
+        async (table?: string): Promise<Data> =>
+            new Promise((resolve, reject) => {
+                if (user) {
+                    try {
+                        ;(async _ => {
+                            const tablesInProject = await getTablesFromProject(
+                                user,
+                                project
+                            )
 
-    //                 const newData: Data = {
-    //                     tables: tablesInProject,
-    //                     currentTable: tablesInProject[0] || "",
-    //                     data: null,
-    //                 }
+                            const tableData = await getTableData(
+                                user,
+                                table || tablesInProject[0],
+                                project
+                            )
 
-    //                 if (tablesInProject[0].length > 0) {
-    //                     const tableData = await getTableData(
-    //                         user,
-    //                         tablesInProject[0],
-    //                         project
-    //                     )
-    //                     newData.data = tableData
-    //                 }
+                            const newData: Data = {
+                                tables: tablesInProject,
+                                currentTable: table || tablesInProject[0] || "",
+                                data: tableData,
+                            }
 
-    //                 console.log("data:", newData)
+                            resolve(newData)
+                        })()
+                    } catch (error) {
+                        reject(error)
+                    }
+                }
+            }),
+        [project, user]
+    )
 
-    //                 // TODO: data is correct, but either setData doesnt work properly or the data doesnt arrive in project-slug
+    const reload = useCallback(
+        async (table?: string) => {
+            // TODO: shows the loading skeleton for less than second, this has a bad impact on ux. Redesign loading spinners …
+            // setState(prev => ({
+            //     project: prev.project,
+            //     loading: true,
+            //     error: prev.error,
+            // }))
+            try {
+                const data = await _fetch(
+                    table || state.project?.currentTable || ""
+                )
+                setState({
+                    project: data,
+                    loading: false,
+                    error: null,
+                })
+            } catch (error) {
+                setState(prev => ({
+                    project: prev.project,
+                    loading: false,
+                    error: makeError(error),
+                }))
+            }
+        },
+        [_fetch, state.project?.currentTable]
+    )
 
-    //                 setState({
-    //                     error: null,
-    //                     loading: false,
-    //                     project: newData,
-    //                 })
-    //             })()
-    //         } catch (error) {
-    //             setState({
-    //                 error:
-    //                     error instanceof Error
-    //                         ? error
-    //                         : new Error(
-    //                               typeof error === "string"
-    //                                   ? error
-    //                                   : "Internal Unknown Error: Could not load the Table!"
-    //                           ),
-    //                 loading: false,
-    //                 project: null,
-    //             })
-    //         }
-    //     }
-    // }, [project, user])
+    /**
+     * Changes the current tables and loads the data.
+     * @param {string} table must be in the list of available project tables.
+     */
+    const changeTable = async (table: string) => {
+        if (state.project && state.project.tables.includes(table))
+            await reload(table)
+    }
 
-    return { state }
+    return { state, changeTable, reload }
 }
