@@ -1,6 +1,4 @@
-import { Currency } from "./Currency"
-import { Percentage } from "./Percentage"
-import { Avatar } from "./Avatar"
+import { Currency, Percentage, Avatar } from "./utility-classes"
 
 /**
  * Types that can be used in a cell.
@@ -70,7 +68,7 @@ export const isCellType = (value: any): value is CellType =>
 /**
  * Specifies the type of a CellType; e.g. (`string` -> string) or ("currency" -> Currency Class)
  */
-export type CellData<T extends string> = T extends keyof _CellTypeMap
+export type CellData<T extends CellType> = T extends keyof _CellTypeMap
     ? _CellTypeMap[T]
     : never
 

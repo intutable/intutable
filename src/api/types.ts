@@ -1,6 +1,6 @@
 import type { Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
-import type { CellType } from "./celltype-management/celltypes"
+import type { CellType } from "../components/DataGrid/Cell/celltype-management/celltypes"
 
 // /**
 //  * Manages how a user can access a cell.

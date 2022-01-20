@@ -1,5 +1,10 @@
 import React from "react"
-import { CellAccess, CellContentPosition, CellData, CellType } from "../types"
+import {
+    CellAccess,
+    CellContentPosition,
+    CellData,
+    CellType,
+} from "../celltype-management/celltypes"
 import type { Column, EditorProps } from "react-data-grid"
 
 export type CellComponentProps = {

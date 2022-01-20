@@ -19,8 +19,11 @@ import {
     isCellType,
     _RuntimeCellTypeMap,
     CellData,
-} from "@datagrid/Cell/types"
-import { isConvertable, IsConvertableResponse } from "@api/celltype-management"
+} from "@datagrid/Cell/celltype-management/celltypes"
+import {
+    isConvertable,
+    IsConvertableResponse,
+} from "@app/components/DataGrid/Cell/celltype-management"
 
 type ChangeCellTypeDialogProps = {
     currentType: CellType

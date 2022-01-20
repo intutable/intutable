@@ -7,7 +7,11 @@ import {
     IconButton,
     Typography,
 } from "@mui/material"
-import { CellType, isCellType, _RuntimeCellTypeMap } from "@datagrid/Cell/types"
+import {
+    CellType,
+    isCellType,
+    _RuntimeCellTypeMap,
+} from "@datagrid/Cell/celltype-management"
 import { ChangeCellTypeDialog } from "./ChangeCellTypeDialog"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import { display } from "@mui/system"
@@ -19,35 +23,36 @@ type ColumnHeaderContextMenuProps = {
     children: Array<React.ReactNode> | React.ReactNode // overwrite implicit `children`
 }
 
-const ColumnHeaderContextMenu: React.FC<ColumnHeaderContextMenuProps> =
-    props => {
-        const theme = useTheme()
+const ColumnHeaderContextMenu: React.FC<
+    ColumnHeaderContextMenuProps
+> = props => {
+    const theme = useTheme()
 
-        return (
-            <Menu
-                elevation={0}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                // transformOrigin={{ vertical: "top", horizontal: "right" }}
-                open={props.open}
-                anchorEl={props.anchorEL}
-                keepMounted={true}
-                onClose={props.onClose}
-                PaperProps={{
-                    sx: {
-                        boxShadow: theme.shadows[1],
-                    },
-                }}
-            >
-                {Array.isArray(props.children) ? (
-                    props.children.map((item, i) => (
-                        <MenuItem key={i}>{item}</MenuItem>
-                    ))
-                ) : (
-                    <MenuItem>{props.children}</MenuItem>
-                )}
-            </Menu>
-        )
-    }
+    return (
+        <Menu
+            elevation={0}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            // transformOrigin={{ vertical: "top", horizontal: "right" }}
+            open={props.open}
+            anchorEl={props.anchorEL}
+            keepMounted={true}
+            onClose={props.onClose}
+            PaperProps={{
+                sx: {
+                    boxShadow: theme.shadows[1],
+                },
+            }}
+        >
+            {Array.isArray(props.children) ? (
+                props.children.map((item, i) => (
+                    <MenuItem key={i}>{item}</MenuItem>
+                ))
+            ) : (
+                <MenuItem>{props.children}</MenuItem>
+            )}
+        </Menu>
+    )
+}
 
 type ColumnHeaderProps = {
     label: string

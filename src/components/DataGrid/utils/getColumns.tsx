@@ -1,5 +1,5 @@
 import type { ServerColumn } from "@api/types"
-import { isCellType, CellType } from "@datagrid/Cell/types"
+import { isCellType, CellType } from "@datagrid/Cell/celltype-management"
 import type { Column, EditorProps, HeaderRendererProps } from "react-data-grid"
 import { Cell } from "@datagrid/Cell"
 import { ColumnHeader } from "@datagrid/ColumnHeader"

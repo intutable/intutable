@@ -1,5 +1,5 @@
 import React from "react"
-import { CellType, CellData } from "./types"
+import { CellType, CellData } from "./celltype-management/celltypes"
 import { CellComponents } from "@datagrid/Cell/CellComponents"
 import type { CellComponent } from "./CellComponents/types"
 
