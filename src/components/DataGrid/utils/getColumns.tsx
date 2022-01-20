@@ -1,4 +1,4 @@
-import type { ServerColumn } from "@api"
+import type { ServerColumn } from "@api/types"
 import { isCellType, CellType } from "@datagrid/Cell/types"
 import type { Column, EditorProps, HeaderRendererProps } from "react-data-grid"
 import { Cell } from "@datagrid/Cell"

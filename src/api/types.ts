@@ -58,14 +58,14 @@ export type ServerTableData<TRow extends Obj = Row> = {
 /**
  * copy of 'react-data-grid:Column'
  */
-export type ServerColumn<TRow extends Obj> = {
+export type ServerColumn<TRow extends Obj = Row> = {
     name: string
     key: string
     width: number
-    minWidth: number
-    editable: boolean
-    frozen: boolean
-    resizable: boolean
-    sortable: boolean
+    // minWidth: number
+    // editable: boolean
+    // frozen: boolean
+    // resizable: boolean
+    // sortable: boolean
     editor: CellType
 }
