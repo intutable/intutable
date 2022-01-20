@@ -23,7 +23,7 @@
             "@theme": ["src/theme/index.ts"],
             "@context/*": ["src/context/*"],
             "@datagrid/*": ["src/components/DataGrid/*"],
-            "@api": ["src/api/index.ts"]
+            "@api/*": ["src/api/*"]
         }
     },
     "include": ["src", "next-env.d.ts"],

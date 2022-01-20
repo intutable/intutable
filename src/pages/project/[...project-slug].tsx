@@ -1,87 +1,89 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
 import Title from "@components/Head/Title"
-import { CircularProgress, Typography, useTheme, Box } from "@mui/material"
+import { CircularProgress, useTheme, Box, Typography } from "@mui/material"
 import { Tablist, ADD_BUTTON_TOKEN } from "@components/TabList/TabList"
 import DataGrid from "react-data-grid"
-
-import { getTableData, getListWithTables, TableData, addTable } from "@api"
+import {
+    getTableData,
+    getTablesFromProject,
+    createTableInProject,
+} from "@api/endpoints"
+import type { TableData } from "@api/types"
 import { useSnackbar } from "notistack"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import { isValidName, prepareName } from "@utils/validateName"
-import { isAuthenticated } from "@utils/coreinterface"
+import { isAuthenticated } from "@app/api/endpoints/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
-
-const rowKeyGetter = (row: any) => row.id
+import { rowKeyGetter } from "@datagrid/utils"
+import { getColumns, transformHelper } from "@datagrid/utils"
+import { useProject } from "@context/useProject"
 
 type ProjectSlugPageProps = {
     project: string
-    tables: Array<string>
+    tables: string[]
+    table: { data: TableData; name: string } | null
 }
 
 const ProjectSlugPage: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = props => {
-    const [_tables, _setTables] = useState<
-        Pick<ProjectSlugPageProps, "tables">["tables"]
-    >(props.tables)
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user, getUserAuthCookie } = useAuth()
+    // #################### states ####################
 
-    const [tableData, setTableData] = useState<TableData | null>(null)
-    const [selectedRows, setSelectedRows] = useState<Set<any>>(new Set())
-    const [currentTable, setCurrentTable] = useState<string>(
-        _tables[0] || ADD_BUTTON_TOKEN
+    const { user } = useAuth()
+    const { state, changeTable, reload } = useProject(props.project, {
+        tables: props.tables,
+        currentTable: props.table?.name || "",
+        data: props.table?.data || null,
+    })
+
+    // #################### private methods ####################
+
+    const handleTablistChange = (newTable: string | null) => {
+        if (newTable === null || newTable === ADD_BUTTON_TOKEN)
+            return changeTable("")
+        changeTable(newTable)
+    }
+
+    const handleAddTable = useCallback(
+        async (newTableName: string) => {
+            const name = prepareName(newTableName)
+            const isValid = isValidName(name)
+            if (isValid instanceof Error)
+                return enqueueSnackbar(isValid.message, { variant: "error" })
+            const nameIsTaken = state.project?.tables
+                .map(tbl => tbl.toLowerCase().trim())
+                .includes(name.toLowerCase().trim())
+            if (nameIsTaken)
+                return enqueueSnackbar(
+                    "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
+                    { variant: "error" }
+                )
+            if (!user)
+                return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
+                    variant: "error",
+                })
+            try {
+                await createTableInProject(user, props.project, name)
+                await reload(name)
+                enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+                    variant: "success",
+                })
+            } catch (error) {
+                console.error(error)
+                enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
+                    variant: "error",
+                })
+            }
+        },
+        [enqueueSnackbar, props.project, reload, state.project?.tables, user]
     )
-    const [loading, setLoading] = useState<boolean>(true)
-
-    const handleTableChange = (newTable: string | null) => {
-        if (newTable) setCurrentTable(newTable)
-    }
-
-    const handleAddTable = async (newTableName: string) => {
-        const name = prepareName(newTableName)
-        const isValid = isValidName(name)
-        if (isValid instanceof Error)
-            return enqueueSnackbar(isValid.message, { variant: "error" })
-        const nameIsTaken = _tables
-            .map(tbl => tbl.toLowerCase())
-            .includes(name.toLowerCase())
-        if (nameIsTaken)
-            return enqueueSnackbar(
-                "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
-                { variant: "error" }
-            )
-        // NOTE: this request is blocking (the useEffect on `currentTable` wont be called until this fetch finished).
-        // NOTE: this request must also create an empty table in the backend which gets fetched right after, otherwise this will lead to an error
-        // TODO: make a request to backend here and then select new table
-        if (!(user && getUserAuthCookie))
-            return enqueueSnackbar("Du musst dich zuvor erneut anmelden!", {
-                variant: "error",
-            })
-        const success = await addTable(
-            user,
-            props.project,
-            name,
-            getUserAuthCookie() ?? undefined
-        )
-        if (!success)
-            return enqueueSnackbar(
-                "Die Tabelle konnte nicht erstellt werden!",
-                { variant: "error" }
-            )
-        _setTables(prev => [...prev, name])
-        setTableData(null)
-        setCurrentTable(name)
-        enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-            variant: "success",
-        })
-    }
 
     const handleRenameTable = () => {
         alert("Not implemented yet")
@@ -92,34 +94,18 @@ const ProjectSlugPage: NextPage<
         // TODO: implement
     }
 
-    // function handleFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
-    //     return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] }
-    // }
+    // #################### life cycle methods ####################
 
     useEffect(() => {
-        ;(async _ => {
-            if (currentTable !== ADD_BUTTON_TOKEN) {
-                try {
-                    setLoading(true)
-                    const serverRequest = await getTableData(
-                        currentTable,
-                        props.project
-                    )
-                    setTableData(serverRequest)
-                } catch (error) {
-                    enqueueSnackbar(
-                        "Fehler: Die Tabelle konnte nicht geladen werden!",
-                        {
-                            variant: "error",
-                        }
-                    )
-                    setTableData(null)
-                } finally {
-                    setLoading(false)
-                }
-            }
-        })()
-    }, [currentTable])
+        if (state.error instanceof Error) {
+            console.log(state.error)
+            enqueueSnackbar("Die Tabelle konnte nicht geladen werden!", {
+                variant: "error",
+            })
+        }
+    }, [state.error])
+
+    // #################### component ####################
 
     return (
         <>
@@ -127,129 +113,166 @@ const ProjectSlugPage: NextPage<
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
                 {props.project}
             </Typography>
-            <Tablist
-                value={currentTable}
-                data={_tables}
-                onChangeHandler={handleTableChange}
-                onAddHandler={handleAddTable}
-                contextMenuItems={[
-                    <Box onClick={handleRenameTable} key={0}>
-                        Rename
-                    </Box>,
-                    <Box
-                        onClick={handleDeleteTable}
-                        key={1}
-                        sx={{ color: theme.palette.warning.main }}
-                    >
-                        Delete
-                    </Box>,
-                ]}
-            />
-            {loading ? (
+
+            {state.error instanceof Error ? (
+                // Error
+                <Typography>
+                    Error: Could not load the Table (reason:{" "}
+                    {state.error.message}
+                    )!
+                </Typography>
+            ) : // Loading
+            state.loading ? (
                 <LoadingSkeleton />
+            ) : // data is null
+            state.project == null ? (
+                <>Table null {state}</>
             ) : (
+                // Table
                 <>
-                    <Toolbar position="top">
-                        <TItem.AddCol addCol={() => {}} />
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 1
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 2
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 3
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 4
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 5
-                        </Toolbar.Item>
-                        <TItem.FileDownload getData={() => []} />
-                    </Toolbar>
+                    <Tablist
+                        value={state.project.currentTable}
+                        data={state.project.tables}
+                        onChangeHandler={handleTablistChange}
+                        onAddHandler={handleAddTable}
+                        contextMenuItems={[
+                            <Box onClick={handleRenameTable} key={0}>
+                                Rename
+                            </Box>,
+                            <Box
+                                onClick={handleDeleteTable}
+                                key={1}
+                                sx={{ color: theme.palette.warning.main }}
+                            >
+                                Delete
+                            </Box>,
+                        ]}
+                    />
                     <Box>
+                        <Toolbar position="top">
+                            <TItem.AddCol addCol={() => {}} />
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 1
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 2
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 3
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 4
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 5
+                            </Toolbar.Item>
+                            <TItem.FileDownload getData={() => []} />
+                        </Toolbar>
                         <DataGrid
                             className={
                                 theme.palette.mode === "light"
                                     ? "rdg-light"
                                     : "rdg-dark"
                             }
-                            rows={tableData ? (tableData.rows as any) : []}
-                            summaryRows={[{ id: "total_0" }]}
+                            rows={
+                                state.project.data
+                                    ? (state.project.data.rows as any)
+                                    : []
+                            }
                             columns={
-                                tableData
-                                    ? tableData.columns
+                                state.project.data
+                                    ? getColumns(
+                                          transformHelper(
+                                              state.project.data.columns
+                                          )
+                                      )
                                     : [{ key: "id", name: "ID" }]
                             }
                             noRowsFallback={<NoRowsRenderer />}
                             rowKeyGetter={rowKeyGetter}
+                            defaultColumnOptions={{
+                                sortable: true,
+                                resizable: true,
+                            }}
                             // onColumnResize={}
                             // onRowDoubleClick={}
                             // onFill={handleFill}
                             // selectedRows={selectedRows}
                             // onSelectedRowsChange={setSelectedRows}
                         />
+                        <Toolbar position="bottom">
+                            <TItem.Connection status={"connected"} />
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 1
+                            </Toolbar.Item>
+                            <Toolbar.Item onClickHandler={() => {}}>
+                                Tool 2
+                            </Toolbar.Item>
+                        </Toolbar>
                     </Box>
-                    <Toolbar position="bottom">
-                        <TItem.Connection status={"connected"} />
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 1
-                        </Toolbar.Item>
-                        <Toolbar.Item onClickHandler={() => {}}>
-                            Tool 2
-                        </Toolbar.Item>
-                    </Toolbar>
                 </>
             )}
         </>
     )
 }
 
-export const getServerSideProps: GetServerSideProps<ProjectSlugPageProps> =
-    async context => {
-        const { params, req } = context
-        const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
-        const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+export const getServerSideProps: GetServerSideProps<
+    ProjectSlugPageProps
+> = async context => {
+    const { params, req } = context
+    const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
+    const cookie: string = req.cookies[AUTH_COOKIE_KEY]
 
-        if (!(await isAuthenticated(authCookie).catch(e => false)))
-            return {
-                redirect: {
-                    permanent: false,
-                    destination: "/login",
-                },
+    if (!(await isAuthenticated(cookie).catch(e => false)))
+        return {
+            redirect: {
+                permanent: false,
+                destination: "/login",
+            },
+        }
+
+    const user: User = {
+        name: req.cookies[USER_COOKIE_KEY],
+        cookie,
+    }
+
+    if (params && Object.hasOwnProperty.call(params, "project-slug")) {
+        const _projectName = params["project-slug"]
+        if (
+            _projectName &&
+            Array.isArray(_projectName) &&
+            _projectName.length > 0
+        ) {
+            const projectName = _projectName[0] as string
+            console.log(projectName, user)
+            const serverRequest = await getTablesFromProject(user, projectName)
+
+            let dataOfFirstTable
+            if (serverRequest.length > 0)
+                dataOfFirstTable = await getTableData(
+                    user,
+                    serverRequest[0],
+                    projectName
+                )
+            else dataOfFirstTable = null
+
+            const data: ProjectSlugPageProps = {
+                project: projectName,
+                tables: serverRequest,
+                table: dataOfFirstTable
+                    ? { data: dataOfFirstTable, name: serverRequest[0] }
+                    : null,
             }
 
-        const user: User = { name: req.cookies[USER_COOKIE_KEY] }
+            const error = serverRequest == null
+            if (error) return { notFound: true }
 
-        if (params && Object.hasOwnProperty.call(params, "project-slug")) {
-            const _projectName = params["project-slug"]
-            if (
-                _projectName &&
-                Array.isArray(_projectName) &&
-                _projectName.length > 0
-            ) {
-                const projectName = _projectName[0] as string
-                const serverRequest = await getListWithTables(
-                    user,
-                    projectName,
-                    authCookie
-                )
-
-                const data: ProjectSlugPageProps = {
-                    project: projectName,
-                    tables: serverRequest,
-                }
-
-                const error = serverRequest == null
-                if (error) return { notFound: true }
-
-                return {
-                    props: data,
-                }
+            return {
+                props: data,
             }
         }
-        return { notFound: true }
     }
+    return { notFound: true }
+}
 
 export default ProjectSlugPage

@@ -1,9 +1,28 @@
-const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
+import Obj from "@utils/Obj"
+const CORE_ENDPOINT = process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
-export interface CoreCallError {
+export type CoreCallError = {
     status: number
-    message: string
+    message: string | Error
+}
+
+export class CoreRequestError extends Error {
+    public readonly statusCode: number
+
+    constructor(message: string, statusCode: number) {
+        super(message)
+        this.name = this.constructor.name
+        // this.stack = new Error().stack
+        this.statusCode = statusCode
+    }
+}
+
+export class NetworkError extends Error {
+    constructor(message: string, statusCode: number) {
+        super(message)
+        this.name = this.constructor.name
+    }
 }
 
 /**
@@ -15,19 +34,20 @@ export interface CoreCallError {
  * @param {object} body - The body of the request.
  * @param {string} authCookie - The auth cookie to send with the request. Optional.
  * @returns {Promise<object>} - The response parsed from JSON as an object.
+ * @throws {CoreRequestError}
  */
-export async function coreRequest(
+export const coreRequest = (
     channel: string,
     method: string,
-    body: Record<string, unknown>,
+    body: Obj,
     authCookie?: string
-): Promise<Record<string, unknown>> {
-    return fetch(getCoreUrl() + "/request/" + channel + "/" + method, {
+): Promise<Obj> =>
+    fetch(CORE_ENDPOINT + "/request/" + channel + "/" + method, {
         method: "post",
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            ...(!!authCookie && {
+            ...(authCookie && {
                 Cookie: AUTH_COOKIE_KEY + "=" + authCookie,
             }),
         },
@@ -36,22 +56,29 @@ export async function coreRequest(
         body: JSON.stringify(body),
     })
         .then(passedLogin)
-        .then(wasSuccessful)
+        .then(checkError)
         .then(res => res.json())
-}
+// .catch(error => {
+//     // Fetch API only throws on network errors
+//     // TODO: handle network error
+//     if (error) {
+//         console.error(error)
+//         throw new error()
+//     }
+// })
 
 export async function coreNotification(
     channel: string,
     method: string,
-    body: object,
+    body: Obj,
     authCookie?: string
 ): Promise<void> {
-    return fetch(getCoreUrl() + "/notification/" + channel + "/" + method, {
+    return fetch(CORE_ENDPOINT + "/notification/" + channel + "/" + method, {
         method: "post",
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            ...(!!authCookie && {
+            ...(authCookie && {
                 Cookie: AUTH_COOKIE_KEY + "=" + authCookie,
             }),
         },
@@ -60,7 +87,7 @@ export async function coreNotification(
         body: JSON.stringify(body),
     })
         .then(passedLogin)
-        .then(wasSuccessful)
+        .then(checkError)
         .then(() => Promise.resolve())
 }
 
@@ -76,11 +103,7 @@ function passedLogin(res: Response): Promise<Response> {
         : Promise.resolve(res)
 }
 
-async function wasSuccessful(res: Response): Promise<Response> {
-    return res.status === 200
-        ? res
-        : Promise.reject({
-              status: res.status,
-              message: await res.text(),
-          })
+const checkError = async (res: Response): Promise<Response> => {
+    if (res.ok) return res
+    return Promise.reject(new CoreRequestError(await res.text(), res.status))
 }

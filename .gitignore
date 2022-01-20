@@ -3,3 +3,4 @@ node_modules
 dist/
 data.db
 todo
+.DS_Store

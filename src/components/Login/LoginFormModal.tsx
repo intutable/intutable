@@ -103,7 +103,9 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     return (
         <Dialog
             open={true}
-            onKeyDown={e => (e.key === "Enter" ? tryLogin() : null)}
+            onKeyDown={(e: { key: string }) =>
+                e.key === "Enter" ? tryLogin() : null
+            }
             TransitionComponent={PopupTransition}
             keepMounted
             aria-describedby="login-dialog"
