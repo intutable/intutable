@@ -122,7 +122,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             <Card
                 onClick={
                     props.onClick ||
-                    (_ => props.url && router.push("/project/" + props.url))
+                    (() => props.url && router.push("/project/" + props.url))
                 }
                 onContextMenu={props.url ? handleOpenContextMenu : undefined}
                 sx={{

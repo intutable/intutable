@@ -24,6 +24,7 @@
         "@intutable/http-cors": "0.1.0",
         "@intutable/project-management": "0.3.7",
         "@intutable/user-authentication": "0.1.2",
+        "@mui/base": "^5.0.0-alpha.65",
         "@mui/icons-material": "^5.0.1",
         "@mui/material": "^5.0.2",
         "@mui/styles": "^5.0.1",
