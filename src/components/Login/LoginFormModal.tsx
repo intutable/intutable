@@ -1,7 +1,6 @@
 import React, { useState } from "react"
 import { useRouter } from "next/router"
 import {
-    useTheme,
     Box,
     Dialog,
     DialogTitle,
@@ -70,8 +69,6 @@ type LoginFormModalProps = {
 }
 
 const LoginFormModal: React.FC<LoginFormModalProps> = props => {
-    const theme = useTheme()
-
     const [formValid, setFormValid] = useState<boolean>(false)
     const [formData, setFormData] = useState<FormData>({
         username: "",
