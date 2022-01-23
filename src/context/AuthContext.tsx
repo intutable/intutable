@@ -82,7 +82,7 @@ export const AuthProvider: React.FC = props => {
             .then(() => {
                 Cookies.remove(USER_COOKIE_KEY)
                 setUser(null)
-                router.push("/login")
+                router.push("/")
             })
             .finally(() => setLoading(false))
     }

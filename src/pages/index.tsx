@@ -8,7 +8,6 @@ const Home: NextPage = () => {
     return (
         <>
             <Title title="Startseite" />
-            <Typography>Hello</Typography>
         </>
     )
 }
