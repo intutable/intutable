@@ -25,6 +25,7 @@ import SettingsIcon from "@mui/icons-material/Settings"
 import HomeIcon from "@mui/icons-material/Home"
 import SupportAgentIcon from "@mui/icons-material/SupportAgent"
 import Link from "@components/Link/Link"
+import LoginButton from "@components/Login/LoginButton"
 import LogoutButton from "@components/Login/LogoutButton"
 import { useAuth } from "@context/AuthContext"
 
@@ -151,10 +152,14 @@ const Header = () => {
                             </Typography>
                         </Link>
                     </Box>
-                    {user && (
+                    {user ? (
                         <>
                             <span>{user.name}</span>
                             <LogoutButton />
+                        </>
+                    ) : (
+                        <>
+                            <LoginButton />
                         </>
                     )}
                 </Toolbar>
