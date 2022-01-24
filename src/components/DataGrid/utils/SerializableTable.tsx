@@ -1,10 +1,11 @@
-import type {
+import {
     Row,
     ServerColumn,
     ServerTableData,
     TableData,
     Column,
     ServerRow,
+    __KEYS__,
 } from "@api/types"
 import { isCellType, CellType } from "@datagrid/Cell/celltype-management"
 import type { EditorProps, HeaderRendererProps } from "react-data-grid"
@@ -24,6 +25,8 @@ const serialize = (table: TableData): ServerTableData => {
      * 3. cast properties
      */
 
+    // Note: this is not used yet
+
     // 1.1
     const rows: ServerRow[] = table.rows.map(row => {
         const { id, ...rest } = row
@@ -42,7 +45,7 @@ const serialize = (table: TableData): ServerTableData => {
     )
 
     // 1.2
-    columns.shift()
+    columns.shift
 
     return {
         tableName: table.tableName,
@@ -58,22 +61,22 @@ const deserialize = (table: ServerTableData): TableData => {
     /**
      * TODO:
      * 1.1 apply an ID to each row
-     * 1.2
-     * 2. add missing properties (placeholders, since backend does not support them)
+     * 1.2 add id col at first position
+     * 2. add select cell
+     * 3. add missing properties (placeholders, since backend does not support them)
      */
-
-    console.log(1, table)
 
     // 1.1
     const rows: Row[] = table.rows.map(
         (row, index) =>
             ({
                 ...row,
-                id: index + 1,
+                [__KEYS__.ID_COL_KEY]: index + 1,
+                [__KEYS__.SELECT_COL_KEY]: false,
             } as Row)
     )
 
-    // 2.
+    // 3.
     const columns: Column[] = table.columns.map(col => ({
         name: col.name,
         key: col.key,
@@ -106,19 +109,31 @@ const deserialize = (table: ServerTableData): TableData => {
         name: "ID",
         key: "id",
         editable: false,
-        resizable: false,
+        resizable: true,
         sortable: true,
-        width: 40,
+        width: 80,
+    }
+    columns.unshift(idCol)
+
+    // 2.
+    const selectCol: Column = {
+        name: <>NOT IMPLEMENTED</>,
+        key: "__select",
+        editable: false,
+        resizable: false,
+        sortable: false,
+        width: 50,
         editor: (props: EditorProps<Row>) => (
             <Cell
                 type={"boolean"}
-                access="readonly"
-                position="left"
+                access="editable"
+                position="center"
                 editorProps={props}
             />
         ),
+        // headerRenderer: ()
     }
-    columns.unshift(idCol)
+    columns.unshift(selectCol)
 
     return {
         tableName: table.tableName,

@@ -2,6 +2,8 @@ import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
 import type { CellType } from "../components/DataGrid/Cell/celltype-management/celltypes"
 
+// TODO: make all props readonly
+
 // /**
 //  * Manages how a user can access a cell.
 //  * Tells nothing about the cell's visibility to other users.
@@ -42,9 +44,21 @@ type Table<COL, ROW> = {
 
 export type Column = ReactDataGrid_Column<Row>
 
+const SELECT_COL_KEY = "__select__" as const
+const ID_COL_KEY = "__id__" as const
+
+export const __KEYS__ = { SELECT_COL_KEY, ID_COL_KEY } as const
+
 export type Row = {
-    id: number
+    readonly [ID_COL_KEY]: number
+    [SELECT_COL_KEY]: boolean
     [key: string]: unknown
+}
+
+export type SummaryRow = {
+    readonly [ID_COL_KEY]: number
+    selectedCount: number
+    totalCount: number
 }
 
 export type TableData = Table<Column, Row>
