@@ -28,6 +28,7 @@ import {
 } from "@api/endpoints"
 import { isAuthenticated } from "@app/api/endpoints/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
+import { useProject } from "@app/context/useProject"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 type ProjectContextMenuProps = {
@@ -106,8 +107,9 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                 return enqueueSnackbar("Bitte melde dich erneut an!", {
                     variant: "error",
                 })
-            await removeProject(user, props.children as string)
-            // TODO: reload the project page
+            const projectName = props.children as string
+            await removeProject(user, projectName)
+            router.reload() // TODO: reload the project page properly
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
             console.log(error)
