@@ -61,11 +61,17 @@ export type ServerTableData<TRow extends Obj = Row> = {
 export type ServerColumn<TRow extends Obj = Row> = {
     name: string
     key: string
-    width: number
+    // width: number
     // minWidth: number
-    // editable: boolean
+    /**
+     * @default true
+     */
+    editable: boolean
     // frozen: boolean
     // resizable: boolean
     // sortable: boolean
+    /**
+     * @default string
+     */
     editor: CellType
 }
