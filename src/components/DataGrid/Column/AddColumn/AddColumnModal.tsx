@@ -1,30 +1,26 @@
-import React, { useEffect, useState } from "react"
-import {
-    Box,
-    MenuItem,
-    Dialog,
-    DialogTitle,
-    DialogContentText,
-    DialogContent,
-    DialogActions,
-    Button,
-    Divider,
-    FormControl,
-    InputLabel,
-    Select,
-    Typography,
-    TextField,
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Checkbox,
-} from "@mui/material"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import { ServerColumn } from "@app/api/types"
 import {
     CellType,
     _RuntimeCellTypeMap,
 } from "@datagrid/Cell/celltype-management/celltypes"
-import { ServerColumn, TableData } from "@app/api/types"
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControl,
+    FormControlLabel,
+    InputLabel,
+    MenuItem,
+    Select,
+    Switch,
+    TextField,
+    Typography,
+    useTheme,
+} from "@mui/material"
+import React, { useEffect, useState } from "react"
 
 // type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<
 //     infer ElementType
@@ -39,6 +35,9 @@ type AddColumnModalProps = {
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
+    const theme = useTheme()
+
+    const [moreOptionsActive, setMoreOptionsActive] = useState(false)
     const [options, setOptions] = useState<ServerColumn>({
         name: "",
         key: "",
@@ -54,6 +53,14 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         // }))
     }, [options.name])
 
+    // DEV ONLY
+    useEffect(() => {
+        if (options.editor !== "string") {
+            alert("Ausschließlich der Typ 'string' wird zzt. unterstützt!")
+            setOption("editor", "string")
+        }
+    }, [options.editor])
+
     const setOption = <T extends keyof ServerColumn>(
         option: T,
         value: ServerColumn[T]
@@ -68,12 +75,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>Neue Spalte erstellen</DialogTitle>
             <DialogContent>
-                <FormControl
-                    fullWidth
-                    sx={{
-                        my: 3,
-                    }}
-                >
+                <FormControl fullWidth sx={{ mt: 2 }}>
                     {/* Name */}
                     <TextField
                         label="Name"
@@ -83,31 +85,59 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                     />
 
                     {/* Type */}
-                    <InputLabel id="select-label">Typ</InputLabel>
-                    <Select
-                        labelId="select-label"
-                        label="Neuer Typ"
-                        value={options.editable}
-                        onChange={e =>
-                            setOption("editor", e.target.value as CellType)
-                        }
-                    >
-                        {_RuntimeCellTypeMap.map((type, i) => (
-                            <MenuItem key={i} value={type}>
-                                {type}
-                            </MenuItem>
-                        ))}
-                    </Select>
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                        <InputLabel id="addcol-select-type">Typ</InputLabel>
+                        <Select
+                            labelId="addcol-select-type"
+                            label="Typ"
+                            value={options.editor}
+                            onChange={e =>
+                                setOption("editor", e.target.value as CellType)
+                            }
+                        >
+                            {_RuntimeCellTypeMap.map((type, i) => (
+                                <MenuItem key={i} value={type}>
+                                    {type}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    {moreOptionsActive && (
+                        <Box sx={{ mt: 2 }}>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={options.editable}
+                                        onChange={e =>
+                                            setOption(
+                                                "editable",
+                                                e.target.checked
+                                            )
+                                        }
+                                    />
+                                }
+                                label="Editierbar"
+                            />
+                        </Box>
+                    )}
                 </FormControl>
-                <Accordion>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        Weitere Eigenschaften
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        Editierbar
-                        <Checkbox value={options.editable} />
-                    </AccordionDetails>
-                </Accordion>
+                <Typography
+                    sx={{
+                        fontStyle: "italic",
+                        color: theme.palette.text.disabled,
+                        fontSize: theme.typography.caption,
+                        fontWeight: theme.typography.fontWeightLight,
+                        cursor: "pointer",
+                        textAlign: "right",
+                        mt: 2,
+                        "&:hover": {
+                            textDecoration: "underline",
+                        },
+                    }}
+                    onClick={() => setMoreOptionsActive(prev => !prev)}
+                >
+                    {moreOptionsActive ? "Weniger" : "Erweiterte"} Einstellungen
+                </Typography>
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>

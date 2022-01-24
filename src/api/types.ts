@@ -1,4 +1,4 @@
-import type { Column } from "react-data-grid"
+import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
 import type { CellType } from "../components/DataGrid/Cell/celltype-management/celltypes"
 
@@ -30,39 +30,51 @@ import type { CellType } from "../components/DataGrid/Cell/celltype-management/c
 //       Shared
 // #################################################################
 
-export type Row = {
-    id: number
-    [key: string]: unknown
+type Table<COL, ROW> = {
+    tableName: string
+    columns: COL[]
+    rows: ROW[]
 }
 
 // #################################################################
 //       Frontend
 // #################################################################
 
-export type TableData<TRow extends Obj = Row> = {
-    tableName: string
-    columns: Column<TRow>[]
-    rows: TRow[]
+export type Column = ReactDataGrid_Column<Row>
+
+export type Row = {
+    id: number
+    [key: string]: unknown
 }
+
+export type TableData = Table<Column, Row>
 
 // #################################################################
 //       Backend
 // #################################################################
 
-export type ServerTableData<TRow extends Obj = Row> = {
-    tableName: string
-    columns: ServerColumn<TRow>[]
-    rows: TRow[]
+export type ServerRow = {
+    [key: string]: unknown
 }
 
+export type ServerTableData = Table<ServerColumn, ServerRow>
+
 /**
- * copy of 'react-data-grid:Column'
+ * Copied from react-data-grid's type 'Column' and modified to save an object
+ * of this type properly to the db.
+ *
+ * See the original type in {@link https://github.com/adazzle/react-data-grid/blob/bc23189c4d41725ebd80fdacfa1ddd4054e29658/src/types.ts}).
+ *
+ * Those properties that are not listed compared to the original type are not used.
+ * Additional comments will – only if provided! – explain how the property is modified compared to the original property.
  */
-export type ServerColumn<TRow extends Obj = Row> = {
+export type ServerColumn = {
     name: string
     key: string
+    /**
+     * // TODO: instead of pixels use proportions
+     */
     // width: number
-    // minWidth: number
     /**
      * @default true
      */

@@ -1,8 +1,9 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { getTablesFromProject, getTableData } from "@api/endpoints"
-import type { TableData } from "@api/types"
+import type { ServerTableData, TableData } from "@api/types"
 import { useAuth } from "./AuthContext"
+import { SerializableTable } from "@app/components/DataGrid/utils"
 
 export type Data = {
     tables: string[]
@@ -54,7 +55,7 @@ export const useProject = (project: string, initialData: Data) => {
                             const newData: Data = {
                                 tables: tablesInProject,
                                 currentTable: table || tablesInProject[0] || "",
-                                data: tableData,
+                                data: SerializableTable.deserialize(tableData),
                             }
 
                             resolve(newData)

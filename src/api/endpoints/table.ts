@@ -4,8 +4,9 @@ import {
     CoreRequestError,
 } from "@app/api/endpoints/coreinterface/json"
 import type { User } from "@context/AuthContext"
-import type { TableData } from "../types"
+import type { Row, ServerColumn, ServerTableData, TableData } from "../types"
 import { isOfTypeTableData } from "../utils"
+import { SerializableTable } from "@datagrid/utils"
 
 const channel = "project-management"
 
@@ -59,23 +60,30 @@ export const getTableData = async (
     user: User,
     tableName: string,
     projectName: string
-): Promise<TableData> => {
-    // TODO: set type: ServerTableData
-    const coreResponse: any = await coreRequest(
+): Promise<ServerTableData> => {
+    const coreResponse = (await coreRequest(
         channel,
         getTableData.name,
         { projectName, tableName },
         user.cookie
-    )
+    )) as ServerTableData
 
-    coreResponse.columns.map((item: any) => {
-        item.key = item.columnName
-        item.name = item.key
+    // TODO: DEV ONLY needed to transform malformed backend data (obsolete with v4)
+    const columns = coreResponse.columns.map((item: any) => {
+        item.key = item.columnName as string
+        item.name = item.key as string
+        item.editable = Boolean(item.editable)
+        item.editor = "string"
         delete item.columnName
         return item
     })
 
-    return Promise.resolve(coreResponse as TableData)
+    const table: ServerTableData = {
+        ...coreResponse,
+        columns,
+    }
+
+    return Promise.resolve(table)
 }
 /*
  * Adds a table to a project.
