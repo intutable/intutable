@@ -73,6 +73,8 @@ export type ServerRow = {
 
 export type ServerTableData = Table<ServerColumn, ServerRow>
 
+// TODO: change naming to `Abstract[…]` e.g. `AbstractColumn`
+
 /**
  * Copied from react-data-grid's type 'Column' and modified to save an object
  * of this type properly to the db.
