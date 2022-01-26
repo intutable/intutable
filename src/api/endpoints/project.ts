@@ -1,9 +1,6 @@
-// This file contains api methods related to projects, e.g. GET POST PUT DELETE
-
 import { coreRequest } from "@app/api/endpoints/coreinterface/json"
 import type { User } from "@context/AuthContext"
-
-const channel = "project-management"
+import { CHANNEL } from "."
 
 /**
  * Fetches a list with the names of the projects of a user.
@@ -13,7 +10,7 @@ const channel = "project-management"
  */
 export const getProjects = async (user: User): Promise<string[]> => {
     const coreResponse = await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         getProjects.name,
         { user: user.name },
         user.cookie
@@ -32,7 +29,7 @@ export const createProject = async (
     newProject: string
 ): Promise<void> => {
     await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         createProject.name,
         { user: user.name, newProject },
         user.cookie
@@ -44,7 +41,7 @@ export const removeProject = async (
     project: string
 ): Promise<void> => {
     await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         removeProject.name,
         { user: user.name, project },
         user.cookie
@@ -57,7 +54,7 @@ export const changeProjectName = async (
     newName: string
 ): Promise<void> => {
     await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         changeProjectName.name,
         { user: user.name, oldName, newName },
         user.cookie

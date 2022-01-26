@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { getTablesFromProject, getTableData } from "@api/endpoints"
+import { API } from "@api/endpoints"
 import type { ServerTableData, TableData } from "@api/types"
 import { useAuth } from "./AuthContext"
 import { SerializableTable } from "@app/components/DataGrid/utils"
@@ -41,12 +41,12 @@ export const useProject = (project: string, initialData: Data) => {
                 if (user) {
                     try {
                         ;(async _ => {
-                            const tablesInProject = await getTablesFromProject(
+                            const tablesInProject = await API.get.tablesList(
                                 user,
                                 project
                             )
 
-                            const tableData = await getTableData(
+                            const tableData = await API.get.table(
                                 user,
                                 table || tablesInProject[0],
                                 project

@@ -5,10 +5,7 @@ import {
 } from "@app/api/endpoints/coreinterface/json"
 import type { User } from "@context/AuthContext"
 import type { Row, ServerColumn, ServerTableData, TableData } from "../types"
-import { isOfTypeTableData } from "../utils"
-import { SerializableTable } from "@datagrid/utils"
-
-const channel = "project-management"
+import { CHANNEL } from "."
 
 /**
  * Fetches a list with the names of the tables of a project.
@@ -22,7 +19,7 @@ export const getTablesFromProject = async (
     projectName: string
 ): Promise<string[]> => {
     const coreResponse = (await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         getTablesFromProject.name,
         { user: user.name, projectName },
         user.cookie
@@ -62,7 +59,7 @@ export const getTableData = async (
     projectName: string
 ): Promise<ServerTableData> => {
     const coreResponse = (await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         getTableData.name,
         { projectName, tableName },
         user.cookie
@@ -99,7 +96,7 @@ export const createTableInProject = async (
     table: string
 ) => {
     await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         createTableInProject.name,
         { user: user.name, projectName, table },
         user.cookie
@@ -120,7 +117,7 @@ export const removeTableFromProject = async (
     table: string
 ) => {
     await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         removeTableFromProject.name,
         { projectName, table },
         user.cookie
@@ -142,7 +139,7 @@ export const changeTableName = async (
     newName: string
 ) => {
     await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         changeTableName.name,
         {
             user: user.name,

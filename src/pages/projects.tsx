@@ -19,13 +19,7 @@ import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
-import {
-    getProjects,
-    createProject,
-    removeProject,
-    changeProjectName,
-    removeTableFromProject,
-} from "@api/endpoints"
+import { API } from "@api/endpoints"
 import { isAuthenticated } from "@app/api/endpoints/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 import { useProject } from "@app/context/useProject"
@@ -108,7 +102,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                     variant: "error",
                 })
             const projectName = props.children as string
-            await removeProject(user, projectName)
+            await API.delete.project(user, projectName)
             router.reload() // TODO: reload the project page properly
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
@@ -193,7 +187,7 @@ const ProjectsPage: NextPage<
                     variant: "error",
                 })
             // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
-            await createProject(user, name)
+            await API.post.project(user, name)
             router.push("/project/" + name)
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
@@ -258,7 +252,7 @@ export const getServerSideProps: GetServerSideProps<
         name: req.cookies[USER_COOKIE_KEY],
         cookie,
     }
-    const serverRequest = await getProjects(user)
+    const serverRequest = await API.get.projectsList(user)
     const data: ProjectsPageProps = {
         projects: serverRequest,
     }

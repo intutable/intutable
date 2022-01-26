@@ -1,8 +1,4 @@
-import {
-    createTableInProject,
-    getTableData,
-    getTablesFromProject,
-} from "@api/endpoints"
+import { API } from "@api/endpoints"
 import type { ServerTableData, TableData } from "@api/types"
 import { isAuthenticated } from "@app/api/endpoints/coreinterface"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
@@ -71,7 +67,7 @@ const ProjectSlugPage: NextPage<
                     variant: "error",
                 })
             try {
-                await createTableInProject(user, props.project, name)
+                await API.post.table(user, props.project, name)
                 await reload(name)
                 enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                     variant: "success",
@@ -236,11 +232,11 @@ export const getServerSideProps: GetServerSideProps<
             _projectName.length > 0
         ) {
             const projectName = _projectName[0] as string
-            const tableList = await getTablesFromProject(user, projectName)
+            const tableList = await API.get.tablesList(user, projectName)
 
             let dataOfFirstTable
             if (tableList[0] && tableList[0].length > 0)
-                dataOfFirstTable = await getTableData(
+                dataOfFirstTable = await API.get.table(
                     user,
                     tableList[0],
                     projectName
