@@ -15,7 +15,7 @@ export * from "./types"
 export * from "./utils"
 
 export enum CHANNEL {
-    PROJECT_MANAGEMENT = "project_management",
+    PROJECT_MANAGEMENT = "project-management",
 }
 
 export const API = {
