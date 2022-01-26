@@ -7,9 +7,13 @@ export const StringCell: CellComponent = props => {
         alert(`Neuer Wert: ${value}`)
     }
 
+    const content = props.editorProps.row[
+        props.editorProps.column.key
+    ] as string
+
     return (
         <EditableTextCell onChange={newValue => handleChange(newValue)}>
-            {props.editorProps.row[props.editorProps.column.key]}
+            {content}
         </EditableTextCell>
     )
 }
