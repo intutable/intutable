@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { API } from "@api/endpoints"
-import type { ServerTableData, TableData } from "@api/types"
+import { API } from "@api"
+import type { ServerTableData, TableData } from "@api"
 import { useAuth } from "./AuthContext"
 import { SerializableTable } from "@app/components/DataGrid/utils"
 

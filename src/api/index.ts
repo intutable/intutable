@@ -11,6 +11,8 @@ import {
     removeTableFromProject,
     changeTableName,
 } from "./table"
+export * from "./types"
+export * from "./utils"
 
 export enum CHANNEL {
     PROJECT_MANAGEMENT = "project_management",

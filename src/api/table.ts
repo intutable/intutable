@@ -1,10 +1,7 @@
 import { inspect } from "util"
-import {
-    coreRequest,
-    CoreRequestError,
-} from "@app/api/endpoints/coreinterface/json"
+import { coreRequest, CoreRequestError } from "@app/api/coreinterface/json"
 import type { User } from "@context/AuthContext"
-import type { Row, ServerColumn, ServerTableData, TableData } from "../types"
+import type { Row, ServerColumn, ServerTableData, TableData } from "./types"
 import { CHANNEL } from "."
 
 /**

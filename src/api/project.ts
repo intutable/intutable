@@ -1,4 +1,4 @@
-import { coreRequest } from "@app/api/endpoints/coreinterface/json"
+import { coreRequest } from "@app/api/coreinterface/json"
 import type { User } from "@context/AuthContext"
 import { CHANNEL } from "."
 

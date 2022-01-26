@@ -6,7 +6,7 @@ import {
     Column,
     ServerRow,
     __KEYS__,
-} from "@api/types"
+} from "@api"
 import { isCellType, CellType } from "@datagrid/Cell/celltype-management"
 import type { EditorProps, HeaderRendererProps } from "react-data-grid"
 import { Cell } from "@datagrid/Cell"
