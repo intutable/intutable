@@ -77,7 +77,7 @@ export const AuthProvider: React.FC = props => {
                 })
                 if (!userCookie)
                     throw new Error("Could not set the User Cookie!")
-                setUser(await getCurrentUser(userCookie))
+                setUser(await getCurrentUser(username))
             })
             .finally(() => setLoading(false))
     }
