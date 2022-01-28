@@ -229,36 +229,29 @@ export const getServerSideProps: GetServerSideProps<
     const userCookie = req.cookies[USER_COOKIE_KEY]
     const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
-    return getCurrentUser(userCookie, authCookie)
-        .then(async user => {
-            if (!user)
-                return {
-                    redirect: {
-                        permanent: false,
-                        destination: "/login",
-                    },
-                }
-            else {
-                const serverRequest = await API.get.projectsList(user)
-                const data: ProjectsPageProps = {
-                    projects: serverRequest,
-                }
-                const error = serverRequest == null
-                if (error) return { notFound: true }
-                return {
-                    props: data,
-                }
-            }
-        })
+    const user = await getCurrentUser(userCookie, authCookie)
         .catch(e => {
             console.error(e)
-            return {
-                redirect: {
-                    permanent: false,
-                    destination: "/login?error=Interner%20Fehler"
-                }
-            }
+            return null
         })
+
+    if (!user)
+        return {
+            redirect: {
+                permanent: false,
+                destination: "/login"
+            }
+        }
+
+    const serverRequest = await API.get.projectsList(user)
+    const data: ProjectsPageProps = {
+        projects: serverRequest,
+    }
+    const error = serverRequest == null
+    if (error) return { notFound: true }
+    return {
+        props: data,
+    }
 }
 
 export default ProjectsPage

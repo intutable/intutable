@@ -94,13 +94,13 @@ async function getUserId(
     username: string,
     authCookie?: string
 ): Promise<number> {
-    return coreRequest(
+    const rows = (coreRequest(
         "database",
         "select",
         { table: "users",
           columns: ["_id"],
           condition: ["email", username] },
         authCookie
-    )
-        .then(rows => rows[0]["_id"])
+    ) as {[index: string]: any})
+    return (rows[0]["_id"] as number)
 }

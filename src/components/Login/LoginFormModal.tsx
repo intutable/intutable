@@ -67,6 +67,7 @@ type FormData = {
 
 type LoginFormModalProps = {
     successRedirect: string
+    errorMessage?: string
 }
 
 const LoginFormModal: React.FC<LoginFormModalProps> = props => {

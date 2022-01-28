@@ -210,67 +210,60 @@ export const getServerSideProps: GetServerSideProps<
 > = async context => {
     const { params, req } = context
 
-    const userCookie: string = req.cookies[USER_COOKIE_KEY]
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+    const userCookie: string = req.cookies[USER_COOKIE_KEY]
 
-    return getCurrentUser(userCookie, authCookie)
-        .then(async user => {
-            if (!user)
-                return {
-                    redirect: {
-                        permanent: false,
-                        destination: "/login",
-                    },
-                }
-            else if (!params ||
-                     !Object.hasOwnProperty.call(params, "project-slug")){
-                return { notFound: true }
-            } else {
-                const _projectName = params["project-slug"]
-                if (
-                    _projectName &&
-                    Array.isArray(_projectName) &&
-                    _projectName.length > 0
-                ) {
-                    const projectName = _projectName[0] as string
-                    const tableList = await API.get.tablesList(
-                        user, projectName)
-
-                    let dataOfFirstTable
-                    if (tableList[0] && tableList[0].length > 0)
-                        dataOfFirstTable = await API.get.table(
-                            user,
-                            tableList[0],
-                            projectName
-                        )
-                    else dataOfFirstTable = null
-
-                    const data: ProjectSlugPageProps = {
-                        project: projectName,
-                        tables: tableList,
-                        table: dataOfFirstTable
-                             ? { data: dataOfFirstTable, name: tableList[0] }
-                             : null,
-                    }
-
-                    const error = tableList == null
-                    if (error) return { notFound: true }
-
-                    return {
-                        props: data,
-                    }
-                }
-            }
-        })
+    const user = await getCurrentUser(userCookie, authCookie)
         .catch(e => {
             console.error(e)
-            return {
-                redirect: {
-                    permanent: false,
-                    destination: "/login?error=Interner%20Fehler"
-                }
-            }
+            return null
         })
+
+    if (!user)
+        return {
+            redirect: {
+                permanent: false,
+                destination: "/login"
+            }
+        }
+
+
+    if (params && Object.hasOwnProperty.call(params, "project-slug")) {
+        const _projectName = params["project-slug"]
+        if (
+            _projectName &&
+            Array.isArray(_projectName) &&
+            _projectName.length > 0
+        ) {
+            const projectName = _projectName[0] as string
+            const tableList = await API.get.tablesList(user, projectName)
+
+            let dataOfFirstTable
+            if (tableList[0] && tableList[0].length > 0)
+                dataOfFirstTable = await API.get.table(
+                    user,
+                    tableList[0],
+                    projectName
+                )
+            else dataOfFirstTable = null
+
+            const data: ProjectSlugPageProps = {
+                project: projectName,
+                tables: tableList,
+                table: dataOfFirstTable
+                     ? { data: dataOfFirstTable, name: tableList[0] }
+                     : null,
+            }
+
+            const error = tableList == null
+            if (error) return { notFound: true }
+
+            return {
+                props: data,
+            }
+        }
+    }
+    return { notFound: true }
 }
 
 export default ProjectSlugPage

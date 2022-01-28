@@ -21,7 +21,7 @@ export const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 export type CurrentUser = {
     username: string
     id: number
-    authCookie: string | null
+    authCookie: string | undefined
 }
 
 export type AuthContextProps = {
@@ -56,7 +56,7 @@ export const AuthProvider: React.FC = props => {
         ;(async _ => {
             const currentUserName = Cookies.get(USER_COOKIE_KEY)
             if (currentUserName)
-                setUser(await getCurrentUser(currentUserName, null))
+                setUser(await getCurrentUser(currentUserName))
             setLoading(false)
         })()
     }, [])
@@ -72,13 +72,13 @@ export const AuthProvider: React.FC = props => {
         setLoading(true)
         await coreLogout()
         return coreLogin(username, password)
-            .then(() => {
+            .then(async () => {
                 const userCookie = Cookies.set(USER_COOKIE_KEY, username, {
                     sameSite: "Strict",
                 })
                 if (!userCookie)
                     throw new Error("Could not set the User Cookie!")
-                setUser({ username: username, authCookie: null })
+                setUser(await getCurrentUser(userCookie))
             })
             .finally(() => setLoading(false))
     }
