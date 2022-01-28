@@ -33,4 +33,5 @@ export const darkTheme = createTheme({
     },
 })
 
-export const getDesignToken = (mode: PaletteMode) => (mode === "light" ? lightTheme : darkTheme)
+export const getDesignToken = (mode: PaletteMode) =>
+    mode === "light" ? lightTheme : darkTheme

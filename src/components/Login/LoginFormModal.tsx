@@ -80,8 +80,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     })
     const [attemptError, setAttemptError] = useState<string>("")
     useEffect(() => {
-        if (props.errorMessage)
-            setAttemptError(props.errorMessage)
+        if (props.errorMessage) setAttemptError(props.errorMessage)
     })
     const router = useRouter()
 

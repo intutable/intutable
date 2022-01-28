@@ -6,7 +6,12 @@ import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
 import { ADD_BUTTON_TOKEN, Tablist } from "@components/TabList/TabList"
-import { useAuth, CurrentUser, USER_COOKIE_KEY, AUTH_COOKIE_KEY } from "@context/AuthContext"
+import {
+    useAuth,
+    CurrentUser,
+    USER_COOKIE_KEY,
+    AUTH_COOKIE_KEY,
+} from "@context/AuthContext"
 import { useProject } from "@context/useProject"
 import { rowKeyGetter, SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
@@ -213,20 +218,18 @@ export const getServerSideProps: GetServerSideProps<
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
     const userCookie: string = req.cookies[USER_COOKIE_KEY]
 
-    const user = await getCurrentUser(userCookie, authCookie)
-        .catch(e => {
-            console.error(e)
-            return null
-        })
+    const user = await getCurrentUser(userCookie, authCookie).catch(e => {
+        console.error(e)
+        return null
+    })
 
     if (!user)
         return {
             redirect: {
                 permanent: false,
-                destination: "/login"
-            }
+                destination: "/login",
+            },
         }
-
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {
         const _projectName = params["project-slug"]
@@ -251,8 +254,8 @@ export const getServerSideProps: GetServerSideProps<
                 project: projectName,
                 tables: tableList,
                 table: dataOfFirstTable
-                     ? { data: dataOfFirstTable, name: tableList[0] }
-                     : null,
+                    ? { data: dataOfFirstTable, name: tableList[0] }
+                    : null,
             }
 
             const error = tableList == null

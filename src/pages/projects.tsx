@@ -21,7 +21,12 @@ import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
 import { API } from "@api"
 import { getCurrentUser } from "@app/api/coreinterface"
-import { useAuth, CurrentUser, USER_COOKIE_KEY, AUTH_COOKIE_KEY } from "@context/AuthContext"
+import {
+    useAuth,
+    CurrentUser,
+    USER_COOKIE_KEY,
+    AUTH_COOKIE_KEY,
+} from "@context/AuthContext"
 import { useProject } from "@app/context/useProject"
 
 type ProjectContextMenuProps = {
@@ -229,18 +234,17 @@ export const getServerSideProps: GetServerSideProps<
     const userCookie = req.cookies[USER_COOKIE_KEY]
     const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
-    const user = await getCurrentUser(userCookie, authCookie)
-        .catch(e => {
-            console.error(e)
-            return null
-        })
+    const user = await getCurrentUser(userCookie, authCookie).catch(e => {
+        console.error(e)
+        return null
+    })
 
     if (!user)
         return {
             redirect: {
                 permanent: false,
-                destination: "/login"
-            }
+                destination: "/login",
+            },
         }
 
     const serverRequest = await API.get.projectsList(user)

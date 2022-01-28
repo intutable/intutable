@@ -57,16 +57,18 @@ export async function getCurrentUser(
         { password: "amILoggedIn?" },
         authCookie
     )
-        .then(async () => Promise.resolve({
-            username: username,
-            id: await getUserId(username, authCookie),
-            authCookie
-        }))
+        .then(async () =>
+            Promise.resolve({
+                username: username,
+                id: await getUserId(username, authCookie),
+                authCookie,
+            })
+        )
         .catch(err =>
             [301, 302].includes(err.status)
                 ? Promise.resolve(null)
                 : Promise.reject(err)
-              )
+        )
 }
 
 // TEMP
@@ -94,13 +96,11 @@ async function getUserId(
     username: string,
     authCookie?: string
 ): Promise<number> {
-    const rows = (coreRequest(
+    const rows = coreRequest(
         "database",
         "select",
-        { table: "users",
-          columns: ["_id"],
-          condition: ["email", username] },
+        { table: "users", columns: ["_id"], condition: ["email", username] },
         authCookie
-    ) as {[index: string]: any})
-    return (rows[0]["_id"] as number)
+    ) as { [index: string]: any }
+    return rows[0]["_id"] as number
 }

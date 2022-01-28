@@ -5,7 +5,7 @@ import { useRouter } from "next/router"
 import {
     coreLogin,
     coreLogout,
-    getCurrentUser
+    getCurrentUser,
 } from "@app/api/coreinterface/login"
 
 export const USER_COOKIE_KEY = process.env.NEXT_PUBLIC_USER_COOKIE_KEY!
@@ -55,8 +55,7 @@ export const AuthProvider: React.FC = props => {
         // check if a user is already logged in
         ;(async _ => {
             const currentUserName = Cookies.get(USER_COOKIE_KEY)
-            if (currentUserName)
-                setUser(await getCurrentUser(currentUserName))
+            if (currentUserName) setUser(await getCurrentUser(currentUserName))
             setLoading(false)
         })()
     }, [])

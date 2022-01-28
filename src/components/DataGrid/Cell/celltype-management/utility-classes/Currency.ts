@@ -65,7 +65,9 @@ export class Currency {
         return this._value
     }
 
-    [Symbol.toPrimitive](hint: "string" | "number" | "default"): number | string {
+    [Symbol.toPrimitive](
+        hint: "string" | "number" | "default"
+    ): number | string {
         switch (hint) {
             case "string":
                 return this._value.toString()
@@ -82,7 +84,8 @@ export class Currency {
                 return true
 
             case "string":
-                if (instance.length > 1 && !Number.isNaN(Number(instance))) return true
+                if (instance.length > 1 && !Number.isNaN(Number(instance)))
+                    return true
                 else {
                     // TODO: check if string is currency with regex
                     return false
