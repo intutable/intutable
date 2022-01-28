@@ -13,7 +13,7 @@ export const getProjects = async (user: CurrentUser): Promise<string[]> => {
         CHANNEL.PROJECT_MANAGEMENT,
         getProjects.name,
         { user: user.username },
-        user.cookie
+        user.authCookie
     )
 
     return Array.isArray(coreResponse) &&
@@ -32,7 +32,7 @@ export const createProject = async (
         CHANNEL.PROJECT_MANAGEMENT,
         createProject.name,
         { user: user.username, newProject },
-        user.cookie
+        user.authCookie
     )
 }
 
@@ -44,7 +44,7 @@ export const removeProject = async (
         CHANNEL.PROJECT_MANAGEMENT,
         removeProject.name,
         { user: user.username, project },
-        user.cookie
+        user.authCookie
     )
 }
 
@@ -57,6 +57,6 @@ export const changeProjectName = async (
         CHANNEL.PROJECT_MANAGEMENT,
         changeProjectName.name,
         { user: user.username, oldName, newName },
-        user.cookie
+        user.authCookie
     )
 }

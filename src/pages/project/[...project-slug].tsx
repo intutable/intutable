@@ -6,7 +6,7 @@ import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
 import { ADD_BUTTON_TOKEN, Tablist } from "@components/TabList/TabList"
-import { useAuth, CurrentUser, USER_COOKIE_KEY } from "@context/AuthContext"
+import { useAuth, CurrentUser, USER_COOKIE_KEY, AUTH_COOKIE_KEY } from "@context/AuthContext"
 import { useProject } from "@context/useProject"
 import { rowKeyGetter, SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
@@ -210,9 +210,8 @@ export const getServerSideProps: GetServerSideProps<
 > = async context => {
     const { params, req } = context
 
-    const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
-    const cookie: string = req.cookies[AUTH_COOKIE_KEY]
-    if (!(await isAuthenticated(cookie).catch(e => false)))
+    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+    if (!(await isAuthenticated(authCookie).catch(e => false)))
         return {
             redirect: {
                 permanent: false,
@@ -221,7 +220,7 @@ export const getServerSideProps: GetServerSideProps<
         }
     const user: CurrentUser = {
         username: req.cookies[USER_COOKIE_KEY],
-        cookie,
+        authCookie,
     }
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {

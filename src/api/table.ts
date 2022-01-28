@@ -19,7 +19,7 @@ export const getTablesFromProject = async (
         CHANNEL.PROJECT_MANAGEMENT,
         getTablesFromProject.name,
         { user: user.username, projectName },
-        user.cookie
+        user.authCookie
     )) as unknown
 
     if (typeof coreResponse === "string" && coreResponse.length > 0)
@@ -59,7 +59,7 @@ export const getTableData = async (
         CHANNEL.PROJECT_MANAGEMENT,
         getTableData.name,
         { projectName, tableName },
-        user.cookie
+        user.authCookie
     )) as ServerTableData
 
     // TODO: DEV ONLY needed to transform malformed backend data (obsolete with v4)
@@ -96,7 +96,7 @@ export const createTableInProject = async (
         CHANNEL.PROJECT_MANAGEMENT,
         createTableInProject.name,
         { user: user.username, projectName, table },
-        user.cookie
+        user.authCookie
     )
 }
 
@@ -117,7 +117,7 @@ export const removeTableFromProject = async (
         CHANNEL.PROJECT_MANAGEMENT,
         removeTableFromProject.name,
         { projectName, table },
-        user.cookie
+        user.authCookie
     )
 }
 
@@ -144,6 +144,6 @@ export const changeTableName = async (
             oldName,
             newName,
         },
-        user.cookie
+        user.authCookie
     )
 }
