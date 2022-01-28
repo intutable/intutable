@@ -10,13 +10,13 @@ import {
 
 export const USER_COOKIE_KEY = "dekanat.mathinf.user"
 
-export type User = {
-    name: string
+export type CurrentUser = {
+    username: string
     cookie: string
 }
 
 export type AuthContextProps = {
-    user: User | null
+    user: CurrentUser | null
     loading: boolean
     login?: (username: string, password: string) => Promise<void>
     logout?: () => Promise<void>
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC = props => {
             const currentUser = Cookies.get(USER_COOKIE_KEY)
             if (currentUser && (await isAuthenticated()))
                 setUser({
-                    name: currentUser,
+                    username: currentUser,
                     cookie: currentUser,
                 })
             // else logout()
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC = props => {
                     sameSite: "Strict",
                 })
                 if (!cookie) throw new Error("Could not set the User Cookie!")
-                setUser({ name: username, cookie: cookie })
+                setUser({ username: username, cookie: cookie })
             })
             .finally(() => setLoading(false))
     }

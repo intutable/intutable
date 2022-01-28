@@ -7,7 +7,7 @@ import { useAuth } from "@context/AuthContext"
 
 const LogoutButton: React.FC<object> = () => {
     const theme = useTheme()
-    const { user, logout } = useAuth()
+    const { logout } = useAuth()
 
     return (
         <IconButton color="inherit" onClick={logout}>

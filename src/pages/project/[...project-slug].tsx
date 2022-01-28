@@ -6,7 +6,7 @@ import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
 import { ADD_BUTTON_TOKEN, Tablist } from "@components/TabList/TabList"
-import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
+import { useAuth, CurrentUser, USER_COOKIE_KEY } from "@context/AuthContext"
 import { useProject } from "@context/useProject"
 import { rowKeyGetter, SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
@@ -219,8 +219,8 @@ export const getServerSideProps: GetServerSideProps<
                 destination: "/login",
             },
         }
-    const user: User = {
-        name: req.cookies[USER_COOKIE_KEY],
+    const user: CurrentUser = {
+        username: req.cookies[USER_COOKIE_KEY],
         cookie,
     }
 

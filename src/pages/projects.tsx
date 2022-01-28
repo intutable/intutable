@@ -21,7 +21,7 @@ import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
 import { API } from "@api"
 import { isAuthenticated } from "@app/api/coreinterface"
-import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
+import { useAuth, CurrentUser, USER_COOKIE_KEY } from "@context/AuthContext"
 import { useProject } from "@app/context/useProject"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
@@ -248,8 +248,8 @@ export const getServerSideProps: GetServerSideProps<
             },
         }
 
-    const user: User = {
-        name: req.cookies[USER_COOKIE_KEY],
+    const user: CurrentUser = {
+        username: req.cookies[USER_COOKIE_KEY],
         cookie,
     }
     const serverRequest = await API.get.projectsList(user)
