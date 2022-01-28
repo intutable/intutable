@@ -1,6 +1,6 @@
 const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 import { coreRequest } from "./json"
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
+import { CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
 
 /**
  * Log in to core via a HTTP form request.
@@ -47,20 +47,26 @@ export async function coreLogout(): Promise<void> {
 /**
  * Check if logged into core by using the session cookie.
  */
-export async function isAuthenticated(authCookie?: string): Promise<boolean> {
-    // we could have called any channel or method
+export async function getCurrentUser(
+    username: string,
+    authCookie?: string
+): Promise<CurrentUser | null> {
     return coreRequest(
         "user-authentication",
         "hashPassword",
         { password: "amILoggedIn?" },
         authCookie
     )
-        .then(() => Promise.resolve(true))
+        .then(async () => Promise.resolve({
+            username: username,
+            id: await getUserId(username, authCookie),
+            authCookie
+        }))
         .catch(err =>
             [301, 302].includes(err.status)
-                ? Promise.resolve(false)
+                ? Promise.resolve(null)
                 : Promise.reject(err)
-        )
+              )
 }
 
 // TEMP
@@ -82,4 +88,19 @@ async function loginSucceeded(res: Response): Promise<void> {
                               " nicht gefunden"
                       )
             )
+}
+
+async function getUserId(
+    username: string,
+    authCookie?: string
+): Promise<number> {
+    return coreRequest(
+        "database",
+        "select",
+        { table: "users",
+          columns: ["_id"],
+          condition: ["email", username] },
+        authCookie
+    )
+        .then(rows => rows[0]["_id"])
 }

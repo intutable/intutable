@@ -1,6 +1,6 @@
 import { API } from "@api"
 import type { ServerTableData, TableData } from "@api"
-import { isAuthenticated } from "@app/api/coreinterface"
+import { getCurrentUser } from "@app/api/coreinterface"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
@@ -210,55 +210,67 @@ export const getServerSideProps: GetServerSideProps<
 > = async context => {
     const { params, req } = context
 
+    const userCookie: string = req.cookies[USER_COOKIE_KEY]
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-    if (!(await isAuthenticated(authCookie).catch(e => false)))
-        return {
-            redirect: {
-                permanent: false,
-                destination: "/login",
-            },
-        }
-    const user: CurrentUser = {
-        username: req.cookies[USER_COOKIE_KEY],
-        authCookie,
-    }
 
-    if (params && Object.hasOwnProperty.call(params, "project-slug")) {
-        const _projectName = params["project-slug"]
-        if (
-            _projectName &&
-            Array.isArray(_projectName) &&
-            _projectName.length > 0
-        ) {
-            const projectName = _projectName[0] as string
-            const tableList = await API.get.tablesList(user, projectName)
+    return getCurrentUser(userCookie, authCookie)
+        .then(async user => {
+            if (!user)
+                return {
+                    redirect: {
+                        permanent: false,
+                        destination: "/login",
+                    },
+                }
+            else if (!params ||
+                     !Object.hasOwnProperty.call(params, "project-slug")){
+                return { notFound: true }
+            } else {
+                const _projectName = params["project-slug"]
+                if (
+                    _projectName &&
+                    Array.isArray(_projectName) &&
+                    _projectName.length > 0
+                ) {
+                    const projectName = _projectName[0] as string
+                    const tableList = await API.get.tablesList(
+                        user, projectName)
 
-            let dataOfFirstTable
-            if (tableList[0] && tableList[0].length > 0)
-                dataOfFirstTable = await API.get.table(
-                    user,
-                    tableList[0],
-                    projectName
-                )
-            else dataOfFirstTable = null
+                    let dataOfFirstTable
+                    if (tableList[0] && tableList[0].length > 0)
+                        dataOfFirstTable = await API.get.table(
+                            user,
+                            tableList[0],
+                            projectName
+                        )
+                    else dataOfFirstTable = null
 
-            const data: ProjectSlugPageProps = {
-                project: projectName,
-                tables: tableList,
-                table: dataOfFirstTable
-                    ? { data: dataOfFirstTable, name: tableList[0] }
-                    : null,
+                    const data: ProjectSlugPageProps = {
+                        project: projectName,
+                        tables: tableList,
+                        table: dataOfFirstTable
+                             ? { data: dataOfFirstTable, name: tableList[0] }
+                             : null,
+                    }
+
+                    const error = tableList == null
+                    if (error) return { notFound: true }
+
+                    return {
+                        props: data,
+                    }
+                }
             }
-
-            const error = tableList == null
-            if (error) return { notFound: true }
-
+        })
+        .catch(e => {
+            console.error(e)
             return {
-                props: data,
+                redirect: {
+                    permanent: false,
+                    destination: "/login?error=Interner%20Fehler"
+                }
             }
-        }
-    }
-    return { notFound: true }
+        })
 }
 
 export default ProjectSlugPage

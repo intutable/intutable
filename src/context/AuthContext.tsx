@@ -5,7 +5,7 @@ import { useRouter } from "next/router"
 import {
     coreLogin,
     coreLogout,
-    isAuthenticated,
+    getCurrentUser
 } from "@app/api/coreinterface/login"
 
 export const USER_COOKIE_KEY = process.env.NEXT_PUBLIC_USER_COOKIE_KEY!
@@ -20,6 +20,7 @@ export const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
  */
 export type CurrentUser = {
     username: string
+    id: number
     authCookie: string | null
 }
 
@@ -53,13 +54,9 @@ export const AuthProvider: React.FC = props => {
     useEffect(() => {
         // check if a user is already logged in
         ;(async _ => {
-            const currentUser = Cookies.get(USER_COOKIE_KEY)
-            if (currentUser && (await isAuthenticated()))
-                setUser({
-                    username: currentUser,
-                    authCookie: null,
-                })
-            // else logout()
+            const currentUserName = Cookies.get(USER_COOKIE_KEY)
+            if (currentUserName)
+                setUser(await getCurrentUser(currentUserName, null))
             setLoading(false)
         })()
     }, [])

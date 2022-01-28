@@ -20,7 +20,7 @@ import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
 import { API } from "@api"
-import { isAuthenticated } from "@app/api/coreinterface"
+import { getCurrentUser } from "@app/api/coreinterface"
 import { useAuth, CurrentUser, USER_COOKIE_KEY, AUTH_COOKIE_KEY } from "@context/AuthContext"
 import { useProject } from "@app/context/useProject"
 
@@ -226,40 +226,39 @@ export const getServerSideProps: GetServerSideProps<
     ProjectsPageProps
 > = async context => {
     const { params, req } = context
+    const userCookie = req.cookies[USER_COOKIE_KEY]
     const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
-    if (
-        !(await isAuthenticated(authCookie).catch(e => {
+    return getCurrentUser(userCookie, authCookie)
+        .then(async user => {
+            if (!user)
+                return {
+                    redirect: {
+                        permanent: false,
+                        destination: "/login",
+                    },
+                }
+            else {
+                const serverRequest = await API.get.projectsList(user)
+                const data: ProjectsPageProps = {
+                    projects: serverRequest,
+                }
+                const error = serverRequest == null
+                if (error) return { notFound: true }
+                return {
+                    props: data,
+                }
+            }
+        })
+        .catch(e => {
             console.error(e)
-            Promise.resolve({
+            return {
                 redirect: {
                     permanent: false,
-                    destination: "/500",
-                },
-            })
-            return false
-        }))
-    )
-        return {
-            redirect: {
-                permanent: false,
-                destination: "/login",
-            },
-        }
-
-    const user: CurrentUser = {
-        username: req.cookies[USER_COOKIE_KEY],
-        authCookie,
-    }
-    const serverRequest = await API.get.projectsList(user)
-    const data: ProjectsPageProps = {
-        projects: serverRequest,
-    }
-    const error = serverRequest == null
-    if (error) return { notFound: true }
-    return {
-        props: data,
-    }
+                    destination: "/login?error=Interner%20Fehler"
+                }
+            }
+        })
 }
 
 export default ProjectsPage
