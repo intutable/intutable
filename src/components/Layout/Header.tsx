@@ -153,7 +153,7 @@ const Header = () => {
                     </Box>
                     {user && (
                         <>
-                            <span>{user.name}</span>
+                            <span>{user.username}</span>
                             <LogoutButton />
                         </>
                     )}

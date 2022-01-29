@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react"
-import { Typography, Button, Switch, FormControlLabel, useTheme, PaletteMode } from "@mui/material"
+import {
+    Typography,
+    Button,
+    Switch,
+    FormControlLabel,
+    useTheme,
+    PaletteMode,
+} from "@mui/material"
 
 type ThemeSwitchProps = {
     onChangeHandler: (mode: PaletteMode) => void
@@ -36,12 +43,16 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = props => {
                         },
                         "& + .MuiSwitch-track": {
                             opacity: 1,
-                            backgroundColor: theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
+                            backgroundColor:
+                                theme.palette.mode === "dark"
+                                    ? "#8796A5"
+                                    : "#aab4be",
                         },
                     },
                 },
                 "& .MuiSwitch-thumb": {
-                    backgroundColor: theme.palette.mode === "dark" ? "#003892" : "#001e3c",
+                    backgroundColor:
+                        theme.palette.mode === "dark" ? "#003892" : "#001e3c",
                     width: 32,
                     height: 32,
                     "&:before": {
@@ -60,7 +71,8 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = props => {
                 },
                 "& .MuiSwitch-track": {
                     opacity: 1,
-                    backgroundColor: theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
+                    backgroundColor:
+                        theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
                     borderRadius: 20 / 2,
                 },
             }}

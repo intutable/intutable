@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import {
     useTheme,
@@ -67,6 +67,7 @@ type FormData = {
 
 type LoginFormModalProps = {
     successRedirect: string
+    errorMessage?: string
 }
 
 const LoginFormModal: React.FC<LoginFormModalProps> = props => {
@@ -78,6 +79,9 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
         password: "",
     })
     const [attemptError, setAttemptError] = useState<string>("")
+    useEffect(() => {
+        if (props.errorMessage) setAttemptError(props.errorMessage)
+    })
     const router = useRouter()
 
     const { login } = useAuth()

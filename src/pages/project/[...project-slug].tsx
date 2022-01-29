@@ -1,13 +1,18 @@
 import { makeAPI } from "@api"
 import type { ServerTableData, TableData } from "@api"
-import { isAuthenticated } from "@app/api/coreinterface"
+import { getCurrentUser } from "@app/api/coreinterface"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
 import { ADD_BUTTON_TOKEN, Tablist } from "@components/TabList/TabList"
-import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 import { useProject } from "@app/hooks/useProject"
+import {
+    useAuth,
+    CurrentUser,
+    USER_COOKIE_KEY,
+    AUTH_COOKIE_KEY,
+} from "@context/AuthContext"
 import { rowKeyGetter, SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
 import { isValidName, prepareName } from "@utils/validateName"
@@ -217,20 +222,22 @@ export const getServerSideProps: GetServerSideProps<
 > = async context => {
     const { params, req } = context
 
-    const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
-    const cookie: string = req.cookies[AUTH_COOKIE_KEY]
-    if (!(await isAuthenticated(cookie).catch(e => false)))
+    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+    const userCookie: string = req.cookies[USER_COOKIE_KEY]
+
+    const user = await getCurrentUser(userCookie, authCookie).catch(e => {
+        console.error(e)
+        return null
+    })
+    const API = makeAPI(user)
+
+    if (!user)
         return {
             redirect: {
                 permanent: false,
                 destination: "/login",
             },
         }
-    const user: User = {
-        name: req.cookies[USER_COOKIE_KEY],
-        cookie,
-    }
-    const API = makeAPI(user)
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {
         const _projectName = params["project-slug"]

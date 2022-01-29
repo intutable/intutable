@@ -19,11 +19,15 @@ import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
-import { isAuthenticated } from "@app/api/coreinterface"
-import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
 import { useProject } from "@app/hooks/useProject"
 import { makeAPI } from "@app/api"
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
+import { getCurrentUser } from "@app/api/coreinterface"
+import {
+    useAuth,
+    CurrentUser,
+    USER_COOKIE_KEY,
+    AUTH_COOKIE_KEY,
+} from "@context/AuthContext"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -227,20 +231,16 @@ export const getServerSideProps: GetServerSideProps<
     ProjectsPageProps
 > = async context => {
     const { params, req } = context
-    const cookie = req.cookies[AUTH_COOKIE_KEY]
+    const userCookie = req.cookies[USER_COOKIE_KEY]
+    const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
-    if (
-        !(await isAuthenticated(cookie).catch(e => {
-            console.error(e)
-            Promise.resolve({
-                redirect: {
-                    permanent: false,
-                    destination: "/500",
-                },
-            })
-            return false
-        }))
-    )
+    const user = await getCurrentUser(userCookie, authCookie).catch(e => {
+        console.error(e)
+        return null
+    })
+    const API = makeAPI(user)
+
+    if (!user)
         return {
             redirect: {
                 permanent: false,
@@ -248,11 +248,6 @@ export const getServerSideProps: GetServerSideProps<
             },
         }
 
-    const user: User = {
-        name: req.cookies[USER_COOKIE_KEY],
-        cookie,
-    }
-    const API = makeAPI(user)
     const serverRequest = await API.get.projectsList()
     const data: ProjectsPageProps = {
         projects: serverRequest,

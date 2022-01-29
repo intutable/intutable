@@ -1,6 +1,13 @@
 import { useState } from "react"
 import type { NextPage } from "next"
-import { Typography, Button, Switch, FormControlLabel, styled, PaletteMode } from "@mui/material"
+import {
+    Typography,
+    Button,
+    Switch,
+    FormControlLabel,
+    styled,
+    PaletteMode,
+} from "@mui/material"
 import Title from "@components/Head/Title"
 import ThemeSwitch from "../components/ThemeSwitch/ThemeSwitch"
 
