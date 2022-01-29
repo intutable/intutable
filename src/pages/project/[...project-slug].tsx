@@ -1,6 +1,4 @@
-import { makeAPI } from "@api"
-import type { ServerTableData, TableData } from "@api"
-import { getCurrentUser } from "@app/api/coreinterface"
+import { ServerTableData, TableData, makeAPI, getCurrentUser } from "@api"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
@@ -18,7 +16,7 @@ import { Box, Typography, useTheme } from "@mui/material"
 import { isValidName, prepareName } from "@utils/validateName"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import { useSnackbar } from "notistack"
-import React, { useCallback, useEffect } from "react"
+import React, { useCallback, useEffect, Suspense } from "react"
 import DataGrid from "react-data-grid"
 import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
 
@@ -116,6 +114,19 @@ const ProjectSlugPage: NextPage<
 
     // #################### component ####################
 
+    const ErrorComponent =
+        state.error instanceof Error ? (
+            <Typography>
+                Error: Could not load the Table (reason: {state.error.message}
+                )!
+            </Typography>
+        ) : state.project == null ? (
+            <Typography>
+                Error: Could not load the Table (reason: State Management
+                Issue)!
+            </Typography>
+        ) : null
+
     return (
         <>
             <Title title={props.project} />
@@ -123,25 +134,12 @@ const ProjectSlugPage: NextPage<
                 {props.project}
             </Typography>
 
-            {state.error instanceof Error ? (
-                // Error
-                <Typography>
-                    Error: Could not load the Table (reason:{" "}
-                    {state.error.message}
-                    )!
-                </Typography>
-            ) : // Loading
-            state.loading ? (
-                <LoadingSkeleton />
-            ) : // data is null
-            state.project == null ? (
-                <>Table null {state}</>
-            ) : (
-                // Table
-                <>
+            {ErrorComponent || (
+                // TODO: test if Suspense component works as expected
+                <Suspense fallback={<LoadingSkeleton />}>
                     <Tablist
-                        value={state.project.currentTable}
-                        data={state.project.tables}
+                        value={state.project!.currentTable}
+                        data={state.project!.tables}
                         onChangeHandler={handleTablistChange}
                         onAddHandler={handleAddTable}
                         contextMenuItems={[
@@ -180,13 +178,13 @@ const ProjectSlugPage: NextPage<
                         <DataGrid
                             className={"rdg-" + theme.palette.mode}
                             rows={
-                                state.project.data
-                                    ? state.project.data.rows
+                                state.project!.data
+                                    ? state.project!.data.rows
                                     : []
                             }
                             columns={
-                                state.project.data
-                                    ? state.project.data.columns
+                                state.project!.data
+                                    ? state.project!.data.columns
                                     : [{ key: "id", name: "ID" }]
                             }
                             noRowsFallback={<NoRowsRenderer />}
@@ -211,7 +209,7 @@ const ProjectSlugPage: NextPage<
                             </Toolbar.Item>
                         </Toolbar>
                     </Box>
-                </>
+                </Suspense>
             )}
         </>
     )
@@ -247,11 +245,11 @@ export const getServerSideProps: GetServerSideProps<
             _projectName.length > 0
         ) {
             const projectName = _projectName[0] as string
-            const tableList = await API?.get.tablesList(projectName)
+            const tableList = await API.get.tablesList(projectName)
 
             let dataOfFirstTable
             if (tableList[0] && tableList[0].length > 0)
-                dataOfFirstTable = await API?.get.table(
+                dataOfFirstTable = await API.get.table(
                     tableList[0],
                     projectName
                 )

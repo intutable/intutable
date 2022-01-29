@@ -14,6 +14,7 @@ import {
 } from "./table"
 export * from "./types"
 export * from "./utils"
+export * from "./coreinterface"
 
 export enum CHANNEL {
     PROJECT_MANAGEMENT = "project-management",
