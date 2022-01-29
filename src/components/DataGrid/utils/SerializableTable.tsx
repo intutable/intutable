@@ -11,6 +11,7 @@ import { isCellType, CellType } from "@datagrid/Cell/celltype-management"
 import type { EditorProps, HeaderRendererProps } from "react-data-grid"
 import { Cell } from "@datagrid/Cell"
 import { ColumnHeader } from "@datagrid/ColumnHeader"
+import { Checkbox } from "@mui/material"
 // TODO: (04.12.21): test this function and implement the components for each cell type
 
 /**
@@ -60,9 +61,8 @@ const serialize = (table: TableData): ServerTableData => {
 const deserialize = (table: ServerTableData): TableData => {
     /**
      * TODO:
-     * 1.1 apply an ID to each row
-     * 1.2 add id col at first position
-     * 2. add select cell
+     * 1.1 apply an SELCTOR and ID to each row
+     * 1.2 add ID and SELECTOR col
      * 3. add missing properties (placeholders, since backend does not support them)
      */
 
@@ -107,30 +107,23 @@ const deserialize = (table: ServerTableData): TableData => {
     // 1.2
     const idCol: Column = {
         name: "ID",
-        key: "id",
+        key: __KEYS__.ID_COL_KEY,
         editable: false,
         resizable: true,
         sortable: true,
         width: 80,
     }
-    columns.unshift(idCol)
+    // columns.unshift(idCol) // TODO: huh?
 
-    // 2.
+    // 1.2
     const selectCol: Column = {
-        name: <>NOT IMPLEMENTED</>,
-        key: "__select",
+        name: <Checkbox />,
+        key: __KEYS__.SELECT_COL_KEY,
         editable: false,
         resizable: false,
         sortable: false,
         width: 50,
-        editor: (props: EditorProps<Row>) => (
-            <Cell
-                type={"boolean"}
-                access="editable"
-                position="center"
-                editorProps={props}
-            />
-        ),
+        editor: (props: EditorProps<Row>) => <>Text</>,
         // headerRenderer: ()
     }
     columns.unshift(selectCol)
