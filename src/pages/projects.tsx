@@ -238,6 +238,7 @@ export const getServerSideProps: GetServerSideProps<
         console.error(e)
         return null
     })
+    if (!user) return { notFound: true }
     const API = makeAPI(user)
 
     if (!user)

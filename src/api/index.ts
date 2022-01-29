@@ -1,4 +1,4 @@
-import { User } from "@app/context/AuthContext"
+import { CurrentUser } from "@app/context/AuthContext"
 import {
     getProjects,
     createProject,
@@ -20,7 +20,7 @@ export enum CHANNEL {
 }
 
 // TODO: integrate into AuthContext and export from this ctx
-export const makeAPI = (user: User) =>
+export const makeAPI = (user: CurrentUser) =>
     ({
         get: {
             projectsList: getProjects.bind(null, user),
