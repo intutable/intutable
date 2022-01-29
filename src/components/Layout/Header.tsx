@@ -15,6 +15,7 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
+    Avatar,
 } from "@mui/material"
 import type { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar"
 import { styled, CSSObject, Theme } from "@mui/material/styles"
@@ -27,6 +28,7 @@ import SupportAgentIcon from "@mui/icons-material/SupportAgent"
 import Link from "@components/Link/Link"
 import LogoutButton from "@components/Login/LogoutButton"
 import { useAuth } from "@context/AuthContext"
+import PersonIcon from "@mui/icons-material/Person"
 
 const drawerWidth: number = 240
 
@@ -153,6 +155,15 @@ const Header = () => {
                     </Box>
                     {user && (
                         <>
+                            <Avatar
+                                sx={{
+                                    cursor: "pointer",
+                                    mr: 1,
+                                    bgcolor: theme.palette.grey[400],
+                                }}
+                            >
+                                <PersonIcon />
+                            </Avatar>
                             <span>{user.username}</span>
                             <LogoutButton />
                         </>
@@ -183,11 +194,13 @@ const Header = () => {
                     href="/"
                     icon={<HomeIcon />}
                 />
-                <DrawerListItem
-                    text="Projekte"
-                    href="/projects"
-                    icon={<WorkspacesIcon />}
-                />
+                {user && (
+                    <DrawerListItem
+                        text="Projekte"
+                        href="/projects"
+                        icon={<WorkspacesIcon />}
+                    />
+                )}
                 <Divider />
                 <DrawerListItem
                     text="Support"

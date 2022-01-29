@@ -113,15 +113,15 @@ const deserialize = (table: ServerTableData): TableData => {
         sortable: true,
         width: 80,
     }
-    // columns.unshift(idCol) // TODO: huh?
+    columns.unshift(idCol)
 
     // 1.2
     const selectCol: Column = {
         name: <Checkbox />,
         key: __KEYS__.SELECT_COL_KEY,
-        editable: false,
+        editable: true,
         resizable: false,
-        sortable: false,
+        sortable: true,
         width: 50,
         editor: (props: EditorProps<Row>) => <>Text</>,
         // headerRenderer: ()
