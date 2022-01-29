@@ -1,4 +1,4 @@
-import { API } from "@api"
+import { makeAPI } from "@api"
 import type { ServerTableData, TableData } from "@api"
 import { isAuthenticated } from "@app/api/coreinterface"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
@@ -7,7 +7,7 @@ import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
 import { ADD_BUTTON_TOKEN, Tablist } from "@components/TabList/TabList"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
-import { useProject } from "@context/useProject"
+import { useProject } from "@app/hooks/useProject"
 import { rowKeyGetter, SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
 import { isValidName, prepareName } from "@utils/validateName"
@@ -31,7 +31,7 @@ const ProjectSlugPage: NextPage<
 
     // #################### states ####################
 
-    const { user } = useAuth()
+    const { user, API } = useAuth()
     const { state, changeTable, reload } = useProject(props.project, {
         tables: props.tables,
         currentTable: props.table?.name || "",
@@ -67,7 +67,7 @@ const ProjectSlugPage: NextPage<
                     variant: "error",
                 })
             try {
-                await API.post.table(user, props.project, name)
+                await API?.post.table(props.project, name)
                 await reload(name)
                 enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                     variant: "success",
@@ -79,7 +79,14 @@ const ProjectSlugPage: NextPage<
                 })
             }
         },
-        [enqueueSnackbar, props.project, reload, state.project?.tables, user]
+        [
+            API?.post,
+            enqueueSnackbar,
+            props.project,
+            reload,
+            state.project?.tables,
+            user,
+        ]
     )
 
     const handleRenameTable = () => {
@@ -223,6 +230,7 @@ export const getServerSideProps: GetServerSideProps<
         name: req.cookies[USER_COOKIE_KEY],
         cookie,
     }
+    const API = makeAPI(user)
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {
         const _projectName = params["project-slug"]
@@ -232,12 +240,11 @@ export const getServerSideProps: GetServerSideProps<
             _projectName.length > 0
         ) {
             const projectName = _projectName[0] as string
-            const tableList = await API.get.tablesList(user, projectName)
+            const tableList = await API?.get.tablesList(projectName)
 
             let dataOfFirstTable
             if (tableList[0] && tableList[0].length > 0)
-                dataOfFirstTable = await API.get.table(
-                    user,
+                dataOfFirstTable = await API?.get.table(
                     tableList[0],
                     projectName
                 )

@@ -1,6 +1,7 @@
-import React, { useContext, useEffect, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 import Cookies from "js-cookie"
 import { useRouter } from "next/router"
+import { makeAPI } from "@api"
 
 import {
     coreLogin,
@@ -20,11 +21,13 @@ export type AuthContextProps = {
     loading: boolean
     login?: (username: string, password: string) => Promise<void>
     logout?: () => Promise<void>
+    API: ReturnType<typeof makeAPI> | null
 }
 
 const initialState: AuthContextProps = {
     user: null,
     loading: true,
+    API: null,
 }
 
 const AuthContext = React.createContext<AuthContextProps>(initialState)
@@ -94,6 +97,7 @@ export const AuthProvider: React.FC = props => {
                 loading,
                 login,
                 logout,
+                API: makeAPI(user!),
             }}
         >
             {props.children}

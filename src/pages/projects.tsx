@@ -19,10 +19,10 @@ import { useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
-import { API } from "@api"
 import { isAuthenticated } from "@app/api/coreinterface"
 import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
-import { useProject } from "@app/context/useProject"
+import { useProject } from "@app/hooks/useProject"
+import { makeAPI } from "@app/api"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 type ProjectContextMenuProps = {
@@ -69,7 +69,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user } = useAuth()
+    const { user, API } = useAuth()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
@@ -102,7 +102,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                     variant: "error",
                 })
             const projectName = props.children as string
-            await API.delete.project(user, projectName)
+            await API?.delete.project(projectName)
             router.reload() // TODO: reload the project page properly
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
@@ -164,7 +164,7 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user } = useAuth()
+    const { user, API } = useAuth()
 
     const handleAddProject = async () => {
         try {
@@ -187,7 +187,7 @@ const ProjectsPage: NextPage<
                     variant: "error",
                 })
             // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
-            await API.post.project(user, name)
+            await API?.post.project(name)
             router.push("/project/" + name)
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
@@ -252,7 +252,8 @@ export const getServerSideProps: GetServerSideProps<
         name: req.cookies[USER_COOKIE_KEY],
         cookie,
     }
-    const serverRequest = await API.get.projectsList(user)
+    const API = makeAPI(user)
+    const serverRequest = await API.get.projectsList()
     const data: ProjectsPageProps = {
         projects: serverRequest,
     }

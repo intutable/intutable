@@ -1,3 +1,4 @@
+import { User } from "@app/context/AuthContext"
 import {
     getProjects,
     createProject,
@@ -18,22 +19,24 @@ export enum CHANNEL {
     PROJECT_MANAGEMENT = "project-management",
 }
 
-export const API = {
-    get: {
-        projectsList: getProjects,
-        tablesList: getTablesFromProject,
-        table: getTableData,
-    },
-    post: {
-        project: createProject,
-        table: createTableInProject,
-    },
-    put: {
-        projectName: changeProjectName,
-        tableName: changeTableName,
-    },
-    delete: {
-        project: removeProject,
-        table: removeTableFromProject,
-    },
-}
+// TODO: integrate into AuthContext and export from this ctx
+export const makeAPI = (user: User) =>
+    ({
+        get: {
+            projectsList: getProjects.bind(null, user),
+            tablesList: getTablesFromProject.bind(null, user),
+            table: getTableData.bind(null, user),
+        },
+        post: {
+            project: createProject.bind(null, user),
+            table: createTableInProject.bind(null, user),
+        },
+        put: {
+            projectName: changeProjectName.bind(null, user),
+            tableName: changeTableName.bind(null, user),
+        },
+        delete: {
+            project: removeProject.bind(null, user),
+            table: removeTableFromProject.bind(null, user),
+        },
+    } as const)

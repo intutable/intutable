@@ -1,8 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/router"
-import { API } from "@api"
+import { makeAPI } from "@api"
 import type { ServerTableData, TableData } from "@api"
-import { useAuth } from "./AuthContext"
+import { useAuth } from "../context/AuthContext"
 import { SerializableTable } from "@app/components/DataGrid/utils"
 
 export type Data = {
@@ -27,7 +27,8 @@ const makeError = (error: unknown): Error =>
           )
 
 export const useProject = (project: string, initialData: Data) => {
-    const { user } = useAuth()
+    const { user, API } = useAuth()
+    API?.get
 
     const [state, setState] = useState<State>({
         project: initialData,
@@ -36,22 +37,13 @@ export const useProject = (project: string, initialData: Data) => {
     })
 
     const _fetch = useCallback(
-        async (table?: string): Promise<Data> =>
+        (table?: string): Promise<Data> =>
             new Promise((resolve, reject) => {
-                if (user) {
-                    try {
-                        ;(async _ => {
-                            const tablesInProject = await API.get.tablesList(
-                                user,
-                                project
-                            )
-
-                            const tableData = await API.get.table(
-                                user,
-                                table || tablesInProject[0],
-                                project
-                            )
-
+                if (!user || !API) return reject()
+                API.get.tablesList(project).then(tablesInProject => {
+                    API.get
+                        .table(table || tablesInProject[0], project)
+                        .then(tableData => {
                             const newData: Data = {
                                 tables: tablesInProject,
                                 currentTable: table || tablesInProject[0] || "",
@@ -59,13 +51,10 @@ export const useProject = (project: string, initialData: Data) => {
                             }
 
                             resolve(newData)
-                        })()
-                    } catch (error) {
-                        reject(error)
-                    }
-                }
+                        })
+                })
             }),
-        [project, user]
+        [API, project, user]
     )
 
     const reload = useCallback(
