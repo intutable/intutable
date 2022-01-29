@@ -229,8 +229,6 @@ export const getServerSideProps: GetServerSideProps<
         console.error(e)
         return null
     })
-    if (!user) return { notFound: true }
-    const API = makeAPI(user)
 
     if (!user)
         return {
@@ -239,6 +237,7 @@ export const getServerSideProps: GetServerSideProps<
                 destination: "/login",
             },
         }
+    const API = makeAPI(user)
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {
         const _projectName = params["project-slug"]
