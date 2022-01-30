@@ -28,15 +28,17 @@ export type CurrentUser = {
 export type AuthContextProps = {
     user: CurrentUser | null
     loading: boolean
-    login?: (username: string, password: string) => Promise<void>
-    logout?: () => Promise<void>
+    login: (username: string, password: string) => Promise<void>
+    logout: () => Promise<void>
     API: ReturnType<typeof makeAPI> | null
 }
 
 const initialState: AuthContextProps = {
     user: null,
-    loading: true,
+    loading: false,
     API: null,
+    login: undefined!,
+    logout: undefined!,
 }
 
 const AuthContext = React.createContext<AuthContextProps>(initialState)
@@ -55,6 +57,7 @@ export const AuthProvider: React.FC = props => {
     )
 
     useEffect(() => {
+        setLoading(true)
         // check if a user is already logged in
         ;(async _ => {
             const currentUserName = Cookies.get(USER_COOKIE_KEY)

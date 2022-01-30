@@ -28,7 +28,6 @@ const makeError = (error: unknown): Error =>
 
 export const useProject = (project: string, initialData: Data) => {
     const { user, API } = useAuth()
-    API?.get
 
     const [state, setState] = useState<State>({
         project: initialData,
