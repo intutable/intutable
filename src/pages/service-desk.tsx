@@ -11,7 +11,7 @@ const ServiceDesk: NextPage = () => {
             <Divider />
             <Typography
                 sx={{
-                    mt: theme.spacing(8),
+                    mt: theme.spacing(4),
                     color: theme.palette.text.secondary,
                 }}
             >
@@ -23,6 +23,22 @@ const ServiceDesk: NextPage = () => {
                 gesendet werden. Die Entwickler erhalten eine Nachricht und
                 kümmern sich darum.
             </Typography>
+            <Typography variant={"h5"} sx={{ mt: 20 }}>
+                Caveats
+            </Typography>
+            <Divider />
+            <ul>
+                <li>
+                    <Typography
+                        sx={{
+                            color: theme.palette.text.secondary,
+                        }}
+                    >
+                        Safari wird zzt. als Browser nicht vollständig
+                        unterstützt. Wir empfehlen Google Chrome.
+                    </Typography>
+                </li>
+            </ul>
         </>
     )
 }
