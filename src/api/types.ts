@@ -1,6 +1,7 @@
 import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
 import type { CellType } from "../components/DataGrid/Cell/celltype-management/celltypes"
+import React from "react"
 
 // TODO: make all props readonly
 
@@ -51,7 +52,7 @@ export const __KEYS__ = { SELECT_COL_KEY, ID_COL_KEY } as const
 
 export type Row = {
     readonly [ID_COL_KEY]: number
-    [SELECT_COL_KEY]: boolean
+    [SELECT_COL_KEY]: React.ReactElement
     [key: string]: unknown
 }
 

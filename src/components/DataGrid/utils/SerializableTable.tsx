@@ -72,7 +72,7 @@ const deserialize = (table: ServerTableData): TableData => {
             ({
                 ...row,
                 [__KEYS__.ID_COL_KEY]: index + 1,
-                [__KEYS__.SELECT_COL_KEY]: false,
+                [__KEYS__.SELECT_COL_KEY]: <Checkbox />,
             } as Row)
     )
 
@@ -123,8 +123,7 @@ const deserialize = (table: ServerTableData): TableData => {
         resizable: false,
         sortable: true,
         width: 50,
-        editor: (props: EditorProps<Row>) => <>Text</>,
-        // headerRenderer: ()
+        // editor: (props: EditorProps<Row>) => <>Text</>, // my bad: its an edtior, it only appears when the cell is in editing mode
     }
     columns.unshift(selectCol)
 
