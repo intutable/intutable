@@ -1,4 +1,4 @@
-import { ServerTableData, TableData, makeAPI, getCurrentUser } from "@api"
+import { ServerTableData, TableData, makeAPI, getCurrentUser, Row } from "@api"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
@@ -16,11 +16,13 @@ import { Box, Typography, useTheme } from "@mui/material"
 import { isValidName, prepareName } from "@utils/validateName"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import { useSnackbar } from "notistack"
-import React, { useCallback, useEffect, Suspense } from "react"
-import DataGrid from "react-data-grid"
+import React, { useCallback, useEffect, Suspense, useState } from "react"
+import DataGrid, { RowsChangeData, CalculatedColumn } from "react-data-grid"
 import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
+import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
 
 type ProjectSlugPageProps = {
+    user: CurrentUser
     project: string
     tables: string[]
     table: { data: ServerTableData; name: string } | null
@@ -34,7 +36,8 @@ const ProjectSlugPage: NextPage<
 
     // #################### states ####################
 
-    const { user, API } = useAuth()
+    const { user } = props
+    const { API } = useAuth()
     const { state, changeTable, reload } = useProject(props.project, {
         tables: props.tables,
         currentTable: props.table?.name || "",
@@ -42,6 +45,10 @@ const ProjectSlugPage: NextPage<
             ? SerializableTable.deserialize(props.table.data)
             : null,
     })
+    const [detailedViewOpen, setDetailedViewOpen] = useState<{
+        row: Row
+        column: CalculatedColumn<Row>
+    } | null>(null)
 
     // #################### private methods ####################
 
@@ -49,6 +56,10 @@ const ProjectSlugPage: NextPage<
         if (newTable === null || newTable === ADD_BUTTON_TOKEN)
             return changeTable("")
         changeTable(newTable)
+    }
+
+    const handleRowsChange = (rows: Row[], data: RowsChangeData<Row>) => {
+        // TODO: update rows
     }
 
     const handleAddTable = useCallback(
@@ -134,9 +145,17 @@ const ProjectSlugPage: NextPage<
                 {props.project}
             </Typography>
 
-            {ErrorComponent || (
-                // TODO: test if Suspense component works as expected
-                <Suspense fallback={<LoadingSkeleton />}>
+            {ErrorComponent || state.loading ? (
+                <LoadingSkeleton />
+            ) : (
+                <>
+                    {detailedViewOpen && (
+                        <DetailedViewModal
+                            open={detailedViewOpen != null}
+                            data={detailedViewOpen}
+                            onCloseHandler={() => setDetailedViewOpen(null)}
+                        />
+                    )}
                     <Tablist
                         value={state.project!.currentTable}
                         data={state.project!.tables}
@@ -193,8 +212,11 @@ const ProjectSlugPage: NextPage<
                                 sortable: true,
                                 resizable: true,
                             }}
+                            onRowsChange={handleRowsChange}
                             // onColumnResize={}
-                            // onRowDoubleClick={}
+                            onRowDoubleClick={(row, column) => {
+                                setDetailedViewOpen({ row, column })
+                            }}
                             // onFill={handleFill}
                             // selectedRows={selectedRows}
                             // onSelectedRowsChange={setSelectedRows}
@@ -209,7 +231,7 @@ const ProjectSlugPage: NextPage<
                             </Toolbar.Item>
                         </Toolbar>
                     </Box>
-                </Suspense>
+                </>
             )}
         </>
     )
@@ -255,19 +277,18 @@ export const getServerSideProps: GetServerSideProps<
                 )
             else dataOfFirstTable = null
 
-            const data: ProjectSlugPageProps = {
-                project: projectName,
-                tables: tableList,
-                table: dataOfFirstTable
-                    ? { data: dataOfFirstTable, name: tableList[0] }
-                    : null,
-            }
-
             const error = tableList == null
             if (error) return { notFound: true }
 
             return {
-                props: data,
+                props: {
+                    project: projectName,
+                    tables: tableList,
+                    table: dataOfFirstTable
+                        ? { data: dataOfFirstTable, name: tableList[0] }
+                        : null,
+                    user,
+                },
             }
         }
     }
