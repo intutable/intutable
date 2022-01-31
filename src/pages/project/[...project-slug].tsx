@@ -5,12 +5,7 @@ import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
 import { ADD_BUTTON_TOKEN, Tablist } from "@components/TabList/TabList"
 import { useProject } from "@app/hooks/useProject"
-import {
-    useAuth,
-    CurrentUser,
-    USER_COOKIE_KEY,
-    AUTH_COOKIE_KEY,
-} from "@context/AuthContext"
+import { useAuth, CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
 import { rowKeyGetter, SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
 import { isValidName, prepareName } from "@utils/validateName"
@@ -241,9 +236,8 @@ export const getServerSideProps: GetServerSideProps<
     const { params, req } = context
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-    const userCookie: string = req.cookies[USER_COOKIE_KEY]
 
-    const user = await getCurrentUser(userCookie, authCookie).catch(e => {
+    const user = await getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })
