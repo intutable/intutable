@@ -22,7 +22,6 @@ import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSk
 import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
 
 type ProjectSlugPageProps = {
-    user: CurrentUser
     project: string
     tables: string[]
     table: { data: ServerTableData; name: string } | null
@@ -36,8 +35,7 @@ const ProjectSlugPage: NextPage<
 
     // #################### states ####################
 
-    const { user } = props
-    const { API } = useAuth()
+    const { user, API } = useAuth()
     const { state, changeTable, reload } = useProject(props.project, {
         tables: props.tables,
         currentTable: props.table?.name || "",
@@ -287,7 +285,6 @@ export const getServerSideProps: GetServerSideProps<
                     table: dataOfFirstTable
                         ? { data: dataOfFirstTable, name: tableList[0] }
                         : null,
-                    user,
                 },
             }
         }

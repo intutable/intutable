@@ -159,7 +159,6 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 }
 
 type ProjectsPageProps = {
-    user: CurrentUser
     projects: Array<string>
 }
 const ProjectsPage: NextPage<
@@ -169,8 +168,7 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user } = props
-    const { API } = useAuth()
+    const { user, API } = useAuth()
 
     const handleAddProject = async () => {
         try {
@@ -258,7 +256,6 @@ export const getServerSideProps: GetServerSideProps<
     return {
         props: {
             projects: serverRequest,
-            user: user,
         },
     }
 }
