@@ -15,8 +15,9 @@ export const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 /**
  * Authentication data of the current user.
  * @property {string} username
- * @property {string | null} authCookie the back-end authentication
- * cookie. In front-end use, this is null, as the cookie is HttpOnly
+ * @property {number} id
+ * @property {string | undefined} authCookie the back-end authentication
+ * cookie. In front-end use, this is undefined, as the cookie is HttpOnly
  * and passed along automatically. Still necessary for SSR.
  */
 export type CurrentUser = {
