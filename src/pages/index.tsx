@@ -10,18 +10,6 @@ const Home: NextPage = () => {
     return (
         <>
             <Title title="Startseite" />
-            {user ? (
-                <>
-                    <Typography>Hallo {user.username}!</Typography>
-                    <Divider />
-                    Hier findest du deine <Link href="/projects">Projekte</Link>
-                    .
-                </>
-            ) : (
-                <Typography>
-                    Melde dich an: <Link href="/login">anmelden</Link>
-                </Typography>
-            )}
         </>
     )
 }
