@@ -22,9 +22,13 @@ import { styled, CSSObject, Theme } from "@mui/material/styles"
 import MenuIcon from "@mui/icons-material/Menu"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import WorkspacesIcon from "@mui/icons-material/Workspaces"
+import WorkspacesIconOutlined from "@mui/icons-material/WorkspacesOutlined"
 import SettingsIcon from "@mui/icons-material/Settings"
+import SettingsIconOutlined from "@mui/icons-material/SettingsOutlined"
 import HomeIcon from "@mui/icons-material/Home"
+import HomeIconOutlined from "@mui/icons-material/HomeOutlined"
 import SupportAgentIcon from "@mui/icons-material/SupportAgent"
+import SupportAgentIconOutlined from "@mui/icons-material/SupportAgentOutlined"
 import Link from "@components/Link/Link"
 import LogoutButton from "@components/Login/LogoutButton"
 import { useAuth } from "@context/AuthContext"
@@ -71,7 +75,8 @@ const Drawer = styled(MuiDrawer, {
 }))
 
 type DrawerListItemProps = {
-    icon: React.ReactNode
+    nonActiveIcon: React.ReactNode
+    activeIcon: React.ReactNode
     text: string
     href: string
 }
@@ -79,17 +84,31 @@ type DrawerListItemProps = {
 const DrawerListItem: React.FC<DrawerListItemProps> = props => {
     const router = useRouter()
     return (
-        <ListItem button onClick={() => router.push(props.href)}>
-            <ListItemIcon>{props.icon}</ListItemIcon>
+        <ListItem
+            button
+            onClick={() => router.push(props.href)}
+            sx={{
+                ...(router.pathname === props.href && {
+                    bgcolor: "#dedede",
+                }),
+                "&:hover": {},
+            }}
+        >
+            <ListItemIcon>
+                {router.pathname === props.href
+                    ? props.activeIcon
+                    : props.nonActiveIcon}
+            </ListItemIcon>
             <ListItemText primary={props.text} />
         </ListItem>
     )
 }
 
 const Header = () => {
+    const router = useRouter()
     const { user } = useAuth()
-
     const theme = useTheme()
+
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 
     const toggleDrawer = () => setDrawerOpen(prev => !prev)
@@ -192,25 +211,29 @@ const Header = () => {
                 <DrawerListItem
                     text="Startseite"
                     href="/"
-                    icon={<HomeIcon />}
+                    nonActiveIcon={<HomeIconOutlined />}
+                    activeIcon={<HomeIcon />}
                 />
                 {user && (
                     <DrawerListItem
                         text="Projekte"
                         href="/projects"
-                        icon={<WorkspacesIcon />}
+                        nonActiveIcon={<WorkspacesIconOutlined />}
+                        activeIcon={<WorkspacesIcon />}
                     />
                 )}
                 <Divider />
                 <DrawerListItem
-                    text="Support"
+                    text="Service Desk"
                     href="/service-desk"
-                    icon={<SupportAgentIcon />}
+                    nonActiveIcon={<SupportAgentIconOutlined />}
+                    activeIcon={<SupportAgentIcon />}
                 />
                 <DrawerListItem
                     text="Einstellungen"
                     href="/settings"
-                    icon={<SettingsIcon />}
+                    nonActiveIcon={<SettingsIconOutlined />}
+                    activeIcon={<SettingsIcon />}
                 />
             </Drawer>
         </>
