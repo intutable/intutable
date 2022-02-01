@@ -45,6 +45,11 @@ const ProjectSlugPage: NextPage<
             ? SerializableTable.deserialize(props.table.data)
             : null,
     })
+    // const proxy: TableData = {}
+    // const [table, _setTable] = useState<TableData>(proxy)
+    // const setTable = (table: TableData) => {
+    //     // TODO: write to table only via proxy
+    // }
     const [detailedViewOpen, setDetailedViewOpen] = useState<{
         row: Row
         column: CalculatedColumn<Row>
