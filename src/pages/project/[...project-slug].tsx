@@ -5,12 +5,7 @@ import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
 import { ADD_BUTTON_TOKEN, Tablist } from "@components/TabList/TabList"
 import { useProject } from "@app/hooks/useProject"
-import {
-    useAuth,
-    CurrentUser,
-    USER_COOKIE_KEY,
-    AUTH_COOKIE_KEY,
-} from "@context/AuthContext"
+import { useAuth, CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
 import { rowKeyGetter, SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
 import { isValidName, prepareName } from "@utils/validateName"
@@ -22,7 +17,6 @@ import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSk
 import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
 
 type ProjectSlugPageProps = {
-    user: CurrentUser
     project: string
     tables: string[]
     table: { data: ServerTableData; name: string } | null
@@ -36,8 +30,7 @@ const ProjectSlugPage: NextPage<
 
     // #################### states ####################
 
-    const { user } = props
-    const { API } = useAuth()
+    const { user, API } = useAuth()
     const { state, changeTable, reload } = useProject(props.project, {
         tables: props.tables,
         currentTable: props.table?.name || "",
@@ -248,9 +241,8 @@ export const getServerSideProps: GetServerSideProps<
     const { params, req } = context
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-    const userCookie: string = req.cookies[USER_COOKIE_KEY]
 
-    const user = await getCurrentUser(userCookie, authCookie).catch(e => {
+    const user = await getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })
@@ -292,7 +284,6 @@ export const getServerSideProps: GetServerSideProps<
                     table: dataOfFirstTable
                         ? { data: dataOfFirstTable, name: tableList[0] }
                         : null,
-                    user,
                 },
             }
         }

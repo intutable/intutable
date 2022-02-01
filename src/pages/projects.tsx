@@ -22,12 +22,7 @@ import { useSnackbar } from "notistack"
 import { useProject } from "@app/hooks/useProject"
 import { makeAPI } from "@app/api"
 import { getCurrentUser } from "@app/api/coreinterface"
-import {
-    useAuth,
-    CurrentUser,
-    USER_COOKIE_KEY,
-    AUTH_COOKIE_KEY,
-} from "@context/AuthContext"
+import { useAuth, CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -159,7 +154,6 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 }
 
 type ProjectsPageProps = {
-    user: CurrentUser
     projects: Array<string>
 }
 const ProjectsPage: NextPage<
@@ -169,8 +163,7 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user } = props
-    const { API } = useAuth()
+    const { user, API } = useAuth()
 
     const handleAddProject = async () => {
         try {
@@ -234,10 +227,9 @@ export const getServerSideProps: GetServerSideProps<
 > = async context => {
     const { params, req } = context
 
-    const userCookie = req.cookies[USER_COOKIE_KEY]
     const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
-    const user = await getCurrentUser(userCookie, authCookie).catch(e => {
+    const user = await getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })
@@ -258,7 +250,6 @@ export const getServerSideProps: GetServerSideProps<
     return {
         props: {
             projects: serverRequest,
-            user: user,
         },
     }
 }

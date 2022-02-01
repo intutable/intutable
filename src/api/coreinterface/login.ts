@@ -48,19 +48,13 @@ export async function coreLogout(): Promise<void> {
  * Check if logged into core by using the session cookie.
  */
 export async function getCurrentUser(
-    username: string,
     authCookie?: string
 ): Promise<CurrentUser | null> {
-    return coreRequest(
-        "user-authentication",
-        "hashPassword",
-        { password: "amILoggedIn?" },
-        authCookie
-    )
-        .then(async () =>
+    return coreRequest("user-authentication", "getCurrentUser", {}, authCookie)
+        .then(async ({ username, id }) =>
             Promise.resolve({
-                username: username,
-                id: await getUserId(username, authCookie),
+                username: <string>username,
+                id: <number>id,
                 authCookie,
             })
         )
@@ -90,17 +84,4 @@ async function loginSucceeded(res: Response): Promise<void> {
                               " nicht gefunden"
                       )
             )
-}
-
-async function getUserId(
-    username: string,
-    authCookie?: string
-): Promise<number> {
-    const rows = (await coreRequest(
-        "database",
-        "select",
-        { table: "users", columns: ["_id"], condition: ["email", username] },
-        authCookie
-    )) as { [index: string]: any }
-    return rows[0]["_id"] as number
 }

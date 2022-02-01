@@ -1,5 +1,4 @@
 import React, { useCallback, useContext, useEffect, useState } from "react"
-import Cookies from "js-cookie"
 import { useRouter } from "next/router"
 import { makeAPI } from "@api"
 
@@ -9,14 +8,14 @@ import {
     getCurrentUser,
 } from "@app/api/coreinterface/login"
 
-export const USER_COOKIE_KEY = process.env.NEXT_PUBLIC_USER_COOKIE_KEY!
 export const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 /**
  * Authentication data of the current user.
  * @property {string} username
- * @property {string | null} authCookie the back-end authentication
- * cookie. In front-end use, this is null, as the cookie is HttpOnly
+ * @property {number} id
+ * @property {string | undefined} authCookie the back-end authentication
+ * cookie. In front-end use, this is undefined, as the cookie is HttpOnly
  * and passed along automatically. Still necessary for SSR.
  */
 export type CurrentUser = {
@@ -60,30 +59,17 @@ export const AuthProvider: React.FC = props => {
         setLoading(true)
         // check if a user is already logged in
         ;(async _ => {
-            const currentUserName = Cookies.get(USER_COOKIE_KEY)
-            if (currentUserName) setUser(await getCurrentUser(currentUserName))
+            setUser(await getCurrentUser())
             setLoading(false)
         })()
     }, [])
 
-    /*
-       As of now, there are 3 stateful components to being logged in: The core
-       authentication (managed via a passport js cookie), the currentUser
-       cookie (front-end remembering who was logged in), and the `user` hook
-       (for keeping graphical elements up to date). authCookie only needs
-       to be set in SSR requests, 
-     */
     const login = async (username: string, password: string) => {
         setLoading(true)
         await coreLogout()
         return coreLogin(username, password)
             .then(async () => {
-                const userCookie = Cookies.set(USER_COOKIE_KEY, username, {
-                    sameSite: "Strict",
-                })
-                if (!userCookie)
-                    throw new Error("Could not set the User Cookie!")
-                setUser(await getCurrentUser(username))
+                setUser(await getCurrentUser())
             })
             .finally(() => setLoading(false))
     }
@@ -92,9 +78,8 @@ export const AuthProvider: React.FC = props => {
         setLoading(true)
         return coreLogout()
             .then(() => {
-                Cookies.remove(USER_COOKIE_KEY)
                 setUser(null)
-                router.push("/login")
+                router.push("/")
             })
             .finally(() => setLoading(false))
     }
