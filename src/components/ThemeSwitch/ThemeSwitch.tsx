@@ -59,18 +59,13 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 }))
 
 const ThemeSwitch: React.FC = props => {
-    const theme = useTheme()
-
     const { toggleColorMode, getTheme } = useThemeToggler()
-
-    const [checked, setChecked] = useState(getTheme() === "dark")
-
-    const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setChecked(e.target.checked)
-        toggleColorMode()
-    }
-
-    return <MaterialUISwitch checked={checked} onChange={handleToggle} />
+    return (
+        <MaterialUISwitch
+            checked={getTheme() === "dark"}
+            onChange={toggleColorMode}
+        />
+    )
 }
 
 export default ThemeSwitch
