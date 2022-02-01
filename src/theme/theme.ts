@@ -13,6 +13,9 @@ export const COLOR_SCHEME = {}
  */
 export const lightTheme = createTheme({
     colorScheme: { ...COLOR_SCHEME },
+    typography: {
+        fontFamily: ["Roboto", "sans-serif"].join(","),
+    },
 })
 
 /**
@@ -22,14 +25,22 @@ export const darkTheme = createTheme({
     colorScheme: { ...COLOR_SCHEME },
     palette: {
         primary: {
-            main: "#333",
+            main: "#313552",
         },
         secondary: {
-            main: "#fff",
+            main: "#B8405E",
         },
         background: {
-            default: "#333",
+            default: "#313552",
         },
+        text: {
+            primary: "#fff",
+            secondary: "#dadada",
+            disabled: "#ccc",
+        },
+    },
+    typography: {
+        fontFamily: ["Roboto", "sans-serif"].join(","),
     },
 })
 
