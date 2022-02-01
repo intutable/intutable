@@ -21,15 +21,19 @@ export const useThemeToggler = () => React.useContext(ThemeTogglerContext)
 const MyApp = (props: AppProps) => {
     const { Component, pageProps } = props
 
-    const systemPreferedThemeMode: PaletteMode = useMediaQuery(
+    const systemPreferredThemeMode: PaletteMode = useMediaQuery(
         "(prefers-color-scheme: dark)"
     )
         ? "dark"
         : "light"
 
     const [themeMode, setThemeMode] = useState<PaletteMode>(
-        systemPreferedThemeMode
+        systemPreferredThemeMode
     )
+
+    useEffect(() => {
+        setThemeMode(systemPreferredThemeMode)
+    }, [systemPreferredThemeMode])
 
     const colorMode = useMemo(
         () => ({
