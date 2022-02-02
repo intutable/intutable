@@ -41,7 +41,7 @@ export const coreRequest = (
     method: string,
     body: Obj,
     authCookie?: string
-): Promise<Obj> =>
+): Promise<unknown> =>
     fetch(CORE_ENDPOINT + "/request/" + channel + "/" + method, {
         method: "post",
         headers: {

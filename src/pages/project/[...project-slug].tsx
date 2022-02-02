@@ -15,11 +15,12 @@ import React, { useCallback, useEffect, Suspense, useState } from "react"
 import DataGrid, { RowsChangeData, CalculatedColumn } from "react-data-grid"
 import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
 import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
+import { ProjectListElement, TableList, TableListElement } from "@api"
 
 type ProjectSlugPageProps = {
-    project: string
-    tables: string[]
-    table: { data: ServerTableData; name: string } | null
+    project: ProjectListElement
+    tables: TableList
+    table: { data: ServerTableData; table: TableListElement } | null
 }
 
 const ProjectSlugPage: NextPage<
@@ -33,7 +34,7 @@ const ProjectSlugPage: NextPage<
     const { user, API } = useAuth()
     const { state, changeTable, reload } = useProject(props.project, {
         tables: props.tables,
-        currentTable: props.table?.name || "",
+        currentTable: props.table?.table || null,
         data: props.table?.data
             ? SerializableTable.deserialize(props.table.data)
             : null,
@@ -50,64 +51,8 @@ const ProjectSlugPage: NextPage<
 
     // #################### private methods ####################
 
-    const handleTablistChange = (newTable: string | null) => {
-        if (newTable === null || newTable === ADD_BUTTON_TOKEN)
-            return changeTable("")
-        changeTable(newTable)
-    }
-
     const handleRowsChange = (rows: Row[], data: RowsChangeData<Row>) => {
         // TODO: update rows
-    }
-
-    const handleAddTable = useCallback(
-        async (newTableName: string) => {
-            const name = prepareName(newTableName)
-            const isValid = isValidName(name)
-            if (isValid instanceof Error)
-                return enqueueSnackbar(isValid.message, { variant: "error" })
-            const nameIsTaken = state.project?.tables
-                .map(tbl => tbl.toLowerCase().trim())
-                .includes(name.toLowerCase().trim())
-            if (nameIsTaken)
-                return enqueueSnackbar(
-                    "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
-                    { variant: "error" }
-                )
-            if (!user)
-                return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
-                    variant: "error",
-                })
-            try {
-                await API?.post.table(props.project, name)
-                await reload(name)
-                enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-                    variant: "success",
-                })
-            } catch (error) {
-                console.error(error)
-                enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
-                    variant: "error",
-                })
-            }
-        },
-        [
-            API?.post,
-            enqueueSnackbar,
-            props.project,
-            reload,
-            state.project?.tables,
-            user,
-        ]
-    )
-
-    const handleRenameTable = () => {
-        alert("Not implemented yet")
-        // TODO: implement
-    }
-    const handleDeleteTable = () => {
-        alert("Not implemented yet")
-        // TODO: implement
     }
 
     // #################### life cycle methods ####################
@@ -138,7 +83,7 @@ const ProjectSlugPage: NextPage<
 
     return (
         <>
-            <Title title={props.project} />
+            <Title title={props.project.projectName} />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
                 {props.project}
             </Typography>
@@ -154,24 +99,7 @@ const ProjectSlugPage: NextPage<
                             onCloseHandler={() => setDetailedViewOpen(null)}
                         />
                     )}
-                    <Tablist
-                        value={state.project!.currentTable}
-                        data={state.project!.tables}
-                        onChangeHandler={handleTablistChange}
-                        onAddHandler={handleAddTable}
-                        contextMenuItems={[
-                            <Box onClick={handleRenameTable} key={0}>
-                                Rename
-                            </Box>,
-                            <Box
-                                onClick={handleDeleteTable}
-                                key={1}
-                                sx={{ color: theme.palette.warning.main }}
-                            >
-                                Delete
-                            </Box>,
-                        ]}
-                    />
+                    <Tablist />
                     <Box>
                         <Toolbar position="top">
                             <TItem.AddCol />
@@ -257,21 +185,23 @@ export const getServerSideProps: GetServerSideProps<
     const API = makeAPI(user)
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {
-        const _projectName = params["project-slug"]
-        if (
-            _projectName &&
-            Array.isArray(_projectName) &&
-            _projectName.length > 0
-        ) {
-            const projectName = _projectName[0] as string
-            const tableList = await API.get.tablesList(projectName)
+        const _projectId = params["project-slug"]
+        if (_projectId != null) {
+            const projectIdStr = Array.isArray(_projectId)
+                ? _projectId[0]
+                : _projectId
+            const projectId: ProjectListElement["projectId"] =
+                Number.parseInt(projectIdStr)
+            const tableList = await API.get.tablesList(projectId)
+
+            const project = (await API.get.projectsList()).find(
+                proj => proj.projectId === projectId
+            )
+            if (project == null) return { notFound: true }
 
             let dataOfFirstTable
-            if (tableList[0] && tableList[0].length > 0)
-                dataOfFirstTable = await API.get.table(
-                    tableList[0],
-                    projectName
-                )
+            if (tableList.length > 0)
+                dataOfFirstTable = await API.get.table(tableList[0].tableId)
             else dataOfFirstTable = null
 
             const error = tableList == null
@@ -279,10 +209,13 @@ export const getServerSideProps: GetServerSideProps<
 
             return {
                 props: {
-                    project: projectName,
+                    project: project,
                     tables: tableList,
                     table: dataOfFirstTable
-                        ? { data: dataOfFirstTable, name: tableList[0] }
+                        ? {
+                              data: dataOfFirstTable,
+                              table: tableList[0],
+                          }
                         : null,
                 },
             }

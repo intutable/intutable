@@ -1,13 +1,14 @@
-import React, { useState, useMemo, useEffect } from "react"
-import { getDesignToken, lightTheme } from "@theme"
-import createTheme from "../theme/utils"
-import Head from "next/head"
-import { ThemeProvider } from "@mui/material/styles"
-import { CssBaseline, useMediaQuery, PaletteMode } from "@mui/material"
 import Layout from "@components/Layout/Layout"
-import { SnackbarProvider } from "notistack"
-import { AuthProvider } from "../context/AuthContext"
+import { ProjectCtxProvider } from "@context/ProjectContext"
+import { CssBaseline, PaletteMode, useMediaQuery } from "@mui/material"
+import { ThemeProvider } from "@mui/material/styles"
+import { getDesignToken } from "@theme"
 import type { AppProps } from "next/app"
+import Head from "next/head"
+import { SnackbarProvider } from "notistack"
+import React, { useEffect, useMemo, useState } from "react"
+import { AuthProvider } from "../context/AuthContext"
+import createTheme from "../theme/utils"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void
@@ -74,16 +75,18 @@ const MyApp = (props: AppProps) => {
             </Head>
 
             <AuthProvider>
-                <ThemeTogglerContext.Provider value={colorMode}>
-                    <ThemeProvider theme={theme}>
-                        <SnackbarProvider maxSnack={5}>
-                            <CssBaseline />
-                            <Layout>
-                                <Component {...pageProps} />
-                            </Layout>
-                        </SnackbarProvider>
-                    </ThemeProvider>
-                </ThemeTogglerContext.Provider>
+                <ProjectCtxProvider>
+                    <ThemeTogglerContext.Provider value={colorMode}>
+                        <ThemeProvider theme={theme}>
+                            <SnackbarProvider maxSnack={5}>
+                                <CssBaseline />
+                                <Layout>
+                                    <Component {...pageProps} />
+                                </Layout>
+                            </SnackbarProvider>
+                        </ThemeProvider>
+                    </ThemeTogglerContext.Provider>
+                </ProjectCtxProvider>
             </AuthProvider>
         </>
     )

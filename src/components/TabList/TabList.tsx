@@ -8,6 +8,8 @@ import {
     Menu,
     MenuItem,
 } from "@mui/material"
+import { TableList } from "@app/api"
+import { useProject } from "@app/hooks/useProject"
 
 type TablistItemContextMenuProps = {
     anchorEL: Element
@@ -44,16 +46,8 @@ const TablistItemContextMenu: React.FC<TablistItemContextMenuProps> = props => {
     )
 }
 
-export type TablistProps = {
-    value: string | null
-    data: Array<string>
-    onChangeHandler: (val: string | null) => void
-    onAddHandler: (name: string) => void
-    contextMenuItems: Array<React.ReactNode> | React.ReactNode
-}
-
 export const ADD_BUTTON_TOKEN = "__ADD__"
-export const Tablist: React.FC<TablistProps> = props => {
+export const Tablist: React.FC = props => {
     const theme = useTheme()
 
     const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
@@ -65,6 +59,8 @@ export const Tablist: React.FC<TablistProps> = props => {
         setAnchorEL(event.currentTarget)
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
+
+    const {} = useProject()
 
     const handleOnChange = (_: unknown, val: string | null) => {
         // BUG: when creating a new proj without tables, the add button's value will be null for unknown reason.
@@ -78,6 +74,59 @@ export const Tablist: React.FC<TablistProps> = props => {
             const name = prompt("Choose new Name")
             if (name) props.onAddHandler(name)
         } else props.onChangeHandler(val)
+    }
+
+    const handleAddTable = useCallback(
+        async (newTableName: string) => {
+            const name = prepareName(newTableName)
+            const isValid = isValidName(name)
+            if (isValid instanceof Error)
+                return enqueueSnackbar(isValid.message, {
+                    variant: "error",
+                })
+            const nameIsTaken = state.project?.tables
+                .map(tbl => tbl.tableName.toLowerCase().trim())
+                .includes(name.toLowerCase().trim())
+            if (nameIsTaken)
+                return enqueueSnackbar(
+                    "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
+                    { variant: "error" }
+                )
+            if (!user)
+                return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
+                    variant: "error",
+                })
+            try {
+                await API?.post.table(props.project.projectId, name)
+                // await reload(name) // TODO: this should reload and switch to the new tab
+                await reload()
+                enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+                    variant: "success",
+                })
+            } catch (error) {
+                console.error(error)
+                enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
+                    variant: "error",
+                })
+            }
+        },
+        [
+            API?.post,
+            enqueueSnackbar,
+            props.project,
+            reload,
+            state.project?.tables,
+            user,
+        ]
+    )
+
+    const handleRenameTable = () => {
+        alert("Not implemented yet")
+        // TODO: implement
+    }
+    const handleDeleteTable = () => {
+        alert("Not implemented yet")
+        // TODO: implement
     }
 
     return (
@@ -109,7 +158,18 @@ export const Tablist: React.FC<TablistProps> = props => {
                     open={anchorEL != null}
                     onClose={handleCloseContextMenu}
                 >
-                    {props.contextMenuItems}
+                    <Box onClick={handleRenameTable} key={0}>
+                        Rename
+                    </Box>
+                    ,
+                    <Box
+                        onClick={handleDeleteTable}
+                        key={1}
+                        sx={{ color: theme.palette.warning.main }}
+                    >
+                        Delete
+                    </Box>
+                    ,
                 </TablistItemContextMenu>
             )}
         </>

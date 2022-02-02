@@ -28,7 +28,7 @@ import { CSSObject, styled, Theme } from "@mui/material/styles"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
 
-const drawerWidth: number = 240
+const drawerWidth = 240
 
 const openedMixin = (theme: Theme): CSSObject => ({
     width: drawerWidth,

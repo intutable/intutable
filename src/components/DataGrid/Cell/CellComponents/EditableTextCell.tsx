@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useState } from "react"
 import { Input } from "./CustomInputField"
 
 type EditableCellProps = {
@@ -30,11 +30,11 @@ export const EditableTextCell: React.FC<EditableCellProps> = props => {
         }
     }
 
-    const handleKeypress = (e: any) => {
-        if (e.key == "Enter") {
-            handleUpdate()
-        }
-    }
+    // const handleKeypress = (e: any) => {
+    //     if (e.key == "Enter") {
+    //         handleUpdate()
+    //     }
+    // }
 
     // TODO: not working
     // useEffect(() => {

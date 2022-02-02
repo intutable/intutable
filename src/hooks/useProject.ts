@@ -1,13 +1,16 @@
-import React, { useCallback, useContext, useEffect, useState } from "react"
-import { useRouter } from "next/router"
-import { makeAPI } from "@api"
-import type { ServerTableData, TableData } from "@api"
-import { useAuth } from "../context/AuthContext"
+import type { ProjectId, ProjectListElement, TableData } from "@api"
+import { TableId, TableList, TableListElement } from "@api"
 import { SerializableTable } from "@app/components/DataGrid/utils"
+import { useCallback, useState } from "react"
+import { useAuth } from "../context/AuthContext"
+
+/**
+ * // TODO: reload automatically whenever an api call is made (perhaps a ctx ie is needed for)
+ */
 
 export type Data = {
-    tables: string[]
-    currentTable: string
+    tables: TableList
+    currentTable: TableListElement | null
     data: TableData | null
 }
 
@@ -26,7 +29,7 @@ const makeError = (error: unknown): Error =>
                   : "Internal Unknown Error: Could not load the Table!"
           )
 
-export const useProject = (project: string, initialData: Data) => {
+export const useProject = (project: ProjectListElement, initialData: Data) => {
     const { user, API } = useAuth()
 
     const [state, setState] = useState<State>({
@@ -36,16 +39,16 @@ export const useProject = (project: string, initialData: Data) => {
     })
 
     const _fetch = useCallback(
-        (table?: string): Promise<Data> =>
+        (table?: TableListElement): Promise<Data> =>
             new Promise((resolve, reject) => {
                 if (!user || !API) return reject()
-                API.get.tablesList(project).then(tablesInProject => {
+                API.get.tablesList(project.projectId).then(tablesInProject => {
                     API.get
-                        .table(table || tablesInProject[0], project)
+                        .table(table?.tableId || tablesInProject[0].tableId)
                         .then(tableData => {
                             const newData: Data = {
                                 tables: tablesInProject,
-                                currentTable: table || tablesInProject[0] || "",
+                                currentTable: table || tablesInProject[0],
                                 data: SerializableTable.deserialize(tableData),
                             }
 
@@ -53,11 +56,11 @@ export const useProject = (project: string, initialData: Data) => {
                         })
                 })
             }),
-        [API, project, user]
+        [API, project.projectId, user]
     )
 
     const reload = useCallback(
-        async (table?: string) => {
+        async (table?: TableListElement) => {
             // TODO: shows the loading skeleton for less than second, this has a bad impact on ux. Redesign loading spinners …
             // setState(prev => ({
             //     project: prev.project,
@@ -66,7 +69,7 @@ export const useProject = (project: string, initialData: Data) => {
             // }))
             try {
                 const data = await _fetch(
-                    table || state.project?.currentTable || ""
+                    table || state.project?.currentTable || undefined
                 )
                 setState({
                     project: data,
@@ -86,11 +89,10 @@ export const useProject = (project: string, initialData: Data) => {
 
     /**
      * Changes the current tables and loads the data.
-     * @param {string} table must be in the list of available project tables.
+     * @param {string} tableId must be in the list of available project tables.
      */
-    const changeTable = async (table: string) => {
-        if (state.project && state.project.tables.includes(table))
-            await reload(table)
+    const changeTable = async (table: TableListElement) => {
+        if (state.project) await reload(table)
     }
 
     return { state, changeTable, reload }

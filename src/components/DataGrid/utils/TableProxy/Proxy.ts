@@ -4,7 +4,7 @@ export {}
 
 export const makeObservableVirtualTable = (
     target: Table,
-    observer: (change: string) => {}
+    observer: (change: string) => void
 ) => {}
 
 /**

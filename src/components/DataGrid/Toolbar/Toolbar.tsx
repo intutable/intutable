@@ -1,7 +1,8 @@
+import Obj from "@app/utils/Obj"
 import { Toolbar as MUIToolbar, Button, useTheme, Divider } from "@mui/material"
 import { Toolbar, ToolbarItem } from "./types"
 
-type TProps = {}
+type TProps = Obj
 /**
  * Toolbar for DataGrid.
  * @param {TProps} props

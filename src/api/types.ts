@@ -2,6 +2,7 @@ import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
 import type { CellType } from "../components/DataGrid/Cell/celltype-management/celltypes"
 import React from "react"
+import { TableListElement } from "."
 
 // TODO: make all props readonly
 
@@ -34,7 +35,7 @@ import React from "react"
 // #################################################################
 
 type Table<COL, ROW> = {
-    tableName: string
+    table: TableListElement
     columns: COL[]
     rows: ROW[]
 }

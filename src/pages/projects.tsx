@@ -1,28 +1,29 @@
+import { ProjectList, ProjectListElement } from "@api"
+import { makeAPI } from "@app/api"
+import { getCurrentUser } from "@app/api/coreinterface"
+import Title from "@components/Head/Title"
+import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
+import { useProjectCtx } from "@context/ProjectContext"
+import AddIcon from "@mui/icons-material/Add"
+import {
+    Box,
+    Card,
+    CardContent,
+    Grid,
+    Menu,
+    MenuItem,
+    Typography,
+    useTheme,
+} from "@mui/material"
+import { isValidName, prepareName } from "@utils/validateName"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import Title from "@components/Head/Title"
-import {
-    Grid,
-    Card,
-    CardContent,
-    Typography,
-    Menu,
-    MenuItem,
-    Box,
-} from "@mui/material"
-import React, { useState } from "react"
 import { useRouter } from "next/dist/client/router"
-import { useTheme } from "@mui/material"
-import AddIcon from "@mui/icons-material/Add"
-import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
-import { useProject } from "@app/hooks/useProject"
-import { makeAPI } from "@app/api"
-import { getCurrentUser } from "@app/api/coreinterface"
-import { useAuth, CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
+import React, { useState } from "react"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -60,7 +61,7 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
 }
 
 type ProjectCardProps = {
-    url?: string
+    project?: ProjectListElement
     onClick?: () => void
 }
 const ProjectCard: React.FC<ProjectCardProps> = props => {
@@ -69,10 +70,13 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const { enqueueSnackbar } = useSnackbar()
 
     const { user, API } = useAuth()
+    const { setProject } = useProjectCtx()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
-    const handleOpenContextMenu = (event: any) => {
+    const handleOpenContextMenu = (
+        event: React.MouseEvent<HTMLDivElement, MouseEvent>
+    ) => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
@@ -96,13 +100,12 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            if (!user)
+            if (!user || !API)
                 return enqueueSnackbar("Bitte melde dich erneut an!", {
                     variant: "error",
                 })
-            const projectName = props.children as string
-            await API?.delete.project(projectName)
-            router.reload() // TODO: reload the project page properly
+            await API.delete.project(props.project!.projectId)
+            router.reload() // TODO: reload the project page properly by updating the state correctly
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
             console.log(error)
@@ -117,9 +120,18 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             <Card
                 onClick={
                     props.onClick ||
-                    (() => props.url && router.push("/project/" + props.url))
+                    (async () => {
+                        if (props.project) {
+                            await setProject(props.project)
+                            router.push("/project/" + props.project.projectId)
+                        }
+                    })
                 }
-                onContextMenu={props.url ? handleOpenContextMenu : undefined}
+                onContextMenu={
+                    props.project?.projectName
+                        ? handleOpenContextMenu
+                        : undefined
+                }
                 sx={{
                     minWidth: 150,
                     minHeight: 150,
@@ -134,7 +146,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             >
                 <CardContent>{props.children}</CardContent>
             </Card>
-            {props.url && anchorEL && (
+            {props.project && anchorEL && (
                 <ProjectContextMenu
                     anchorEL={anchorEL}
                     open={anchorEL != null}
@@ -154,7 +166,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 }
 
 type ProjectsPageProps = {
-    projects: Array<string>
+    projectList: ProjectList
 }
 const ProjectsPage: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -173,21 +185,27 @@ const ProjectsPage: NextPage<
             const isValid = isValidName(name)
             if (isValid instanceof Error)
                 return enqueueSnackbar(isValid.message, { variant: "error" })
-            const nameIsTaken = props.projects
-                .map(proj => proj.toLowerCase())
+            const nameIsTaken = props.projectList
+                .map(proj => proj.projectName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken)
                 return enqueueSnackbar(
                     "Dieser Name wird bereits für eines deiner Projekte verwendet!",
                     { variant: "error" }
                 )
-            if (!user)
+            if (!user || !API)
                 return enqueueSnackbar("Bitte melde dich erneut an!", {
                     variant: "error",
                 })
-            // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
-            await API?.post.project(name)
-            router.push("/project/" + name)
+            await API.post.project(name)
+            /**
+             * // BUG
+             * before update: we were creating a new project by name and redirected to the new project page by the new name in the url
+             * after upfate: since we are using ids now, we need to route by id instead of name BUT we do not get the id back from the POST call.
+             * we could fetch all projects and find id by the name but it is not guaranteed that namens are unique
+             */
+            // router.push("/project/" + name) // therefore this feature is not possible and we need to reload thr page to show the new project card
+            router.reload()
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })
@@ -207,9 +225,11 @@ const ProjectsPage: NextPage<
                 Deine Projekte
             </Typography>
             <Grid container spacing={2}>
-                {props.projects.map((proj, i) => (
+                {props.projectList.map((proj, i) => (
                     <Grid item key={i}>
-                        <ProjectCard url={proj}>{proj}</ProjectCard>
+                        <ProjectCard project={proj}>
+                            {proj.projectName}
+                        </ProjectCard>
                     </Grid>
                 ))}
                 <Grid item>
@@ -225,7 +245,7 @@ const ProjectsPage: NextPage<
 export const getServerSideProps: GetServerSideProps<
     ProjectsPageProps
 > = async context => {
-    const { params, req } = context
+    const { req } = context
 
     const authCookie = req.cookies[AUTH_COOKIE_KEY]
 
@@ -249,7 +269,7 @@ export const getServerSideProps: GetServerSideProps<
 
     return {
         props: {
-            projects: serverRequest,
+            projectList: serverRequest,
         },
     }
 }

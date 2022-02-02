@@ -15,7 +15,9 @@ export type ToolbarProps = {
  * Functional Component w/ obligatory props.
  * Provides dot notation for `Item` Component
  */
-export type Toolbar<Props extends Obj = {}> = React.FC<Props & ToolbarProps> & {
+export type Toolbar<Props extends Obj = Obj> = React.FC<
+    Props & ToolbarProps
+> & {
     Item: ToolbarItem
 } // FC + obligatory props + optional props via generic type + dot notation components
 
@@ -29,7 +31,7 @@ export type FlexPosition = "start" | "end"
  * Used for predefined toolbar items only.
  * This omits the obligatory props in order to achieve more flexibility for predefined items.
  */
-export type PredefinedToolbarItem<Props extends Obj = {}> = React.FC<Props>
+export type PredefinedToolbarItem<Props extends Obj = Obj> = React.FC<Props>
 
 /**
  * Obligatory Props each component of type Toolbar Item must have
@@ -49,6 +51,6 @@ export type ToolbarItemProps = {
  *
  * Note that this is only used on `Toolbar.Item` and should not be anywhere else.
  */
-export type ToolbarItem<Props extends Obj = {}> = React.FC<
+export type ToolbarItem<Props extends Obj = Obj> = React.FC<
     Props & ToolbarItemProps
 > // FC + obligatory props + optional props via generic type

@@ -1,9 +1,9 @@
-import React from "react"
-import NextLink from "next/link"
-import type { LinkProps } from "next/link"
-
-import { Link as MUILink } from "@mui/material"
 import type { LinkTypeMap } from "@mui/material"
+import { Link as MUILink } from "@mui/material"
+import type { LinkProps } from "next/link"
+import NextLink from "next/link"
+import React from "react"
+import Obj from "@utils/Obj"
 
 export type CombinedLinkProps = {
     href: string
@@ -20,7 +20,7 @@ export type CombinedLinkProps = {
     /**
      * these props will be forwarded to the mui Link Component
      */
-    muiLinkProps?: LinkTypeMap<{}, "a">["props"]
+    muiLinkProps?: LinkTypeMap<Obj, "a">["props"]
 }
 
 /**

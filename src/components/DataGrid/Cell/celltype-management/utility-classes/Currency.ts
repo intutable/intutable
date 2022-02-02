@@ -53,7 +53,7 @@ export class Currency {
     }
 
     // TODO: add round func
-    toFormattedString(decimalPlaces: number = 0): string {
+    toFormattedString(decimalPlaces = 0): string {
         return `${this._value} ${CurrencyFormatSymbolMap[this._format]}`
     }
 

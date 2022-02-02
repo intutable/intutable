@@ -1,7 +1,7 @@
 import type { PredefinedToolbarItem } from "../types"
 import { Button, useTheme } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
-import { useState } from "react"
+import React, { useState } from "react"
 import { AddColumnModal } from "../../Column/AddColumn/AddColumnModal"
 
 type AddColProps = {
@@ -13,7 +13,9 @@ type AddColProps = {
  */
 const AddCol: PredefinedToolbarItem<AddColProps> = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const handleOpenModal = (event: any) => {
+    const handleOpenModal = (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    ) => {
         setAnchorEL(event.currentTarget)
     }
     const handleCloseModal = () => setAnchorEL(null)

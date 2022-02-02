@@ -1,12 +1,11 @@
-import React, { useCallback, useContext, useEffect, useState } from "react"
-import { useRouter } from "next/router"
 import { makeAPI } from "@api"
-
 import {
     coreLogin,
     coreLogout,
     getCurrentUser,
 } from "@app/api/coreinterface/login"
+import { useRouter } from "next/router"
+import React, { useEffect, useState } from "react"
 
 export const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 

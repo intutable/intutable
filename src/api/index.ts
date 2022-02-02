@@ -9,12 +9,13 @@ import {
     getTablesFromProject,
     getTableData,
     createTableInProject,
-    removeTableFromProject,
+    removeTable,
     changeTableName,
 } from "./table"
 export * from "./types"
 export * from "./utils"
 export * from "./coreinterface"
+export * from "./API_Types"
 
 export enum CHANNEL {
     PROJECT_MANAGEMENT = "project-management",
@@ -38,6 +39,6 @@ export const makeAPI = (user: CurrentUser) =>
         },
         delete: {
             project: removeProject.bind(null, user),
-            table: removeTableFromProject.bind(null, user),
+            table: removeTable.bind(null, user),
         },
     } as const)

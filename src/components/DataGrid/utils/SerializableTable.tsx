@@ -94,7 +94,7 @@ const deserialize = (table: ServerTableData): TableData => {
         editorOptions: {
             editOnClick: true,
         },
-        headerRenderer: (props: HeaderRendererProps<any>) => {
+        headerRenderer: (props: HeaderRendererProps<Row>) => {
             return (
                 <ColumnHeader
                     label={props.column.name as string}
@@ -128,7 +128,7 @@ const deserialize = (table: ServerTableData): TableData => {
     columns.unshift(selectCol)
 
     return {
-        tableName: table.tableName,
+        table: ,
         columns,
         rows,
     }

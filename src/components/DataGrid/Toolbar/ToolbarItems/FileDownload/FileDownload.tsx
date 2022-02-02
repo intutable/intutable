@@ -42,7 +42,7 @@ const FileDownloadContextMenu: React.FC<
     )
 }
 
-const triggerDownload = (content: any, filename: string) => {}
+const triggerDownload = (content: unknown, filename: string) => {}
 
 export type FileDownloadProps = {
     getData: () => Array<unknown>
