@@ -1,20 +1,175 @@
 import type { NextPage } from "next"
-import { useRouter } from "next/router"
-
+import Router, { useRouter } from "next/router"
 import Title from "@components/Head/Title"
-import LoginFormModal from "@components/Login/LoginFormModal"
+import LoginFormModal from "@app/components/LoginOutRegister/[DEPRECATED]_LoginFormModal"
+import { Paper } from "@components/LoginOutRegister/Paper"
+import { Box, TextField, Typography } from "@mui/material"
+import React, { useEffect, useState } from "react"
+import { useAuth } from "@app/context/AuthContext"
+import { useSnackbar } from "notistack"
+import { SxProps, Theme } from "@mui/system"
 
-const Login: NextPage = () => {
+const validateUsername = (username: string): true | Error =>
+    username.length > 6
+        ? true
+        : new Error("Der Benutzername muss mindestens 7 Zeichen lang sein!")
+const validatePassword = (password: string): true | Error =>
+    password.length > 2
+        ? true
+        : new Error("Das Passwort muss mindestens 3 Zeichen lang sein!")
+
+type FormData = {
+    username: string
+    password: string
+}
+
+// TODO: whenever an error is set, that error box moves other components. Set an absolute position for the error boxes by `errorStyle`
+const textFieldStyle: SxProps<Theme> = {
+    my: 2,
+}
+
+const Login: NextPage = props => {
     const router = useRouter()
     const errorMessage =
-        typeof router.query.error === "string" ? router.query.error : undefined
+        typeof router.query.error === "string"
+            ? new Error(router.query.error)
+            : Array.isArray(router.query.error)
+            ? new Error(router.query.error.toString())
+            : null
+    const { enqueueSnackbar } = useSnackbar()
+    const { user, login } = useAuth()
+
+    const [loading, setLoading] = useState<boolean>(false)
+    const [usernameValid, setUsernameValid] = useState<Error | true | null>(
+        null
+    )
+    const [passwordValid, setPasswordValid] = useState<Error | true | null>(
+        null
+    )
+    const [form, setForm] = useState<FormData>({
+        username: "",
+        password: "",
+    })
+    // TODO: implement error handling correctly
+    const [error, setError] = useState<Error | null>(errorMessage)
+
+    const handleUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        setForm(prev => ({ username: value, password: prev.password }))
+        if (value.length === 0) return setUsernameValid(null)
+        const isValid = validateUsername(value)
+        setUsernameValid(isValid)
+    }
+    const handlePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        setForm(prev => ({ username: prev.username, password: value }))
+        if (value.length === 0) return setPasswordValid(null)
+        const isValid = validatePassword(value)
+        setPasswordValid(isValid)
+    }
+
+    useEffect(() => {
+        window.addEventListener("keypress", e => {
+            if (e.key === "Enter") handleEnter()
+        })
+
+        return () => window.removeEventListener("keypress", handleEnter)
+    }, [])
+
+    useEffect(() => {
+        if (error) enqueueSnackbar(error.message, { variant: "error" })
+    }, [error])
+
+    const handleEnter = () => {
+        // TODO: enter does not work
+        console.log(usernameValid, passwordValid, error)
+        if (usernameValid === true && passwordValid === true && error == null)
+            handleLogin()
+        else
+            enqueueSnackbar(
+                "Die Anmeldedaten entsprechen nicht den Anforderungen!",
+                { variant: "warning" }
+            )
+    }
+
+    const handleLogin = async () => {
+        try {
+            setLoading(true)
+            await login(form.username, form.password)
+            setLoading(false) // TODO: does not update when `login` throws, ask @LemongrabThree how to handle error responses correctly
+            router.push("/")
+        } catch (error) {
+            enqueueSnackbar("", { variant: "error" })
+        }
+    }
+
+    // TODO: test if redirect works properly when user is already logged in
+    if (user) {
+        router.back()
+        return null
+    }
+
     return (
         <>
-            <Title title="Einloggen" />
-            <LoginFormModal
-                successRedirect="/projects"
-                errorMessage={errorMessage}
-            />
+            <Title title="Anmelden" />
+            <Box
+                sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Paper
+                    mode="login"
+                    handleAction={handleLogin}
+                    loading={loading}
+                    disabled={
+                        usernameValid instanceof Error ||
+                        usernameValid == null ||
+                        passwordValid instanceof Error ||
+                        passwordValid == null
+                    }
+                >
+                    <TextField
+                        autoFocus
+                        value={form.username}
+                        onChange={handleUsername}
+                        label="E-Mail"
+                        placeholder="yourid@uni-heidelberg.de"
+                        type="email"
+                        required
+                        error={usernameValid instanceof Error}
+                        helperText={
+                            usernameValid instanceof Error
+                                ? usernameValid.message
+                                : undefined
+                        }
+                        fullWidth
+                        sx={textFieldStyle}
+                        variant="standard"
+                    />
+                    <TextField
+                        value={form.password}
+                        onChange={handlePassword}
+                        label="Passwort"
+                        placeholder="pw1234"
+                        type="password"
+                        required
+                        error={passwordValid instanceof Error}
+                        helperText={
+                            passwordValid instanceof Error
+                                ? passwordValid.message
+                                : undefined
+                        }
+                        fullWidth
+                        sx={textFieldStyle}
+                        variant="standard"
+                    />
+                    {error && <Typography>{error.message}</Typography>}
+                </Paper>
+            </Box>
         </>
     )
 }

@@ -1,3 +1,7 @@
+/**
+ * @deprecated file
+ */
+
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import {
@@ -78,7 +82,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = props => {
     const [attemptError, setAttemptError] = useState<string>("")
     useEffect(() => {
         if (props.errorMessage) setAttemptError(props.errorMessage)
-    })
+    }, [props.errorMessage])
     const router = useRouter()
 
     const { login } = useAuth()

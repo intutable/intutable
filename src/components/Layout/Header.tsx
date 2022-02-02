@@ -1,39 +1,32 @@
-import React, { useState } from "react"
-import { useRouter } from "next/router"
-
+import { Avatar } from "@app/components/LoginOutRegister"
+import Link from "@components/Link/Link"
+import { useAuth } from "@context/AuthContext"
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import HomeIcon from "@mui/icons-material/Home"
+import HomeIconOutlined from "@mui/icons-material/HomeOutlined"
+import MenuIcon from "@mui/icons-material/Menu"
+import SettingsIcon from "@mui/icons-material/Settings"
+import SettingsIconOutlined from "@mui/icons-material/SettingsOutlined"
+import SupportAgentIcon from "@mui/icons-material/SupportAgent"
+import SupportAgentIconOutlined from "@mui/icons-material/SupportAgentOutlined"
+import WorkspacesIcon from "@mui/icons-material/Workspaces"
+import WorkspacesIconOutlined from "@mui/icons-material/WorkspacesOutlined"
 import {
     AppBar,
-    Toolbar,
     Box,
-    IconButton,
-    Typography,
-    Button,
-    Drawer as MuiDrawer,
-    useTheme,
     Divider,
-    List,
+    Drawer as MuiDrawer,
+    IconButton,
     ListItem,
     ListItemIcon,
     ListItemText,
-    Avatar,
+    Toolbar,
+    Typography,
+    useTheme,
 } from "@mui/material"
-import type { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar"
-import { styled, CSSObject, Theme } from "@mui/material/styles"
-import MenuIcon from "@mui/icons-material/Menu"
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import WorkspacesIcon from "@mui/icons-material/Workspaces"
-import WorkspacesIconOutlined from "@mui/icons-material/WorkspacesOutlined"
-import SettingsIcon from "@mui/icons-material/Settings"
-import SettingsIconOutlined from "@mui/icons-material/SettingsOutlined"
-import HomeIcon from "@mui/icons-material/Home"
-import HomeIconOutlined from "@mui/icons-material/HomeOutlined"
-import SupportAgentIcon from "@mui/icons-material/SupportAgent"
-import SupportAgentIconOutlined from "@mui/icons-material/SupportAgentOutlined"
-import Link from "@components/Link/Link"
-import LoginButton from "@components/Login/LoginButton"
-import LogoutButton from "@components/Login/LogoutButton"
-import { useAuth } from "@context/AuthContext"
-import PersonIcon from "@mui/icons-material/Person"
+import { CSSObject, styled, Theme } from "@mui/material/styles"
+import { useRouter } from "next/router"
+import React, { useState } from "react"
 
 const drawerWidth: number = 240
 
@@ -173,25 +166,7 @@ const Header = () => {
                             </Typography>
                         </Link>
                     </Box>
-                    {user ? (
-                        <>
-                            <Avatar
-                                sx={{
-                                    cursor: "pointer",
-                                    mr: 1,
-                                    bgcolor: theme.palette.grey[400],
-                                }}
-                            >
-                                <PersonIcon />
-                            </Avatar>
-                            <span>{user.username}</span>
-                            <LogoutButton />
-                        </>
-                    ) : (
-                        <>
-                            <LoginButton />
-                        </>
-                    )}
+                    <Avatar />
                 </Toolbar>
             </AppBar>
 
