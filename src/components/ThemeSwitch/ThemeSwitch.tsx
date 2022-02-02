@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { ReactHTML, useEffect, useState } from "react"
 import {
     Typography,
     Button,
@@ -8,7 +8,7 @@ import {
     PaletteMode,
     styled,
 } from "@mui/material"
-import { useThemeToggler } from "@app/pages/_app"
+import { useThemeToggler, THEME_MODE_STORAGE_KEY } from "@app/pages/_app"
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     width: 62,
@@ -60,10 +60,20 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 
 const ThemeSwitch: React.FC = props => {
     const { toggleColorMode, getTheme } = useThemeToggler()
+
+    const handleSwitch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (typeof window !== "undefined")
+            localStorage.setItem(
+                THEME_MODE_STORAGE_KEY,
+                e.target.checked ? "dark" : "light"
+            )
+        toggleColorMode()
+    }
+
     return (
         <MaterialUISwitch
             checked={getTheme() === "dark"}
-            onChange={toggleColorMode}
+            onChange={handleSwitch}
         />
     )
 }

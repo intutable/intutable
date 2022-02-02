@@ -17,6 +17,7 @@ const ThemeTogglerContext = React.createContext<ThemeTogglerContextProps>(
     undefined!
 )
 export const useThemeToggler = () => React.useContext(ThemeTogglerContext)
+export const THEME_MODE_STORAGE_KEY = "__USER_THEME_PREFERENCE__"
 
 const MyApp = (props: AppProps) => {
     const { Component, pageProps } = props
@@ -32,7 +33,12 @@ const MyApp = (props: AppProps) => {
     )
 
     useEffect(() => {
-        setThemeMode(systemPreferredThemeMode)
+        const userPreferredThemeMode = localStorage.getItem(
+            THEME_MODE_STORAGE_KEY
+        )
+        setThemeMode(
+            (userPreferredThemeMode as PaletteMode) || systemPreferredThemeMode
+        )
     }, [systemPreferredThemeMode])
 
     const colorMode = useMemo(
