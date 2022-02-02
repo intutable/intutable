@@ -1,6 +1,7 @@
 const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 import { coreRequest } from "./json"
 import { CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
+import { CHANNEL } from ".."
 
 /**
  * Log in to core via a HTTP form request.
@@ -47,22 +48,30 @@ export async function coreLogout(): Promise<void> {
 /**
  * Check if logged into core by using the session cookie.
  */
-export async function getCurrentUser(
+export const getCurrentUser = async (
     authCookie?: string
-): Promise<CurrentUser | null> {
-    return coreRequest("user-authentication", "getCurrentUser", {}, authCookie)
-        .then(async ({ username, id }) =>
-            Promise.resolve({
-                username: <string>username,
-                id: <number>id,
-                authCookie,
-            })
-        )
-        .catch(err =>
-            [301, 302].includes(err.status)
+): Promise<CurrentUser | null> => {
+    try {
+        const user = (await coreRequest(
+            CHANNEL.USER_AUTHENTICATION,
+            getCurrentUser.name,
+            {},
+            authCookie
+        )) as Omit<CurrentUser, "authCookie">
+
+        return Promise.resolve({
+            ...user,
+            authCookie,
+        })
+    } catch (err) {
+        if (typeof err === "object" && err != null && "status" in err) {
+            const { status } = err as { status: number }
+            return [301, 302].includes(status)
                 ? Promise.resolve(null)
-                : Promise.reject(err)
-        )
+                : Promise.reject(err as unknown)
+        }
+        return Promise.reject(new Error("Internal Error"))
+    }
 }
 
 // TEMP

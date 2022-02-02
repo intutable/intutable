@@ -19,6 +19,7 @@ export * from "./API_Types"
 
 export enum CHANNEL {
     PROJECT_MANAGEMENT = "project-management",
+    USER_AUTHENTICATION = "user-authentication",
 }
 
 // TODO: integrate into AuthContext and export from this ctx
