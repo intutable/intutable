@@ -99,7 +99,17 @@ const Login: NextPage = props => {
             setLoading(false) // TODO: does not update when `login` throws, ask @LemongrabThree how to handle error responses correctly
             router.push("/")
         } catch (error) {
-            enqueueSnackbar("", { variant: "error" })
+            setLoading(false)
+            if (error instanceof Error || typeof error === "string") {
+                const _error = error instanceof Error ? error : new Error(error)
+                setError(_error)
+                enqueueSnackbar(_error.message, { variant: "error" })
+            } else {
+                console.error(error)
+                enqueueSnackbar("Ein unbekannter Fehler ist aufgetreten", {
+                    variant: "error",
+                })
+            }
         }
     }
 
@@ -167,7 +177,11 @@ const Login: NextPage = props => {
                         sx={textFieldStyle}
                         variant="standard"
                     />
-                    {error && <Typography>{error.message}</Typography>}
+                    {error && (
+                        <Typography sx={{ color: "red" }}>
+                            {error.message}
+                        </Typography>
+                    )}
                 </Paper>
             </Box>
         </>
