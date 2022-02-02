@@ -5,7 +5,7 @@ import type { LinkProps } from "next/link"
 import { Link as MUILink } from "@mui/material"
 import type { LinkTypeMap } from "@mui/material"
 
-type CombinedLinkProps = {
+export type CombinedLinkProps = {
     href: string
     /**
      * If true, the <Link /> from mui will be wrapped by the <Link /> from Next in order
