@@ -13,6 +13,13 @@ export const COLOR_SCHEME = {}
  */
 export const lightTheme = createTheme({
     colorScheme: { ...COLOR_SCHEME },
+    palette: {
+        text: {
+            primary: "#333",
+            secondary: "#555",
+            // disabled: ""
+        },
+    },
     typography: {
         fontFamily: ["Roboto", "sans-serif"].join(","),
     },
