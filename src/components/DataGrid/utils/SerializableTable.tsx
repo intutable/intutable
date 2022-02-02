@@ -49,7 +49,7 @@ const serialize = (table: TableData): ServerTableData => {
     columns.shift
 
     return {
-        tableName: table.tableName,
+        table: table.table,
         columns,
         rows,
     }
@@ -128,7 +128,7 @@ const deserialize = (table: ServerTableData): TableData => {
     columns.unshift(selectCol)
 
     return {
-        table: ,
+        table: table.table,
         columns,
         rows,
     }
