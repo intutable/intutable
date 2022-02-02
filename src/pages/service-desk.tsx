@@ -1,6 +1,17 @@
 import type { NextPage } from "next"
 import Title from "@components/Head/Title"
-import { Divider, Typography, Box, useTheme, IconButton } from "@mui/material"
+import {
+    Divider,
+    Typography,
+    Box,
+    useTheme,
+    IconButton,
+    List,
+    ListItem,
+    ListItemAvatar,
+    Avatar,
+    ListItemText,
+} from "@mui/material"
 import Link from "@components/Link/Link"
 
 const ServiceDesk: NextPage = () => {
@@ -62,18 +73,20 @@ const ServiceDesk: NextPage = () => {
                 Versionsverlauf
             </Typography>
             <Divider />
-            <ul>
-                <li>
-                    <Typography
-                        sx={{
-                            color: theme.palette.text.secondary,
-                        }}
-                    >
-                        <Link href="/versionhistory/000">0.0.0</Link> vom
-                        xx.xx.2022
-                    </Typography>
-                </li>
-            </ul>
+            <List
+                sx={{
+                    width: "100%",
+                    maxWidth: 360,
+                    bgcolor: "background.paper",
+                }}
+            >
+                <ListItem>
+                    <ListItemAvatar>
+                        <Avatar>v1</Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary="Alpha" secondary="Feb 0, 2022" />
+                </ListItem>
+            </List>
         </>
     )
 }
