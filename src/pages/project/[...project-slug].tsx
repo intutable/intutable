@@ -6,7 +6,6 @@ import {
     SerializedTableData,
 } from "@api"
 import { TableSwitcher } from "@app/components/TableSwitcher/TableSwitcher"
-import { useProject } from "@app/hooks/useProject"
 import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
@@ -19,11 +18,13 @@ import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
+import DataGrid from "react-data-grid"
+import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
+import { rowKeyGetter } from "@components/DataGrid/utils"
+import { useProjectCtx } from "@app/context/ProjectContext"
 
 type ProjectSlugPageProps = {
     project: PM.Project
-    tables: PM.Table.List
-    table: { data: SerializedTableData; table: PM.Table } | null
 }
 
 const ProjectSlugPage: NextPage<
@@ -34,14 +35,7 @@ const ProjectSlugPage: NextPage<
 
     // #################### states ####################
 
-    const { user, API } = useAuth()
-    const { state, changeTable, reload } = useProject(props.project, {
-        tables: props.tables,
-        currentTable: props.table?.table || null,
-        data: props.table?.data
-            ? SerializableTable.deserialize(props.table.data)
-            : null,
-    })
+    const { state, loading, error, setProject } = useProjectCtx()
     // const proxy: TableData = {}
     // const [table, _setTable] = useState<TableData>(proxy)
     // const setTable = (table: TableData) => {
@@ -60,24 +54,30 @@ const ProjectSlugPage: NextPage<
 
     // #################### life cycle methods ####################
 
+    // useEffect(() => {
+    //     if (state == null) {
+    //         setProject(props.project)
+    //     }
+    // }, [state])
+
     useEffect(() => {
-        if (state.error instanceof Error) {
-            console.log(state.error)
+        if (error instanceof Error) {
+            console.log(error)
             enqueueSnackbar("Die Tabelle konnte nicht geladen werden!", {
                 variant: "error",
             })
         }
-    }, [state.error])
+    }, [error])
 
     // #################### component ####################
 
     const ErrorComponent =
-        state.error instanceof Error ? (
+        error instanceof Error ? (
             <Typography>
-                Error: Could not load the Table (reason: {state.error.message}
+                Error: Could not load the Table (reason: {error.message}
                 )!
             </Typography>
-        ) : state.project == null ? (
+        ) : state?.project == null ? (
             <Typography>
                 Error: Could not load the Table (reason: State Management
                 Issue)!
@@ -91,7 +91,7 @@ const ProjectSlugPage: NextPage<
                 {props.project.projectName}
             </Typography>
 
-            {ErrorComponent || state.loading ? (
+            {ErrorComponent || loading ? (
                 <LoadingSkeleton />
             ) : (
                 <>
@@ -123,16 +123,16 @@ const ProjectSlugPage: NextPage<
                             </Toolbar.Item>
                             <TItem.FileDownload getData={() => []} />
                         </Toolbar>
-                        {/* <DataGrid
+                        <DataGrid
                             className={"rdg-" + theme.palette.mode}
                             rows={
-                                state.project!.data
-                                    ? state.project!.data.rows
+                                state?.currentTable
+                                    ? state.currentTable.rows
                                     : []
                             }
                             columns={
-                                state.project!.data
-                                    ? state.project!.data.columns
+                                state?.currentTable
+                                    ? state.currentTable.columns
                                     : [{ key: "id", name: "ID" }]
                             }
                             noRowsFallback={<NoRowsRenderer />}
@@ -149,7 +149,7 @@ const ProjectSlugPage: NextPage<
                             // onFill={handleFill}
                             // selectedRows={selectedRows}
                             // onSelectedRowsChange={setSelectedRows}
-                        /> */}
+                        />
                         <Toolbar position="bottom">
                             <TItem.Connection status={"connected"} />
                             <Toolbar.Item onClickHandler={() => {}}>
@@ -194,31 +194,15 @@ export const getServerSideProps: GetServerSideProps<
                 ? _projectId[0]
                 : _projectId
             const projectId: PM.Project.ID = Number.parseInt(projectIdStr)
-            const tableList = await API.get.tablesList(projectId)
 
             const project = (await API.get.projectsList()).find(
                 proj => proj.projectId === projectId
             )
             if (project == null) return { notFound: true }
 
-            let dataOfFirstTable
-            if (tableList.length > 0)
-                dataOfFirstTable = await API.get.table(tableList[0].tableId)
-            else dataOfFirstTable = null
-
-            const error = tableList == null
-            if (error) return { notFound: true }
-
             return {
                 props: {
                     project: project,
-                    tables: tableList,
-                    table: dataOfFirstTable
-                        ? {
-                              data: dataOfFirstTable,
-                              table: tableList[0],
-                          }
-                        : null,
                 },
             }
         }

@@ -16,7 +16,7 @@ export const ADD_BUTTON_TOKEN = "___ADD_TABLE___"
 export const TableSwitcher: React.FC = () => {
     const theme = useTheme()
 
-    const { state, loading, setTable } = useProjectCtx()
+    const { state, loading, setTable, setProject } = useProjectCtx()
     const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
 
     useEffect(() => {
@@ -25,39 +25,38 @@ export const TableSwitcher: React.FC = () => {
             if (firstTableInList == null) return
             setTable(firstTableInList)
         }
-    }, [state?.currentTable])
+    }, [setTable, state?.currentTable, state?.tableList])
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) =>
         setAnchorEL(e.currentTarget)
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    const handleSetTable = (_: unknown, val: string | null) => {
+    const handleSetTable = async (_: unknown, val: string | null | number) => {
         // BUG: when creating a new proj without tables, the add button's value will be null for unknown reason.
         // because of that 'null' is catched and interpreteted as 'ADD_BUTTON_NAME'
         // TODO: fix this
         // NOTE: this causes a bug, where clicking on a already selected toggle button will pass the below if and prompt for adding a new entitiy
-        // if (
-        //     (typeof val === "string" && val === ADD_BUTTON_TOKEN) ||
-        //     val === null
-        // ) {
-        //     const name = prompt("Choose new Name")
-        //     if (name) props.onAddHandler(name)
-        // } else props.onChangeHandler(val)
+        if (val === ADD_BUTTON_TOKEN || val == null) {
+            await handleCreateTable()
+        } else {
+            const tableById = state?.tableList.find(
+                tbl => tbl.tableId === (val as number)
+            )
+            console.log(tableById)
+            await setTable(tableById!)
+        }
     }
 
-    const handleRenameTable = () => {}
-    const handleDeleteTable = () => {}
-    const handleCreateTable = () => {}
+    const handleRenameTable = async () => {}
+    const handleDeleteTable = async () => {}
+    const handleCreateTable = async () => {}
 
     if (loading || state == null) return null
 
     return (
         <>
             <ToggleButtonGroup
-                value={
-                    state.currentTable?.table.tableId.toString() ||
-                    ADD_BUTTON_TOKEN
-                }
+                value={state.currentTable?.table.tableId || ADD_BUTTON_TOKEN}
                 exclusive
                 onChange={handleSetTable}
                 color="primary"

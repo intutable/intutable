@@ -49,9 +49,8 @@ export const getTableData = async (
 
     // rename props: parse backend col to `ServerColumn`
     const columns: SerializedColumn[] = coreResponse.columns.map(col => {
-        console.log(col.type)
         return {
-            key: col._id.toString(),
+            key: col.columnName,
             name: col.columnName,
             editable: Boolean(col.editable),
             editor: col.type as CellType,

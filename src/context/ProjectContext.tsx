@@ -128,10 +128,11 @@ export const ProjectCtxProvider: React.FC = props => {
             }
             const selectedTable = table || tableList[0]
             const tableData = await API.get.table(selectedTable.tableId)
+            console.info(tableData)
             setState({
                 project: project,
                 tableList: tableList,
-                currentTable: SerializableTable.deserialize(tableData),
+                currentTable: SerializableTable.deserialize(tableData), // BUG: does not set the table prop
             })
         } finally {
             setLoading(false)
@@ -184,7 +185,7 @@ export const ProjectCtxProvider: React.FC = props => {
         if (user == null || API == null)
             throw new Error("Could not access the API!")
         if (table.tableId === state?.currentTable?.table.tableId) return
-        if (state?.tableList.find(tbl => tbl.tableId === table.tableId))
+        if (state?.tableList.find(tbl => tbl.tableId === table.tableId) == null)
             throw new RangeError(
                 `${ProjectContext.displayName}: Tried to switch to table with id '${table.tableId}' but did not found it!`
             )

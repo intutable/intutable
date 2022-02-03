@@ -33,7 +33,6 @@ type ProjectContextMenuProps = {
 }
 const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
     const theme = useTheme()
-
     return (
         <Menu
             elevation={0}
@@ -71,7 +70,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const { enqueueSnackbar } = useSnackbar()
 
     const { user, API } = useAuth()
-    const { renameProject, deleteProject, setProject } = useProjectCtx()
+    const { state, renameProject, deleteProject, setProject } = useProjectCtx()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
@@ -124,20 +123,21 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
         }
     }
 
-    useEffect(() => {}, [])
+    useEffect(() => {
+        console.log(state)
+    }, [state])
+
+    const handleOnClick = async () => {
+        if (props.project) {
+            await setProject(props.project)
+            router.push("/project/" + props.project.projectId)
+        }
+    }
 
     return (
         <>
             <Card
-                onClick={
-                    props.onClick ||
-                    (async () => {
-                        if (props.project) {
-                            await setProject(props.project)
-                            router.push("/project/" + props.project.projectId)
-                        }
-                    })
-                }
+                onClick={props.onClick || handleOnClick}
                 onContextMenu={
                     props.project?.projectName
                         ? handleOpenContextMenu
