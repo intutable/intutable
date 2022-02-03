@@ -91,7 +91,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             )
             if (!newName) return
             await renameProject(props.project, newName)
-            router.reload()
+            router.replace(router.asPath)
             enqueueSnackbar("Das Projekt wurde umbenannt.", {
                 variant: "success",
             })
@@ -113,7 +113,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             )
             if (!confirmed) return
             await deleteProject(props.project)
-            router.reload() // TODO: reload the project page properly by updating the state correctly
+            router.replace(router.asPath)
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
             console.log(error)
@@ -122,10 +122,6 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             })
         }
     }
-
-    useEffect(() => {
-        console.log(state)
-    }, [state])
 
     const handleOnClick = async () => {
         if (props.project) {
@@ -212,7 +208,7 @@ const ProjectsPage: NextPage<
              * we could fetch all projects and find id by the name but it is not guaranteed that namens are unique
              */
             // router.push("/project/" + name) // therefore this feature is not possible and we need to reload thr page to show the new project card
-            router.reload()
+            router.replace(router.asPath)
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })

@@ -52,6 +52,13 @@ const ProjectSlugPage: NextPage<
         // TODO: update rows
     }
 
+    useEffect(() => {
+        // BUG: hacky workaround to preserve state on page reload
+        if (state == null && loading === false) {
+            setProject(props.project)
+        }
+    }, [loading, props.project, setProject, state])
+
     // #################### life cycle methods ####################
 
     // useEffect(() => {

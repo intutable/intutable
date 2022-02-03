@@ -70,6 +70,7 @@ export const createTableInProject = async (
     projectId: PM.Project.ID,
     tableName: PM.Table.Name
 ) => {
+    console.info(tableName)
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         createTableInProject.name,

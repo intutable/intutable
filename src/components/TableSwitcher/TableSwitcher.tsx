@@ -10,14 +10,20 @@ import {
 } from "@mui/material"
 import { ProjectManagement as PM } from "@api"
 import { useProjectCtx } from "@context/ProjectContext"
+import { isValidName, prepareName } from "@app/utils/validateName"
+import { useRouter } from "next/router"
+import { useSnackbar } from "notistack"
 
 export const ADD_BUTTON_TOKEN = "___ADD_TABLE___"
 
 export const TableSwitcher: React.FC = () => {
     const theme = useTheme()
+    const router = useRouter()
 
-    const { state, loading, setTable, setProject } = useProjectCtx()
-    const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
+    const { state, loading, setTable, createTable, deleteTable } =
+        useProjectCtx()
+    const { enqueueSnackbar } = useSnackbar()
+    const [anchorEL, setAnchorEL] = useState<HTMLButtonElement | null>(null)
 
     useEffect(() => {
         if (state?.currentTable == null) {
@@ -27,8 +33,10 @@ export const TableSwitcher: React.FC = () => {
         }
     }, [setTable, state?.currentTable, state?.tableList])
 
-    const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) =>
+    const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
         setAnchorEL(e.currentTarget)
+    }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleSetTable = async (_: unknown, val: string | null | number) => {
@@ -42,14 +50,70 @@ export const TableSwitcher: React.FC = () => {
             const tableById = state?.tableList.find(
                 tbl => tbl.tableId === (val as number)
             )
-            console.log(tableById)
             await setTable(tableById!)
         }
     }
 
     const handleRenameTable = async () => {}
-    const handleDeleteTable = async () => {}
-    const handleCreateTable = async () => {}
+    const handleDeleteTable = async () => {
+        try {
+            if (anchorEL == null) return
+            const tableId = Number.parseInt(anchorEL.value) as PM.Table.ID
+            if (tableId == null) return
+            const table = state?.tableList.find(tbl => tbl.tableId === tableId)
+            if (table == null) return
+            handleCloseContextMenu()
+            const confirmed = confirm(
+                "Möchtest du deine Tabelle wirklich löschen?"
+            )
+            if (!confirmed) return
+            await deleteTable(table)
+            router.replace(router.asPath)
+            enqueueSnackbar("Tabelle wurde gelöscht.", {
+                variant: "success",
+            })
+        } catch (error) {
+            console.log(error)
+            enqueueSnackbar("Tabelle konnte nicht gelöscht werden!", {
+                variant: "error",
+            })
+        }
+    }
+
+    const handleCreateTable = async (): Promise<void> => {
+        try {
+            const namePrompt = prompt("Benenne Dein neue Tabelle!")
+            if (!namePrompt) return
+            const name = prepareName(namePrompt)
+            // const isValid = isValidName(name)
+            // if (isValid instanceof Error) {
+            //     enqueueSnackbar(isValid.message, {
+            //         variant: "error",
+            //     })
+            //     return
+            // }
+            // const nameIsTaken = state?.tableList
+            //     .map(tbl => tbl.tableName.toLowerCase())
+            //     .includes(name.toLowerCase())
+            // if (nameIsTaken) {
+            //     enqueueSnackbar(
+            //         "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
+            //         { variant: "error" }
+            //     )
+            //     return
+            // }
+            await createTable(name)
+            router.replace(router.asPath)
+            enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
+                variant: "success",
+            })
+        } catch (error) {
+            console.log(error)
+            enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
+                variant: "error",
+            })
+        }
+    }
 
     if (loading || state == null) return null
 

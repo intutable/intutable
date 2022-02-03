@@ -128,7 +128,6 @@ export const ProjectCtxProvider: React.FC = props => {
             }
             const selectedTable = table || tableList[0]
             const tableData = await API.get.table(selectedTable.tableId)
-            console.info(tableData)
             setState({
                 project: project,
                 tableList: tableList,
@@ -213,7 +212,9 @@ export const ProjectCtxProvider: React.FC = props => {
             const newTableList = await API.get.tablesList(
                 state.project.projectId
             )
+            console.dir(state.tableList)
             updateState("tableList", newTableList)
+            console.dir(state.tableList)
         } finally {
             setLoading(false)
         }
