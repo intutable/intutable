@@ -52,6 +52,7 @@ const ProjectSlugPage: NextPage<
     const handleRowsChange = (rows: Row[], data: RowsChangeData<Row>) => {
         // TODO: handle row update here
         // this method will receive row content updates from the editors
+        // TODO before: implement methods to ProjectContext that check types at runtime (via proxy)
         console.log(rows)
     }
 
