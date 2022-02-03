@@ -58,12 +58,23 @@ export const _RuntimeCellTypeMap = [
 export type CellType = keyof _CellTypeMap
 
 /**
+ * Tells if a ReadonlyArray includes the element
+ * (which can not be a superset in normal includes method).
+ */
+const includes = <T extends U, U>(
+    coll: ReadonlyArray<T>,
+    value: U
+): value is T => coll.includes(value as T)
+
+/**
  * Checks if a value if of cell type.
  * @param value The value to check
  * @returns
  */
-export const isCellType = (value: string): value is CellType =>
-    value in _RuntimeCellTypeMap
+export const isCellType = (value: unknown): value is CellType => {
+    if (typeof value !== "string") return false
+    return includes(_RuntimeCellTypeMap, value)
+}
 
 /**
  * Specifies the type of a CellType; e.g. (`string` -> string) or ("currency" -> Currency Class)
