@@ -4,6 +4,9 @@ import type { CellType } from "../components/DataGrid/Cell/celltype-management/c
 import React from "react"
 import { ProjectManagement as PM } from "."
 
+/**
+ * // TODO: moves this whole thing into /components/DataGrid/
+ */
 // TODO: make all props readonly
 
 // /**

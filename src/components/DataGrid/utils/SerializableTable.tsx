@@ -9,10 +9,10 @@ import {
 } from "@api"
 import { isCellType, CellType } from "@datagrid/Cell/celltype-management"
 import type { EditorProps, HeaderRendererProps } from "react-data-grid"
-import { Cell } from "@datagrid/Cell"
+import { getEditor } from "@app/components/DataGrid/Cell/EditorComponents"
 import { ColumnHeader } from "@datagrid/ColumnHeader"
 import { Checkbox } from "@mui/material"
-// TODO: (04.12.21): test this function and implement the components for each cell type
+import { TextEditor } from "react-data-grid"
 
 /**
  * Serializes
@@ -81,16 +81,8 @@ const deserialize = (table: SerializedTableData): TableData => {
         name: col.name,
         key: col.key,
         editable: col.editable,
-        editor: isCellType(col.editor)
-            ? (props: EditorProps<Row>) => (
-                  <Cell
-                      type={col.editor}
-                      access="editable"
-                      position="left"
-                      editorProps={props}
-                  />
-              )
-            : undefined,
+        editor: isCellType(col.editor) ? getEditor(col.editor) : undefined, // TODO: maybe add the default TextEditor from rdg?!
+        // editor: TextEditor,
         editorOptions: {
             editOnClick: true,
         },
@@ -123,7 +115,6 @@ const deserialize = (table: SerializedTableData): TableData => {
         resizable: false,
         sortable: true,
         width: 50,
-        // editor: (props: EditorProps<Row>) => <>Text</>, // my bad: its an edtior, it only appears when the cell is in editing mode
     }
     columns.unshift(selectCol)
 

@@ -36,6 +36,7 @@ const ProjectSlugPage: NextPage<
     // #################### states ####################
 
     const { state, loading, error, setProject } = useProjectCtx()
+    const { API, loading: authLoading } = useAuth()
     // const proxy: TableData = {}
     // const [table, _setTable] = useState<TableData>(proxy)
     // const setTable = (table: TableData) => {
@@ -49,7 +50,9 @@ const ProjectSlugPage: NextPage<
     // #################### private methods ####################
 
     const handleRowsChange = (rows: Row[], data: RowsChangeData<Row>) => {
-        // TODO: update rows
+        // TODO: handle row update here
+        // this method will receive row content updates from the editors
+        console.log(rows)
     }
 
     useEffect(() => {
@@ -61,11 +64,16 @@ const ProjectSlugPage: NextPage<
 
     // #################### life cycle methods ####################
 
-    // useEffect(() => {
-    //     if (state == null) {
-    //         setProject(props.project)
-    //     }
-    // }, [state])
+    useEffect(() => {
+        if (
+            state == null &&
+            API &&
+            loading === false &&
+            authLoading === false
+        ) {
+            setProject(props.project)
+        }
+    }, [state, props.project])
 
     useEffect(() => {
         if (error instanceof Error) {
