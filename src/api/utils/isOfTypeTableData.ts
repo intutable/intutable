@@ -11,7 +11,10 @@ export const isOfTypeTableData = (data: unknown): data is TableData => {
 
     const emptyTable = data as Partial<TableData>
 
-    if (emptyTable.tableName == null || emptyTable.tableName.length < 1)
+    if (
+        emptyTable.table?.tableName == null ||
+        emptyTable.table.tableName.length < 1
+    )
         return false
 
     if (

@@ -31,7 +31,7 @@ export const isOfTypeConvertable = (value: unknown): value is Convertable => {
         Object.prototype.hasOwnProperty.call(value, "conversion")
     )
         if (
-            isCellType((value as { type: unknown }).type) &&
+            isCellType((value as { type: unknown }).type as string) &&
             isConversionType((value as { conversion: unknown }).conversion)
         )
             return true

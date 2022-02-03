@@ -62,8 +62,8 @@ export type CellType = keyof _CellTypeMap
  * @param value The value to check
  * @returns
  */
-export const isCellType = (value: any): value is CellType =>
-    _RuntimeCellTypeMap.includes(value)
+export const isCellType = (value: string): value is CellType =>
+    value in _RuntimeCellTypeMap
 
 /**
  * Specifies the type of a CellType; e.g. (`string` -> string) or ("currency" -> Currency Class)

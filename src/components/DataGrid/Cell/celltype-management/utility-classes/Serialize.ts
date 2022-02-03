@@ -3,7 +3,7 @@ export {}
 interface UClass {
     toString(): string
     valueOf(): number
-    fromString(): any
+    fromString(): unknown
 }
 
 abstract class Serialize {

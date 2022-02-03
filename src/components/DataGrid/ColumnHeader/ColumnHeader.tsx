@@ -14,7 +14,6 @@ import {
 } from "@datagrid/Cell/celltype-management"
 import { ChangeCellTypeDialog } from "./ChangeCellTypeDialog"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
-import { display } from "@mui/system"
 
 type ColumnHeaderContextMenuProps = {
     anchorEL: Element
@@ -65,7 +64,10 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const [changeTypeModalOpen, setChangeTypeModalOpen] = useState(false)
 
-    const handleOpenContextMenu = (event: any) => {
+    const handleOpenContextMenu = (
+        event: React.MouseEvent<HTMLButtonElement>
+    ) => {
+        event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
     const handleCloseContextMenu = () => setAnchorEL(null)

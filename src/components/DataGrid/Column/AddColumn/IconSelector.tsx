@@ -9,7 +9,7 @@ const __PREFIX = "__icon__"
 const prefix = (key: string): string => __PREFIX + key
 
 // when saving to db
-export const IconToName = (key: any) => {}
+export const IconToName = (key: unknown) => {}
 
 export const replaceNameByIcon = (
     name: string
