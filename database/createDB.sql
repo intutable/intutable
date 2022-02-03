@@ -1,11 +1,10 @@
-create table if not exists users(
+create table users(
     _id integer primary key autoincrement not null,
     email text,
     password text
 );
 
-
-create table if not exists userprojects(
+create table userprojects(
     _id integer primary key autoincrement not null,
     userId integer,
     projectId integer,
@@ -13,14 +12,14 @@ create table if not exists userprojects(
     foreign key(projectId) references projects(_id)
 );
 
-create table if not exists projects(
+create table projects(
     _id integer primary key autoincrement not null,
     projectName text,
-    owner text
+    ownerId integer,
+    foreign key(ownerId) references user(_id)
 );
 
-
-create table if not exists projecttables(
+create table projecttables(
     _id integer primary key autoincrement not null,
     projectId integer,
     tableId integer,
@@ -28,14 +27,15 @@ create table if not exists projecttables(
     foreign key(tableId) references tables(_id)
 );
 
-create table if not exists tables(
+create table tables(
     _id integer primary key autoincrement not null,
-    key text,
+    key text not null,
     name text,
-    owner text
+    ownerId integer,
+    foreign key(ownerId) references users(_id)
 );
 
-create table if not exists tablecolumns(
+create table tablecolumns(
     _id integer primary key autoincrement not null,
     tableId integer,
     columnId integer,
@@ -43,15 +43,17 @@ create table if not exists tablecolumns(
     foreign key(columnId) references columns(_id)
 );
 
-create table if not exists columns(
+create table columns(
     _id integer primary key AUTOINCREMENT not null,
     columnName text,
     editable integer default 1 not null,
-    hidden integer default 0 not null
+    hidden integer default 0 not null,
+    type text default "string" not null
 );
 
+
 insert into users(email, password) values("admin@dekanat.de", "$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM");
-insert into projects(projectName, owner) values("Personal", "admin@dekanat.de");
+insert into projects(projectName, ownerId) values("Personal", "admin@dekanat.de");
 insert into userprojects(userId, projectId) values(1, 1);
 
 create table if not exists p1_personen(
@@ -83,9 +85,9 @@ create table if not exists p1_einrichtungen(
 insert into p1_einrichtungen(name, adresse)
 values ("Dekanat MathInf", "Mathematikon Neuenheim");
 
-insert into tables(key, name, owner) values("p1_personen", "personen", "admin@dekanat.de");
-insert into tables(key, name, owner) values("p1_kommissionen", "kommissionen", "admin@dekanat.de");
-insert into tables(key, name, owner) values("p1_einrichtungen", "einrichtungen", "admin@dekanat.de");
+insert into tables(key, name, ownerId) values("p1_personen", "personen", "admin@dekanat.de");
+insert into tables(key, name, ownerId) values("p1_kommissionen", "kommissionen", "admin@dekanat.de");
+insert into tables(key, name, ownerId) values("p1_einrichtungen", "einrichtungen", "admin@dekanat.de");
 insert into projecttables(projectId, tableId) values(1, 1);
 insert into projecttables(projectId, tableId) values(1, 2);
 insert into projecttables(projectId, tableId) values(1, 3);
