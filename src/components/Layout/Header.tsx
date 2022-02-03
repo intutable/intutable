@@ -20,6 +20,7 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
+    Stack,
     Toolbar,
     Typography,
     useTheme,
@@ -27,6 +28,8 @@ import {
 import { CSSObject, styled, Theme } from "@mui/material/styles"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
+import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar"
+import SearchIcon from "@mui/icons-material/Search"
 
 const drawerWidth = 240
 
@@ -152,19 +155,31 @@ const Header = () => {
                         <MenuIcon />
                     </IconButton>
                     <Box sx={{ flexGrow: 1 }}>
-                        <Link href="/" muiLinkProps={{ underline: "none" }}>
-                            <Typography
-                                variant="h6"
-                                component="h1"
-                                color="inherit"
-                                noWrap
-                                sx={{
-                                    fontWeight: theme.typography.fontWeightBold,
-                                }}
-                            >
-                                Dekanatsverwaltung
-                            </Typography>
-                        </Link>
+                        <Stack direction="row" sx={{ alignItems: "center" }}>
+                            <Link href="/" muiLinkProps={{ underline: "none" }}>
+                                <Typography
+                                    variant="h6"
+                                    component="h1"
+                                    color="inherit"
+                                    noWrap
+                                    sx={{
+                                        fontWeight:
+                                            theme.typography.fontWeightBold,
+                                    }}
+                                >
+                                    Dekanatsverwaltung
+                                </Typography>
+                            </Link>
+                            <Search>
+                                <SearchIconWrapper>
+                                    <SearchIcon />
+                                </SearchIconWrapper>
+                                <StyledInputBase
+                                    placeholder="Search…"
+                                    inputProps={{ "aria-label": "search" }}
+                                />
+                            </Search>
+                        </Stack>
                     </Box>
                     <Avatar />
                 </Toolbar>
