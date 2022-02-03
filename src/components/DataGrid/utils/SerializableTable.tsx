@@ -1,10 +1,10 @@
 import {
     Row,
-    ServerColumn,
-    ServerTableData,
+    SerializedColumn,
+    SerializedTableData,
     TableData,
     Column,
-    ServerRow,
+    SerializedRow,
     __KEYS__,
 } from "@api"
 import { isCellType, CellType } from "@datagrid/Cell/celltype-management"
@@ -17,7 +17,7 @@ import { Checkbox } from "@mui/material"
 /**
  * Serializes
  */
-const serialize = (table: TableData): ServerTableData => {
+const serialize = (table: TableData): SerializedTableData => {
     /**
      * TODO:
      * 1.1 remove IDs from each row
@@ -29,20 +29,20 @@ const serialize = (table: TableData): ServerTableData => {
     // Note: this is not used yet
 
     // 1.1
-    const rows: ServerRow[] = table.rows.map(row => {
+    const rows: SerializedRow[] = table.rows.map(row => {
         const { id, ...rest } = row
         return rest
     })
 
     // 2. currently `editor` is not supported. `headerRenderer` does not need to be saved
-    const columns: ServerColumn[] = table.columns.map(
+    const columns: SerializedColumn[] = table.columns.map(
         col =>
             ({
                 name: col.name,
                 key: col.key,
                 editable: col.editable,
                 editor: "string" as CellType, // TODO: infer from component (do this when it is finally supported)
-            } as ServerColumn)
+            } as SerializedColumn)
     )
 
     // 1.2
@@ -58,7 +58,7 @@ const serialize = (table: TableData): ServerTableData => {
 /**
  * Deserializes
  */
-const deserialize = (table: ServerTableData): TableData => {
+const deserialize = (table: SerializedTableData): TableData => {
     /**
      * TODO:
      * 1.1 apply an SELCTOR and ID to each row

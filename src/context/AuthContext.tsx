@@ -65,12 +65,17 @@ export const AuthProvider: React.FC = props => {
 
     const login = async (username: string, password: string) => {
         setLoading(true)
-        await coreLogout()
-        return coreLogin(username, password)
-            .then(async () => {
-                setUser(await getCurrentUser())
-            })
-            .finally(() => setLoading(false))
+        try {
+            await coreLogout()
+            // BUG: error is probably here
+            await coreLogin(username, password)
+            const user = await getCurrentUser()
+            setUser(user)
+        } catch (error) {
+            console.error(1, error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const logout = async () => {
@@ -90,7 +95,7 @@ export const AuthProvider: React.FC = props => {
                 loading,
                 login,
                 logout,
-                API: makeAPI(user!),
+                API: user ? makeAPI(user) : null,
             }}
         >
             {props.children}

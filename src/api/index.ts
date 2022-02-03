@@ -15,7 +15,7 @@ import {
 export * from "./types"
 export * from "./utils"
 export * from "./coreinterface"
-export * from "./API_Types"
+export * from "./Type Annotations/ProjectManagement"
 
 export enum CHANNEL {
     PROJECT_MANAGEMENT = "project-management",

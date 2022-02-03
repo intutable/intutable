@@ -2,11 +2,6 @@ import Obj from "@utils/Obj"
 const CORE_ENDPOINT = process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
-export type CoreCallError = {
-    status: number
-    message: string | Error
-}
-
 export class CoreRequestError extends Error {
     public readonly statusCode: number
 
@@ -15,13 +10,6 @@ export class CoreRequestError extends Error {
         this.name = this.constructor.name
         // this.stack = new Error().stack
         this.statusCode = statusCode
-    }
-}
-
-export class NetworkError extends Error {
-    constructor(message: string, statusCode: number) {
-        super(message)
-        this.name = this.constructor.name
     }
 }
 
@@ -58,14 +46,6 @@ export const coreRequest = (
         .then(passedLogin)
         .then(checkError)
         .then(res => res.json())
-// .catch(error => {
-//     // Fetch API only throws on network errors
-//     // TODO: handle network error
-//     if (error) {
-//         console.error(error)
-//         throw new error()
-//     }
-// })
 
 export async function coreNotification(
     channel: string,

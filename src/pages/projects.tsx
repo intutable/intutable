@@ -1,4 +1,4 @@
-import { ProjectList, ProjectListElement } from "@api"
+import { ProjectManagement as PM } from "@api"
 import { makeAPI } from "@app/api"
 import { getCurrentUser } from "@app/api/coreinterface"
 import Title from "@components/Head/Title"
@@ -23,7 +23,7 @@ import type {
 } from "next"
 import { useRouter } from "next/dist/client/router"
 import { useSnackbar } from "notistack"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -61,8 +61,9 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
 }
 
 type ProjectCardProps = {
-    project?: ProjectListElement
+    project?: PM.Project
     onClick?: () => void
+    children: string | React.ReactElement
 }
 const ProjectCard: React.FC<ProjectCardProps> = props => {
     const router = useRouter()
@@ -70,7 +71,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const { enqueueSnackbar } = useSnackbar()
 
     const { user, API } = useAuth()
-    const { setProject } = useProjectCtx()
+    const { renameProject, deleteProject, setProject } = useProjectCtx()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
@@ -82,17 +83,29 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    const handleRenameProject = () => {
-        handleCloseContextMenu()
-        const newName = prompt("Gib einen neuen Namen für dein Projekt ein:")
-        if (!newName) return
-        // TODO: implement
-        // enqueueSnackbar("Das Projekt wurde umbenannt.", { variant: "success" })
-        // enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", { variant: "error" })
-        alert("Not implemented yet")
+    const handleRenameProject = async () => {
+        if (props.project == null) return
+        try {
+            handleCloseContextMenu()
+            const newName = prompt(
+                "Gib einen neuen Namen für dein Projekt ein:"
+            )
+            if (!newName) return
+            await renameProject(props.project, newName)
+            router.reload()
+            enqueueSnackbar("Das Projekt wurde umbenannt.", {
+                variant: "success",
+            })
+        } catch (error) {
+            console.log(error)
+            enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", {
+                variant: "error",
+            })
+        }
     }
 
     const handleDeleteProject = async () => {
+        if (props.project == null) return
         try {
             if (typeof props.children !== "string") return
             handleCloseContextMenu()
@@ -100,11 +113,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            if (!user || !API)
-                return enqueueSnackbar("Bitte melde dich erneut an!", {
-                    variant: "error",
-                })
-            await API.delete.project(props.project!.projectId)
+            await deleteProject(props.project)
             router.reload() // TODO: reload the project page properly by updating the state correctly
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
@@ -114,6 +123,8 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             })
         }
     }
+
+    useEffect(() => {}, [])
 
     return (
         <>
@@ -166,7 +177,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 }
 
 type ProjectsPageProps = {
-    projectList: ProjectList
+    projectList: PM.Project.List
 }
 const ProjectsPage: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -175,7 +186,7 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user, API } = useAuth()
+    const { createProject } = useProjectCtx()
 
     const handleAddProject = async () => {
         try {
@@ -193,11 +204,7 @@ const ProjectsPage: NextPage<
                     "Dieser Name wird bereits für eines deiner Projekte verwendet!",
                     { variant: "error" }
                 )
-            if (!user || !API)
-                return enqueueSnackbar("Bitte melde dich erneut an!", {
-                    variant: "error",
-                })
-            await API.post.project(name)
+            await createProject(name)
             /**
              * // BUG
              * before update: we were creating a new project by name and redirected to the new project page by the new name in the url
@@ -211,10 +218,9 @@ const ProjectsPage: NextPage<
             })
         } catch (error) {
             console.log(error)
-            return enqueueSnackbar(
-                "Das Projekt konnte nicht erstellt werden!",
-                { variant: "error" }
-            )
+            enqueueSnackbar("Das Projekt konnte nicht erstellt werden!", {
+                variant: "error",
+            })
         }
     }
 

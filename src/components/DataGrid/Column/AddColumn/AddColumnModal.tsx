@@ -1,4 +1,4 @@
-import { ServerColumn } from "@app/api/types"
+import { SerializedColumn } from "@app/api/types"
 import {
     CellType,
     _RuntimeCellTypeMap,
@@ -31,14 +31,14 @@ import React, { useEffect, useState } from "react"
 
 type AddColumnModalProps = {
     open: boolean
-    onClose: (col?: ServerColumn) => void
+    onClose: (col?: SerializedColumn) => void
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const theme = useTheme()
 
     const [moreOptionsActive, setMoreOptionsActive] = useState(false)
-    const [options, setOptions] = useState<ServerColumn>({
+    const [options, setOptions] = useState<SerializedColumn>({
         name: "",
         key: "",
         editable: true,
@@ -61,9 +61,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         }
     }, [options.editor])
 
-    const setOption = <T extends keyof ServerColumn>(
+    const setOption = <T extends keyof SerializedColumn>(
         option: T,
-        value: ServerColumn[T]
+        value: SerializedColumn[T]
     ) => {
         setOptions(prev => ({
             ...prev,

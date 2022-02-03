@@ -1,26 +1,29 @@
-import { ServerTableData, TableData, makeAPI, getCurrentUser, Row } from "@api"
-import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
+import {
+    getCurrentUser,
+    makeAPI,
+    ProjectManagement as PM,
+    Row,
+    SerializedTableData,
+} from "@api"
+import { TableSwitcher } from "@app/components/TableSwitcher/TableSwitcher"
+import { useProject } from "@app/hooks/useProject"
+import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
-import { ADD_BUTTON_TOKEN, Tablist } from "@components/TabList/TabList"
-import { useProject } from "@app/hooks/useProject"
-import { useAuth, CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
-import { rowKeyGetter, SerializableTable } from "@datagrid/utils"
+import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
+import { SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
-import { isValidName, prepareName } from "@utils/validateName"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import { useSnackbar } from "notistack"
-import React, { useCallback, useEffect, Suspense, useState } from "react"
-import DataGrid, { RowsChangeData, CalculatedColumn } from "react-data-grid"
+import React, { useEffect, useState } from "react"
+import { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
-import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
-import { ProjectListElement, TableList, TableListElement } from "@api"
 
 type ProjectSlugPageProps = {
-    project: ProjectListElement
-    tables: TableList
-    table: { data: ServerTableData; table: TableListElement } | null
+    project: PM.Project
+    tables: PM.Table.List
+    table: { data: SerializedTableData; table: PM.Table } | null
 }
 
 const ProjectSlugPage: NextPage<
@@ -85,7 +88,7 @@ const ProjectSlugPage: NextPage<
         <>
             <Title title={props.project.projectName} />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
-                {props.project}
+                {props.project.projectName}
             </Typography>
 
             {ErrorComponent || state.loading ? (
@@ -99,7 +102,7 @@ const ProjectSlugPage: NextPage<
                             onCloseHandler={() => setDetailedViewOpen(null)}
                         />
                     )}
-                    <Tablist />
+                    <TableSwitcher />
                     <Box>
                         <Toolbar position="top">
                             <TItem.AddCol />
@@ -120,7 +123,7 @@ const ProjectSlugPage: NextPage<
                             </Toolbar.Item>
                             <TItem.FileDownload getData={() => []} />
                         </Toolbar>
-                        <DataGrid
+                        {/* <DataGrid
                             className={"rdg-" + theme.palette.mode}
                             rows={
                                 state.project!.data
@@ -146,7 +149,7 @@ const ProjectSlugPage: NextPage<
                             // onFill={handleFill}
                             // selectedRows={selectedRows}
                             // onSelectedRowsChange={setSelectedRows}
-                        />
+                        /> */}
                         <Toolbar position="bottom">
                             <TItem.Connection status={"connected"} />
                             <Toolbar.Item onClickHandler={() => {}}>
@@ -190,8 +193,7 @@ export const getServerSideProps: GetServerSideProps<
             const projectIdStr = Array.isArray(_projectId)
                 ? _projectId[0]
                 : _projectId
-            const projectId: ProjectListElement["projectId"] =
-                Number.parseInt(projectIdStr)
+            const projectId: PM.Project.ID = Number.parseInt(projectIdStr)
             const tableList = await API.get.tablesList(projectId)
 
             const project = (await API.get.projectsList()).find(

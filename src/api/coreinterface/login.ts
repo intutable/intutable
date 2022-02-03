@@ -1,5 +1,5 @@
 const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
-import { coreRequest } from "./json"
+import { coreRequest } from "./coreRequest"
 import { CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
 import { CHANNEL } from ".."
 
@@ -8,26 +8,18 @@ import { CHANNEL } from ".."
  * @return {Promise<void>} if login was successful. Rejects with an error
  * (in string form) otherwise.
  */
-export async function coreLogin(
+export const coreLogin = async (
     username: string,
     password: string
-): Promise<void> {
-    return fetch(getCoreUrl() + "/login", {
+): Promise<void> =>
+    fetch(getCoreUrl() + "/login", {
         method: "post",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
         },
         credentials: "include",
         body: `username=${username}&password=${password}`,
-    })
-        .catch(e => {
-            console.log(e)
-            return Promise.reject(
-                "Interner Fehler. Kontaktieren Sie bitte den" + " Support."
-            )
-        })
-        .then(loginSucceeded)
-}
+    }).then(loginSucceeded)
 
 /**
  * Log out of core via HTTP request.

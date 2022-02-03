@@ -1,15 +1,17 @@
-import { coreRequest } from "@app/api/coreinterface/json"
+import { coreRequest } from "@app/api/coreinterface/coreRequest"
 import type { CurrentUser } from "@context/AuthContext"
 import { CHANNEL } from "."
-import { ProjectList, ProjectId, ProjectName } from "./API_Types"
+import { ProjectManagement as PM } from "./Type Annotations/ProjectManagement"
 
 /**
  * Fetches a list with objects each describing a project of a specific user containg an id and name.
  * @param {CurrentUser} user Currently logged in user.
- * @returns {Promise.resolve<ProjectList>} List of projects with name and id.
+ * @returns {Promise.resolve<PM.Project.List>} List of projects with name and id.
  * @returns {Promise.reject<Error>} If the returned data does not match the expected type.
  */
-export const getProjects = async (user: CurrentUser): Promise<ProjectList> => {
+export const getProjects = async (
+    user: CurrentUser
+): Promise<PM.Project.List> => {
     const coreResponse = await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         getProjects.name,
@@ -18,14 +20,14 @@ export const getProjects = async (user: CurrentUser): Promise<ProjectList> => {
     )
 
     if (Array.isArray(coreResponse) === false)
-        return Promise.reject(new Error("Expected an Array!"))
+        throw new Error("Expected an Array!")
 
-    return Promise.resolve(coreResponse as ProjectList)
+    return coreResponse as PM.Project.List
 }
 
 export const createProject = async (
     user: CurrentUser,
-    newProject: ProjectName
+    newProject: PM.Project.Name
 ): Promise<void> => {
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
@@ -37,8 +39,8 @@ export const createProject = async (
 
 export const changeProjectName = async (
     user: CurrentUser,
-    projectId: ProjectId,
-    newName: ProjectName
+    projectId: PM.Project.ID,
+    newName: PM.Project.Name
 ): Promise<void> => {
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
@@ -50,7 +52,7 @@ export const changeProjectName = async (
 
 export const removeProject = async (
     user: CurrentUser,
-    projectId: ProjectId
+    projectId: PM.Project.ID
 ): Promise<void> => {
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,

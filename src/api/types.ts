@@ -2,7 +2,7 @@ import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
 import type { CellType } from "../components/DataGrid/Cell/celltype-management/celltypes"
 import React from "react"
-import { TableListElement } from "."
+import { ProjectManagement as PM } from "."
 
 // TODO: make all props readonly
 
@@ -35,7 +35,7 @@ import { TableListElement } from "."
 // #################################################################
 
 type Table<COL, ROW> = {
-    table: TableListElement
+    table: PM.Table
     columns: COL[]
     rows: ROW[]
 }
@@ -69,11 +69,11 @@ export type TableData = Table<Column, Row>
 //       Backend
 // #################################################################
 
-export type ServerRow = {
+export type SerializedRow = {
     [key: string]: unknown
 }
 
-export type ServerTableData = Table<ServerColumn, ServerRow>
+export type SerializedTableData = Table<SerializedColumn, SerializedRow>
 
 // TODO: change naming to `Abstract[…]` e.g. `AbstractColumn`
 
@@ -86,7 +86,7 @@ export type ServerTableData = Table<ServerColumn, ServerRow>
  * Those properties that are not listed compared to the original type are not used.
  * Additional comments will – only if provided! – explain how the property is modified compared to the original property.
  */
-export type ServerColumn = {
+export type SerializedColumn = {
     name: string
     key: string
     /**

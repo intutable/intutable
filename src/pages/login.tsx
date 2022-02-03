@@ -1,13 +1,12 @@
-import type { NextPage } from "next"
-import Router, { useRouter } from "next/router"
+import { useAuth } from "@app/context/AuthContext"
 import Title from "@components/Head/Title"
-import LoginFormModal from "@app/components/LoginOutRegister/[DEPRECATED]_LoginFormModal"
 import { Paper } from "@components/LoginOutRegister/Paper"
 import { Box, TextField, Typography } from "@mui/material"
-import React, { useEffect, useState } from "react"
-import { useAuth } from "@app/context/AuthContext"
-import { useSnackbar } from "notistack"
 import { SxProps, Theme } from "@mui/system"
+import type { NextPage } from "next"
+import { useRouter } from "next/router"
+import { useSnackbar } from "notistack"
+import React, { useEffect, useState } from "react"
 
 const validateUsername = (username: string): true | Error =>
     username.length > 6
@@ -82,7 +81,6 @@ const Login: NextPage = props => {
 
     const handleEnter = () => {
         // TODO: enter does not work
-        console.log(usernameValid, passwordValid, error)
         if (usernameValid === true && passwordValid === true && error == null)
             handleLogin()
         else

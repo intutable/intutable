@@ -1,13 +1,13 @@
-import { coreRequest } from "@app/api/coreinterface/json"
+import { coreRequest } from "@app/api/coreinterface/coreRequest"
 import type { CurrentUser } from "@context/AuthContext"
 import { Server } from "http"
-import { CHANNEL, ServerColumn, TableId } from "."
-import { ColumnList, ColumnId, ColumnName } from "./API_Types"
+import { CHANNEL, SerializedColumn } from "."
+import { ProjectManagement as PM } from "./Type Annotations/ProjectManagement"
 
 export const getColumnsFromTable = async (
     user: CurrentUser,
-    tableId: TableId
-): Promise<ColumnList> => {
+    tableId: PM.Table.ID
+): Promise<PM.Column.List> => {
     const coreResponse = await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         getColumnsFromTable.name,
@@ -16,39 +16,35 @@ export const getColumnsFromTable = async (
     )
 
     if (Array.isArray(coreResponse) === false)
-        return Promise.reject(new Error("Expected an Array!"))
+        throw new Error("Expected an Array!")
 
-    return Promise.resolve(coreResponse as ColumnList)
+    return coreResponse as PM.Column.List
 }
 
 export const createColumnInTable = async (
     user: CurrentUser,
-    tableId: TableId,
-    columnName: ColumnName
+    tableId: PM.Table.ID,
+    columnName: PM.Column.Name
 ): Promise<void> => {
-    const coreResponse = await coreRequest(
+    await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         createColumnInTable.name,
         { tableId, columnName },
         user.authCookie
     )
-
-    return Promise.resolve()
 }
 
 export const changeColumnName = async (
     user: CurrentUser,
-    columnId: ColumnId,
-    newName: ColumnName
+    columnId: PM.Column.ID,
+    newName: PM.Column.Name
 ): Promise<void> => {
-    const coreResponse = await coreRequest(
+    await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         changeColumnName.name,
         { columnId, newName },
         user.authCookie
     )
-
-    return Promise.resolve()
 }
 
 // export const changeColumnAttributes = async (
@@ -70,14 +66,12 @@ export const changeColumnName = async (
 
 export const removeColumn = async (
     user: CurrentUser,
-    columnId: ColumnId
+    columnId: PM.Column.ID
 ): Promise<void> => {
-    const coreResponse = await coreRequest(
+    await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         removeColumn.name,
         { columnId },
         user.authCookie
     )
-
-    return Promise.resolve()
 }

@@ -1,9 +1,11 @@
-import { inspect } from "util"
-import { coreRequest, CoreRequestError } from "@app/api/coreinterface/json"
+import { coreRequest } from "@app/api/coreinterface/coreRequest"
+import {
+    CellType,
+    isCellType,
+} from "@app/components/DataGrid/Cell/celltype-management"
 import type { CurrentUser } from "@context/AuthContext"
-import type { Row, ServerColumn, ServerTableData, TableData } from "./types"
-import { CHANNEL, TableId, TableList, TableName } from "."
-import { ProjectList, ProjectId, ProjectName } from "./API_Types"
+import { CHANNEL, SerializedColumn, ProjectManagement as PM } from "."
+import type { SerializedTableData, TableData } from "./types"
 
 /**
  * Fetches a list with the names of the tables of a project.
@@ -14,7 +16,7 @@ import { ProjectList, ProjectId, ProjectName } from "./API_Types"
 export const getTablesFromProject = async (
     user: CurrentUser,
     projectId: number
-): Promise<TableList> => {
+): Promise<PM.Table.List> => {
     const coreResponse = await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         getTablesFromProject.name,
@@ -23,9 +25,9 @@ export const getTablesFromProject = async (
     )
 
     if (Array.isArray(coreResponse) === false)
-        return Promise.reject(new Error("Expected an Array!"))
+        throw new Error("Expected an Array!")
 
-    return Promise.resolve(coreResponse as TableList)
+    return coreResponse as PM.Table.List
 }
 
 /**
@@ -36,38 +38,38 @@ export const getTablesFromProject = async (
  */
 export const getTableData = async (
     user: CurrentUser,
-    tableId: TableId
-): Promise<ServerTableData> => {
+    tableId: PM.Table.ID
+): Promise<SerializedTableData> => {
     const coreResponse = (await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         getTableData.name,
         { tableId },
         user.authCookie
-    )) as ServerTableData
+    )) as PM.SerializedServerResponse.Table
 
-    // DEV ONLY needed to transform malformed backend data (obsolete with v4)
-    const columns = coreResponse.columns.map((item: any) => {
-        item.key = item.columnName as string // TODO: is this still needed
-        item.name = item.key as string // TODO: backend changed this, investigate on this
-        item.editable = Boolean(item.editable) // backend uses `0` / `1` as boolean
-        // item.editor = "string" // backend doesnt support this prop, therefore this faker is needed
-        item.editor = item.type
-        delete item.columnName
-        return item
+    // rename props: parse backend col to `ServerColumn`
+    const columns: SerializedColumn[] = coreResponse.columns.map(col => {
+        console.log(col.type)
+        return {
+            key: col._id.toString(),
+            name: col.columnName,
+            editable: Boolean(col.editable),
+            editor: col.type as CellType,
+        }
     })
 
-    const table: ServerTableData = {
+    const table: SerializedTableData = {
         ...coreResponse,
         columns,
     }
 
-    return Promise.resolve(table)
+    return table
 }
 
 export const createTableInProject = async (
     user: CurrentUser,
-    projectId: ProjectId,
-    tableName: TableName
+    projectId: PM.Project.ID,
+    tableName: PM.Table.Name
 ) => {
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
@@ -77,7 +79,7 @@ export const createTableInProject = async (
     )
 }
 
-export const removeTable = async (user: CurrentUser, tableId: TableId) => {
+export const removeTable = async (user: CurrentUser, tableId: PM.Table.ID) => {
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         removeTable.name,
@@ -88,8 +90,8 @@ export const removeTable = async (user: CurrentUser, tableId: TableId) => {
 
 export const changeTableName = async (
     user: CurrentUser,
-    tableId: TableId,
-    newName: TableName
+    tableId: PM.Table.ID,
+    newName: PM.Table.Name
 ) => {
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,

@@ -1,5 +1,9 @@
-import type { ProjectId, ProjectListElement, TableData } from "@api"
-import { TableId, TableList, TableListElement } from "@api"
+/**
+ * @deprecated file
+ */
+
+import type { ProjectListElement, TableData } from "@api"
+import { TableList, TableListElement } from "@api"
 import { SerializableTable } from "@app/components/DataGrid/utils"
 import { useCallback, useState } from "react"
 import { useAuth } from "../context/AuthContext"
@@ -29,6 +33,9 @@ const makeError = (error: unknown): Error =>
                   : "Internal Unknown Error: Could not load the Table!"
           )
 
+/**
+ * @deprecated
+ */
 export const useProject = (project: ProjectListElement, initialData: Data) => {
     const { user, API } = useAuth()
 

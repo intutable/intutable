@@ -1,12 +1,7 @@
-import type { ProjectListElement, TableData } from "@api"
-import { TableList, TableListElement } from "@api"
+import type { ProjectManagement as PM, TableData } from "@api"
 import { SerializableTable } from "@app/components/DataGrid/utils"
 import React, { useEffect, useState } from "react"
 import { useAuth } from "./AuthContext"
-
-/**
- * // TODO: reload automatically whenever an api call is made (perhaps a ctx ie is needed for api)
- */
 
 const makeError = (error: unknown): Error =>
     error instanceof Error
@@ -15,37 +10,58 @@ const makeError = (error: unknown): Error =>
         ? new Error(error)
         : new Error("Internal Unknown Error: Could not load the Table!")
 
+/**
+ * // TODO: use a reducer instead of that many methods
+ */
 export type ProjectContextProps = {
     state: {
-        project: ProjectListElement
-        tableList: TableList
+        project: PM.Project
+        tableList: PM.Table.List
         currentTable: TableData | null
     } | null
     loading: boolean
     error: Error | null
-    setProject: (project: ProjectListElement) => Promise<void>
-    setTable: (table: TableListElement) => Promise<void>
+    setProject: (project: PM.Project) => Promise<void>
+    createProject: (name: PM.Project.Name) => Promise<void>
+    renameProject: (
+        project: PM.Project,
+        newName: PM.Project.Name
+    ) => Promise<void>
+    deleteProject: (project: PM.Project) => Promise<void>
+    setTable: (table: PM.Table) => Promise<void>
+    createTable: (name: PM.Table.Name) => Promise<void>
+    renameTable: (table: PM.Table, newName: PM.Table.Name) => Promise<void>
+    deleteTable: (table: PM.Table) => Promise<void>
     /**
      * ### Manually reloads the whole state
      * This will be removed in a further version.
      * @deprecated
      *
-     * @param {TableListElement} table if provided, this will reload AND change the currentTable to this prop
+     * @param {PM.Table} table if provided, this will reload AND change the currentTable to this prop
      */
-    reload: (table?: TableListElement) => Promise<void>
+    reload: (table?: PM.Table) => Promise<void>
 }
+type State = ProjectContextProps["state"]
 
 const initialState: ProjectContextProps = {
     state: null,
-    loading: true,
+    loading: false,
     error: null,
     setProject: undefined!,
+    createProject: undefined!,
+    renameProject: undefined!,
+    deleteProject: undefined!,
     setTable: undefined!,
+    createTable: undefined!,
+    renameTable: undefined!,
+    deleteTable: undefined!,
     reload: undefined!,
 }
 
 const ProjectContext = React.createContext<ProjectContextProps>(initialState)
-
+/**
+ * Hook that uses the Project Context.
+ */
 export const useProjectCtx = () => React.useContext(ProjectContext)
 
 export const ProjectCtxProvider: React.FC = props => {
@@ -53,24 +69,44 @@ export const ProjectCtxProvider: React.FC = props => {
 
     // #################### states ####################
 
-    const [state, setState] = useState<ProjectContextProps["state"]>(null)
+    const [state, setState] = useState<State>(null)
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<Error | null>(null)
 
+    const updateState = <KEY extends keyof NonNullable<State>>(
+        key: KEY,
+        value: NonNullable<State>[KEY]
+    ) => {
+        setState(prev =>
+            prev == null
+                ? null
+                : {
+                      ...prev,
+                      [key]: value,
+                  }
+        )
+    }
+
     // #################### life cycles ####################
 
-    useEffect(() => {}, [])
+    useEffect(() => {
+        if (user == null) {
+            setState(null)
+            setLoading(false)
+            setError(null)
+        }
+    }, [user])
 
-    // #################### dispatchers ####################
+    // #################### project dispatchers ####################
 
+    // [x] implemented ; [ ] tested
     const setProject = async (
-        project: ProjectListElement,
-        table?: TableListElement
+        project: PM.Project,
+        table?: PM.Table
     ): Promise<void> => {
-        if (project.projectId === state?.project.projectId)
-            return Promise.resolve()
         if (user == null || API == null)
-            return Promise.reject(new Error("Could not access the API!"))
+            throw new Error("Could not access the API!")
+        if (project.projectId === state?.project.projectId) return
         if (
             table != null &&
             state?.tableList.find(tbl => tbl.tableId === table!.tableId)
@@ -78,10 +114,9 @@ export const ProjectCtxProvider: React.FC = props => {
             table = undefined
         }
 
-        setLoading(true)
         try {
+            setLoading(true)
             const tableList = await API?.get.tablesList(project.projectId)
-
             // if proj has no tables
             if (tableList.length < 1) {
                 setState({
@@ -91,57 +126,134 @@ export const ProjectCtxProvider: React.FC = props => {
                 })
                 return Promise.resolve()
             }
-
             const selectedTable = table || tableList[0]
             const tableData = await API.get.table(selectedTable.tableId)
-
             setState({
                 project: project,
                 tableList: tableList,
                 currentTable: SerializableTable.deserialize(tableData),
             })
-        } catch (err) {
-            setError(makeError(err))
         } finally {
             setLoading(false)
         }
     }
 
-    const setTable = async (table: TableListElement): Promise<void> => {
-        if (table.tableId === state?.currentTable?.table.tableId)
-            return Promise.resolve()
+    // [x] implemented ; [ ] tested
+    const createProject = async (name: PM.Project.Name): Promise<void> => {
         if (user == null || API == null)
-            return Promise.reject(new Error("Could not access the API!"))
-        if (state?.tableList.find(tbl => tbl.tableId === table.tableId)) {
-            console.warn(
+            throw new Error("Could not access the API!")
+        try {
+            setLoading(true)
+            await API.post.project(name)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // [x] implemented ; [ ] tested
+    const renameProject = async (
+        project: PM.Project,
+        newName: PM.Project.Name
+    ): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+        try {
+            setLoading(true)
+            await API.put.projectName(project.projectId, newName)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // [x] implemented ; [ ] tested
+    const deleteProject = async (project: PM.Project): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+        try {
+            setLoading(true)
+            await API.delete.project(project.projectId)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // #################### table dispatchers ####################
+
+    // [x] implemented ; [ ] tested
+    const setTable = async (table: PM.Table): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+        if (table.tableId === state?.currentTable?.table.tableId) return
+        if (state?.tableList.find(tbl => tbl.tableId === table.tableId))
+            throw new RangeError(
                 `${ProjectContext.displayName}: Tried to switch to table with id '${table.tableId}' but did not found it!`
             )
-            return Promise.resolve()
-        }
-
-        setLoading(true)
         try {
+            setLoading(true)
             const tableData = await API.get.table(table.tableId)
-            setState(prev =>
-                prev != null
-                    ? {
-                          ...prev,
-                          currentTable:
-                              SerializableTable.deserialize(tableData),
-                      }
-                    : null
+            updateState(
+                "currentTable",
+                SerializableTable.deserialize(tableData)
             )
-        } catch (err) {
-            setError(makeError(err))
         } finally {
             setLoading(false)
         }
     }
 
-    const reload = async (table?: TableListElement): Promise<void> => {
+    // [x] implemented ; [ ] tested
+    const createTable = async (newName: PM.Table.Name) => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+        if (state?.project.projectId == null)
+            throw new Error("Could not access the current project!")
+        try {
+            setLoading(true)
+            await API.post.table(state.project.projectId, newName)
+            const newTableList = await API.get.tablesList(
+                state.project.projectId
+            )
+            updateState("tableList", newTableList)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // [x] implemented ; [ ] tested
+    const renameTable = async (
+        table: PM.Table,
+        newName: PM.Table.Name
+    ): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+        try {
+            setLoading(true)
+            await API.put.tableName(table.tableId, newName)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // [x] implemented ; [ ] tested
+    const deleteTable = async (table: PM.Table): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+        try {
+            setLoading(true)
+            await API.delete.table(table.tableId)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // #################### deprecated dispatchers ####################
+
+    // [ ] implemented ; [ ] tested
+    const reload = async (table?: PM.Table): Promise<void> => {
         if (state)
             await setProject(state.project, table || state.currentTable?.table)
     }
+
+    // #################### Provider ####################
 
     return (
         <ProjectContext.Provider
@@ -150,9 +262,17 @@ export const ProjectCtxProvider: React.FC = props => {
                 state,
                 loading,
                 error,
-                // dispatchers
+                // project dispatchers
                 setProject,
+                createProject,
+                renameProject,
+                deleteProject,
+                // project dispatchers
                 setTable,
+                createTable,
+                renameTable,
+                deleteTable,
+                // deprecated
                 reload,
             }}
         >
