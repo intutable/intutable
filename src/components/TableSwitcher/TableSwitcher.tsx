@@ -20,7 +20,7 @@ export const TableSwitcher: React.FC = () => {
     const theme = useTheme()
     const router = useRouter()
 
-    const { state, loading, setTable, createTable, deleteTable } =
+    const { state, loading, setTable, createTable, deleteTable, renameTable } =
         useProjectCtx()
     const { enqueueSnackbar } = useSnackbar()
     const [anchorEL, setAnchorEL] = useState<HTMLButtonElement | null>(null)
@@ -54,15 +54,39 @@ export const TableSwitcher: React.FC = () => {
         }
     }
 
-    const handleRenameTable = async () => {}
-    const handleDeleteTable = async () => {
+    const handleRenameTable = async () => {
         try {
+            handleCloseContextMenu()
             if (anchorEL == null) return
             const tableId = Number.parseInt(anchorEL.value) as PM.Table.ID
             if (tableId == null) return
             const table = state?.tableList.find(tbl => tbl.tableId === tableId)
             if (table == null) return
+            const newName = prompt(
+                "Gib einen neuen Namen für deine Tabelle ein:"
+            )
+            if (!newName) return
+            await renameTable(table, newName)
+            router.replace(router.asPath)
+            enqueueSnackbar("Die Tabelle wurde umbenannt.", {
+                variant: "success",
+            })
+        } catch (error) {
+            console.log(error)
+            enqueueSnackbar("Die Tabelle konnte nicht umbenannt werden!", {
+                variant: "error",
+            })
+        }
+    }
+
+    const handleDeleteTable = async () => {
+        try {
             handleCloseContextMenu()
+            if (anchorEL == null) return
+            const tableId = Number.parseInt(anchorEL.value) as PM.Table.ID
+            if (tableId == null) return
+            const table = state?.tableList.find(tbl => tbl.tableId === tableId)
+            if (table == null) return
             const confirmed = confirm(
                 "Möchtest du deine Tabelle wirklich löschen?"
             )

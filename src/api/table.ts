@@ -74,7 +74,7 @@ export const createTableInProject = async (
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         createTableInProject.name,
-        { userId: user.id, projectId, table: tableName },
+        { userId: user.id, projectId, tableName },
         user.authCookie
     )
 }
