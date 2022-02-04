@@ -6,8 +6,8 @@ import { ProjectManagement as PM } from "."
 
 /**
  * // TODO: moves this whole thing into /components/DataGrid/
+ * // TODO: make all props readonly
  */
-// TODO: make all props readonly
 
 // /**
 //  * Manages how a user can access a cell.

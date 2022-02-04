@@ -32,6 +32,12 @@ export type ProjectContextProps = {
     createTable: (name: PM.Table.Name) => Promise<void>
     renameTable: (table: PM.Table, newName: PM.Table.Name) => Promise<void>
     deleteTable: (table: PM.Table) => Promise<void>
+    createColumn: (columnName: PM.Column.Name) => Promise<void>
+    renameColumn: (
+        columnId: PM.Column.ID,
+        newName: PM.Column.Name
+    ) => Promise<void>
+    deleteColumn: (columnId: PM.Column.ID) => Promise<void>
     /**
      * ### Manually reloads the whole state
      * This will be removed in a further version.
@@ -55,6 +61,9 @@ const initialState: ProjectContextProps = {
     createTable: undefined!,
     renameTable: undefined!,
     deleteTable: undefined!,
+    createColumn: undefined!,
+    renameColumn: undefined!,
+    deleteColumn: undefined!,
     reload: undefined!,
 }
 
@@ -247,6 +256,30 @@ export const ProjectCtxProvider: React.FC = props => {
         }
     }
 
+    // #################### column dispatchers ####################
+
+    // [ ] implemented ; [ ] tested
+    const createColumn = async (columnName: PM.Column.Name): Promise<void> => {}
+
+    // [x] implemented ; [ ] tested
+    const renameColumn = async (
+        columnId: PM.Column.ID,
+        newName: PM.Column.Name
+    ): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+        if (state?.currentTable) throw new Error("No table is set!")
+        try {
+            setLoading(true)
+            await API.put.columnName(columnId, newName)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // [ ] implemented ; [ ] tested
+    const deleteColumn = async (columnId: PM.Column.ID): Promise<void> => {}
+
     // #################### deprecated dispatchers ####################
 
     // [ ] implemented ; [ ] tested
@@ -274,6 +307,10 @@ export const ProjectCtxProvider: React.FC = props => {
                 createTable,
                 renameTable,
                 deleteTable,
+                // column dispatchers
+                createColumn,
+                renameColumn,
+                deleteColumn,
                 // deprecated
                 reload,
             }}

@@ -45,12 +45,12 @@ export const getTableData = async (
         getTableData.name,
         { tableId },
         user.authCookie
-    )) as PM.SerializedServerResponse.Table
+    )) as PM.DBFormat.Table
 
     // rename props: parse backend col to `ServerColumn`
     const columns: SerializedColumn[] = coreResponse.columns.map(col => {
         return {
-            key: col.columnName,
+            key: col._id.toString(),
             name: col.columnName,
             editable: Boolean(col.editable),
             editor: col.type as CellType,

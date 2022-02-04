@@ -1,3 +1,4 @@
+import { Row } from "@app/api"
 import React, { useState } from "react"
 import type { Editor } from "."
 import { Input } from "./CustomInputField"
@@ -15,14 +16,14 @@ export const StringEditor: Editor = props => {
     }
 
     const row = props.row
-    const key = props.column.key
-    const content = row[key] as string | number | boolean
+    const key = props.column.key as keyof Row
+    const content = row[key]
 
     return (
         <Input
             onChange={handleChange}
             onBlur={() => props.onClose(true)}
-            value={content.toString()}
+            value={content}
         />
     )
 }
