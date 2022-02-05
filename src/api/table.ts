@@ -3,6 +3,7 @@ import {
     CellType,
     isCellType,
 } from "@app/components/DataGrid/Cell/celltype-management"
+import { COLOR_SCHEME } from "@app/theme/theme"
 import type { CurrentUser } from "@context/AuthContext"
 import { CHANNEL, SerializedColumn, ProjectManagement as PM } from "."
 import type { SerializedTableData, TableData } from "./types"
@@ -50,7 +51,7 @@ export const getTableData = async (
     // rename props: parse backend col to `ServerColumn`
     const columns: SerializedColumn[] = coreResponse.columns.map(col => {
         return {
-            key: col._id.toString(),
+            key: col.columnName,
             name: col.columnName,
             editable: Boolean(col.editable),
             editor: col.type as CellType,
