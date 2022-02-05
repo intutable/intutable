@@ -71,7 +71,6 @@ const deserialize = (table: SerializedTableData): TableData => {
         (row, index) =>
             ({
                 ...row,
-                [__KEYS__.ID_COL_KEY]: index + 1,
                 [__KEYS__.SELECT_COL_KEY]: <Checkbox />,
             } as Row)
     )
@@ -95,17 +94,6 @@ const deserialize = (table: SerializedTableData): TableData => {
             )
         },
     }))
-
-    // 1.2
-    const idCol: Column = {
-        name: "ID",
-        key: __KEYS__.ID_COL_KEY,
-        editable: false,
-        resizable: true,
-        sortable: true,
-        width: 80,
-    }
-    columns.unshift(idCol)
 
     // 1.2
     const selectCol: Column = {

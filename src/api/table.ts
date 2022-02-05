@@ -52,7 +52,7 @@ export const getTableData = async (
     const columns: SerializedColumn[] = coreResponse.columns.map(col => {
         return {
             key: col.columnName,
-            name: col.columnName,
+            name: col.displayName,
             editable: Boolean(col.editable),
             editor: col.type as CellType,
         }

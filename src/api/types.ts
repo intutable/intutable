@@ -50,18 +50,15 @@ type Table<COL, ROW> = {
 export type Column = ReactDataGrid_Column<Row>
 
 const SELECT_COL_KEY = "__select__" as const
-const ID_COL_KEY = "__id__" as const
 
-export const __KEYS__ = { SELECT_COL_KEY, ID_COL_KEY } as const
+export const __KEYS__ = { SELECT_COL_KEY } as const
 
 export type Row = {
-    readonly [ID_COL_KEY]: number
     [SELECT_COL_KEY]: React.ReactElement
     [key: string]: unknown
 }
 
 export type SummaryRow = {
-    readonly [ID_COL_KEY]: number
     selectedCount: number
     totalCount: number
 }

@@ -48,7 +48,8 @@ create table columns(
     columnName text,
     editable integer default 1 not null,
     hidden integer default 0 not null,
-    type text default "string" not null
+    type text default "string" not null,
+    displayName text not null
 );
 
 
@@ -96,19 +97,19 @@ insert into projecttables(projectId, tableId) values(1, 1);
 insert into projecttables(projectId, tableId) values(1, 2);
 insert into projecttables(projectId, tableId) values(1, 3);
 
-insert into columns(columnName) values("_id");
-insert into columns(columnName) values("vorname");
-insert into columns(columnName) values("nachname");
-insert into columns(columnName) values("email");
+insert into columns(columnName, displayName) values("_id", "ID");
+insert into columns(columnName, displayName) values("vorname", "Vorname");
+insert into columns(columnName, displayName) values("nachname", "Nachname");
+insert into columns(columnName, displayName) values("email", "E-Mail");
 
-insert into columns(columnName) values("_id");
-insert into columns(columnName) values("bezeichnung");
-insert into columns(columnName) values("gruendung");
-insert into columns(columnName) values("aufloesung");
+insert into columns(columnName, displayName) values("_id", "ID");
+insert into columns(columnName, displayName) values("bezeichnung", "Bezeichnung");
+insert into columns(columnName, displayName) values("gruendung", "Gründung");
+insert into columns(columnName, displayName) values("aufloesung", "Auflösung");
 
-insert into columns(columnName) values("_id");
-insert into columns(columnName) values("name");
-insert into columns(columnName) values("adresse");
+insert into columns(columnName, displayName) values("_id", "ID");
+insert into columns(columnName, displayName) values("name", "Name");
+insert into columns(columnName, displayName) values("adresse", "Vorname");
 
 insert into tablecolumns(tableId, columnId) values(1, 1);
 insert into tablecolumns(tableId, columnId) values(1, 2);
