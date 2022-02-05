@@ -44,8 +44,9 @@ export namespace ProjectManagement {
         export type Table = {
             table: ProjectManagement.Table
             columns: {
-                _id: number // `key` (identifier)
-                columnName: string // `name` (display name)
+                _id: number // ID of meta column
+                columnName: string // internal name (key)
+                displayName: string // display name
                 editable: 0 | 1
                 hidden: 0 | 1
                 type: string // `editor`
