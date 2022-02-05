@@ -96,23 +96,31 @@ insert into projecttables(projectId, tableId) values(1, 1);
 insert into projecttables(projectId, tableId) values(1, 2);
 insert into projecttables(projectId, tableId) values(1, 3);
 
+insert into columns(columnName) values("_id");
 insert into columns(columnName) values("vorname");
 insert into columns(columnName) values("nachname");
 insert into columns(columnName) values("email");
 
+insert into columns(columnName) values("_id");
 insert into columns(columnName) values("bezeichnung");
 insert into columns(columnName) values("gruendung");
 insert into columns(columnName) values("aufloesung");
 
+insert into columns(columnName) values("_id");
 insert into columns(columnName) values("name");
 insert into columns(columnName) values("adresse");
 
 insert into tablecolumns(tableId, columnId) values(1, 1);
 insert into tablecolumns(tableId, columnId) values(1, 2);
 insert into tablecolumns(tableId, columnId) values(1, 3);
-insert into tablecolumns(tableId, columnId) values(2, 4);
+insert into tablecolumns(tableId, columnId) values(1, 4);
+
 insert into tablecolumns(tableId, columnId) values(2, 5);
 insert into tablecolumns(tableId, columnId) values(2, 6);
-insert into tablecolumns(tableId, columnId) values(3, 7);
-insert into tablecolumns(tableId, columnId) values(3, 8);
+insert into tablecolumns(tableId, columnId) values(2, 7);
+insert into tablecolumns(tableId, columnId) values(2, 8);
+
+insert into tablecolumns(tableId, columnId) values(3, 9);
+insert into tablecolumns(tableId, columnId) values(3, 10);
+insert into tablecolumns(tableId, columnId) values(3, 11);
 
