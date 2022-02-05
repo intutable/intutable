@@ -35,7 +35,7 @@ const ProjectSlugPage: NextPage<
 
     // #################### states ####################
 
-    const { state, loading, error, setProject } = useProjectCtx()
+    const { state, loading, error, setProject, setTable } = useProjectCtx()
     const { API, loading: authLoading } = useAuth()
     // const proxy: TableData = {}
     // const [table, _setTable] = useState<TableData>(proxy)
@@ -49,11 +49,22 @@ const ProjectSlugPage: NextPage<
 
     // #################### private methods ####################
 
-    const handleRowsChange = (rows: Row[], data: RowsChangeData<Row>) => {
-        // TODO: handle row update here
-        // this method will receive row content updates from the editors
-        // TODO before: implement methods to ProjectContext that check types at runtime (via proxy)
-        console.log(rows)
+    const handleRowsChange = async (rows: Row[], data: RowsChangeData<Row>) => {
+        const newRow = rows[data.indexes[0]]
+        const changedCol = data.column.key
+
+        // Temporaray fix
+        const currentProjectId = props.project.projectId
+        const currentTable = state!.currentTable!.table!
+
+        await API!.put.row(
+            // THIS NEEDS TO GO
+            "p" + currentProjectId + "_" + currentTable.tableName,
+            [ "_id", newRow["_id"]],
+            { [changedCol]: newRow[changedCol] }
+        )
+        await API!.get.table(currentTable.tableId)
+            .then(data => setTable(data.table))
     }
 
     useEffect(() => {
