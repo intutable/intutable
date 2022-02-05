@@ -65,6 +65,10 @@ create table if not exists p1_personen(
 
 insert into p1_personen(vorname, nachname, email) 
 values("Raphael", "Kirchholtes", "dk457@stud.uni-heidelberg");
+insert into p1_personen(vorname, nachname, email) 
+values("Kilian", "Folger", "ub437@stud.uni-heidelberg");
+insert into p1_personen(vorname, nachname, email) 
+values("Nikita-Nick", "Funk", "kf235@stud.uni-heidelberg");
 
 create table if not exists p1_kommissionen(
     _id integer primary key not null,
