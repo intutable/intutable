@@ -65,8 +65,8 @@ create table if not exists p1_personen(
 
 insert into p1_personen(vorname, nachname, email) 
 values("Raphael", "Kirchholtes", "dk457@stud.uni-heidelberg");
-insert into p1_personen(vorname, nachname, email) 
-values("Kilian", "Folger", "ub437@stud.uni-heidelberg");
+insert into p1_personen(_id, vorname, nachname, email) 
+values(1337, "Kilian", "Folger", "ub437@stud.uni-heidelberg");
 insert into p1_personen(vorname, nachname, email) 
 values("Nikita-Nick", "Funk", "kf235@stud.uni-heidelberg");
 
@@ -96,7 +96,7 @@ insert into projecttables(projectId, tableId) values(1, 1);
 insert into projecttables(projectId, tableId) values(1, 2);
 insert into projecttables(projectId, tableId) values(1, 3);
 
-insert into columns(columnName, displayName) values("_id", "ID");
+insert into columns(columnName, displayName) values("_id", "UID");
 insert into columns(columnName, displayName) values("vorname", "Vorname");
 insert into columns(columnName, displayName) values("nachname", "Nachname");
 insert into columns(columnName, displayName) values("email", "E-Mail");

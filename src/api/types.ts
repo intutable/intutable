@@ -50,11 +50,15 @@ type Table<COL, ROW> = {
 export type Column = ReactDataGrid_Column<Row>
 
 const SELECT_COL_KEY = "__select__" as const
+const RDG_ID_KEY = "__id__" as const
+const UID_KEY = "_id" as const
 
-export const __KEYS__ = { SELECT_COL_KEY } as const
+export const __KEYS__ = { SELECT_COL_KEY, RDG_ID_KEY, UID_KEY } as const
 
 export type Row = {
     [SELECT_COL_KEY]: React.ReactElement
+    [RDG_ID_KEY]: number
+    [UID_KEY]: number
     [key: string]: unknown
 }
 
@@ -70,12 +74,11 @@ export type TableData = Table<Column, Row>
 // #################################################################
 
 export type SerializedRow = {
+    [UID_KEY]: number
     [key: string]: unknown
 }
 
 export type SerializedTableData = Table<SerializedColumn, SerializedRow>
-
-// TODO: change naming to `Abstract[…]` e.g. `AbstractColumn`
 
 /**
  * Copied from react-data-grid's type 'Column' and modified to save an object

@@ -30,8 +30,10 @@ const serialize = (table: TableData): SerializedTableData => {
 
     // 1.1
     const rows: SerializedRow[] = table.rows.map(row => {
-        const { id, ...rest } = row
-        return rest
+        const sRow = { ...row } as SerializedRow
+        delete sRow[__KEYS__.RDG_ID_KEY]
+        delete sRow[__KEYS__.SELECT_COL_KEY]
+        return sRow
     })
 
     // 2. currently `editor` is not supported. `headerRenderer` does not need to be saved
@@ -56,21 +58,16 @@ const serialize = (table: TableData): SerializedTableData => {
 }
 
 /**
- * Deserializes
+ * Convert SerializedTableData (abstract, bound neither to database nor to
+ * GUI) to {@link TableData}, which can directly be used with RDG.
  */
 const deserialize = (table: SerializedTableData): TableData => {
-    /**
-     * TODO:
-     * 1.1 apply an SELCTOR and ID to each row
-     * 1.2 add ID and SELECTOR col
-     * 3. add missing properties (placeholders, since backend does not support them)
-     */
-
     // 1.1
     const rows: Row[] = table.rows.map(
         (row, index) =>
             ({
                 ...row,
+                [__KEYS__.RDG_ID_KEY]: index,
                 [__KEYS__.SELECT_COL_KEY]: <Checkbox />,
             } as Row)
     )
@@ -94,6 +91,17 @@ const deserialize = (table: SerializedTableData): TableData => {
             )
         },
     }))
+
+    // Add unique indices so that DataGrid can index cells
+    const rdgIdCol: Column = {
+        name: "ID",
+        key: __KEYS__.RDG_ID_KEY,
+        editable: false,
+        resizable: true,
+        sortable: true,
+        width: 80,
+    }
+    columns.unshift(rdgIdCol)
 
     // 1.2
     const selectCol: Column = {

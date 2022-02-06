@@ -190,6 +190,7 @@ export const ProjectCtxProvider: React.FC = props => {
 
     // [x] implemented ; [ ] tested
     const setTable = async (table: PM.Table): Promise<void> => {
+            console.log("setTable")
         if (user == null || API == null)
             throw new Error("Could not access the API!")
         if (table.tableId === state?.currentTable?.table.tableId) return
