@@ -71,7 +71,7 @@ const Login: NextPage = () => {
         if (error) enqueueSnackbar(error.message, { variant: "error" })
     }, [error, enqueueSnackbar])
 
-    const handleEnter = e => {
+    const handleEnter = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
             e.preventDefault()
             handleLogin()
