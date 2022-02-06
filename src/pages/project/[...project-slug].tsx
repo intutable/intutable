@@ -1,17 +1,10 @@
-import {
-    getCurrentUser,
-    makeAPI,
-    ProjectManagement as PM,
-    Row,
-    SerializedTableData,
-} from "@api"
+import { getCurrentUser, makeAPI, ProjectManagement as PM, Row } from "@api"
 import { TableSwitcher } from "@app/components/TableSwitcher/TableSwitcher"
 import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import Title from "@components/Head/Title"
 import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
-import { SerializableTable } from "@datagrid/utils"
 import { Box, Typography, useTheme } from "@mui/material"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import { useSnackbar } from "notistack"
@@ -50,8 +43,9 @@ const ProjectSlugPage: NextPage<
     // #################### private methods ####################
 
     const handleRowsChange = async (rows: Row[], data: RowsChangeData<Row>) => {
-        const changedRow = rows.find((row) =>
-            rowKeyGetter(row) === data.indexes[0])
+        const changedRow = rows.find(
+            row => rowKeyGetter(row) === data.indexes[0]
+        )
         const changedCol = data.column.key
 
         console.log(JSON.stringify(rows))
@@ -66,8 +60,9 @@ const ProjectSlugPage: NextPage<
             ["_id", changedRow["_id"]],
             { [changedCol]: changedRow[changedCol] }
         )
-        await API!.get.table(currentTable.tableId)
-                                   .then(data => setTable(data.table))
+        await API!.get
+            .table(currentTable.tableId)
+            .then(data => setTable(data.table))
     }
 
     useEffect(() => {
