@@ -45,7 +45,7 @@ const ProjectSlugPage: NextPage<
     const handleRowsChange = async (rows: Row[], data: RowsChangeData<Row>) => {
         const changedRow = rows.find(
             row => rowKeyGetter(row) === data.indexes[0]
-        )
+        )!
         const changedCol = data.column.key
 
         console.log(JSON.stringify(rows))
@@ -54,15 +54,14 @@ const ProjectSlugPage: NextPage<
         const currentProjectId = props.project.projectId
         const currentTable = state!.currentTable!.table!
 
-        await API!.put.row(
-            // THIS NEEDS TO GO
-            "p" + currentProjectId + "_" + currentTable.tableName,
-            ["_id", changedRow["_id"]],
-            { [changedCol]: changedRow[changedCol] }
-        )
-        await API!.get
-            .table(currentTable.tableId)
-            .then(data => setTable(data.table))
+        await API!.put
+            .row(
+                // THIS NEEDS TO GO
+                "p" + currentProjectId + "_" + currentTable.tableName,
+                ["_id", changedRow["_id"]],
+                { [changedCol]: changedRow[changedCol] }
+            )
+            .then(() => setTable(currentTable))
     }
 
     useEffect(() => {

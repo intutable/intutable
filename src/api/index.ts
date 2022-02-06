@@ -18,9 +18,7 @@ import {
     changeColumnName,
     removeColumn,
 } from "./column"
-import {
-    updateRow
-} from "./row"
+import { updateRow } from "./row"
 export * from "./types"
 export * from "./utils"
 export * from "./coreinterface"
@@ -51,7 +49,7 @@ export const makeAPI = (user: CurrentUser) =>
             tableName: changeTableName.bind(null, user),
             columnName: changeColumnName.bind(null, user),
             columnAttribute: () => "not implemented",
-            row: updateRow.bind(null, user)
+            row: updateRow.bind(null, user),
         },
         delete: {
             project: removeProject.bind(null, user),

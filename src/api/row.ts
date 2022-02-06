@@ -7,12 +7,12 @@ export const updateRow = async (
     user: CurrentUser,
     tableName: PM.Table.Name,
     condition: any[],
-    update: {[index: string]: any}
+    update: { [index: string]: any }
 ): Promise<void> => {
     await coreRequest(
         CHANNEL.DATABASE,
         "update",
         { table: tableName, condition, update },
         user.authCookie
-        )
+    )
 }

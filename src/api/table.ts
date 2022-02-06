@@ -5,8 +5,12 @@ import {
 } from "@app/components/DataGrid/Cell/celltype-management"
 import { COLOR_SCHEME } from "@app/theme/theme"
 import type { CurrentUser } from "@context/AuthContext"
-import { CHANNEL,  __KEYS__, ProjectManagement as PM } from "."
-import type { SerializedTableData, SerializedColumn, SerializedRow } from "./types"
+import { CHANNEL, __KEYS__, ProjectManagement as PM } from "."
+import type {
+    SerializedTableData,
+    SerializedColumn,
+    SerializedRow,
+} from "./types"
 
 /**
  * Fetches a list with the names of the tables of a project.
@@ -62,14 +66,13 @@ export const getTableData = async (
     const rows: SerializedRow[] = coreResponse.rows.map(row => {
         if (!(__KEYS__.UID_KEY in row))
             throw new TypeError("Row missing unique ID")
-        else
-            return (row as SerializedRow)
+        else return row as SerializedRow
     })
 
     const table: SerializedTableData = {
         table: coreResponse.table,
         columns,
-        rows
+        rows,
     }
 
     return table
