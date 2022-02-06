@@ -9,13 +9,13 @@ import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 
 const validateUsername = (username: string): true | Error =>
-    username.length > 6
+    username.length > 7
         ? true
-        : new Error("Der Benutzername muss mindestens 7 Zeichen lang sein!")
+        : new Error("Der Benutzername muss mindestens 8 Zeichen lang sein!")
 const validatePassword = (password: string): true | Error =>
-    password.length > 2
+    password.length > 7
         ? true
-        : new Error("Das Passwort muss mindestens 3 Zeichen lang sein!")
+        : new Error("Das Passwort muss mindestens 8 Zeichen lang sein!")
 
 type FormData = {
     username: string
@@ -27,7 +27,7 @@ const textFieldStyle: SxProps<Theme> = {
     my: 2,
 }
 
-const Login: NextPage = props => {
+const Login: NextPage = () => {
     const router = useRouter()
     const errorMessage =
         typeof router.query.error === "string"
@@ -68,34 +68,21 @@ const Login: NextPage = props => {
     }
 
     useEffect(() => {
-        window.addEventListener("keypress", e => {
-            if (e.key === "Enter") handleEnter()
-        })
-
-        return () => window.removeEventListener("keypress", handleEnter)
-    }, [])
-
-    useEffect(() => {
         if (error) enqueueSnackbar(error.message, { variant: "error" })
-    }, [error])
+    }, [error, enqueueSnackbar])
 
-    const handleEnter = () => {
-        // TODO: enter does not work
-        if (usernameValid === true && passwordValid === true && error == null)
+    const handleEnter = e => {
+        if (e.key === "Enter") {
+            e.preventDefault()
             handleLogin()
-        else
-            enqueueSnackbar(
-                "Die Anmeldedaten entsprechen nicht den Anforderungen!",
-                { variant: "warning" }
-            )
+        }
     }
 
     const handleLogin = async () => {
         try {
             setLoading(true)
             await login(form.username, form.password)
-            setLoading(false) // TODO: does not update when `login` throws, ask @LemongrabThree how to handle error responses correctly
-            router.push("/")
+            setLoading(false) // TODO: does not update when `login` throws
         } catch (error) {
             setLoading(false)
             if (error instanceof Error || typeof error === "string") {
@@ -121,6 +108,7 @@ const Login: NextPage = props => {
         <>
             <Title title="Anmelden" />
             <Box
+                onKeyPress={handleEnter}
                 sx={{
                     width: "100%",
                     height: "100%",
