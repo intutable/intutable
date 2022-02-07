@@ -57,7 +57,7 @@ export const AuthProvider: React.FC = props => {
     useEffect(() => {
         setLoading(true)
         // check if a user is already logged in
-        ;(async _ => {
+        ;(async () => {
             setUser(await getCurrentUser())
             setLoading(false)
         })()
@@ -67,12 +67,9 @@ export const AuthProvider: React.FC = props => {
         setLoading(true)
         try {
             await coreLogout()
-            // BUG: error is probably here
             await coreLogin(username, password)
             const user = await getCurrentUser()
             setUser(user)
-        } catch (error) {
-            console.error(1, error)
         } finally {
             setLoading(false)
         }

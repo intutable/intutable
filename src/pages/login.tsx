@@ -1,12 +1,14 @@
-import { useAuth } from "@app/context/AuthContext"
+import { AUTH_COOKIE_KEY, useAuth } from "@app/context/AuthContext"
 import Title from "@components/Head/Title"
 import { Paper } from "@components/LoginOutRegister/Paper"
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
-import type { NextPage } from "next"
+import type { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
+import { makeError } from "@app/utils/makeError"
+import { getCurrentUser } from "@app/api"
 
 const validateUsername = (username: string): true | Error =>
     username.length > 7
@@ -84,26 +86,14 @@ const Login: NextPage = () => {
         try {
             setLoading(true)
             await login(form.username, form.password)
-            setLoading(false) // TODO: does not update when `login` throws
-        } catch (error) {
+            router.push("/")
+        } catch (err) {
+            const _error = makeError(err)
+            setError(_error)
+            enqueueSnackbar(_error.message, { variant: "error" })
+        } finally {
             setLoading(false)
-            if (error instanceof Error || typeof error === "string") {
-                const _error = error instanceof Error ? error : new Error(error)
-                setError(_error)
-                enqueueSnackbar(_error.message, { variant: "error" })
-            } else {
-                console.error(error)
-                enqueueSnackbar("Ein unbekannter Fehler ist aufgetreten", {
-                    variant: "error",
-                })
-            }
         }
-    }
-
-    // TODO: test if redirect works properly when user is already logged in
-    if (user) {
-        router.back()
-        return null
     }
 
     return (
@@ -174,6 +164,23 @@ const Login: NextPage = () => {
             </Box>
         </>
     )
+}
+
+export const getServerSideProps: GetServerSideProps = async context => {
+    const { req } = context
+
+    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+
+    const user = await getCurrentUser(authCookie).catch(e => {
+        console.error(e)
+        return null
+    })
+
+    if (user) return { notFound: true }
+
+    return {
+        props: {},
+    }
 }
 
 export default Login
