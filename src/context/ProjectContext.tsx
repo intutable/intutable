@@ -3,13 +3,6 @@ import { SerializableTable } from "@app/components/DataGrid/utils"
 import React, { useEffect, useState } from "react"
 import { useAuth } from "./AuthContext"
 
-const makeError = (error: unknown): Error =>
-    error instanceof Error
-        ? error
-        : typeof error === "string"
-        ? new Error(error)
-        : new Error("Internal Unknown Error: Could not load the Table!")
-
 /**
  * // TODO: use a reducer instead of that many methods
  */
