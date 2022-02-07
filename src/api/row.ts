@@ -6,8 +6,8 @@ import { ProjectManagement as PM } from "./Type Annotations/ProjectManagement"
 export const updateRow = async (
     user: CurrentUser,
     tableName: PM.Table.Name,
-    condition: any[],
-    update: { [index: string]: any }
+    condition: unknown[],
+    update: { [index: string]: unknown } // TODO: maybe replace type by `Row`??
 ): Promise<void> => {
     await coreRequest(
         CHANNEL.DATABASE,
