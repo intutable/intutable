@@ -79,6 +79,8 @@ const Login: NextPage = () => {
     }
 
     const handleLogin = async () => {
+        if (usernameValid !== true || passwordValid !== true || error != null)
+            return
         try {
             setLoading(true)
             await login(form.username, form.password)
