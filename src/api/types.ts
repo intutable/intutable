@@ -6,7 +6,6 @@ import { ProjectManagement as PM } from "."
 
 /**
  * // TODO: moves this whole thing into /components/DataGrid/
- * // TODO: make all props readonly
  */
 
 // /**
@@ -49,16 +48,19 @@ type Table<COL, ROW> = {
 
 export type Column = ReactDataGrid_Column<Row>
 
-const SELECT_COL_KEY = "__select__" as const
-const RDG_ID_KEY = "__id__" as const
-const UID_KEY = "_id" as const
-
+const SELECT_COL_KEY = "__select__"
+const RDG_ID_KEY = "__id__"
+const UID_KEY = "_id"
+/**
+ * Includes names for keys on objects.
+ * Used for rows.
+ */
 export const __KEYS__ = { SELECT_COL_KEY, RDG_ID_KEY, UID_KEY } as const
 
 export type Row = {
     [SELECT_COL_KEY]: React.ReactElement
-    [RDG_ID_KEY]: number
-    [UID_KEY]: number
+    readonly [RDG_ID_KEY]: number
+    readonly [UID_KEY]: number
     [key: string]: unknown
 }
 
@@ -74,7 +76,7 @@ export type TableData = Table<Column, Row>
 // #################################################################
 
 export type SerializedRow = {
-    [UID_KEY]: number
+    readonly [UID_KEY]: number
     [key: string]: unknown
 }
 
