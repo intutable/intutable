@@ -8,7 +8,7 @@ import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedView
 import LoadingSkeleton from "@components/DataGrid/LoadingSkeleton/LoadingSkeleton"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
-import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
+import * as ToolbarItem from "@components/DataGrid/Toolbar/ToolbarItems"
 import { rowKeyGetter } from "@components/DataGrid/utils"
 import Title from "@components/Head/Title"
 import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
@@ -98,23 +98,8 @@ const TablePage: React.FC<TablePageProps> = props => {
                     />
                     <Box>
                         <Toolbar position="top">
-                            <TItem.AddCol />
-                            <Toolbar.Item onClickHandler={() => {}}>
-                                Tool 1
-                            </Toolbar.Item>
-                            <Toolbar.Item onClickHandler={() => {}}>
-                                Tool 2
-                            </Toolbar.Item>
-                            <Toolbar.Item onClickHandler={() => {}}>
-                                Tool 3
-                            </Toolbar.Item>
-                            <Toolbar.Item onClickHandler={() => {}}>
-                                Tool 4
-                            </Toolbar.Item>
-                            <Toolbar.Item onClickHandler={() => {}}>
-                                Tool 5
-                            </Toolbar.Item>
-                            <TItem.FileDownload getData={() => []} />
+                            <ToolbarItem.AddCol />
+                            <ToolbarItem.FileDownload getData={() => []} />
                         </Toolbar>
                         <DataGrid
                             className={"rdg-" + theme.palette.mode}
@@ -140,13 +125,7 @@ const TablePage: React.FC<TablePageProps> = props => {
                             // onSelectedRowsChange={setSelectedRows}
                         />
                         <Toolbar position="bottom">
-                            <TItem.Connection status={"connected"} />
-                            <Toolbar.Item onClickHandler={() => {}}>
-                                Tool 1
-                            </Toolbar.Item>
-                            <Toolbar.Item onClickHandler={() => {}}>
-                                Tool 2
-                            </Toolbar.Item>
+                            <ToolbarItem.Connection status={"connected"} />
                         </Toolbar>
                     </Box>
                 </>

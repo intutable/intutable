@@ -1,6 +1,11 @@
 import type { ProjectManagement as PM } from "@app/api"
 import { SerializableTable } from "@app/components/DataGrid/utils"
-import type { Column, SerializedTableData, TableData } from "@app/types/types"
+import type {
+    Column,
+    SerializedColumn,
+    SerializedTableData,
+    TableData,
+} from "@app/types/types"
 import React, { useCallback, useState } from "react"
 import { useAuth } from "./AuthContext"
 
@@ -11,7 +16,7 @@ export type TableContextProps = {
     tableData: TableData
     loading: boolean
     error: Error | null
-    createColumn: (key: Column["key"]) => Promise<void>
+    createColumn: (col: SerializedColumn) => Promise<void>
     renameColumnKey: (
         key: Column["key"],
         newName: PM.Column.Name
@@ -50,27 +55,42 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         SerializableTable.deserialize(props.ssrHydratedTableData)
     )
     const [loading, setLoading] = useState<boolean>(false)
-    const [error, setError] = useState<Error | null>(null)
+    const [error] = useState<Error | null>(null)
 
     // #################### life cycles ####################
+
+    // #################### utility ####################
+
+    const _reloadTable = useCallback(async () => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+        const table = await API.get.table(tableData.table.tableId)
+        setTableData(SerializableTable.deserialize(table))
+    }, [API, tableData.table.tableId, user])
 
     // #################### column dispatchers ####################
 
     const createColumn = useCallback(
-        async (key: Column["key"]): Promise<void> => {
+        async (col: SerializedColumn): Promise<void> => {
             if (user == null || API == null)
                 throw new Error("Could not access the API!")
             try {
                 setLoading(true)
                 await API.post.column(
                     tableData.table.tableId,
-                    key.toLocaleLowerCase()
+                    col.key.toLocaleLowerCase()
                 )
+                await API.put.columnName(
+                    tableData.table.tableId,
+                    col.key,
+                    col.name
+                )
+                await _reloadTable()
             } finally {
                 setLoading(false)
             }
         },
-        [API, tableData.table.tableId, user]
+        [API, _reloadTable, tableData.table.tableId, user]
     )
 
     const renameColumnKey = useCallback(
@@ -80,11 +100,12 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
             try {
                 setLoading(true)
                 await API.put.columnKey(tableData.table.tableId, key, newKey)
+                await _reloadTable()
             } finally {
                 setLoading(false)
             }
         },
-        [API, tableData.table.tableId, user]
+        [API, _reloadTable, tableData.table.tableId, user]
     )
 
     const renameColumnName = useCallback(
@@ -94,11 +115,12 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
             try {
                 setLoading(true)
                 await API.put.columnName(tableData.table.tableId, key, newName)
+                await _reloadTable()
             } finally {
                 setLoading(false)
             }
         },
-        [API, tableData.table.tableId, user]
+        [API, _reloadTable, tableData.table.tableId, user]
     )
 
     const deleteColumn = useCallback(
@@ -108,16 +130,13 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
             try {
                 setLoading(true)
                 await API.delete.column(tableData.table.tableId, key)
+                await _reloadTable()
             } finally {
                 setLoading(false)
             }
         },
-        [API, tableData.table.tableId, user]
+        [API, _reloadTable, tableData.table.tableId, user]
     )
-
-    // #################### utility ####################
-
-    const _reloadTable = async () => {}
 
     // #################### Provider ####################
 

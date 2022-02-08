@@ -4,13 +4,12 @@ import AddIcon from "@mui/icons-material/Add"
 import { Button } from "@mui/material"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
-import type { PredefinedToolbarItem } from "../../types"
 import { AddColumnModal } from "./AddColumnModal"
 
 /**
  * Toolbar Item for adding cols to the data grid.
  */
-const AddCol: PredefinedToolbarItem = () => {
+const AddCol: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
@@ -20,13 +19,12 @@ const AddCol: PredefinedToolbarItem = () => {
     }
     const handleCloseModal = () => setAnchorEL(null)
 
-    const { createColumn, renameColumnName } = useTableCtx()
+    const { createColumn } = useTableCtx()
 
     const handleCreateColumn = async (col: SerializedColumn) => {
         try {
             // TODO: check if name or key is already taken
-            await createColumn(col.key)
-            await renameColumnName(col.key, col.name)
+            await createColumn(col)
             enqueueSnackbar(`Du hast erfolgreich '${col.name}' erstellt!`, {
                 variant: "success",
             })
