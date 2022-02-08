@@ -10,7 +10,7 @@ import type {
     SerializedTableData,
     SerializedColumn,
     SerializedRow,
-} from "./types"
+} from "../types/types"
 
 /**
  * Fetches a list with the names of the tables of a project.

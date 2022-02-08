@@ -1,4 +1,4 @@
-import { SerializedColumn } from "@app/api/types"
+import { SerializedColumn } from "@app/types/types"
 import {
     EditorType,
     RuntimeEditorMap,

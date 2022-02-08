@@ -19,7 +19,7 @@ import {
     removeColumn,
 } from "./column"
 import { updateRow } from "./row"
-export * from "./types"
+export * from "../types/types"
 export * from "./utils"
 export * from "./coreinterface"
 export * from "./Type Annotations/ProjectManagement"

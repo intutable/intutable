@@ -2,7 +2,7 @@ import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
 import type { EditorType } from "../components/DataGrid/Editor/editor-management/editorTypes"
 import React from "react"
-import { ProjectManagement as PM } from "."
+import { ProjectManagement as PM } from "../api"
 
 /**
  * // TODO: moves this whole thing into /components/DataGrid/
