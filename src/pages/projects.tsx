@@ -1,9 +1,8 @@
-import { ProjectManagement as PM } from "@app/api"
-import { makeAPI } from "@app/api"
+import { makeAPI, ProjectManagement as PM } from "@app/api"
 import { getCurrentUser } from "@app/api/utils"
+import { useProjectList } from "@app/hooks/useProjectList"
 import Title from "@components/Head/Title"
-import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
-import { useProjectCtx } from "@context/ProjectContext"
+import { AUTH_COOKIE_KEY } from "@context/AuthContext"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -23,7 +22,7 @@ import type {
 } from "next"
 import { useRouter } from "next/dist/client/router"
 import { useSnackbar } from "notistack"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -58,20 +57,43 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
         </Menu>
     )
 }
+type AddProjectCardProps = {
+    handleCreate: () => Promise<void>
+}
+
+const AddProjectCard: React.FC<AddProjectCardProps> = props => {
+    const theme = useTheme()
+    return (
+        <Card
+            onClick={async () => {
+                await props.handleCreate()
+            }}
+            sx={{
+                minWidth: 150,
+                minHeight: 150,
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                "&:hover": {
+                    bgcolor: theme.palette.action.hover,
+                },
+            }}
+        >
+            <CardContent>{props.children}</CardContent>
+        </Card>
+    )
+}
 
 type ProjectCardProps = {
-    project?: PM.Project
-    onClick?: () => void
-    children: string | React.ReactElement
+    project: PM.Project
+    handleRename: (project: PM.Project) => Promise<void>
+    handleDelete: (project: PM.Project) => Promise<void>
+    children: string
 }
 const ProjectCard: React.FC<ProjectCardProps> = props => {
     const router = useRouter()
     const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
-
-    const { user, API } = useAuth()
-    const { state, renameProject, deleteProject, setProject } = useProjectCtx()
-
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
     const handleOpenContextMenu = (
@@ -82,63 +104,15 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    const handleRenameProject = async () => {
-        if (props.project == null) return
-        try {
-            handleCloseContextMenu()
-            const newName = prompt(
-                "Gib einen neuen Namen für dein Projekt ein:"
-            )
-            if (!newName) return
-            await renameProject(props.project, newName)
-            router.replace(router.asPath)
-            enqueueSnackbar("Das Projekt wurde umbenannt.", {
-                variant: "success",
-            })
-        } catch (error) {
-            console.log(error)
-            enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", {
-                variant: "error",
-            })
-        }
-    }
-
-    const handleDeleteProject = async () => {
-        if (props.project == null) return
-        try {
-            if (typeof props.children !== "string") return
-            handleCloseContextMenu()
-            const confirmed = confirm(
-                "Möchtest du dein Projekt wirklich löschen?"
-            )
-            if (!confirmed) return
-            await deleteProject(props.project)
-            router.replace(router.asPath)
-            enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
-        } catch (error) {
-            console.log(error)
-            enqueueSnackbar("Projekt konnte nicht gelöscht werden!", {
-                variant: "error",
-            })
-        }
-    }
-
-    const handleOnClick = async () => {
-        if (props.project) {
-            await setProject(props.project)
-            router.push("/project/" + props.project.projectId)
-        }
+    const handleOnClick = () => {
+        router.push("/project/" + props.project.projectId)
     }
 
     return (
         <>
             <Card
-                onClick={props.onClick || handleOnClick}
-                onContextMenu={
-                    props.project?.projectName
-                        ? handleOpenContextMenu
-                        : undefined
-                }
+                onClick={handleOnClick}
+                onContextMenu={handleOpenContextMenu}
                 sx={{
                     minWidth: 150,
                     minHeight: 150,
@@ -159,12 +133,22 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                     open={anchorEL != null}
                     onClose={handleCloseContextMenu}
                 >
-                    <Box onClick={handleRenameProject}>Rename</Box>
                     <Box
-                        onClick={handleDeleteProject}
+                        onClick={async () => {
+                            handleCloseContextMenu()
+                            await props.handleRename(props.project)
+                        }}
+                    >
+                        Umbenennen
+                    </Box>
+                    <Box
+                        onClick={async () => {
+                            handleCloseContextMenu()
+                            await props.handleDelete(props.project)
+                        }}
                         sx={{ color: theme.palette.warning.main }}
                     >
-                        Delete
+                        Löschen
                     </Box>
                 </ProjectContextMenu>
             )}
@@ -182,39 +166,70 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { createProject } = useProjectCtx()
+    const { projectList, createProject, renameProject, deleteProject } =
+        useProjectList(props.projectList)
 
-    const handleAddProject = async () => {
+    const handleCreateProject = async () => {
         try {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
             const isValid = isValidName(name)
-            if (isValid instanceof Error)
-                return enqueueSnackbar(isValid.message, { variant: "error" })
-            const nameIsTaken = props.projectList
+            if (isValid instanceof Error) {
+                enqueueSnackbar(isValid.message, { variant: "error" })
+                return
+            }
+            const nameIsTaken = projectList
                 .map(proj => proj.projectName.toLowerCase())
                 .includes(name.toLowerCase())
-            if (nameIsTaken)
-                return enqueueSnackbar(
+            if (nameIsTaken) {
+                enqueueSnackbar(
                     "Dieser Name wird bereits für eines deiner Projekte verwendet!",
                     { variant: "error" }
                 )
+                return
+            }
             await createProject(name)
-            /**
-             * // BUG
-             * before update: we were creating a new project by name and redirected to the new project page by the new name in the url
-             * after upfate: since we are using ids now, we need to route by id instead of name BUT we do not get the id back from the POST call.
-             * we could fetch all projects and find id by the name but it is not guaranteed that namens are unique
-             */
-            // router.push("/project/" + name) // therefore this feature is not possible and we need to reload thr page to show the new project card
-            router.replace(router.asPath)
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })
         } catch (error) {
-            console.log(error)
             enqueueSnackbar("Das Projekt konnte nicht erstellt werden!", {
+                variant: "error",
+            })
+        }
+    }
+
+    const handleRenameProject = async (project: PM.Project) => {
+        try {
+            const newName = prompt(
+                "Gib einen neuen Namen für dein Projekt ein:"
+            )
+            if (!newName) return
+            await renameProject(project, newName)
+            enqueueSnackbar("Das Projekt wurde umbenannt.", {
+                variant: "success",
+            })
+        } catch (error) {
+            enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", {
+                variant: "error",
+            })
+        }
+    }
+
+    const handleDeleteProject = async (project: PM.Project) => {
+        try {
+            const confirmed = confirm(
+                "Möchtest du dein Projekt wirklich löschen?"
+            )
+            if (!confirmed) return
+            await deleteProject(project)
+            router.replace(router.asPath)
+            enqueueSnackbar("Projekt wurde gelöscht.", {
+                variant: "success",
+            })
+        } catch (error) {
+            enqueueSnackbar("Projekt konnte nicht gelöscht werden!", {
                 variant: "error",
             })
         }
@@ -227,17 +242,21 @@ const ProjectsPage: NextPage<
                 Deine Projekte
             </Typography>
             <Grid container spacing={2}>
-                {props.projectList.map((proj, i) => (
+                {projectList.map((proj, i) => (
                     <Grid item key={i}>
-                        <ProjectCard project={proj}>
+                        <ProjectCard
+                            handleDelete={handleDeleteProject}
+                            handleRename={handleRenameProject}
+                            project={proj}
+                        >
                             {proj.projectName}
                         </ProjectCard>
                     </Grid>
                 ))}
                 <Grid item>
-                    <ProjectCard onClick={handleAddProject}>
+                    <AddProjectCard handleCreate={handleCreateProject}>
                         <AddIcon />
-                    </ProjectCard>
+                    </AddProjectCard>
                 </Grid>
             </Grid>
         </>
