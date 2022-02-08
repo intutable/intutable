@@ -5,12 +5,12 @@ import {
 } from "@app/components/DataGrid/Editor/editor-management"
 import { COLOR_SCHEME } from "@app/theme/theme"
 import type { CurrentUser } from "@context/AuthContext"
-import { CHANNEL, __KEYS__, ProjectManagement as PM } from "."
+import { CHANNEL, __KEYS__, ProjectManagement as PM } from ".."
 import type {
     SerializedTableData,
     SerializedColumn,
     SerializedRow,
-} from "../types/types"
+} from "../../types/types"
 
 /**
  * Fetches a list with the names of the tables of a project.

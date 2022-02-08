@@ -1,8 +1,8 @@
 import { coreRequest } from "@app/api/coreinterface/coreRequest"
 import type { CurrentUser } from "@context/AuthContext"
 import { Server } from "http"
-import { CHANNEL, SerializedColumn } from "."
-import { ProjectManagement as PM } from "./Type Annotations/ProjectManagement"
+import { CHANNEL, SerializedColumn } from ".."
+import { ProjectManagement as PM } from "../Type Annotations/ProjectManagement"
 
 export const getColumnsFromTable = async (
     user: CurrentUser,

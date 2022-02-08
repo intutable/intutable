@@ -4,21 +4,21 @@ import {
     createProject,
     removeProject,
     changeProjectName,
-} from "./project"
+} from "./endpoints/project"
 import {
     getTablesFromProject,
     getTableData,
     createTableInProject,
     removeTable,
     changeTableName,
-} from "./table"
+} from "./endpoints/table"
 import {
     getColumnsFromTable,
     createColumnInTable,
     changeColumnName,
     removeColumn,
-} from "./column"
-import { updateRow } from "./row"
+} from "./endpoints/column"
+import { updateRow } from "./endpoints/row"
 export * from "../types/types"
 export * from "./utils"
 export * from "./coreinterface"

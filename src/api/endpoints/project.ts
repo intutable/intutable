@@ -1,7 +1,7 @@
 import { coreRequest } from "@app/api/coreinterface/coreRequest"
 import type { CurrentUser } from "@context/AuthContext"
-import { CHANNEL } from "."
-import { ProjectManagement as PM } from "./Type Annotations/ProjectManagement"
+import { CHANNEL } from ".."
+import { ProjectManagement as PM } from "../Type Annotations/ProjectManagement"
 
 /**
  * Fetches a list with objects each describing a project of a specific user containg an id and name.
