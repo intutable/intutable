@@ -1,7 +1,7 @@
 import { Row } from "@app/api"
 import React, { useState } from "react"
 import type { Editor } from "."
-import { Input } from "./CustomInputField"
+import { Input } from "./Input"
 
 /**
  * {@link https://github.com/adazzle/react-data-grid/blob/main/src/editors/TextEditor.tsx}

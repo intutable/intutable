@@ -8,17 +8,17 @@ import {
     Typography,
 } from "@mui/material"
 import {
-    CellType,
-    isCellType,
-    _RuntimeCellTypeMap,
-} from "@datagrid/Cell/celltype-management"
+    EditorType,
+    isEditorType,
+    RuntimeEditorMap,
+} from "@app/components/DataGrid/Editor/editor-management"
 import { ChangeCellTypeDialog } from "./ChangeCellTypeDialog"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import { useProjectCtx } from "@app/context/ProjectContext"
 
 type ColumnHeaderProps = {
     label: string
-    type: CellType
+    type: EditorType
 }
 
 export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
@@ -36,7 +36,7 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOpenChangeTypeModal = () => setChangeTypeModalOpen(true)
-    const handleCloseChangeTypeModal = (newType?: CellType) => {
+    const handleCloseChangeTypeModal = (newType?: EditorType) => {
         // TODO: change type
         /**
          * Things to do:

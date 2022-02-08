@@ -1,7 +1,7 @@
 import { Currency, Percentage, Avatar } from "./utility-classes"
 
 /**
- * Types that can be used in a cell.
+ * Different types of editors.
  * • `string` is stored as a string
  * • `number` is stored as a number
  * • `percentage` is stored as a number with a percentage symbol e.g. `12,34 %` (german format with comma as decimal separator)
@@ -17,7 +17,7 @@ import { Currency, Percentage, Avatar } from "./utility-classes"
  * • `multiSelect` is stored as an array of strings which represents a selectable list of options (multiple options can be selected)
  * • `complex` is stored as a complex object
  */
-type _CellTypeMap = {
+type EditorTypeMap = {
     string: string
     number: number
     percentage: Percentage
@@ -34,8 +34,8 @@ type _CellTypeMap = {
     complex: Record<string, unknown>
 }
 
-// Note: keep this up to date with the types in `_CellTypeMap`
-export const _RuntimeCellTypeMap = [
+// Note: keep this up to date with the types in `EditorTypeMap`
+export const RuntimeEditorMap = [
     "string",
     "number",
     "percentage",
@@ -55,7 +55,7 @@ export const _RuntimeCellTypeMap = [
 /**
  * Types that can be used in a cell.
  */
-export type CellType = keyof _CellTypeMap
+export type EditorType = keyof EditorTypeMap
 
 /**
  * Tells if a ReadonlyArray includes the element
@@ -67,31 +67,17 @@ const includes = <T extends U, U>(
 ): value is T => coll.includes(value as T)
 
 /**
- * Checks if a value if of cell type.
+ * Checks if a value is a editor type.
  * @param value The value to check
  * @returns
  */
-export const isCellType = (value: unknown): value is CellType => {
+export const isEditorType = (value: unknown): value is EditorType => {
     if (typeof value !== "string") return false
-    return includes(_RuntimeCellTypeMap, value)
+    return includes(RuntimeEditorMap, value)
 }
 
 /**
- * Specifies the type of a CellType; e.g. (`string` -> string) or ("currency" -> Currency Class)
+ * Specifies the type of input for a editor; e.g. (`string` -> string) or ("currency" -> Currency Class)
  */
-export type CellData<T extends CellType> = T extends keyof _CellTypeMap
-    ? _CellTypeMap[T]
-    : never
-
-/**
- * Manages how a user can access a cell.
- * Tells nothing about the cell's visibility to other users.
- * @default editable
- */
-export type CellAccess = "readonly" | "editable"
-
-/**
- * Position of the cell's content.
- * @default left
- */
-export type CellContentPosition = "left" | "right" | "center"
+export type EditorInputData<T extends EditorType> =
+    T extends keyof EditorTypeMap ? EditorTypeMap[T] : never

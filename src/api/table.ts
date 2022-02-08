@@ -1,8 +1,8 @@
 import { coreRequest } from "@app/api/coreinterface/coreRequest"
 import {
-    CellType,
-    isCellType,
-} from "@app/components/DataGrid/Cell/celltype-management"
+    EditorType,
+    isEditorType,
+} from "@app/components/DataGrid/Editor/editor-management"
 import { COLOR_SCHEME } from "@app/theme/theme"
 import type { CurrentUser } from "@context/AuthContext"
 import { CHANNEL, __KEYS__, ProjectManagement as PM } from "."
@@ -59,7 +59,7 @@ export const getTableData = async (
             key: col.columnName,
             name: col.displayName,
             editable: Boolean(col.editable),
-            editor: col.type as CellType,
+            editor: col.type as EditorType,
         }
     })
 

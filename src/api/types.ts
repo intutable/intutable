@@ -1,6 +1,6 @@
 import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
-import type { CellType } from "../components/DataGrid/Cell/celltype-management/celltypes"
+import type { EditorType } from "../components/DataGrid/Editor/editor-management/editorTypes"
 import React from "react"
 import { ProjectManagement as PM } from "."
 
@@ -108,5 +108,5 @@ export type SerializedColumn = {
     /**
      * @default string
      */
-    editor: CellType
+    editor: EditorType
 }

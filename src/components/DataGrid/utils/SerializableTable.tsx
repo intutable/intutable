@@ -7,9 +7,12 @@ import {
     SerializedRow,
     __KEYS__,
 } from "@api"
-import { isCellType, CellType } from "@datagrid/Cell/celltype-management"
+import {
+    isEditorType,
+    EditorType,
+} from "@app/components/DataGrid/Editor/editor-management"
 import type { EditorProps, HeaderRendererProps } from "react-data-grid"
-import { getEditor } from "@app/components/DataGrid/Cell/EditorComponents"
+import { getEditor } from "@app/components/DataGrid/Editor/EditorComponents"
 import { ColumnHeader } from "@datagrid/ColumnHeader"
 import { Checkbox } from "@mui/material"
 import { TextEditor } from "react-data-grid"
@@ -43,7 +46,7 @@ const serialize = (table: TableData): SerializedTableData => {
                 name: col.name,
                 key: col.key,
                 editable: col.editable,
-                editor: "string" as CellType, // TODO: infer from component (do this when it is finally supported)
+                editor: "string" as EditorType, // TODO: infer from component (do this when it is finally supported)
             } as SerializedColumn)
     )
 
@@ -77,7 +80,7 @@ const deserialize = (table: SerializedTableData): TableData => {
         name: col.name,
         key: col.key,
         editable: col.editable,
-        editor: isCellType(col.editor) ? getEditor(col.editor) : undefined, // TODO: maybe add the default TextEditor from rdg?!
+        editor: isEditorType(col.editor) ? getEditor(col.editor) : undefined, // TODO: maybe add the default TextEditor from rdg?!
         // editor: TextEditor,
         editorOptions: {
             editOnClick: true,

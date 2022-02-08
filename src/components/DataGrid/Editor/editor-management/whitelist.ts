@@ -1,6 +1,6 @@
-import { CellType, isCellType, _RuntimeCellTypeMap } from "./celltypes"
+import { EditorType, isEditorType, RuntimeEditorMap } from "./editorTypes"
 import Obj from "@utils/Obj"
-import { CellData } from "."
+import { EditorInputData } from "."
 
 /**
  * • 'none' means that one type A is not convertable to another type B regardless of the circumstances. Note that 'none' is not used in a whitelist because this would be redundant.
@@ -13,10 +13,10 @@ export const isConversionType = (value: unknown): value is ConversionType =>
     ["none", "independent", "dependent"].includes(value)
 
 /**
- * If type of CellType: an implict conversion type of 'independent' is assumed.
+ * If type of EditorType: an implict conversion type of 'independent' is assumed.
  */
 export type Convertable = {
-    type: CellType
+    type: EditorType
     /**
      * @default independet
      */
@@ -31,7 +31,7 @@ export const isOfTypeConvertable = (value: unknown): value is Convertable => {
         Object.prototype.hasOwnProperty.call(value, "conversion")
     )
         if (
-            isCellType((value as { type: unknown }).type as string) &&
+            isEditorType((value as { type: unknown }).type as string) &&
             isConversionType((value as { conversion: unknown }).conversion)
         )
             return true
@@ -48,7 +48,7 @@ export type WhiteList = {
      * type of name `key` can be converted to the types in its value array.
      * otherwise not.
      */
-    [key in CellType]: (Convertable | CellType)[]
+    [key in EditorType]: (Convertable | EditorType)[]
 }
 
 export const CONVERSION_TABLE: WhiteList = {
@@ -92,13 +92,13 @@ export const CONVERSION_TABLE: WhiteList = {
 }
 
 export class ConversionWarning extends Error {
-    private readonly typeA: CellType
-    private readonly typeB: CellType
+    private readonly typeA: EditorType
+    private readonly typeB: EditorType
     public readonly conversionType: ConversionType = "dependent"
     constructor(
         displayWarning: string,
-        currentType: CellType,
-        newType: CellType
+        currentType: EditorType,
+        newType: EditorType
     ) {
         super(displayWarning)
         this.name = this.constructor.name
@@ -120,10 +120,10 @@ export type IsConvertableResponse = {
     message?: Error | ConversionWarning
 }
 
-const review = <FROM extends CellType>(
-    from: CellType,
-    to: CellType,
-    data: CellData<FROM>
+const review = <FROM extends EditorType>(
+    from: EditorType,
+    to: EditorType,
+    data: EditorInputData<FROM>
 ): boolean => {
     // TODO: implement
     return false
@@ -131,13 +131,13 @@ const review = <FROM extends CellType>(
 
 /**
  * Tells if type A can be converted to type B.
- * @param {CellType} from A
- * @param {CellType} to B
+ * @param {EditorType} from A
+ * @param {EditorType} to B
  * @returns either true or an error with a message that can be displayed to the user.
  */
 export const isConvertable = (
-    from: CellType,
-    to: CellType
+    from: EditorType,
+    to: EditorType
 ): IsConvertableResponse | typeof review => {
     const currentType = CONVERSION_TABLE[from]
     const isConvertableWithoutParsing = currentType.includes(to)

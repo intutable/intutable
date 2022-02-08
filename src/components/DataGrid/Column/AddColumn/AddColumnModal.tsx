@@ -1,8 +1,8 @@
 import { SerializedColumn } from "@app/api/types"
 import {
-    CellType,
-    _RuntimeCellTypeMap,
-} from "@datagrid/Cell/celltype-management/celltypes"
+    EditorType,
+    RuntimeEditorMap,
+} from "@app/components/DataGrid/Editor/editor-management/editorTypes"
 import {
     Box,
     Button,
@@ -92,10 +92,13 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             label="Typ"
                             value={options.editor}
                             onChange={e =>
-                                setOption("editor", e.target.value as CellType)
+                                setOption(
+                                    "editor",
+                                    e.target.value as EditorType
+                                )
                             }
                         >
-                            {_RuntimeCellTypeMap.map((type, i) => (
+                            {RuntimeEditorMap.map((type, i) => (
                                 <MenuItem key={i} value={type}>
                                     {type}
                                 </MenuItem>
