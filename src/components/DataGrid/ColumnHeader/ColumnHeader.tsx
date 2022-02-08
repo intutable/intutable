@@ -1,20 +1,16 @@
-import React, { useState } from "react"
+import { EditorType } from "@app/components/DataGrid/Editor/editor-management"
+import { useTableCtx } from "@app/context/TableContext"
+import MoreVertIcon from "@mui/icons-material/MoreVert"
 import {
     Box,
-    useTheme,
+    IconButton,
     Menu,
     MenuItem,
-    IconButton,
     Typography,
+    useTheme,
 } from "@mui/material"
-import {
-    EditorType,
-    isEditorType,
-    RuntimeEditorMap,
-} from "@app/components/DataGrid/Editor/editor-management"
+import React, { useState } from "react"
 import { ChangeCellTypeDialog } from "./ChangeCellTypeDialog"
-import MoreVertIcon from "@mui/icons-material/MoreVert"
-import { useProjectCtx } from "@app/context/ProjectContext"
 
 type ColumnHeaderProps = {
     label: string
@@ -27,7 +23,7 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const [changeTypeModalOpen, setChangeTypeModalOpen] = useState(false)
 
-    const { renameColumn } = useProjectCtx()
+    const { renameColumn } = useTableCtx()
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
