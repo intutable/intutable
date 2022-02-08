@@ -1,123 +1,85 @@
 import { makeAPI } from "@api"
 import { getCurrentUser, ProjectManagement as PM } from "@api/utils"
-import { TableSwitcher } from "@app/components/TableSwitcher/TableSwitcher"
+import { TableNavigator } from "@app/components/TableNavigator"
+import { TableCtxProvider, useTableCtx } from "@app/context/TableContext"
+import { Row, SerializedTableData, TableData } from "@app/types/types"
+import { DynamicRouteQuery } from "@app/utils/DynamicRouteQuery"
 import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
+import LoadingSkeleton from "@components/DataGrid/LoadingSkeleton/LoadingSkeleton"
+import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
+import { rowKeyGetter } from "@components/DataGrid/utils"
 import Title from "@components/Head/Title"
 import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
 import { Box, Typography, useTheme } from "@mui/material"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
-import { CalculatedColumn, RowsChangeData } from "react-data-grid"
-import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
-import DataGrid from "react-data-grid"
-import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
-import { rowKeyGetter } from "@components/DataGrid/utils"
-import { useProjectCtx } from "@app/context/ProjectContext"
-import { Row } from "../../types/types"
+import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import Link from "@components/Link"
 
-type ProjectSlugPageProps = {
+type TablePageProps = {
     project: PM.Project
+    tableList: PM.Table.List
+    currentTable: PM.Table
 }
 
-const ProjectSlugPage: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = props => {
+const TablePage: React.FC<TablePageProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
     // #################### states ####################
 
-    const { state, loading, error, setProject, setTable } = useProjectCtx()
-    const { API, loading: authLoading } = useAuth()
-    // const proxy: TableData = {}
-    // const [table, _setTable] = useState<TableData>(proxy)
-    // const setTable = (table: TableData) => {
-    //     // TODO: write to table only via proxy
-    // }
     const [detailedViewOpen, setDetailedViewOpen] = useState<{
         row: Row
         column: CalculatedColumn<Row>
     } | null>(null)
 
+    const { tableData, error, loading } = useTableCtx()
+
     // #################### private methods ####################
 
     const handleRowsChange = async (rows: Row[], data: RowsChangeData<Row>) => {
-        const changedRow = rows.find(
-            row => rowKeyGetter(row) === data.indexes[0]
-        )!
-        const changedCol = data.column.key
-
-        console.log(JSON.stringify(rows))
-        console.log(JSON.stringify(data))
-        // Temporaray fix
-        const currentProjectId = props.project.projectId
-        const currentTable = state!.currentTable!.table!
-
-        await API!.put
-            .row(
-                // THIS NEEDS TO GO
-                "p" + currentProjectId + "_" + currentTable.tableName,
-                ["_id", changedRow["_id"]],
-                { [changedCol]: changedRow[changedCol] }
-            )
-            .then(() => setTable(currentTable))
+        // const changedRow = rows.find(
+        //     row => rowKeyGetter(row) === data.indexes[0]
+        // )!
+        // const changedCol = data.column.key
+        // console.log(JSON.stringify(rows))
+        // console.log(JSON.stringify(data))
+        // // Temporaray fix
+        // const currentProjectId = props.project.projectId
+        // const currentTable = state!.currentTable!.table!
+        // await API!.put
+        //     .row(
+        //         // THIS NEEDS TO GO
+        //         "p" + currentProjectId + "_" + currentTable.tableName,
+        //         ["_id", changedRow["_id"]],
+        //         { [changedCol]: changedRow[changedCol] }
+        //     )
     }
-
-    useEffect(() => {
-        // BUG: hacky workaround to preserve state on page reload
-        if (state == null && loading === false) {
-            setProject(props.project)
-        }
-    }, [loading, props.project, setProject, state])
 
     // #################### life cycle methods ####################
 
     useEffect(() => {
-        if (
-            state == null &&
-            API &&
-            loading === false &&
-            authLoading === false
-        ) {
-            setProject(props.project)
-        }
-    }, [state, props.project])
-
-    useEffect(() => {
-        if (error instanceof Error) {
-            console.log(error)
-            enqueueSnackbar("Die Tabelle konnte nicht geladen werden!", {
-                variant: "error",
-            })
-        }
-    }, [error])
+        console.info(tableData)
+    }, [tableData])
 
     // #################### component ####################
-
-    const ErrorComponent =
-        error instanceof Error ? (
-            <Typography>
-                Error: Could not load the Table (reason: {error.message}
-                )!
-            </Typography>
-        ) : state?.project == null ? (
-            <Typography>
-                Error: Could not load the Table (reason: State Management
-                Issue)!
-            </Typography>
-        ) : null
 
     return (
         <>
             <Title title={props.project.projectName} />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
-                {props.project.projectName}
+                <Link href={`/projects`}>{props.project.projectName}</Link> /{" "}
+                <Link href={`/project/${props.project.projectId}`}>
+                    {props.currentTable.tableName}
+                </Link>
             </Typography>
 
-            {ErrorComponent || loading ? (
+            {error ? (
+                error.message
+            ) : loading ? (
                 <LoadingSkeleton />
             ) : (
                 <>
@@ -128,7 +90,11 @@ const ProjectSlugPage: NextPage<
                             onCloseHandler={() => setDetailedViewOpen(null)}
                         />
                     )}
-                    <TableSwitcher />
+                    <TableNavigator
+                        project={props.project}
+                        currentTable={props.currentTable}
+                        tableList={props.tableList}
+                    />
                     <Box>
                         <Toolbar position="top">
                             <TItem.AddCol />
@@ -151,14 +117,10 @@ const ProjectSlugPage: NextPage<
                         </Toolbar>
                         <DataGrid
                             className={"rdg-" + theme.palette.mode}
-                            rows={
-                                state?.currentTable
-                                    ? state.currentTable.rows
-                                    : []
-                            }
+                            rows={tableData.rows}
                             columns={
-                                state?.currentTable
-                                    ? state.currentTable.columns
+                                tableData.columns.length > 0
+                                    ? tableData.columns
                                     : [{ key: "id", name: "ID" }]
                             }
                             noRowsFallback={<NoRowsRenderer />}
@@ -192,18 +154,42 @@ const ProjectSlugPage: NextPage<
     )
 }
 
+type TablePageWrapperProps = {
+    project: PM.Project
+    tableList: PM.Table.List
+    ssrHydratedTableData: SerializedTableData
+}
+
+const TablePageWrapper: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = props => {
+    return (
+        <TableCtxProvider ssrHydratedTableData={props.ssrHydratedTableData}>
+            <TablePage
+                project={props.project}
+                tableList={props.tableList}
+                currentTable={props.ssrHydratedTableData.table}
+            />
+        </TableCtxProvider>
+    )
+}
+
 export const getServerSideProps: GetServerSideProps<
-    ProjectSlugPageProps
+    TablePageWrapperProps
 > = async context => {
-    const { params, req } = context
+    const { req } = context
+    const query = context.query as DynamicRouteQuery<
+        typeof context.query,
+        "tableId" | "projectId"
+    >
+    const projectId: PM.Project.ID = Number.parseInt(query.projectId)
+    const tableId: PM.Table.ID = Number.parseInt(query.tableId)
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-
     const user = await getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })
-
     if (!user)
         return {
             redirect: {
@@ -213,27 +199,20 @@ export const getServerSideProps: GetServerSideProps<
         }
     const API = makeAPI(user)
 
-    if (params && Object.hasOwnProperty.call(params, "project-slug")) {
-        const _projectId = params["project-slug"]
-        if (_projectId != null) {
-            const projectIdStr = Array.isArray(_projectId)
-                ? _projectId[0]
-                : _projectId
-            const projectId: PM.Project.ID = Number.parseInt(projectIdStr)
+    const project = (await API.get.projectsList()).find(
+        proj => proj.projectId === projectId
+    )
+    if (project == null) return { notFound: true }
+    const tableList = await API.get.tablesList(project.projectId)
+    const data = await API.get.table(tableId)
 
-            const project = (await API.get.projectsList()).find(
-                proj => proj.projectId === projectId
-            )
-            if (project == null) return { notFound: true }
-
-            return {
-                props: {
-                    project: project,
-                },
-            }
-        }
+    return {
+        props: {
+            project,
+            tableList,
+            ssrHydratedTableData: data,
+        },
     }
-    return { notFound: true }
 }
 
-export default ProjectSlugPage
+export default TablePageWrapper
