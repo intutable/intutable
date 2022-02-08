@@ -1,4 +1,4 @@
-import { Row } from "@app/api"
+import { Row } from "@app/types/types"
 import React from "react"
 import { EditorProps } from "react-data-grid"
 import { EditorType } from "../editor-management/editorTypes"

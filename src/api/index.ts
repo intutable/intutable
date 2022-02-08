@@ -19,16 +19,8 @@ import {
     removeColumn,
 } from "./endpoints/column"
 import { updateRow } from "./endpoints/row"
-export * from "../types/types"
-export * from "./utils"
-export * from "./coreinterface"
-export * from "./Type Annotations/ProjectManagement"
 
-export enum CHANNEL {
-    DATABASE = "database",
-    PROJECT_MANAGEMENT = "project-management",
-    USER_AUTHENTICATION = "user-authentication",
-}
+export * from "./utils/ProjectManagement_TypeAnnotations"
 
 // TODO: integrate into AuthContext and export from this ctx
 export const makeAPI = (user: CurrentUser) =>

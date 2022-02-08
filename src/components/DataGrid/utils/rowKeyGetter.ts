@@ -1,5 +1,5 @@
 import type { Row } from "@app/types/types"
-import { __KEYS__ } from "@api"
+import { __KEYS__ } from "@app/types/types"
 import React from "react"
 
 /**

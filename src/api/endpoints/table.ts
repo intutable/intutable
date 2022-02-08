@@ -1,15 +1,16 @@
-import { coreRequest } from "@app/api/coreinterface/coreRequest"
+import { coreRequest } from "@app/api/utils/coreRequest"
 import {
     EditorType,
     isEditorType,
 } from "@app/components/DataGrid/Editor/editor-management"
 import { COLOR_SCHEME } from "@app/theme/theme"
 import type { CurrentUser } from "@context/AuthContext"
-import { CHANNEL, __KEYS__, ProjectManagement as PM } from ".."
-import type {
+import { CHANNEL, ProjectManagement as PM } from "../utils"
+import {
     SerializedTableData,
     SerializedColumn,
     SerializedRow,
+    __KEYS__,
 } from "../../types/types"
 
 /**

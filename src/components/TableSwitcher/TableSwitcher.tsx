@@ -8,7 +8,7 @@ import {
     Menu,
     MenuItem,
 } from "@mui/material"
-import { ProjectManagement as PM } from "@api"
+import { ProjectManagement as PM } from "@app/api"
 import { useProjectCtx } from "@context/ProjectContext"
 import { isValidName, prepareName } from "@app/utils/validateName"
 import { useRouter } from "next/router"

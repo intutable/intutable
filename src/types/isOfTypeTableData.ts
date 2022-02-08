@@ -1,4 +1,4 @@
-import { TableData } from "../../types/types"
+import { TableData } from "./types"
 
 export const isOfTypeTableData = (data: unknown): data is TableData => {
     if (typeof data !== "object") return false

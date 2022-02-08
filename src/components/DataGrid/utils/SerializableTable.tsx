@@ -6,7 +6,7 @@ import {
     Column,
     SerializedRow,
     __KEYS__,
-} from "@api"
+} from "@app/types/types"
 import {
     isEditorType,
     EditorType,

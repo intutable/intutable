@@ -1,9 +1,5 @@
-import { makeAPI } from "@api"
-import {
-    coreLogin,
-    coreLogout,
-    getCurrentUser,
-} from "@app/api/coreinterface/login"
+import { makeAPI } from "@app/api"
+import { coreLogin, coreLogout, getCurrentUser } from "@app/api/utils/coreLogin"
 import { useRouter } from "next/router"
 import React, { useEffect, useState } from "react"
 

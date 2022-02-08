@@ -1,6 +1,6 @@
-import { ProjectManagement as PM } from "@api"
+import { ProjectManagement as PM } from "@app/api"
 import { makeAPI } from "@app/api"
-import { getCurrentUser } from "@app/api/coreinterface"
+import { getCurrentUser } from "@app/api/utils"
 import Title from "@components/Head/Title"
 import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
 import { useProjectCtx } from "@context/ProjectContext"

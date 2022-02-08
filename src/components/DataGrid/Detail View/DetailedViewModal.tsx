@@ -1,4 +1,4 @@
-import { Row } from "@app/api"
+import { Row } from "../../../types/types"
 import {
     Modal,
     Box,

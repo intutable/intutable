@@ -1,7 +1,7 @@
 const getCoreUrl = (): string => process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 import { coreRequest } from "./coreRequest"
 import { CurrentUser, AUTH_COOKIE_KEY } from "@context/AuthContext"
-import { CHANNEL } from ".."
+import { CHANNEL } from "."
 
 /**
  * Log in to core via a HTTP form request.

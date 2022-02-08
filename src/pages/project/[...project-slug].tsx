@@ -1,4 +1,5 @@
-import { getCurrentUser, makeAPI, ProjectManagement as PM, Row } from "@api"
+import { makeAPI } from "@api"
+import { getCurrentUser, ProjectManagement as PM } from "@api/utils"
 import { TableSwitcher } from "@app/components/TableSwitcher/TableSwitcher"
 import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
@@ -15,6 +16,7 @@ import DataGrid from "react-data-grid"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
 import { rowKeyGetter } from "@components/DataGrid/utils"
 import { useProjectCtx } from "@app/context/ProjectContext"
+import { Row } from "../../types/types"
 
 type ProjectSlugPageProps = {
     project: PM.Project

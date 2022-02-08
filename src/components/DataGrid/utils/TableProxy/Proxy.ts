@@ -1,4 +1,4 @@
-import { TableData as Table } from "@app/api"
+import { TableData as Table } from "@app/types/types"
 
 export {}
 

@@ -1,4 +1,5 @@
-import type { ProjectManagement as PM, TableData } from "@api"
+import type { ProjectManagement as PM } from "@app/api"
+import type { TableData } from "@app/types/types"
 import { SerializableTable } from "@app/components/DataGrid/utils"
 import React, { useEffect, useState } from "react"
 import { useAuth } from "./AuthContext"

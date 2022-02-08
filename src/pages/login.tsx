@@ -8,7 +8,7 @@ import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import { makeError } from "@app/utils/makeError"
-import { getCurrentUser } from "@app/api"
+import { getCurrentUser } from "@app/api/utils"
 
 const validateUsername = (username: string): true | Error =>
     username.length > 7
