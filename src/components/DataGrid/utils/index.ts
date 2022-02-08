@@ -1,2 +1,3 @@
-export * from "./rowKeyGetter"
-export * from "./SerializableTable"
+// legacy
+export * from "../../../types/rowKeyGetter"
+export * from "../../../api/utils/SerializableTable"
