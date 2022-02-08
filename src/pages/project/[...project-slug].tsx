@@ -45,9 +45,7 @@ const ProjectSlugPage: NextPage<
     // #################### private methods ####################
 
     const handleRowsChange = async (rows: Row[], data: RowsChangeData<Row>) => {
-        const changedRow = rows.find(
-            row => rowKeyGetter(row) === data.indexes[0]
-        )!
+        const changedRow = rows[data.indexes[0]]
         const changedCol = data.column.key
 
         console.log(JSON.stringify(rows))
