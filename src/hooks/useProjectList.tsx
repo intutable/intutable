@@ -5,7 +5,7 @@ import { useState } from "react"
 export const useProjectList = (ssrHydrated: PM.Project.List) => {
     const { user, API } = useAuth()
 
-    const [loading, setLoading] = useState<boolean>(true)
+    const [loading, setLoading] = useState<boolean>(false)
     const [projectList, setProjectList] = useState<PM.Project.List>(ssrHydrated)
 
     // #################### project dispatchers ####################
@@ -52,12 +52,12 @@ export const useProjectList = (ssrHydrated: PM.Project.List) => {
     const _refresh = async () => {
         if (user == null || API == null)
             throw new Error("Could not access the API!")
-        const newProjectList = await API?.get.projectsList()
+        const newProjectList = await API.get.projectsList()
         setProjectList(newProjectList)
     }
 
     return {
-        projectList,
+        tablesList: projectList,
         loading,
         createProject,
         renameProject,
