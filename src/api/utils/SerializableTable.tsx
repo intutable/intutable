@@ -88,6 +88,7 @@ const deserialize = (table: SerializedTableData): TableData => {
         headerRenderer: (props: HeaderRendererProps<Row>) => {
             return (
                 <ColumnHeader
+                    ckey={props.column.key}
                     label={props.column.name as string}
                     type={col.editor}
                 />

@@ -55,14 +55,16 @@ export const getTableData = async (
     )) as PM.DBFormat.Table
 
     // rename props: parse backend col to `ServerColumn`
-    const columns: SerializedColumn[] = coreResponse.columns.map(col => {
-        return {
-            key: col.columnName,
-            name: col.displayName,
-            editable: Boolean(col.editable),
-            editor: col.type as EditorType,
-        }
-    })
+    const columns: SerializedColumn[] = coreResponse.columns
+        .map(col => {
+            return {
+                key: col.columnName,
+                name: col.displayName,
+                editable: Boolean(col.editable),
+                editor: col.type as EditorType,
+            }
+        })
+        .filter(col => col.key !== __KEYS__.UID_KEY)
 
     const rows: SerializedRow[] = coreResponse.rows.map(row => {
         if (!(__KEYS__.UID_KEY in row))

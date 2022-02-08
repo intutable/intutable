@@ -1,7 +1,7 @@
 import type { ProjectManagement as PM } from "@app/api"
-import type { Column, SerializedTableData, TableData } from "@app/types/types"
 import { SerializableTable } from "@app/components/DataGrid/utils"
-import React, { useEffect, useState } from "react"
+import type { Column, SerializedTableData, TableData } from "@app/types/types"
+import React, { useCallback, useState } from "react"
 import { useAuth } from "./AuthContext"
 
 /**
@@ -11,12 +11,16 @@ export type TableContextProps = {
     tableData: TableData
     loading: boolean
     error: Error | null
-    createColumn: (columnName: PM.Column.Name) => Promise<void>
-    renameColumn: (
-        columnId: PM.Column.ID,
+    createColumn: (key: Column["key"]) => Promise<void>
+    renameColumnKey: (
+        key: Column["key"],
         newName: PM.Column.Name
     ) => Promise<void>
-    deleteColumn: (columnId: PM.Column.ID) => Promise<void>
+    renameColumnName: (
+        key: Column["key"],
+        newName: PM.Column.Name
+    ) => Promise<void>
+    deleteColumn: (key: Column["key"]) => Promise<void>
 }
 
 const initialState: TableContextProps = {
@@ -24,7 +28,8 @@ const initialState: TableContextProps = {
     loading: true,
     error: null,
     createColumn: undefined!,
-    renameColumn: undefined!,
+    renameColumnKey: undefined!,
+    renameColumnName: undefined!,
     deleteColumn: undefined!,
 }
 
@@ -51,41 +56,96 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
 
     // #################### column dispatchers ####################
 
-    const createColumn = async (columnName: PM.Column.Name): Promise<void> => {}
+    const createColumn = useCallback(
+        async (key: Column["key"]): Promise<void> => {
+            if (user == null || API == null)
+                throw new Error("Could not access the API!")
+            try {
+                setLoading(true)
+                await API.post.column(
+                    tableData.table.tableId,
+                    key.toLocaleLowerCase()
+                )
+            } finally {
+                setLoading(false)
+            }
+        },
+        [API, tableData.table.tableId, user]
+    )
 
-    const renameColumn = async (
-        columnId: PM.Column.ID,
-        newName: PM.Column.Name
-    ): Promise<void> => {
-        if (user == null || API == null)
-            throw new Error("Could not access the API!")
-        try {
-            setLoading(true)
-            await API.put.columnName(columnId, newName)
-        } finally {
-            setLoading(false)
-        }
-    }
+    const renameColumnKey = useCallback(
+        async (key: Column["key"], newKey: Column["key"]): Promise<void> => {
+            if (user == null || API == null)
+                throw new Error("Could not access the API!")
+            try {
+                setLoading(true)
+                await API.put.columnKey(tableData.table.tableId, key, newKey)
+            } finally {
+                setLoading(false)
+            }
+        },
+        [API, tableData.table.tableId, user]
+    )
 
-    const deleteColumn = async (columnId: PM.Column.ID): Promise<void> => {}
+    const renameColumnName = useCallback(
+        async (key: Column["key"], newName: PM.Column.Name): Promise<void> => {
+            if (user == null || API == null)
+                throw new Error("Could not access the API!")
+            try {
+                setLoading(true)
+                await API.put.columnName(tableData.table.tableId, key, newName)
+            } finally {
+                setLoading(false)
+            }
+        },
+        [API, tableData.table.tableId, user]
+    )
+
+    const deleteColumn = useCallback(
+        async (key: Column["key"]): Promise<void> => {
+            if (user == null || API == null)
+                throw new Error("Could not access the API!")
+            try {
+                setLoading(true)
+                await API.delete.column(tableData.table.tableId, key)
+            } finally {
+                setLoading(false)
+            }
+        },
+        [API, tableData.table.tableId, user]
+    )
 
     // #################### utility ####################
 
+    const _reloadTable = async () => {}
+
     // #################### Provider ####################
 
+    const getContextValue = useCallback(
+        () => ({
+            // states
+            tableData,
+            loading,
+            error,
+            // column dispatchers
+            createColumn,
+            renameColumnKey,
+            renameColumnName,
+            deleteColumn,
+        }),
+        [
+            createColumn,
+            deleteColumn,
+            error,
+            loading,
+            renameColumnKey,
+            renameColumnName,
+            tableData,
+        ]
+    )
+
     return (
-        <TableContext.Provider
-            value={{
-                // states
-                tableData,
-                loading,
-                error,
-                // column dispatchers
-                createColumn,
-                renameColumn,
-                deleteColumn,
-            }}
-        >
+        <TableContext.Provider value={getContextValue()}>
             {props.children}
         </TableContext.Provider>
     )

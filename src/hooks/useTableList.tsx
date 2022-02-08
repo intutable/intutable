@@ -16,13 +16,10 @@ export const useTableList = (
     const createTable = async (name: PM.Table.Name) => {
         if (user == null || API == null)
             throw new Error("Could not access the API!")
-        console.log(name)
         try {
             setLoading(true)
             await API.post.table(project.projectId, name)
             await _refresh()
-        } catch (error) {
-            console.error(error)
         } finally {
             setLoading(false)
         }

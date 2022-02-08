@@ -71,7 +71,8 @@ const TablePage: React.FC<TablePageProps> = props => {
         <>
             <Title title={props.project.projectName} />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
-                <Link href={`/projects`}>{props.project.projectName}</Link> /{" "}
+                <Link href={`/projects`}>{props.project.projectName}</Link>{" "}
+                {"> "}
                 <Link href={`/project/${props.project.projectId}`}>
                     {props.currentTable.tableName}
                 </Link>

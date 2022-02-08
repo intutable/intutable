@@ -22,16 +22,10 @@ import {
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 
-// type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<
-//     infer ElementType
-// >
-//     ? ElementType
-//     : never
-// type Col = ElementType<TableData["columns"]>
-
 type AddColumnModalProps = {
     open: boolean
-    onClose: (col?: SerializedColumn) => void
+    onClose: () => void
+    onHandleCreateColumn: (column: SerializedColumn) => Promise<void>
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
@@ -47,10 +41,8 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const [valid, setValid] = useState(false)
 
     useEffect(() => {
-        // setOptions(prev => ({
-        //     ...prev,
-        //     key: prev.name,
-        // }))
+        if (options.name.length > 0) setValid(true)
+        setOption("key", options.name)
     }, [options.name])
 
     // DEV ONLY
@@ -145,10 +137,13 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <Button
-                    onClick={props.onClose.bind(null, options!)}
+                    onClick={async () => {
+                        await props.onHandleCreateColumn(options)
+                        props.onClose()
+                    }}
                     disabled={valid == false}
                 >
-                    Ändern
+                    Erstellen
                 </Button>
             </DialogActions>
         </Dialog>
