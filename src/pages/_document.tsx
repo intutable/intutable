@@ -4,13 +4,12 @@ import Document, {
     Head,
     Main,
     NextScript,
-    DocumentContext } from "next/document"
-
+    DocumentContext,
+} from "next/document"
 
 class MyDocument extends Document {
     // compatible w/ SSG
     static async getInitialProps(ctx: DocumentContext) {
-
         // Resolution order
         //
         // On the server:
@@ -38,8 +37,10 @@ class MyDocument extends Document {
         // TODO: implement emotion cache
 
         const initialProps = await Document.getInitialProps(ctx)
-        return { ...initialProps,
-                 styles: [...React.Children.toArray(initialProps.styles)] }
+        return {
+            ...initialProps,
+            styles: [...React.Children.toArray(initialProps.styles)],
+        }
     }
 
     render() {
@@ -53,7 +54,8 @@ class MyDocument extends Document {
                     <Main />
                     <NextScript />
                 </body>
-            </Html> )
+            </Html>
+        )
     }
 }
 

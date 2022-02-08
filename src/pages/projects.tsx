@@ -1,34 +1,29 @@
+import { ProjectManagement as PM } from "@app/api"
+import { makeAPI } from "@app/api"
+import { getCurrentUser } from "@app/api/utils"
+import Title from "@components/Head/Title"
+import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
+import { useProjectCtx } from "@context/ProjectContext"
+import AddIcon from "@mui/icons-material/Add"
+import {
+    Box,
+    Card,
+    CardContent,
+    Grid,
+    Menu,
+    MenuItem,
+    Typography,
+    useTheme,
+} from "@mui/material"
+import { isValidName, prepareName } from "@utils/validateName"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import Title from "@components/Head/Title"
-import {
-    Grid,
-    Card,
-    CardContent,
-    Typography,
-    Menu,
-    MenuItem,
-    Box,
-} from "@mui/material"
-import React, { useState } from "react"
 import { useRouter } from "next/dist/client/router"
-import { useTheme } from "@mui/material"
-import AddIcon from "@mui/icons-material/Add"
-import { isValidName, prepareName } from "@utils/validateName"
 import { useSnackbar } from "notistack"
-import {
-    getProjects,
-    createProject,
-    removeProject,
-    changeProjectName,
-    removeTableFromProject,
-} from "@api/endpoints"
-import { isAuthenticated } from "@app/api/endpoints/coreinterface"
-import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
+import React, { useEffect, useState } from "react"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -38,7 +33,6 @@ type ProjectContextMenuProps = {
 }
 const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
     const theme = useTheme()
-
     return (
         <Menu
             elevation={0}
@@ -66,35 +60,51 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
 }
 
 type ProjectCardProps = {
-    url?: string
+    project?: PM.Project
     onClick?: () => void
+    children: string | React.ReactElement
 }
 const ProjectCard: React.FC<ProjectCardProps> = props => {
     const router = useRouter()
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user } = useAuth()
+    const { user, API } = useAuth()
+    const { state, renameProject, deleteProject, setProject } = useProjectCtx()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
-    const handleOpenContextMenu = (event: any) => {
+    const handleOpenContextMenu = (
+        event: React.MouseEvent<HTMLDivElement, MouseEvent>
+    ) => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    const handleRenameProject = () => {
-        handleCloseContextMenu()
-        const newName = prompt("Gib einen neuen Namen für dein Projekt ein:")
-        if (!newName) return
-        // TODO: implement
-        // enqueueSnackbar("Das Projekt wurde umbenannt.", { variant: "success" })
-        // enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", { variant: "error" })
-        alert("Not implemented yet")
+    const handleRenameProject = async () => {
+        if (props.project == null) return
+        try {
+            handleCloseContextMenu()
+            const newName = prompt(
+                "Gib einen neuen Namen für dein Projekt ein:"
+            )
+            if (!newName) return
+            await renameProject(props.project, newName)
+            router.replace(router.asPath)
+            enqueueSnackbar("Das Projekt wurde umbenannt.", {
+                variant: "success",
+            })
+        } catch (error) {
+            console.log(error)
+            enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", {
+                variant: "error",
+            })
+        }
     }
 
     const handleDeleteProject = async () => {
+        if (props.project == null) return
         try {
             if (typeof props.children !== "string") return
             handleCloseContextMenu()
@@ -102,12 +112,8 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            if (!user)
-                return enqueueSnackbar("Bitte melde dich erneut an!", {
-                    variant: "error",
-                })
-            await removeProject(user, props.children as string)
-            // TODO: reload the project page
+            await deleteProject(props.project)
+            router.replace(router.asPath)
             enqueueSnackbar("Projekt wurde gelöscht.", { variant: "success" })
         } catch (error) {
             console.log(error)
@@ -117,14 +123,22 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
         }
     }
 
+    const handleOnClick = async () => {
+        if (props.project) {
+            await setProject(props.project)
+            router.push("/project/" + props.project.projectId)
+        }
+    }
+
     return (
         <>
             <Card
-                onClick={
-                    props.onClick ||
-                    (() => props.url && router.push("/project/" + props.url))
+                onClick={props.onClick || handleOnClick}
+                onContextMenu={
+                    props.project?.projectName
+                        ? handleOpenContextMenu
+                        : undefined
                 }
-                onContextMenu={props.url ? handleOpenContextMenu : undefined}
                 sx={{
                     minWidth: 150,
                     minHeight: 150,
@@ -139,7 +153,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             >
                 <CardContent>{props.children}</CardContent>
             </Card>
-            {props.url && anchorEL && (
+            {props.project && anchorEL && (
                 <ProjectContextMenu
                     anchorEL={anchorEL}
                     open={anchorEL != null}
@@ -159,7 +173,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 }
 
 type ProjectsPageProps = {
-    projects: Array<string>
+    projectList: PM.Project.List
 }
 const ProjectsPage: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -168,7 +182,7 @@ const ProjectsPage: NextPage<
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { user } = useAuth()
+    const { createProject } = useProjectCtx()
 
     const handleAddProject = async () => {
         try {
@@ -178,30 +192,31 @@ const ProjectsPage: NextPage<
             const isValid = isValidName(name)
             if (isValid instanceof Error)
                 return enqueueSnackbar(isValid.message, { variant: "error" })
-            const nameIsTaken = props.projects
-                .map(proj => proj.toLowerCase())
+            const nameIsTaken = props.projectList
+                .map(proj => proj.projectName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken)
                 return enqueueSnackbar(
                     "Dieser Name wird bereits für eines deiner Projekte verwendet!",
                     { variant: "error" }
                 )
-            if (!user)
-                return enqueueSnackbar("Bitte melde dich erneut an!", {
-                    variant: "error",
-                })
-            // TODO: make a request to backend here and then redirect to project (this request must be blocking, otherwise and errors occurs due to false execution order)
-            await createProject(user, name)
-            router.push("/project/" + name)
+            await createProject(name)
+            /**
+             * // BUG
+             * before update: we were creating a new project by name and redirected to the new project page by the new name in the url
+             * after upfate: since we are using ids now, we need to route by id instead of name BUT we do not get the id back from the POST call.
+             * we could fetch all projects and find id by the name but it is not guaranteed that namens are unique
+             */
+            // router.push("/project/" + name) // therefore this feature is not possible and we need to reload thr page to show the new project card
+            router.replace(router.asPath)
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })
         } catch (error) {
             console.log(error)
-            return enqueueSnackbar(
-                "Das Projekt konnte nicht erstellt werden!",
-                { variant: "error" }
-            )
+            enqueueSnackbar("Das Projekt konnte nicht erstellt werden!", {
+                variant: "error",
+            })
         }
     }
 
@@ -212,9 +227,11 @@ const ProjectsPage: NextPage<
                 Deine Projekte
             </Typography>
             <Grid container spacing={2}>
-                {props.projects.map((proj, i) => (
+                {props.projectList.map((proj, i) => (
                     <Grid item key={i}>
-                        <ProjectCard url={proj}>{proj}</ProjectCard>
+                        <ProjectCard project={proj}>
+                            {proj.projectName}
+                        </ProjectCard>
                     </Grid>
                 ))}
                 <Grid item>
@@ -230,40 +247,32 @@ const ProjectsPage: NextPage<
 export const getServerSideProps: GetServerSideProps<
     ProjectsPageProps
 > = async context => {
-    const { params, req } = context
-    const cookie = req.cookies[AUTH_COOKIE_KEY]
+    const { req } = context
 
-    if (
-        !(await isAuthenticated(cookie).catch(e => {
-            console.error(e)
-            Promise.resolve({
-                redirect: {
-                    permanent: false,
-                    destination: "/500",
-                },
-            })
-            return false
-        }))
-    )
+    const authCookie = req.cookies[AUTH_COOKIE_KEY]
+
+    const user = await getCurrentUser(authCookie).catch(e => {
+        console.error(e)
+        return null
+    })
+
+    if (!user)
         return {
             redirect: {
                 permanent: false,
                 destination: "/login",
             },
         }
+    const API = makeAPI(user)
 
-    const user: User = {
-        name: req.cookies[USER_COOKIE_KEY],
-        cookie,
-    }
-    const serverRequest = await getProjects(user)
-    const data: ProjectsPageProps = {
-        projects: serverRequest,
-    }
+    const serverRequest = await API.get.projectsList()
     const error = serverRequest == null
     if (error) return { notFound: true }
+
     return {
-        props: data,
+        props: {
+            projectList: serverRequest,
+        },
     }
 }
 

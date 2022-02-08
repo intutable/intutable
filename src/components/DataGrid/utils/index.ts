@@ -1,9 +1,3 @@
-/**
- * rowKeyGetter.ts
- */
-export * from "./rowKeyGetter"
-
-/**
- * getColumns.ts
- */
-export * from "./getColumns"
+// legacy
+export * from "../../../types/rowKeyGetter"
+export * from "../../../api/utils/SerializableTable"

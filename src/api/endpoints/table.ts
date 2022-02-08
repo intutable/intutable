@@ -1,147 +1,119 @@
-import { inspect } from "util"
+import { coreRequest } from "@app/api/utils/coreRequest"
 import {
-    coreRequest,
-    CoreRequestError,
-} from "@app/api/endpoints/coreinterface/json"
-import type { User } from "@context/AuthContext"
-import type { TableData } from "../types"
-import { isOfTypeTableData } from "../utils"
-
-const channel = "project-management"
+    EditorType,
+    isEditorType,
+} from "@app/components/DataGrid/Editor/editor-management"
+import { COLOR_SCHEME } from "@app/theme/theme"
+import type { CurrentUser } from "@context/AuthContext"
+import { CHANNEL, ProjectManagement as PM } from "../utils"
+import {
+    SerializedTableData,
+    SerializedColumn,
+    SerializedRow,
+    __KEYS__,
+} from "../../types/types"
 
 /**
  * Fetches a list with the names of the tables of a project.
- * @param {User} user user object.
- * @param {string} projectName project name.
- * @param {string} authCookie auth cookie. Optional.
- * @returns {Promise<string[]>} list of table names in case of success, otherwise an error object with error description.
+ * @param {CurrentUser} user currently logged-in user.
+ * @param {ProjectId} projectId id of the project.
+ * @returns {Promise<TableList>} list of table names and IDs.
  */
 export const getTablesFromProject = async (
-    user: User,
-    projectName: string
-): Promise<string[]> => {
-    const coreResponse = (await coreRequest(
-        channel,
+    user: CurrentUser,
+    projectId: number
+): Promise<PM.Table.List> => {
+    const coreResponse = await coreRequest(
+        CHANNEL.PROJECT_MANAGEMENT,
         getTablesFromProject.name,
-        { user: user.name, projectName },
-        user.cookie
-    )) as unknown
+        { projectId },
+        user.authCookie
+    )
 
-    if (typeof coreResponse === "string" && coreResponse.length > 0)
-        return Promise.resolve([coreResponse])
+    if (Array.isArray(coreResponse) === false)
+        throw new Error("Expected an Array!")
 
-    if (Array.isArray(coreResponse)) {
-        const parsed = coreResponse.filter(
-            t => typeof t === "string" && t.length > 0
-        )
-        if (parsed.length !== coreResponse.length)
-            console.log(
-                new RangeError(
-                    `Could not parse the response! At least one table could not be read! Response: '${inspect(
-                        coreResponse,
-                        { depth: null }
-                    )}'`
-                )
-            )
-        return Promise.resolve(parsed)
-    }
-
-    return Promise.reject(new Error("Could not parse the response!"))
+    return coreResponse as PM.Table.List
 }
 
 /**
  * Fetches the data of a table.
+ * @param {CurrentUser} user the currently logged-in user.
  * @param tableName table name.
- * @param authCookie auth cookie. Optional.
- * @returns {TableData} table data in case of success, otherwise an error object with error description.
+ * @returns {SerializedTableData} table data in case of success, otherwise
+ *  an error object with error description.
  */
 export const getTableData = async (
-    user: User,
-    tableName: string,
-    projectName: string
-): Promise<TableData> => {
-    // TODO: set type: ServerTableData
-    const coreResponse: any = await coreRequest(
-        channel,
+    user: CurrentUser,
+    tableId: PM.Table.ID
+): Promise<SerializedTableData> => {
+    const coreResponse = (await coreRequest(
+        CHANNEL.PROJECT_MANAGEMENT,
         getTableData.name,
-        { projectName, tableName },
-        user.cookie
-    )
+        { tableId },
+        user.authCookie
+    )) as PM.DBFormat.Table
 
-    coreResponse.columns.map((item: any) => {
-        item.key = item.columnName
-        item.name = item.key
-        delete item.columnName
-        return item
+    // rename props: parse backend col to `ServerColumn`
+    const columns: SerializedColumn[] = coreResponse.columns.map(col => {
+        return {
+            key: col.columnName,
+            name: col.displayName,
+            editable: Boolean(col.editable),
+            editor: col.type as EditorType,
+        }
     })
 
-    return Promise.resolve(coreResponse as TableData)
+    const rows: SerializedRow[] = coreResponse.rows.map(row => {
+        if (!(__KEYS__.UID_KEY in row))
+            throw new TypeError("Row missing unique ID")
+        else return row as SerializedRow
+    })
+
+    const table: SerializedTableData = {
+        table: coreResponse.table,
+        columns,
+        rows,
+    }
+
+    return table
 }
-/*
- * Adds a table to a project.
- * // TODO: implement
- * @param user
- * @param table
- * @param authCookie
- * @returns
- */
+
 export const createTableInProject = async (
-    user: User,
-    projectName: string,
-    table: string
+    user: CurrentUser,
+    projectId: PM.Project.ID,
+    tableName: PM.Table.Name
 ) => {
+    console.info(tableName)
     await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         createTableInProject.name,
-        { user: user.name, projectName, table },
-        user.cookie
+        { userId: user.id, projectId, tableName },
+        user.authCookie
     )
 }
 
-/**
- *
- * @param user
- * @param projectName
- * @param table
- * @param authCookie
- * @returns
- */
-export const removeTableFromProject = async (
-    user: User,
-    projectName: string,
-    table: string
-) => {
+export const removeTable = async (user: CurrentUser, tableId: PM.Table.ID) => {
     await coreRequest(
-        channel,
-        removeTableFromProject.name,
-        { projectName, table },
-        user.cookie
+        CHANNEL.PROJECT_MANAGEMENT,
+        removeTable.name,
+        { tableId: tableId },
+        user.authCookie
     )
 }
 
-/**
- *
- * @param user
- * @param project
- * @param newProject
- * @param authCookie
- * @returns
- */
 export const changeTableName = async (
-    user: User,
-    project: string,
-    oldName: string,
-    newName: string
+    user: CurrentUser,
+    tableId: PM.Table.ID,
+    newName: PM.Table.Name
 ) => {
     await coreRequest(
-        channel,
+        CHANNEL.PROJECT_MANAGEMENT,
         changeTableName.name,
         {
-            user: user.name,
-            project,
-            oldName,
+            tableId,
             newName,
         },
-        user.cookie
+        user.authCookie
     )
 }

@@ -1,31 +1,25 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
-import Title from "@components/Head/Title"
-import { CircularProgress, useTheme, Box, Typography } from "@mui/material"
-import { Tablist, ADD_BUTTON_TOKEN } from "@components/TabList/TabList"
-import DataGrid from "react-data-grid"
-import {
-    getTableData,
-    getTablesFromProject,
-    createTableInProject,
-} from "@api/endpoints"
-import type { TableData } from "@api/types"
-import { useSnackbar } from "notistack"
+import { makeAPI } from "@api"
+import { getCurrentUser, ProjectManagement as PM } from "@api/utils"
+import { TableSwitcher } from "@app/components/TableSwitcher/TableSwitcher"
+import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
 import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
 import * as TItem from "@components/DataGrid/Toolbar/ToolbarItems"
+import Title from "@components/Head/Title"
+import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
+import { Box, Typography, useTheme } from "@mui/material"
+import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
+import { useSnackbar } from "notistack"
+import React, { useEffect, useState } from "react"
+import { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import LoadingSkeleton from "../../components/DataGrid/LoadingSkeleton/LoadingSkeleton"
+import DataGrid from "react-data-grid"
 import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
-import { isValidName, prepareName } from "@utils/validateName"
-import { isAuthenticated } from "@app/api/endpoints/coreinterface"
-import { useAuth, User, USER_COOKIE_KEY } from "@context/AuthContext"
-import { rowKeyGetter } from "@datagrid/utils"
-import { getColumns, transformHelper } from "@datagrid/utils"
-import { useProject } from "@context/useProject"
+import { rowKeyGetter } from "@components/DataGrid/utils"
+import { useProjectCtx } from "@app/context/ProjectContext"
+import { Row } from "../../types/types"
 
 type ProjectSlugPageProps = {
-    project: string
-    tables: string[]
-    table: { data: TableData; name: string } | null
+    project: PM.Project
 }
 
 const ProjectSlugPage: NextPage<
@@ -36,121 +30,108 @@ const ProjectSlugPage: NextPage<
 
     // #################### states ####################
 
-    const { user } = useAuth()
-    const { state, changeTable, reload } = useProject(props.project, {
-        tables: props.tables,
-        currentTable: props.table?.name || "",
-        data: props.table?.data || null,
-    })
+    const { state, loading, error, setProject, setTable } = useProjectCtx()
+    const { API, loading: authLoading } = useAuth()
+    // const proxy: TableData = {}
+    // const [table, _setTable] = useState<TableData>(proxy)
+    // const setTable = (table: TableData) => {
+    //     // TODO: write to table only via proxy
+    // }
+    const [detailedViewOpen, setDetailedViewOpen] = useState<{
+        row: Row
+        column: CalculatedColumn<Row>
+    } | null>(null)
 
     // #################### private methods ####################
 
-    const handleTablistChange = (newTable: string | null) => {
-        if (newTable === null || newTable === ADD_BUTTON_TOKEN)
-            return changeTable("")
-        changeTable(newTable)
+    const handleRowsChange = async (rows: Row[], data: RowsChangeData<Row>) => {
+        const changedRow = rows.find(
+            row => rowKeyGetter(row) === data.indexes[0]
+        )!
+        const changedCol = data.column.key
+
+        console.log(JSON.stringify(rows))
+        console.log(JSON.stringify(data))
+        // Temporaray fix
+        const currentProjectId = props.project.projectId
+        const currentTable = state!.currentTable!.table!
+
+        await API!.put
+            .row(
+                // THIS NEEDS TO GO
+                "p" + currentProjectId + "_" + currentTable.tableName,
+                ["_id", changedRow["_id"]],
+                { [changedCol]: changedRow[changedCol] }
+            )
+            .then(() => setTable(currentTable))
     }
 
-    const handleAddTable = useCallback(
-        async (newTableName: string) => {
-            const name = prepareName(newTableName)
-            const isValid = isValidName(name)
-            if (isValid instanceof Error)
-                return enqueueSnackbar(isValid.message, { variant: "error" })
-            const nameIsTaken = state.project?.tables
-                .map(tbl => tbl.toLowerCase().trim())
-                .includes(name.toLowerCase().trim())
-            if (nameIsTaken)
-                return enqueueSnackbar(
-                    "Dieser Name wird bereits für eine Tabelle in diesem Projekt verwendet!",
-                    { variant: "error" }
-                )
-            if (!user)
-                return enqueueSnackbar("Du musst dich zuvor erneut anmelden", {
-                    variant: "error",
-                })
-            try {
-                await createTableInProject(user, props.project, name)
-                await reload(name)
-                enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-                    variant: "success",
-                })
-            } catch (error) {
-                console.error(error)
-                enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
-                    variant: "error",
-                })
-            }
-        },
-        [enqueueSnackbar, props.project, reload, state.project?.tables, user]
-    )
-
-    const handleRenameTable = () => {
-        alert("Not implemented yet")
-        // TODO: implement
-    }
-    const handleDeleteTable = () => {
-        alert("Not implemented yet")
-        // TODO: implement
-    }
+    useEffect(() => {
+        // BUG: hacky workaround to preserve state on page reload
+        if (state == null && loading === false) {
+            setProject(props.project)
+        }
+    }, [loading, props.project, setProject, state])
 
     // #################### life cycle methods ####################
 
     useEffect(() => {
-        if (state.error instanceof Error) {
-            console.log(state.error)
+        if (
+            state == null &&
+            API &&
+            loading === false &&
+            authLoading === false
+        ) {
+            setProject(props.project)
+        }
+    }, [state, props.project])
+
+    useEffect(() => {
+        if (error instanceof Error) {
+            console.log(error)
             enqueueSnackbar("Die Tabelle konnte nicht geladen werden!", {
                 variant: "error",
             })
         }
-    }, [state.error])
+    }, [error])
 
     // #################### component ####################
 
+    const ErrorComponent =
+        error instanceof Error ? (
+            <Typography>
+                Error: Could not load the Table (reason: {error.message}
+                )!
+            </Typography>
+        ) : state?.project == null ? (
+            <Typography>
+                Error: Could not load the Table (reason: State Management
+                Issue)!
+            </Typography>
+        ) : null
+
     return (
         <>
-            <Title title={props.project} />
+            <Title title={props.project.projectName} />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
-                {props.project}
+                {props.project.projectName}
             </Typography>
 
-            {state.error instanceof Error ? (
-                // Error
-                <Typography>
-                    Error: Could not load the Table (reason:{" "}
-                    {state.error.message}
-                    )!
-                </Typography>
-            ) : // Loading
-            state.loading ? (
+            {ErrorComponent || loading ? (
                 <LoadingSkeleton />
-            ) : // data is null
-            state.project == null ? (
-                <>Table null {state}</>
             ) : (
-                // Table
                 <>
-                    <Tablist
-                        value={state.project.currentTable}
-                        data={state.project.tables}
-                        onChangeHandler={handleTablistChange}
-                        onAddHandler={handleAddTable}
-                        contextMenuItems={[
-                            <Box onClick={handleRenameTable} key={0}>
-                                Rename
-                            </Box>,
-                            <Box
-                                onClick={handleDeleteTable}
-                                key={1}
-                                sx={{ color: theme.palette.warning.main }}
-                            >
-                                Delete
-                            </Box>,
-                        ]}
-                    />
+                    {detailedViewOpen && (
+                        <DetailedViewModal
+                            open={detailedViewOpen != null}
+                            data={detailedViewOpen}
+                            onCloseHandler={() => setDetailedViewOpen(null)}
+                        />
+                    )}
+                    <TableSwitcher />
                     <Box>
                         <Toolbar position="top">
-                            <TItem.AddCol addCol={() => {}} />
+                            <TItem.AddCol />
                             <Toolbar.Item onClickHandler={() => {}}>
                                 Tool 1
                             </Toolbar.Item>
@@ -169,23 +150,15 @@ const ProjectSlugPage: NextPage<
                             <TItem.FileDownload getData={() => []} />
                         </Toolbar>
                         <DataGrid
-                            className={
-                                theme.palette.mode === "light"
-                                    ? "rdg-light"
-                                    : "rdg-dark"
-                            }
+                            className={"rdg-" + theme.palette.mode}
                             rows={
-                                state.project.data
-                                    ? (state.project.data.rows as any)
+                                state?.currentTable
+                                    ? state.currentTable.rows
                                     : []
                             }
                             columns={
-                                state.project.data
-                                    ? getColumns(
-                                          transformHelper(
-                                              state.project.data.columns
-                                          )
-                                      )
+                                state?.currentTable
+                                    ? state.currentTable.columns
                                     : [{ key: "id", name: "ID" }]
                             }
                             noRowsFallback={<NoRowsRenderer />}
@@ -194,8 +167,11 @@ const ProjectSlugPage: NextPage<
                                 sortable: true,
                                 resizable: true,
                             }}
+                            onRowsChange={handleRowsChange}
                             // onColumnResize={}
-                            // onRowDoubleClick={}
+                            onRowDoubleClick={(row, column) => {
+                                setDetailedViewOpen({ row, column })
+                            }}
                             // onFill={handleFill}
                             // selectedRows={selectedRows}
                             // onSelectedRowsChange={setSelectedRows}
@@ -220,55 +196,40 @@ export const getServerSideProps: GetServerSideProps<
     ProjectSlugPageProps
 > = async context => {
     const { params, req } = context
-    const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
-    const cookie: string = req.cookies[AUTH_COOKIE_KEY]
 
-    if (!(await isAuthenticated(cookie).catch(e => false)))
+    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+
+    const user = await getCurrentUser(authCookie).catch(e => {
+        console.error(e)
+        return null
+    })
+
+    if (!user)
         return {
             redirect: {
                 permanent: false,
                 destination: "/login",
             },
         }
-
-    const user: User = {
-        name: req.cookies[USER_COOKIE_KEY],
-        cookie,
-    }
+    const API = makeAPI(user)
 
     if (params && Object.hasOwnProperty.call(params, "project-slug")) {
-        const _projectName = params["project-slug"]
-        if (
-            _projectName &&
-            Array.isArray(_projectName) &&
-            _projectName.length > 0
-        ) {
-            const projectName = _projectName[0] as string
-            console.log(projectName, user)
-            const serverRequest = await getTablesFromProject(user, projectName)
+        const _projectId = params["project-slug"]
+        if (_projectId != null) {
+            const projectIdStr = Array.isArray(_projectId)
+                ? _projectId[0]
+                : _projectId
+            const projectId: PM.Project.ID = Number.parseInt(projectIdStr)
 
-            let dataOfFirstTable
-            if (serverRequest.length > 0)
-                dataOfFirstTable = await getTableData(
-                    user,
-                    serverRequest[0],
-                    projectName
-                )
-            else dataOfFirstTable = null
-
-            const data: ProjectSlugPageProps = {
-                project: projectName,
-                tables: serverRequest,
-                table: dataOfFirstTable
-                    ? { data: dataOfFirstTable, name: serverRequest[0] }
-                    : null,
-            }
-
-            const error = serverRequest == null
-            if (error) return { notFound: true }
+            const project = (await API.get.projectsList()).find(
+                proj => proj.projectId === projectId
+            )
+            if (project == null) return { notFound: true }
 
             return {
-                props: data,
+                props: {
+                    project: project,
+                },
             }
         }
     }

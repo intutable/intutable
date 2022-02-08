@@ -13,6 +13,16 @@ export const COLOR_SCHEME = {}
  */
 export const lightTheme = createTheme({
     colorScheme: { ...COLOR_SCHEME },
+    palette: {
+        text: {
+            primary: "#333",
+            secondary: "#555",
+            // disabled: ""
+        },
+    },
+    typography: {
+        fontFamily: ["Roboto", "sans-serif"].join(","),
+    },
 })
 
 /**
@@ -22,15 +32,24 @@ export const darkTheme = createTheme({
     colorScheme: { ...COLOR_SCHEME },
     palette: {
         primary: {
-            main: "#333",
+            main: "#313552",
         },
         secondary: {
-            main: "#fff",
+            main: "#B8405E",
         },
         background: {
-            default: "#333",
+            default: "#313552",
         },
+        text: {
+            primary: "#fff",
+            secondary: "#dadada",
+            disabled: "#ccc",
+        },
+    },
+    typography: {
+        fontFamily: ["Roboto", "sans-serif"].join(","),
     },
 })
 
-export const getDesignToken = (mode: PaletteMode) => (mode === "light" ? lightTheme : darkTheme)
+export const getDesignToken = (mode: PaletteMode) =>
+    mode === "light" ? lightTheme : darkTheme

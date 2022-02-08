@@ -11,37 +11,38 @@ type FileDownoadContextMenuProps = {
     onClose: () => void
     children: Array<React.ReactNode> | React.ReactNode // overwrite implicit `children`
 }
-const FileDownloadContextMenu: React.FC<FileDownoadContextMenuProps> =
-    props => {
-        const theme = useTheme()
+const FileDownloadContextMenu: React.FC<
+    FileDownoadContextMenuProps
+> = props => {
+    const theme = useTheme()
 
-        return (
-            <Menu
-                elevation={0}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                // transformOrigin={{ vertical: "top", horizontal: "right" }}
-                open={props.open}
-                anchorEl={props.anchorEL}
-                keepMounted={true}
-                onClose={props.onClose}
-                PaperProps={{
-                    sx: {
-                        boxShadow: theme.shadows[1],
-                    },
-                }}
-            >
-                {Array.isArray(props.children) ? (
-                    props.children.map((item, i) => (
-                        <MenuItem key={i}>{item}</MenuItem>
-                    ))
-                ) : (
-                    <MenuItem>{props.children}</MenuItem>
-                )}
-            </Menu>
-        )
-    }
+    return (
+        <Menu
+            elevation={0}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            // transformOrigin={{ vertical: "top", horizontal: "right" }}
+            open={props.open}
+            anchorEl={props.anchorEL}
+            keepMounted={true}
+            onClose={props.onClose}
+            PaperProps={{
+                sx: {
+                    boxShadow: theme.shadows[1],
+                },
+            }}
+        >
+            {Array.isArray(props.children) ? (
+                props.children.map((item, i) => (
+                    <MenuItem key={i}>{item}</MenuItem>
+                ))
+            ) : (
+                <MenuItem>{props.children}</MenuItem>
+            )}
+        </Menu>
+    )
+}
 
-const triggerDownload = (content: any, filename: string) => {}
+const triggerDownload = (content: unknown, filename: string) => {}
 
 export type FileDownloadProps = {
     getData: () => Array<unknown>
