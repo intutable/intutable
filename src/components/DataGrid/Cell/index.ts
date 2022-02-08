@@ -1,4 +1,4 @@
 /**
  * Cell.tsx
  */
-export { default as Cell } from "./Cell"
+export * from "./EditorComponents"

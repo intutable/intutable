@@ -1,7 +1,8 @@
+import Obj from "@app/utils/Obj"
 import { Toolbar as MUIToolbar, Button, useTheme, Divider } from "@mui/material"
 import { Toolbar, ToolbarItem } from "./types"
 
-type TProps = {}
+type TProps = Obj
 /**
  * Toolbar for DataGrid.
  * @param {TProps} props
@@ -17,10 +18,14 @@ const T: Toolbar<TProps> = props => {
                 ...theme.mixins.toolbar,
                 overflowX: "scroll",
                 px: theme.spacing(1),
-                borderTopLeftRadius: props.position === "top" ? theme.shape.borderRadius : 0,
-                borderTopRightRadius: props.position === "top" ? theme.shape.borderRadius : 0,
-                borderBottomLeftRadius: props.position === "bottom" ? theme.shape.borderRadius : 0,
-                borderBottomRightRadius: props.position === "bottom" ? theme.shape.borderRadius : 0,
+                borderTopLeftRadius:
+                    props.position === "top" ? theme.shape.borderRadius : 0,
+                borderTopRightRadius:
+                    props.position === "top" ? theme.shape.borderRadius : 0,
+                borderBottomLeftRadius:
+                    props.position === "bottom" ? theme.shape.borderRadius : 0,
+                borderBottomRightRadius:
+                    props.position === "bottom" ? theme.shape.borderRadius : 0,
             }}
             disableGutters
         >

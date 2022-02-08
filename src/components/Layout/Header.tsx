@@ -1,35 +1,37 @@
-import React, { useState } from "react"
-import { useRouter } from "next/router"
-
+import { Avatar } from "@app/components/LoginOutRegister"
+import Link from "@components/Link/Link"
+import { useAuth } from "@context/AuthContext"
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import HomeIcon from "@mui/icons-material/Home"
+import HomeIconOutlined from "@mui/icons-material/HomeOutlined"
+import MenuIcon from "@mui/icons-material/Menu"
+import SettingsIcon from "@mui/icons-material/Settings"
+import SettingsIconOutlined from "@mui/icons-material/SettingsOutlined"
+import SupportAgentIcon from "@mui/icons-material/SupportAgent"
+import SupportAgentIconOutlined from "@mui/icons-material/SupportAgentOutlined"
+import WorkspacesIcon from "@mui/icons-material/Workspaces"
+import WorkspacesIconOutlined from "@mui/icons-material/WorkspacesOutlined"
 import {
     AppBar,
-    Toolbar,
     Box,
-    IconButton,
-    Typography,
-    Button,
-    Drawer as MuiDrawer,
-    useTheme,
     Divider,
-    List,
+    Drawer as MuiDrawer,
+    IconButton,
     ListItem,
     ListItemIcon,
     ListItemText,
+    Stack,
+    Toolbar,
+    Typography,
+    useTheme,
 } from "@mui/material"
-import type { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar"
-import { styled, CSSObject, Theme } from "@mui/material/styles"
-import MenuIcon from "@mui/icons-material/Menu"
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import WorkspacesIcon from "@mui/icons-material/Workspaces"
-import SettingsIcon from "@mui/icons-material/Settings"
-import HomeIcon from "@mui/icons-material/Home"
-import SupportAgentIcon from "@mui/icons-material/SupportAgent"
-import Link from "@components/Link/Link"
-import LoginButton from "@components/Login/LoginButton"
-import LogoutButton from "@components/Login/LogoutButton"
-import { useAuth } from "@context/AuthContext"
+import { CSSObject, styled, Theme } from "@mui/material/styles"
+import { useRouter } from "next/router"
+import React, { useState } from "react"
+import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar"
+import SearchIcon from "@mui/icons-material/Search"
 
-const drawerWidth: number = 240
+const drawerWidth = 240
 
 const openedMixin = (theme: Theme): CSSObject => ({
     width: drawerWidth,
@@ -70,7 +72,8 @@ const Drawer = styled(MuiDrawer, {
 }))
 
 type DrawerListItemProps = {
-    icon: React.ReactNode
+    nonActiveIcon: React.ReactNode
+    activeIcon: React.ReactNode
     text: string
     href: string
 }
@@ -78,17 +81,31 @@ type DrawerListItemProps = {
 const DrawerListItem: React.FC<DrawerListItemProps> = props => {
     const router = useRouter()
     return (
-        <ListItem button onClick={() => router.push(props.href)}>
-            <ListItemIcon>{props.icon}</ListItemIcon>
+        <ListItem
+            button
+            onClick={() => router.push(props.href)}
+            sx={{
+                ...(router.pathname === props.href && {
+                    bgcolor: "#dedede",
+                }),
+                "&:hover": {},
+            }}
+        >
+            <ListItemIcon>
+                {router.pathname === props.href
+                    ? props.activeIcon
+                    : props.nonActiveIcon}
+            </ListItemIcon>
             <ListItemText primary={props.text} />
         </ListItem>
     )
 }
 
 const Header = () => {
+    const router = useRouter()
     const { user } = useAuth()
-
     const theme = useTheme()
+
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 
     const toggleDrawer = () => setDrawerOpen(prev => !prev)
@@ -138,30 +155,33 @@ const Header = () => {
                         <MenuIcon />
                     </IconButton>
                     <Box sx={{ flexGrow: 1 }}>
-                        <Link href="/" muiLinkProps={{ underline: "none" }}>
-                            <Typography
-                                variant="h6"
-                                component="h1"
-                                color="inherit"
-                                noWrap
-                                sx={{
-                                    fontWeight: theme.typography.fontWeightBold,
-                                }}
-                            >
-                                Dekanatsverwaltung
-                            </Typography>
-                        </Link>
+                        <Stack direction="row" sx={{ alignItems: "center" }}>
+                            <Link href="/" muiLinkProps={{ underline: "none" }}>
+                                <Typography
+                                    variant="h6"
+                                    component="h1"
+                                    color="inherit"
+                                    noWrap
+                                    sx={{
+                                        fontWeight:
+                                            theme.typography.fontWeightBold,
+                                    }}
+                                >
+                                    Dekanatsverwaltung
+                                </Typography>
+                            </Link>
+                            <Search>
+                                <SearchIconWrapper>
+                                    <SearchIcon />
+                                </SearchIconWrapper>
+                                <StyledInputBase
+                                    placeholder="Search…"
+                                    inputProps={{ "aria-label": "search" }}
+                                />
+                            </Search>
+                        </Stack>
                     </Box>
-                    {user ? (
-                        <>
-                            <span>{user.name}</span>
-                            <LogoutButton />
-                        </>
-                    ) : (
-                        <>
-                            <LoginButton />
-                        </>
-                    )}
+                    <Avatar />
                 </Toolbar>
             </AppBar>
 
@@ -186,23 +206,29 @@ const Header = () => {
                 <DrawerListItem
                     text="Startseite"
                     href="/"
-                    icon={<HomeIcon />}
+                    nonActiveIcon={<HomeIconOutlined />}
+                    activeIcon={<HomeIcon />}
                 />
-                <DrawerListItem
-                    text="Projekte"
-                    href="/projects"
-                    icon={<WorkspacesIcon />}
-                />
+                {user && (
+                    <DrawerListItem
+                        text="Projekte"
+                        href="/projects"
+                        nonActiveIcon={<WorkspacesIconOutlined />}
+                        activeIcon={<WorkspacesIcon />}
+                    />
+                )}
                 <Divider />
                 <DrawerListItem
-                    text="Support"
+                    text="Service Desk"
                     href="/service-desk"
-                    icon={<SupportAgentIcon />}
+                    nonActiveIcon={<SupportAgentIconOutlined />}
+                    activeIcon={<SupportAgentIcon />}
                 />
                 <DrawerListItem
                     text="Einstellungen"
                     href="/settings"
-                    icon={<SettingsIcon />}
+                    nonActiveIcon={<SettingsIconOutlined />}
+                    activeIcon={<SettingsIcon />}
                 />
             </Drawer>
         </>

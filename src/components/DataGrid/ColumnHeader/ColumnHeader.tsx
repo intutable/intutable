@@ -14,45 +14,7 @@ import {
 } from "@datagrid/Cell/celltype-management"
 import { ChangeCellTypeDialog } from "./ChangeCellTypeDialog"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
-import { display } from "@mui/system"
-
-type ColumnHeaderContextMenuProps = {
-    anchorEL: Element
-    open: boolean
-    onClose: () => void
-    children: Array<React.ReactNode> | React.ReactNode // overwrite implicit `children`
-}
-
-const ColumnHeaderContextMenu: React.FC<
-    ColumnHeaderContextMenuProps
-> = props => {
-    const theme = useTheme()
-
-    return (
-        <Menu
-            elevation={0}
-            anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            // transformOrigin={{ vertical: "top", horizontal: "right" }}
-            open={props.open}
-            anchorEl={props.anchorEL}
-            keepMounted={true}
-            onClose={props.onClose}
-            PaperProps={{
-                sx: {
-                    boxShadow: theme.shadows[1],
-                },
-            }}
-        >
-            {Array.isArray(props.children) ? (
-                props.children.map((item, i) => (
-                    <MenuItem key={i}>{item}</MenuItem>
-                ))
-            ) : (
-                <MenuItem>{props.children}</MenuItem>
-            )}
-        </Menu>
-    )
-}
+import { useProjectCtx } from "@app/context/ProjectContext"
 
 type ColumnHeaderProps = {
     label: string
@@ -65,8 +27,11 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const [changeTypeModalOpen, setChangeTypeModalOpen] = useState(false)
 
-    const handleOpenContextMenu = (event: any) => {
-        setAnchorEL(event.currentTarget)
+    const { renameColumn } = useProjectCtx()
+
+    const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        setAnchorEL(e.currentTarget)
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
@@ -83,6 +48,8 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
         setChangeTypeModalOpen(false)
         handleCloseContextMenu()
     }
+
+    const handleRenameColumn = async () => {}
 
     return (
         <>
@@ -114,18 +81,28 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
                 </IconButton>
             </Box>
             {anchorEL && (
-                <ColumnHeaderContextMenu
-                    anchorEL={anchorEL}
+                <Menu
+                    elevation={0}
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                    // transformOrigin={{ vertical: "top", horizontal: "right" }}
                     open={anchorEL != null}
+                    anchorEl={anchorEL}
+                    keepMounted={true}
                     onClose={handleCloseContextMenu}
+                    PaperProps={{
+                        sx: {
+                            boxShadow: theme.shadows[1],
+                        },
+                    }}
                 >
-                    <Box
+                    <MenuItem
                         onClick={handleOpenChangeTypeModal}
                         sx={{ color: theme.palette.warning.main }}
                     >
-                        Change Cell Type ({props.type})
-                    </Box>
-                </ColumnHeaderContextMenu>
+                        Typ ändern ({props.type})
+                    </MenuItem>
+                    <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
+                </Menu>
             )}
             <ChangeCellTypeDialog
                 currentType={props.type}

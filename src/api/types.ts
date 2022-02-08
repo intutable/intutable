@@ -1,6 +1,12 @@
-import type { Column } from "react-data-grid"
+import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import type Obj from "@utils/Obj"
 import type { CellType } from "../components/DataGrid/Cell/celltype-management/celltypes"
+import React from "react"
+import { ProjectManagement as PM } from "."
+
+/**
+ * // TODO: moves this whole thing into /components/DataGrid/
+ */
 
 // /**
 //  * Manages how a user can access a cell.
@@ -30,42 +36,77 @@ import type { CellType } from "../components/DataGrid/Cell/celltype-management/c
 //       Shared
 // #################################################################
 
-export type Row = {
-    id: number
-    [key: string]: unknown
+type Table<COL, ROW> = {
+    table: PM.Table
+    columns: COL[]
+    rows: ROW[]
 }
 
 // #################################################################
 //       Frontend
 // #################################################################
 
-export type TableData<TRow extends Obj = Row> = {
-    tableName: string
-    columns: Column<TRow>[]
-    rows: TRow[]
+export type Column = ReactDataGrid_Column<Row>
+
+const SELECT_COL_KEY = "__select__"
+const RDG_ID_KEY = "__id__"
+const UID_KEY = "_id"
+/**
+ * Includes names for keys on objects.
+ * Used for rows.
+ */
+export const __KEYS__ = { SELECT_COL_KEY, RDG_ID_KEY, UID_KEY } as const
+
+export type Row = {
+    [SELECT_COL_KEY]: React.ReactElement
+    readonly [RDG_ID_KEY]: number
+    readonly [UID_KEY]: number
+    [key: string]: unknown
 }
+
+export type SummaryRow = {
+    selectedCount: number
+    totalCount: number
+}
+
+export type TableData = Table<Column, Row>
 
 // #################################################################
 //       Backend
 // #################################################################
 
-export type ServerTableData<TRow extends Obj = Row> = {
-    tableName: string
-    columns: ServerColumn<TRow>[]
-    rows: TRow[]
+export type SerializedRow = {
+    readonly [UID_KEY]: number
+    [key: string]: unknown
 }
 
+export type SerializedTableData = Table<SerializedColumn, SerializedRow>
+
 /**
- * copy of 'react-data-grid:Column'
+ * Copied from react-data-grid's type 'Column' and modified to save an object
+ * of this type properly to the db.
+ *
+ * See the original type in {@link https://github.com/adazzle/react-data-grid/blob/bc23189c4d41725ebd80fdacfa1ddd4054e29658/src/types.ts}).
+ *
+ * Those properties that are not listed compared to the original type are not used.
+ * Additional comments will – only if provided! – explain how the property is modified compared to the original property.
  */
-export type ServerColumn<TRow extends Obj = Row> = {
+export type SerializedColumn = {
     name: string
     key: string
-    width: number
-    // minWidth: number
-    // editable: boolean
+    /**
+     * // TODO: instead of pixels use proportions
+     */
+    // width: number
+    /**
+     * @default true
+     */
+    editable: boolean
     // frozen: boolean
     // resizable: boolean
     // sortable: boolean
+    /**
+     * @default string
+     */
     editor: CellType
 }

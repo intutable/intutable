@@ -41,7 +41,7 @@ export class Percentage {
     }
 
     // TODO: add round func
-    toFormattedString(decimalPlaces: number = 0): string {
+    toFormattedString(decimalPlaces = 0): string {
         switch (this._format) {
             case "percent":
                 return `${this._value} %`
