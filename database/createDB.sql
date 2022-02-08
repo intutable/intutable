@@ -41,7 +41,7 @@ create table columns(
     editable integer default 1 not null,
     hidden integer default 0 not null,
     type text default "string" not null,
-    displayName text not null
+    displayName text null
 );
 
 create table tablecolumns(
