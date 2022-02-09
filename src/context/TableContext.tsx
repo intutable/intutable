@@ -98,20 +98,13 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     const partialRowUpdate = async (rows: Row[], data: RowsChangeData<Row>) => {
         try {
             setLoading(true)
-            console.log(data.indexes)
-            const changedRow = rows.find(
-                row => rowKeyGetter(row) === data.indexes[0]
-            )!
+            const changedRow = rows[data.indexes[0]]
             // console.log(JSON.stringify(rows))
             // console.log(JSON.stringify(data))  // this will throw! : this is deserialized data which can not be json serialized
-            console.log(changedRow)
             await API!.put.row(props.project, table, ["_id", changedRow._id], {
                 [data.column.key]: changedRow[data.column.key],
             })
             setRows(rows)
-        } catch (err) {
-            console.error(err)
-            throw err
         } finally {
             setLoading(false)
         }

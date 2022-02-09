@@ -28,7 +28,9 @@ export const TableNavigator: React.FC<TableNavigatorProps> = props => {
                         "/project/" +
                             props.project.projectId +
                             "/table/" +
-                            value
+                            value,
+                        undefined,
+                        { shallow: false }
                     )
                 }}
                 color="primary"
