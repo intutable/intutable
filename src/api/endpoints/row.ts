@@ -8,7 +8,7 @@ export const updateRow = async (
     user: CurrentUser,
     project: PM.Project,
     table: PM.Table,
-    condition: any[],
+    condition: unknown[],
     update: { [index: string]: unknown }
 ): Promise<void> => {
     await coreRequest(
