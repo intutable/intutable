@@ -70,7 +70,7 @@ const deserialize = (table: SerializedTableData): TableData => {
         (row, index) =>
             ({
                 ...row,
-                [__KEYS__.RDG_ID_KEY]: index + 1,
+                [__KEYS__.RDG_ID_KEY]: index,
                 [__KEYS__.SELECT_COL_KEY]: <Checkbox />,
             } as Row)
     )

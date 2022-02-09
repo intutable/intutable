@@ -36,34 +36,16 @@ const TablePage: React.FC<TablePageProps> = props => {
         column: CalculatedColumn<Row>
     } | null>(null)
 
-    const { tableData, error, loading } = useTableCtx()
+    const { table, rows, columns, error, loading, partialRowUpdate } =
+        useTableCtx()
 
     // #################### private methods ####################
-
-    const handleRowsChange = async (rows: Row[], data: RowsChangeData<Row>) => {
-        // const changedRow = rows.find(
-        //     row => rowKeyGetter(row) === data.indexes[0]
-        // )!
-        // const changedCol = data.column.key
-        // console.log(JSON.stringify(rows))
-        // console.log(JSON.stringify(data))
-        // // Temporaray fix
-        // const currentProjectId = props.project.projectId
-        // const currentTable = state!.currentTable!.table!
-        // await API!.put
-        //     .row(
-        //         // THIS NEEDS TO GO
-        //         "p" + currentProjectId + "_" + currentTable.tableName,
-        //         ["_id", changedRow["_id"]],
-        //         { [changedCol]: changedRow[changedCol] }
-        //     )
-    }
 
     // #################### life cycle methods ####################
 
     useEffect(() => {
-        console.info(tableData)
-    }, [tableData])
+        console.info(table)
+    }, [table])
 
     // #################### component ####################
 
@@ -103,19 +85,15 @@ const TablePage: React.FC<TablePageProps> = props => {
                         </Toolbar>
                         <DataGrid
                             className={"rdg-" + theme.palette.mode}
-                            rows={tableData.rows}
-                            columns={
-                                tableData.columns.length > 0
-                                    ? tableData.columns
-                                    : [{ key: "id", name: "ID" }]
-                            }
+                            rows={rows}
+                            columns={columns}
                             noRowsFallback={<NoRowsRenderer />}
                             rowKeyGetter={rowKeyGetter}
                             defaultColumnOptions={{
                                 sortable: true,
                                 resizable: true,
                             }}
-                            onRowsChange={handleRowsChange}
+                            onRowsChange={partialRowUpdate}
                             // onColumnResize={}
                             onRowDoubleClick={(row, column) => {
                                 setDetailedViewOpen({ row, column })
@@ -144,7 +122,10 @@ const TablePageWrapper: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = props => {
     return (
-        <TableCtxProvider ssrHydratedTableData={props.ssrHydratedTableData}>
+        <TableCtxProvider
+            project={props.project}
+            ssrHydratedTableData={props.ssrHydratedTableData}
+        >
             <TablePage
                 project={props.project}
                 tableList={props.tableList}
