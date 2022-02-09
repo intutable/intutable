@@ -4,12 +4,14 @@ import type {
     Column,
     Row,
     SerializedColumn,
+    SerializedRow,
     SerializedTableData,
     TableData,
 } from "@app/types/types"
 import React, { useCallback, useState } from "react"
 import { RowsChangeData } from "react-data-grid"
 import { useAuth } from "./AuthContext"
+import {__KEYS__} from "@app/types/types"
 
 /**
  * // TODO: use a reducer instead of that many methods
@@ -20,6 +22,7 @@ export type TableContextProps = {
     columns: Column[]
     loading: boolean
     error: Error | null
+    createRow: () => Promise<void>
     partialRowUpdate: (rows: Row[], data: RowsChangeData<Row>) => Promise<void>
     createColumn: (col: SerializedColumn) => Promise<void>
     renameColumnKey: (
@@ -39,6 +42,7 @@ const initialState: TableContextProps = {
     columns: [{ key: "id", name: "ID" }],
     loading: true,
     error: null,
+    createRow: undefined!,
     partialRowUpdate: undefined!,
     createColumn: undefined!,
     renameColumnKey: undefined!,
@@ -93,21 +97,34 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         setRows(_deserializedTable.rows)
     }
 
-    // #################### column dispatchers ####################
+    // #################### row dispatchers ####################
 
-    const partialRowUpdate = async (rows: Row[], data: RowsChangeData<Row>) => {
+    const createRow = async (): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
         try {
-            setLoading(true)
-            const changedRow = rows[data.indexes[0]]
-            // console.log(JSON.stringify(rows))
-            // console.log(JSON.stringify(data))  // this will throw! : this is deserialized data which can not be json serialized
-            await API!.put.row(props.project, table, ["_id", changedRow._id], {
-                [data.column.key]: changedRow[data.column.key],
+            const uid: typeof __KEYS__.UID_KEY = await API.post.row()
+            const deser
+            // TODO: allow deserializing rows
+            setRows(prev => {
+                return prev.push()
             })
-            setRows(rows)
-        } finally {
-            setLoading(false)
+        } catch (err) {
+            throw err
         }
+    }
+
+    const partialRowUpdate = async (
+        rows: Row[],
+        data: RowsChangeData<Row>
+    ): Promise<void> => {
+        const changedRow = rows[data.indexes[0]]
+        // console.log(JSON.stringify(rows))
+        // console.log(JSON.stringify(data))  // this will throw! : this is deserialized data which can not be json serialized
+        await API!.put.row(props.project, table, ["_id", changedRow._id], {
+            [data.column.key]: changedRow[data.column.key],
+        })
+        setRows(rows)
     }
 
     // #################### column dispatchers ####################
@@ -124,8 +141,6 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
                 col.name
             )
             await _reloadTable()
-        } catch (err) {
-            console.error(err)
         } finally {
             setLoading(false)
         }
@@ -162,9 +177,6 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     }
 
     const deleteColumn = async (key: Column["key"]): Promise<void> => {
-        console.log(key)
-        console.log(columns)
-        console.log(rows)
         if (user == null || API == null)
             throw new Error("Could not access the API!")
         try {
@@ -188,6 +200,7 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         loading,
         error,
         // row
+        createRow,
         partialRowUpdate,
         // column dispatchers
         createColumn,
