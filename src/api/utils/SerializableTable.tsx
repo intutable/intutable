@@ -13,7 +13,7 @@ import {
 } from "@app/components/DataGrid/Editor/editor-management"
 import type { EditorProps, HeaderRendererProps } from "react-data-grid"
 import { getEditor } from "@app/components/DataGrid/Editor/EditorComponents"
-import { ColumnHeader } from "@datagrid/ColumnHeader"
+import { ColumnHeader } from "@app/components/DataGrid/ColumnRenderer"
 import { Checkbox } from "@mui/material"
 import { TextEditor } from "react-data-grid"
 
