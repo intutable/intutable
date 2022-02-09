@@ -18,7 +18,9 @@ import {
     removeColumn,
     changeColumnName,
 } from "./endpoints/column"
-import { updateRow } from "./endpoints/row"
+import { updateRow,
+         createRow
+} from "./endpoints/row"
 
 export * from "./utils/ProjectManagement_TypeAnnotations"
 
@@ -34,6 +36,7 @@ export const makeAPI = (user: CurrentUser) =>
             project: createProject.bind(null, user),
             table: createTableInProject.bind(null, user),
             column: createColumnInTable.bind(null, user),
+            row: createRow.bind(null, user)
         },
         put: {
             projectName: changeProjectName.bind(null, user),
