@@ -18,6 +18,7 @@ import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import Link from "@components/Link"
+import { RowRenderer } from "@components/DataGrid/RowRenderer"
 
 type TablePageProps = {
     project: PM.Project
@@ -94,13 +95,10 @@ const TablePage: React.FC<TablePageProps> = props => {
                                 resizable: true,
                             }}
                             onRowsChange={partialRowUpdate}
-                            // onColumnResize={}
                             onRowDoubleClick={(row, column) => {
                                 setDetailedViewOpen({ row, column })
                             }}
-                            // onFill={handleFill}
-                            // selectedRows={selectedRows}
-                            // onSelectedRowsChange={setSelectedRows}
+                            rowRenderer={RowRenderer}
                         />
                         <Toolbar position="bottom">
                             <ToolbarItem.Connection status={"connected"} />
