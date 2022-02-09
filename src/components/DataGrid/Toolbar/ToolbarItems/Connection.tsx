@@ -1,6 +1,5 @@
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord"
 import { Box, useTheme } from "@mui/material"
-import type { PredefinedToolbarItem } from "../types"
 
 const useConnectionStatusColor = (status: ConnectionStatus) => {
     const theme = useTheme()
@@ -30,7 +29,7 @@ type ConnectionProps = {
 /**
  * Toolbar item for connection status.
  */
-const Connection: PredefinedToolbarItem<ConnectionProps> = props => (
+const Connection: React.FC<ConnectionProps> = props => (
     <Box sx={{ display: "flex", padding: 2 }}>
         <FiberManualRecordIcon
             fontSize="small"
