@@ -125,7 +125,17 @@ const deserialize = (table: SerializedTableData): TableData => {
     }
 }
 
+const deserializeRow = (row: SerializedRow, rowIndex: number): Row => {
+    const _row: Row = {
+        ...row,
+        [__KEYS__.RDG_ID_KEY]: rowIndex,
+        [__KEYS__.SELECT_COL_KEY]: <Checkbox />,
+    } as Row
+    return _row
+}
+
 export const SerializableTable = {
     serialize,
     deserialize,
+    deserializeRow,
 }
