@@ -102,12 +102,8 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         if (user == null || API == null)
             throw new Error("Could not access the API!")
         try {
-            // const uid: typeof __KEYS__.UID_KEY = await API.post.row()
-            // const deser
-            // TODO: allow deserializing rows
-            // setRows(prev => {
-            //     return prev.push()
-            // })
+            await API.post.row()
+            await _reloadTable()
         } catch (err) {
             console.error(err)
             throw err
