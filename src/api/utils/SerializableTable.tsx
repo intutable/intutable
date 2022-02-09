@@ -13,7 +13,7 @@ import {
 } from "@app/components/DataGrid/Editor/editor-management"
 import type { EditorProps, HeaderRendererProps } from "react-data-grid"
 import { getEditor } from "@app/components/DataGrid/Editor/EditorComponents"
-import { ColumnHeader } from "@datagrid/ColumnHeader"
+import { ColumnHeader } from "@app/components/DataGrid/ColumnRenderer"
 import { Checkbox } from "@mui/material"
 import { TextEditor } from "react-data-grid"
 
@@ -70,7 +70,7 @@ const deserialize = (table: SerializedTableData): TableData => {
         (row, index) =>
             ({
                 ...row,
-                [__KEYS__.RDG_ID_KEY]: index + 1,
+                [__KEYS__.RDG_ID_KEY]: index,
                 [__KEYS__.SELECT_COL_KEY]: <Checkbox />,
             } as Row)
     )
@@ -88,6 +88,7 @@ const deserialize = (table: SerializedTableData): TableData => {
         headerRenderer: (props: HeaderRendererProps<Row>) => {
             return (
                 <ColumnHeader
+                    ckey={props.column.key}
                     label={props.column.name as string}
                     type={col.editor}
                 />

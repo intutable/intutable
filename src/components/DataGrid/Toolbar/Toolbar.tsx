@@ -1,14 +1,11 @@
-import Obj from "@app/utils/Obj"
 import { Toolbar as MUIToolbar, Button, useTheme, Divider } from "@mui/material"
-import { Toolbar, ToolbarItem } from "./types"
 
-type TProps = Obj
-/**
- * Toolbar for DataGrid.
- * @param {TProps} props
- * @returns {Toolbar} Toolbar Component
- */
-const T: Toolbar<TProps> = props => {
+type ToolbarProps = {
+    position: "top" | "bottom"
+    children: React.ReactElement | React.ReactElement[]
+}
+
+const Toolbar: React.FC<ToolbarProps> = props => {
     const theme = useTheme()
     return (
         <MUIToolbar
@@ -29,6 +26,7 @@ const T: Toolbar<TProps> = props => {
             }}
             disableGutters
         >
+            {/* TODO: add key */}
             {Array.isArray(props.children)
                 ? props.children.map((child, index, array) =>
                       index + 1 === array.length ? (
@@ -52,18 +50,4 @@ const T: Toolbar<TProps> = props => {
     )
 }
 
-/**
- * Use `Toolbar.Item` if no other predefined Toolbar Item suits your needs.
- * @tutorial $ `<Toolbar>
- *  <Toolbar.Item {...requiredProps}>
- *    Hello
- *  </Toolbar.Item>
- * </Toolbar`
- */
-const TItem: ToolbarItem = props => {
-    const theme = useTheme()
-    return <Button onClick={props.onClickHandler}>{props.children}</Button>
-}
-
-T.Item = TItem
-export default T
+export default Toolbar

@@ -1,5 +1,4 @@
 import Layout from "@components/Layout/Layout"
-import { ProjectCtxProvider } from "@context/ProjectContext"
 import { CssBaseline, PaletteMode, useMediaQuery } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
 import { getDesignToken } from "@theme"
@@ -75,18 +74,16 @@ const MyApp = (props: AppProps) => {
             </Head>
 
             <AuthProvider>
-                <ProjectCtxProvider>
-                    <ThemeTogglerContext.Provider value={colorMode}>
-                        <ThemeProvider theme={theme}>
-                            <SnackbarProvider maxSnack={5}>
-                                <CssBaseline />
-                                <Layout>
-                                    <Component {...pageProps} />
-                                </Layout>
-                            </SnackbarProvider>
-                        </ThemeProvider>
-                    </ThemeTogglerContext.Provider>
-                </ProjectCtxProvider>
+                <ThemeTogglerContext.Provider value={colorMode}>
+                    <ThemeProvider theme={theme}>
+                        <SnackbarProvider maxSnack={5}>
+                            <CssBaseline />
+                            <Layout>
+                                <Component {...pageProps} />
+                            </Layout>
+                        </SnackbarProvider>
+                    </ThemeProvider>
+                </ThemeTogglerContext.Provider>
             </AuthProvider>
         </>
     )

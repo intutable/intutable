@@ -1,25 +1,32 @@
 import { coreRequest } from "@app/api/utils/coreRequest"
+import { Column } from "@app/types/types"
 import type { CurrentUser } from "@context/AuthContext"
-import { Server } from "http"
 import { CHANNEL } from "../utils"
 import { ProjectManagement as PM } from "../utils/ProjectManagement_TypeAnnotations"
-import { SerializedColumn } from "@app/types/types"
+import { getTableData } from "./table"
 
-export const getColumnsFromTable = async (
+/**
+ * Utility that helps getting a column id when there is no column id.
+ * @param user
+ * @param tableId
+ * @param key
+ * @returns
+ */
+const _getColumnId = async (
     user: CurrentUser,
-    tableId: PM.Table.ID
-): Promise<PM.Column.List> => {
-    const coreResponse = await coreRequest(
+    tableId: PM.Table.ID,
+    key: Column["key"]
+): Promise<PM.Column.ID> => {
+    const table = (await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
-        getColumnsFromTable.name,
+        getTableData.name,
         { tableId },
         user.authCookie
-    )
-
-    if (Array.isArray(coreResponse) === false)
-        throw new Error("Expected an Array!")
-
-    return coreResponse as PM.Column.List
+    )) as PM.DBFormat.Table
+    const column = table.columns.find(col => col.columnName === key)
+    if (column == null)
+        throw new Error(`Did not found a column where key equals '${key}'`)
+    return column._id
 }
 
 export const createColumnInTable = async (
@@ -35,40 +42,76 @@ export const createColumnInTable = async (
     )
 }
 
-export const changeColumnName = async (
+export const changeColumnKey = async (
     user: CurrentUser,
-    columnId: PM.Column.ID,
+    tableId: PM.Table.ID,
+    key: Column["key"],
     newName: PM.Column.Name
 ): Promise<void> => {
+    const columnId = await _getColumnId(user, tableId, key)
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
-        changeColumnName.name,
+        "changeColumnKey",
         { columnId, newName },
         user.authCookie
     )
 }
 
-// export const changeColumnAttributes = async (
-//     user: CurrentUser,
-//     columnId: ColumnId,
-//     attributes: [keyof ServerColumn, unknown]
-// ): Promise<void> => {
-//     const coreResponse = await coreRequest(
-//         CHANNEL.PROJECT_MANAGEMENT,
-//         changeColumnAttributes.name,
-//         { columnId, attributes: [attributes] },
-//         user.authCookie
-//     )
+export const changeColumnName = async (
+    user: CurrentUser,
+    tableId: PM.Table.ID,
+    key: Column["key"],
+    newName: PM.Column.Name
+): Promise<void> => {
+    const columnId = await _getColumnId(user, tableId, key)
+    await coreRequest(
+        CHANNEL.PROJECT_MANAGEMENT,
+        "changeColumnAttributes",
+        {
+            columnId,
+            attributes: {
+                displayName: newName,
+            },
+        },
+        user.authCookie
+    )
+}
 
-//     // TODO: parse if value has correct type
+/**
+ * Can not be used until PM supports adding meta data.
+ * Because otherwise name would have to be mapped.
+ *
+ * @deprecated
+ *
+ * @param user
+ * @param tableId
+ * @param key
+ * @param attributes
+ */
+export const changeColumnAttributes = async (
+    user: CurrentUser,
+    tableId: PM.Table.ID,
+    key: Column["key"],
+    attributes: [keyof PM.DBFormat.Table["columns"], unknown]
+): Promise<void> => {
+    const columnId = await _getColumnId(user, tableId, key)
+    await coreRequest(
+        CHANNEL.PROJECT_MANAGEMENT,
+        changeColumnAttributes.name,
+        { columnId, attributes: attributes },
+        user.authCookie
+    )
 
-//     return Promise.resolve()
-// }
+    // TODO: parse if value has correct type
+}
 
 export const removeColumn = async (
     user: CurrentUser,
-    columnId: PM.Column.ID
+    tableId: PM.Table.ID,
+    key: Column["key"]
 ): Promise<void> => {
+    const columnId = await _getColumnId(user, tableId, key)
+    console.log(key, tableId, columnId)
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         removeColumn.name,
