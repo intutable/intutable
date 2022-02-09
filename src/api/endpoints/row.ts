@@ -8,8 +8,8 @@ export const updateRow = async (
     user: CurrentUser,
     project: PM.Project,
     table: PM.Table,
-    condition: [string, unknown],
-    update: { [key: Column["key"]]: unknown }
+    condition: any[],
+    update: { [index: string]: unknown }
 ): Promise<void> => {
     await coreRequest(
         CHANNEL.DATABASE,
