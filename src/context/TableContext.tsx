@@ -1,4 +1,5 @@
 import type { ProjectManagement as PM } from "@app/api"
+import { __KEYS__ } from "@app/types/types"
 import { rowKeyGetter, SerializableTable } from "@app/components/DataGrid/utils"
 import type {
     Column,
@@ -99,11 +100,17 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         try {
             setLoading(true)
             const changedRow = rows[data.indexes[0]]
-            // console.log(JSON.stringify(rows))
-            // console.log(JSON.stringify(data))  // this will throw! : this is deserialized data which can not be json serialized
-            await API!.put.row(props.project, table, ["_id", changedRow._id], {
-                [data.column.key]: changedRow[data.column.key],
-            })
+            await API!.put.row(
+                props.project,
+                table,
+                [
+                    __KEYS__.UID_KEY,
+                    changedRow[__KEYS__.UID_KEY]
+                ],
+                {
+                    [data.column.key]: changedRow[data.column.key],
+                }
+            )
             setRows(rows)
         } finally {
             setLoading(false)
