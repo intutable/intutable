@@ -1,4 +1,5 @@
 import type { ProjectManagement as PM } from "@app/api"
+import { __KEYS__ } from "@app/types/types"
 import { rowKeyGetter, SerializableTable } from "@app/components/DataGrid/utils"
 import type {
     Column,
@@ -11,7 +12,7 @@ import type {
 import React, { useCallback, useState } from "react"
 import { RowsChangeData } from "react-data-grid"
 import { useAuth } from "./AuthContext"
-import {__KEYS__} from "@app/types/types"
+import { __KEYS__ } from "@app/types/types"
 
 /**
  * // TODO: use a reducer instead of that many methods
@@ -103,14 +104,17 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         if (user == null || API == null)
             throw new Error("Could not access the API!")
         try {
-            const uid: typeof __KEYS__.UID_KEY = await API.post.row()
-            const deser
+            // const uid: typeof __KEYS__.UID_KEY = await API.post.row()
+            // const deser
             // TODO: allow deserializing rows
-            setRows(prev => {
-                return prev.push()
-            })
+            // setRows(prev => {
+            //     return prev.push()
+            // })
         } catch (err) {
+            console.error(err)
             throw err
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -119,11 +123,14 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         data: RowsChangeData<Row>
     ): Promise<void> => {
         const changedRow = rows[data.indexes[0]]
-        // console.log(JSON.stringify(rows))
-        // console.log(JSON.stringify(data))  // this will throw! : this is deserialized data which can not be json serialized
-        await API!.put.row(props.project, table, ["_id", changedRow._id], {
-            [data.column.key]: changedRow[data.column.key],
-        })
+        await API!.put.row(
+            props.project,
+            table,
+            [__KEYS__.UID_KEY, changedRow[__KEYS__.UID_KEY]],
+            {
+                [data.column.key]: changedRow[data.column.key],
+            }
+        )
         setRows(rows)
     }
 
