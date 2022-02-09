@@ -12,8 +12,6 @@ import type {
 import React, { useCallback, useState } from "react"
 import { RowsChangeData } from "react-data-grid"
 import { useAuth } from "./AuthContext"
-import { __KEYS__ } from "@app/types/types"
-
 /**
  * // TODO: use a reducer instead of that many methods
  */
