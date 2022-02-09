@@ -68,7 +68,10 @@ export const getTableData = async (
         .filter(col => col.key !== __KEYS__.UID_KEY)
 
     const rows: SerializedRow[] = coreResponse.rows.map(row => {
-        if (Object.prototype.hasOwnProperty.call(row, "_id") === false) {
+        if (
+            Object.prototype.hasOwnProperty.call(row, __KEYS__.UID_KEY) ===
+            false
+        ) {
             throw new TypeError(
                 `Received row missing uid: ${inspect(row, { depth: null })}`
             )

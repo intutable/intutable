@@ -5,13 +5,13 @@ import type {
     Column,
     Row,
     SerializedColumn,
+    SerializedRow,
     SerializedTableData,
     TableData,
 } from "@app/types/types"
 import React, { useCallback, useState } from "react"
 import { RowsChangeData } from "react-data-grid"
 import { useAuth } from "./AuthContext"
-
 /**
  * // TODO: use a reducer instead of that many methods
  */
@@ -21,6 +21,7 @@ export type TableContextProps = {
     columns: Column[]
     loading: boolean
     error: Error | null
+    createRow: () => Promise<void>
     partialRowUpdate: (rows: Row[], data: RowsChangeData<Row>) => Promise<void>
     createColumn: (col: SerializedColumn) => Promise<void>
     renameColumnKey: (
@@ -40,6 +41,7 @@ const initialState: TableContextProps = {
     columns: [{ key: "id", name: "ID" }],
     loading: true,
     error: null,
+    createRow: undefined!,
     partialRowUpdate: undefined!,
     createColumn: undefined!,
     renameColumnKey: undefined!,
@@ -94,27 +96,36 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         setRows(_deserializedTable.rows)
     }
 
-    // #################### column dispatchers ####################
+    // #################### row dispatchers ####################
 
-    const partialRowUpdate = async (rows: Row[], data: RowsChangeData<Row>) => {
+    const createRow = async (): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
         try {
-            setLoading(true)
-            const changedRow = rows[data.indexes[0]]
-            await API!.put.row(
-                props.project,
-                table,
-                [
-                    __KEYS__.UID_KEY,
-                    changedRow[__KEYS__.UID_KEY]
-                ],
-                {
-                    [data.column.key]: changedRow[data.column.key],
-                }
-            )
-            setRows(rows)
+            await API.post.row()
+            await _reloadTable()
+        } catch (err) {
+            console.error(err)
+            throw err
         } finally {
             setLoading(false)
         }
+    }
+
+    const partialRowUpdate = async (
+        rows: Row[],
+        data: RowsChangeData<Row>
+    ): Promise<void> => {
+        const changedRow = rows[data.indexes[0]]
+        await API!.put.row(
+            props.project,
+            table,
+            [__KEYS__.UID_KEY, changedRow[__KEYS__.UID_KEY]],
+            {
+                [data.column.key]: changedRow[data.column.key],
+            }
+        )
+        setRows(rows)
     }
 
     // #################### column dispatchers ####################
@@ -131,8 +142,6 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
                 col.name
             )
             await _reloadTable()
-        } catch (err) {
-            console.error(err)
         } finally {
             setLoading(false)
         }
@@ -169,9 +178,6 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     }
 
     const deleteColumn = async (key: Column["key"]): Promise<void> => {
-        console.log(key)
-        console.log(columns)
-        console.log(rows)
         if (user == null || API == null)
             throw new Error("Could not access the API!")
         try {
@@ -195,6 +201,7 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         loading,
         error,
         // row
+        createRow,
         partialRowUpdate,
         // column dispatchers
         createColumn,

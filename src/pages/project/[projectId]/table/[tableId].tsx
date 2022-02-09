@@ -82,6 +82,7 @@ const TablePage: React.FC<TablePageProps> = props => {
                     <Box>
                         <Toolbar position="top">
                             <ToolbarItem.AddCol />
+                            <ToolbarItem.AddRow />
                             <ToolbarItem.FileDownload getData={() => []} />
                         </Toolbar>
                         <DataGrid
