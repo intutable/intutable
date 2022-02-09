@@ -42,9 +42,6 @@ export const createColumnInTable = async (
     )
 }
 
-/**
- * @deprecated
- */
 export const changeColumnKey = async (
     user: CurrentUser,
     tableId: PM.Table.ID,
@@ -74,7 +71,6 @@ export const changeColumnName = async (
             columnId,
             attributes: {
                 displayName: newName,
-                columnName: newName.toLowerCase(),
             },
         },
         user.authCookie
@@ -115,6 +111,7 @@ export const removeColumn = async (
     key: Column["key"]
 ): Promise<void> => {
     const columnId = await _getColumnId(user, tableId, key)
+    console.log(key, tableId, columnId)
     await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         removeColumn.name,

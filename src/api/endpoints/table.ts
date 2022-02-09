@@ -12,6 +12,7 @@ import {
     SerializedRow,
     __KEYS__,
 } from "../../types/types"
+import { inspect } from "util"
 
 /**
  * Fetches a list with the names of the tables of a project.
@@ -67,9 +68,12 @@ export const getTableData = async (
         .filter(col => col.key !== __KEYS__.UID_KEY)
 
     const rows: SerializedRow[] = coreResponse.rows.map(row => {
-        if (!(__KEYS__.UID_KEY in row))
-            throw new TypeError("Row missing unique ID")
-        else return row as SerializedRow
+        if (Object.prototype.hasOwnProperty.call(row, "_id") === false) {
+            throw new TypeError(
+                `Received row missing uid: ${inspect(row, { depth: null })}`
+            )
+        }
+        return row as SerializedRow
     })
 
     const table: SerializedTableData = {

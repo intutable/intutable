@@ -89,8 +89,8 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         const _table = await API.get.table(table.tableId)
         const _deserializedTable = SerializableTable.deserialize(_table)
         setTable(_deserializedTable.table)
-        setRows(_deserializedTable.rows)
         setColumns(_deserializedTable.columns)
+        setRows(_deserializedTable.rows)
     }
 
     // #################### column dispatchers ####################
@@ -118,8 +118,14 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         try {
             setLoading(true)
             await API.post.column(table.tableId, col.key.toLocaleLowerCase())
-            await API.put.columnName(table.tableId, col.key, col.name)
+            await API.put.columnName(
+                table.tableId,
+                col.key.toLowerCase(),
+                col.name
+            )
             await _reloadTable()
+        } catch (err) {
+            console.error(err)
         } finally {
             setLoading(false)
         }
@@ -156,12 +162,17 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     }
 
     const deleteColumn = async (key: Column["key"]): Promise<void> => {
+        console.log(key)
+        console.log(columns)
+        console.log(rows)
         if (user == null || API == null)
             throw new Error("Could not access the API!")
         try {
             setLoading(true)
             await API.delete.column(table.tableId, key)
             await _reloadTable()
+        } catch (err) {
+            console.error(err)
         } finally {
             setLoading(false)
         }
