@@ -17,7 +17,7 @@ import { RowRendererProps, Row as GridRow } from "react-data-grid"
 const _RowRenderer = (props: RowRendererProps<Row>) => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
-    const { table } = useTableCtx()
+    const { deleteRow } = useTableCtx()
 
     const [anchorEL, setAnchorEL] = useState<HTMLDivElement | null>(null)
 
@@ -27,22 +27,25 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    const handleDeleteRow = useCallback((index: React.Key, row: Row) => {
-        try {
-            handleCloseContextMenu()
-            // TODO: shift rows
-        } catch (error) {
-            enqueueSnackbar("Die Zeile konnte nicht gelöscht werden.")
-        }
-    }, [])
+    const handleDeleteRow = useCallback(
+        async (index: number, row: Row) => {
+            try {
+                handleCloseContextMenu()
+                await deleteRow(index, row)
+            } catch (error) {
+                enqueueSnackbar("Die Zeile konnte nicht gelöscht werden.")
+            }
+        },
+        [deleteRow, enqueueSnackbar]
+    )
 
     const handleCreateRow = useCallback((atIndex: number) => {
-        try {
-            handleCloseContextMenu()
-            // TODO: shift rows
-        } catch (error) {
-            enqueueSnackbar("Es konnte keine Zeile eingefügt werden.")
-        }
+        // try {
+        //     handleCloseContextMenu()
+        //     // TODO: shift rows
+        // } catch (error) {
+        //     enqueueSnackbar("Es konnte keine Zeile eingefügt werden.")
+        // }
     }, [])
 
     return (

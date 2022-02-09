@@ -18,7 +18,7 @@ import {
     removeColumn,
     changeColumnName,
 } from "./endpoints/column"
-import { updateRow, createRow } from "./endpoints/row"
+import { updateRow, createRow, deleteRow } from "./endpoints/row"
 
 export * from "./utils/ProjectManagement_TypeAnnotations"
 
@@ -48,5 +48,6 @@ export const makeAPI = (user: CurrentUser) =>
             project: removeProject.bind(null, user),
             table: removeTable.bind(null, user),
             column: removeColumn.bind(null, user),
+            row: deleteRow.bind(null, user),
         },
     } as const)

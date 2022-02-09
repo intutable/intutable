@@ -59,3 +59,20 @@ export const createRow = async (
     }
     return newRow as SerializedRow
 }
+
+export const deleteRow = async (
+    user: CurrentUser,
+    project: PM.Project,
+    table: PM.Table,
+    condition: unknown[]
+): Promise<void> => {
+    await coreRequest(
+        CHANNEL.DATABASE,
+        "deleteRow",
+        {
+            table: `p${project.projectId}_${table.tableName}`,
+            condition,
+        },
+        user.authCookie
+    )
+}

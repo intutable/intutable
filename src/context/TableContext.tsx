@@ -22,6 +22,7 @@ export type TableContextProps = {
     loading: boolean
     error: Error | null
     createRow: () => Promise<void>
+    deleteRow: (rowIndex: number, row: Row) => Promise<void>
     partialRowUpdate: (rows: Row[], data: RowsChangeData<Row>) => Promise<void>
     createColumn: (col: SerializedColumn) => Promise<void>
     renameColumnKey: (
@@ -42,6 +43,7 @@ const initialState: TableContextProps = {
     loading: true,
     error: null,
     createRow: undefined!,
+    deleteRow: undefined!,
     partialRowUpdate: undefined!,
     createColumn: undefined!,
     renameColumnKey: undefined!,
@@ -101,20 +103,31 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     const createRow = async (): Promise<void> => {
         if (user == null || API == null)
             throw new Error("Could not access the API!")
-        try {
-            const serializedRow = await API.post.row(props.project, table)
-            const lastRowIndex = rows.length
-            const deserializedRow = SerializableTable.deserializeRow(
-                serializedRow,
-                lastRowIndex
-            )
-            setRows(prev => {
-                prev.push(deserializedRow)
-                return prev
-            })
-        } finally {
-            setLoading(false)
-        }
+
+        const serializedRow = await API.post.row(props.project, table)
+        // const lastRowIndex = rows.length
+        // const deserializedRow = SerializableTable.deserializeRow(
+        //     serializedRow,
+        //     lastRowIndex
+        // )
+        // setRows(prev => {
+        //     prev.push(deserializedRow)
+        //     return prev
+        // }) // TODO: uncomment this
+        await _reloadTable() // TODO: remove this
+    }
+
+    const deleteRow = async (rowIndex: number, row: Row): Promise<void> => {
+        if (user == null || API == null)
+            throw new Error("Could not access the API!")
+
+        await API.delete.row(props.project, table, [__KEYS__.UID_KEY, row._id])
+        // TODO: filter row and delete by index and then shift them
+        // setRows(prev => {
+        //     prev.push(deserializedRow)
+        //     return prev
+        // })
+        await _reloadTable() // TODO: remove this
     }
 
     const partialRowUpdate = async (
@@ -125,7 +138,7 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         await API!.put.row(
             props.project,
             table,
-            [__KEYS__.UID_KEY, changedRow[__KEYS__.UID_KEY]],
+            [__KEYS__.UID_KEY, changedRow._id],
             {
                 [data.column.key]: changedRow[data.column.key],
             }
@@ -207,6 +220,7 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         error,
         // row
         createRow,
+        deleteRow,
         partialRowUpdate,
         // column dispatchers
         createColumn,
