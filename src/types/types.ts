@@ -48,8 +48,8 @@ type Table<COL, ROW> = {
 
 export type Column = ReactDataGrid_Column<Row>
 
-const SELECT_COL_KEY = "__select__"
-const RDG_ID_KEY = "__id__"
+const SELECT_COL_KEY = "__selector__"
+const RDG_ID_KEY = "__rowIndex__"
 const UID_KEY = "_id"
 /**
  * Includes names for keys on objects.

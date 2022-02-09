@@ -1,9 +1,8 @@
-import type { PredefinedToolbarItem } from "../../types"
-import { IconButton, useTheme, Menu, MenuItem, Box } from "@mui/material"
 import FileDownloadIcon from "@mui/icons-material/FileDownload"
-import React, { useState } from "react"
-import { exportTo, FileFormat } from "./export"
+import { Box, IconButton, Menu, MenuItem, useTheme } from "@mui/material"
 import { useSnackbar } from "notistack"
+import React, { useState } from "react"
+import { FileFormat } from "./export"
 
 type FileDownoadContextMenuProps = {
     anchorEL: Element
@@ -51,7 +50,7 @@ export type FileDownloadProps = {
 /**
  * Button w/ options for exporting the data to several file formats
  */
-const FileDownload: PredefinedToolbarItem<FileDownloadProps> = props => {
+const FileDownload: React.FC<FileDownloadProps> = props => {
     const theme = useTheme()
 
     const { enqueueSnackbar } = useSnackbar()

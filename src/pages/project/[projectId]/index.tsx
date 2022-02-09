@@ -1,6 +1,7 @@
 import { makeAPI, ProjectManagement as PM } from "@app/api"
 import { getCurrentUser } from "@app/api/utils"
 import { useProjectList } from "@app/hooks/useProjectList"
+import { useTableList } from "@app/hooks/useTableList"
 import Title from "@components/Head/Title"
 import { AUTH_COOKIE_KEY } from "@context/AuthContext"
 import AddIcon from "@mui/icons-material/Add"
@@ -23,14 +24,16 @@ import type {
 import { useRouter } from "next/dist/client/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
+import Link from "@components/Link"
+import { DynamicRouteQuery } from "@app/utils/DynamicRouteQuery"
 
-type ProjectContextMenuProps = {
+type TableContextMenuProps = {
     anchorEL: Element
     open: boolean
     onClose: () => void
     children: Array<React.ReactNode> | React.ReactNode // overwrite implicit `children`
 }
-const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
+const TableContextMenu: React.FC<TableContextMenuProps> = props => {
     const theme = useTheme()
     return (
         <Menu
@@ -57,11 +60,11 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
         </Menu>
     )
 }
-type AddProjectCardProps = {
+type AddTableCardProps = {
     handleCreate: () => Promise<void>
 }
 
-const AddProjectCard: React.FC<AddProjectCardProps> = props => {
+const TableProjectCard: React.FC<AddTableCardProps> = props => {
     const theme = useTheme()
     return (
         <Card
@@ -85,13 +88,14 @@ const AddProjectCard: React.FC<AddProjectCardProps> = props => {
     )
 }
 
-type ProjectCardProps = {
+type TableCardProps = {
     project: PM.Project
-    handleRename: (project: PM.Project) => Promise<void>
-    handleDelete: (project: PM.Project) => Promise<void>
+    table: PM.Table
+    handleRename: (project: PM.Table) => Promise<void>
+    handleDelete: (project: PM.Table) => Promise<void>
     children: string
 }
-const ProjectCard: React.FC<ProjectCardProps> = props => {
+const TableCard: React.FC<TableCardProps> = props => {
     const router = useRouter()
     const theme = useTheme()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -105,7 +109,12 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push("/project/" + props.project.projectId)
+        router.push(
+            "/project/" +
+                props.project.projectId +
+                "/table/" +
+                props.table.tableId
+        )
     }
 
     return (
@@ -128,7 +137,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                 <CardContent>{props.children}</CardContent>
             </Card>
             {anchorEL && (
-                <ProjectContextMenu
+                <TableContextMenu
                     anchorEL={anchorEL}
                     open={anchorEL != null}
                     onClose={handleCloseContextMenu}
@@ -136,7 +145,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                     <Box
                         onClick={async () => {
                             handleCloseContextMenu()
-                            await props.handleRename(props.project)
+                            await props.handleRename(props.table)
                         }}
                     >
                         Umbenennen
@@ -144,37 +153,36 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
                     <Box
                         onClick={async () => {
                             handleCloseContextMenu()
-                            await props.handleDelete(props.project)
+                            await props.handleDelete(props.table)
                         }}
                         sx={{ color: theme.palette.warning.main }}
                     >
                         Löschen
                     </Box>
-                </ProjectContextMenu>
+                </TableContextMenu>
             )}
         </>
     )
 }
 
-type ProjectsPageProps = {
-    projectList: PM.Project.List
+type ProjectSlugProps = {
+    project: PM.Project
+    tablesList: PM.Table.List
 }
-const ProjectsPage: NextPage<
+const ProjectSlug: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const {
-        tablesList: projectList,
-        createProject,
-        renameProject,
-        deleteProject,
-    } = useProjectList(props.projectList)
+    const { tableList, createTable, renameTable, deleteTable } = useTableList(
+        props.project,
+        props.tablesList
+    )
 
-    const handleCreateProject = async () => {
+    const handleCreateTable = async () => {
         try {
-            const namePrompt = prompt("Benenne Dein neues Projekt!")
+            const namePrompt = prompt("Benenne deine neue Tabelle!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
             const isValid = isValidName(name)
@@ -182,64 +190,64 @@ const ProjectsPage: NextPage<
                 enqueueSnackbar(isValid.message, { variant: "error" })
                 return
             }
-            const nameIsTaken = projectList
-                .map(proj => proj.projectName.toLowerCase())
+            const nameIsTaken = tableList
+                .map(tbl => tbl.tableName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
-                    "Dieser Name wird bereits für eines deiner Projekte verwendet!",
+                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!",
                     { variant: "error" }
                 )
                 return
             }
-            await createProject(name)
+            await createTable(name)
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })
         } catch (error) {
-            enqueueSnackbar("Das Projekt konnte nicht erstellt werden!", {
+            enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
                 variant: "error",
             })
         }
     }
 
-    const handleRenameProject = async (project: PM.Project) => {
+    const handleRenameTable = async (table: PM.Table) => {
         try {
-            const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
+            const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
-            const nameIsTaken = projectList
-                .map(proj => proj.projectName.toLowerCase())
+            const nameIsTaken = tableList
+                .map(tbl => tbl.tableName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
-                    "Dieser Name wird bereits für eines deiner Projekte verwendet!",
+                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!",
                     { variant: "error" }
                 )
                 return
             }
-            await renameProject(project, name)
-            enqueueSnackbar("Das Projekt wurde umbenannt.", {
+            await renameTable(table, name)
+            enqueueSnackbar("Die Tabelle wurde umbenannt.", {
                 variant: "success",
             })
         } catch (error) {
-            enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", {
+            enqueueSnackbar("Die Tabelle konnte nicht umbenannt werden!", {
                 variant: "error",
             })
         }
     }
 
-    const handleDeleteProject = async (project: PM.Project) => {
+    const handleDeleteTable = async (table: PM.Table) => {
         try {
             const confirmed = confirm(
-                "Möchtest du dein Projekt wirklich löschen?"
+                "Möchtest du deine Tabelle wirklich löschen?"
             )
             if (!confirmed) return
-            await deleteProject(project)
-            enqueueSnackbar("Projekt wurde gelöscht.", {
+            await deleteTable(table)
+            enqueueSnackbar("Tabelle wurde gelöscht.", {
                 variant: "success",
             })
         } catch (error) {
-            enqueueSnackbar("Projekt konnte nicht gelöscht werden!", {
+            enqueueSnackbar("Tabelle konnte nicht gelöscht werden!", {
                 variant: "error",
             })
         }
@@ -249,24 +257,26 @@ const ProjectsPage: NextPage<
         <>
             <Title title="Projekte" />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
-                Deine Projekte
+                Deine Tabellen in{" "}
+                <Link href={`/projects`}>{props.project.projectName}</Link>
             </Typography>
             <Grid container spacing={2}>
-                {projectList.map((proj, i) => (
+                {tableList.map((tbl, i) => (
                     <Grid item key={i}>
-                        <ProjectCard
-                            handleDelete={handleDeleteProject}
-                            handleRename={handleRenameProject}
-                            project={proj}
+                        <TableCard
+                            table={tbl}
+                            handleDelete={handleDeleteTable}
+                            handleRename={handleRenameTable}
+                            project={props.project}
                         >
-                            {proj.projectName}
-                        </ProjectCard>
+                            {tbl.tableName}
+                        </TableCard>
                     </Grid>
                 ))}
                 <Grid item>
-                    <AddProjectCard handleCreate={handleCreateProject}>
+                    <TableProjectCard handleCreate={handleCreateTable}>
                         <AddIcon />
-                    </AddProjectCard>
+                    </TableProjectCard>
                 </Grid>
             </Grid>
         </>
@@ -274,11 +284,15 @@ const ProjectsPage: NextPage<
 }
 
 export const getServerSideProps: GetServerSideProps<
-    ProjectsPageProps
+    ProjectSlugProps
 > = async context => {
     const { req } = context
+    const query = context.query as DynamicRouteQuery<
+        typeof context.query,
+        "projectId"
+    >
 
-    const authCookie = req.cookies[AUTH_COOKIE_KEY]
+    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
 
     const user = await getCurrentUser(authCookie).catch(e => {
         console.error(e)
@@ -294,15 +308,21 @@ export const getServerSideProps: GetServerSideProps<
         }
     const API = makeAPI(user)
 
-    const serverRequest = await API.get.projectsList()
-    const error = serverRequest == null
-    if (error) return { notFound: true }
+    const projectId: PM.Project.ID = Number.parseInt(query.projectId)
+
+    const project = (await API.get.projectsList()).find(
+        proj => proj.projectId === projectId
+    )
+    if (project == null) return { notFound: true }
+
+    const tablesList = await API.get.tablesList(project.projectId)
 
     return {
         props: {
-            projectList: serverRequest,
+            project: project,
+            tablesList,
         },
     }
 }
 
-export default ProjectsPage
+export default ProjectSlug

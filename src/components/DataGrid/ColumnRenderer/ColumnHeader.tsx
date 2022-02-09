@@ -1,33 +1,33 @@
-import React, { useState } from "react"
+import { EditorType } from "@app/components/DataGrid/Editor/editor-management"
+import { useTableCtx } from "@app/context/TableContext"
+import { Column } from "@app/types/types"
+import MoreVertIcon from "@mui/icons-material/MoreVert"
 import {
     Box,
-    useTheme,
+    IconButton,
     Menu,
     MenuItem,
-    IconButton,
     Typography,
+    useTheme,
 } from "@mui/material"
-import {
-    EditorType,
-    isEditorType,
-    RuntimeEditorMap,
-} from "@app/components/DataGrid/Editor/editor-management"
+import { useSnackbar } from "notistack"
+import React, { useState } from "react"
 import { ChangeCellTypeDialog } from "./ChangeCellTypeDialog"
-import MoreVertIcon from "@mui/icons-material/MoreVert"
-import { useProjectCtx } from "@app/context/ProjectContext"
 
 type ColumnHeaderProps = {
+    ckey: Column["key"]
     label: string
     type: EditorType
 }
 
 export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
     const theme = useTheme()
+    const { enqueueSnackbar } = useSnackbar()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const [changeTypeModalOpen, setChangeTypeModalOpen] = useState(false)
 
-    const { renameColumn } = useProjectCtx()
+    const { renameColumnName, deleteColumn } = useTableCtx()
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -49,7 +49,38 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
         handleCloseContextMenu()
     }
 
-    const handleRenameColumn = async () => {}
+    const handleDeleteColumn = async () => {
+        try {
+            const confirmed = confirm(
+                "Möchtest du diese Spalte wirklich löschen?"
+            )
+            if (!confirmed) return
+            await deleteColumn(props.ckey)
+            enqueueSnackbar("Spalte wurde gelöscht.", {
+                variant: "success",
+            })
+        } catch (error) {
+            enqueueSnackbar("Spalte konnte nicht gelöscht werden!", {
+                variant: "error",
+            })
+        }
+    }
+
+    const handleRenameColumn = async () => {
+        try {
+            const name = prompt("Gib einen neuen Namen für diese Spalte ein:")
+            if (!name) return
+            // TODO: check if the column name is already taken
+            await renameColumnName(props.ckey, name)
+            enqueueSnackbar("Die Spalte wurde umbenannt.", {
+                variant: "success",
+            })
+        } catch (error) {
+            enqueueSnackbar("Die Spalte konnte nicht umbenannt werden!", {
+                variant: "error",
+            })
+        }
+    }
 
     return (
         <>
@@ -66,11 +97,13 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
                 <Typography
                     sx={{
                         fontWeight: "bold",
-                        flex: 1,
+                        cursor: "text",
                     }}
+                    onDoubleClick={handleRenameColumn}
                 >
                     {props.label}
                 </Typography>
+                <Box sx={{ flex: 1 }} />
                 <IconButton
                     onClick={handleOpenContextMenu}
                     sx={{
@@ -101,7 +134,13 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
                     >
                         Typ ändern ({props.type})
                     </MenuItem>
-                    <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
+                    <MenuItem>Eigenschaften ändern</MenuItem>
+                    <MenuItem
+                        onClick={handleDeleteColumn}
+                        sx={{ color: theme.palette.warning.main }}
+                    >
+                        Löschen
+                    </MenuItem>
                 </Menu>
             )}
             <ChangeCellTypeDialog
