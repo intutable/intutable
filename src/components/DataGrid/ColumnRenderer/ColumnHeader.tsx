@@ -135,6 +135,7 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
                         Typ ändern ({props.type})
                     </MenuItem>
                     <MenuItem>Eigenschaften ändern</MenuItem>
+                    <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
                     <MenuItem
                         onClick={handleDeleteColumn}
                         sx={{ color: theme.palette.warning.main }}
