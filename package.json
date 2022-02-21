@@ -37,6 +37,7 @@
         "react": "^18.0.0-rc.0",
         "react-data-grid": "^7.0.0-beta.7",
         "react-dom": "^18.0.0-rc.0",
+        "swr": "^1.2.1",
         "typescript": "^4.4.4"
     },
     "devDependencies": {
