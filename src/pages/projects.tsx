@@ -238,6 +238,7 @@ const ProjectList: React.FC = props => {
             })
         }
     }
+
     if (error) return <>Error: {error}</>
     if (projectList == null) return <CircularProgress />
 
@@ -300,7 +301,7 @@ export const getServerSideProps: GetServerSideProps<
         }
     const API = makeAPI(user)
 
-    const list = await API.get.projectsList()
+    const list = await API.get.projectList()
     if (list == null) return { notFound: true }
 
     return {

@@ -159,11 +159,11 @@ export const getServerSideProps: GetServerSideProps<
         }
     const API = makeAPI(user)
 
-    const project = (await API.get.projectsList()).find(
+    const project = (await API.get.projectList()).find(
         proj => proj.projectId === projectId
     )
     if (project == null) return { notFound: true }
-    const tableList = await API.get.tablesList(project.projectId)
+    const tableList = await API.get.tableList(project.projectId)
     const data = await API.get.table(tableId)
 
     return {

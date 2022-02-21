@@ -24,8 +24,8 @@ import { Routes } from "./routes/"
 export const makeAPI = (user: CurrentUser) =>
     ({
         get: {
-            projectsList: getProjects.bind(null, user),
-            tablesList: getTablesFromProject.bind(null, user),
+            projectList: getProjects.bind(null, user),
+            tableList: getTablesFromProject.bind(null, user),
             table: getTableData.bind(null, user),
         },
         post: {

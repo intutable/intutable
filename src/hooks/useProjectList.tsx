@@ -1,9 +1,8 @@
+import { Routes } from "@api/routes"
 import type { ProjectManagement as PM } from "@app/api"
 import { fetchWithUser } from "@app/api/fetcher"
-import { CurrentUser, useAuth } from "@app/context/AuthContext"
-import { useEffect, useMemo, useState } from "react"
-import useSWR, { Key, useSWRConfig } from "swr"
-import { Routes } from "@api/routes"
+import { useAuth } from "@app/context/AuthContext"
+import useSWR from "swr"
 
 export const useProjectList = () => {
     const { user, API } = useAuth()
@@ -17,17 +16,13 @@ export const useProjectList = () => {
         fetchWithUser
     )
 
-    useEffect(() => {
-        console.log(list)
-    }, [list])
-
     /**
      * // TODO:
-     *
+     *  once these api methods return the updatet data, inject it into mutate
      */
 
     const createProject = async (name: PM.Project.Name): Promise<void> => {
-        await API!.post.project(name)
+        await API?.post.project(name)
         await mutate()
     }
 
@@ -35,12 +30,12 @@ export const useProjectList = () => {
         project: PM.Project,
         newName: PM.Project.Name
     ): Promise<void> => {
-        await API!.put.projectName(project.projectId, newName)
+        await API?.put.projectName(project.projectId, newName)
         await mutate()
     }
 
     const deleteProject = async (project: PM.Project): Promise<void> => {
-        await API!.delete.project(project.projectId)
+        await API?.delete.project(project.projectId)
         await mutate()
     }
 
