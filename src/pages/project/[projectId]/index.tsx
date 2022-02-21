@@ -1,8 +1,9 @@
 import { makeAPI, ProjectManagement as PM } from "@app/api"
-import { getCurrentUser } from "@app/api/utils"
-import { useProjectList } from "@app/hooks/useProjectList"
+import { Auth } from "@app/auth"
 import { useTableList } from "@app/hooks/useTableList"
+import { DynamicRouteQuery } from "@app/utils/DynamicRouteQuery"
 import Title from "@components/Head/Title"
+import Link from "@components/Link"
 import { AUTH_COOKIE_KEY } from "@context/AuthContext"
 import AddIcon from "@mui/icons-material/Add"
 import {
@@ -24,8 +25,6 @@ import type {
 import { useRouter } from "next/dist/client/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
-import Link from "@components/Link"
-import { DynamicRouteQuery } from "@app/utils/DynamicRouteQuery"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -294,7 +293,7 @@ export const getServerSideProps: GetServerSideProps<
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
 
-    const user = await getCurrentUser(authCookie).catch(e => {
+    const user = await Auth.getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })

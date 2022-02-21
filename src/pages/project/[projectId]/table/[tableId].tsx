@@ -1,5 +1,5 @@
-import { makeAPI } from "@api"
-import { getCurrentUser, ProjectManagement as PM } from "@api/utils"
+import { Auth } from "@app/auth"
+import { ProjectManagement as PM, makeAPI } from "@api"
 import { TableNavigator } from "@app/components/TableNavigator"
 import { TableCtxProvider, useTableCtx } from "@app/context/TableContext"
 import { Row, SerializedTableData, TableData } from "@app/types/types"
@@ -146,7 +146,7 @@ export const getServerSideProps: GetServerSideProps<
     const tableId: PM.Table.ID = Number.parseInt(query.tableId)
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-    const user = await getCurrentUser(authCookie).catch(e => {
+    const user = await Auth.getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })

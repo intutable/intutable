@@ -8,7 +8,7 @@ import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import { makeError } from "@app/utils/makeError"
-import { getCurrentUser } from "@app/api/utils"
+import { Auth } from "@app/auth"
 
 const validateUsername = (username: string): true | Error =>
     username.length > 7
@@ -171,7 +171,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
 
-    const user = await getCurrentUser(authCookie).catch(e => {
+    const user = await Auth.getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })

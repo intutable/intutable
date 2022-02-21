@@ -1,5 +1,5 @@
 import { makeAPI, ProjectManagement as PM } from "@app/api"
-import { getCurrentUser } from "@app/api/utils"
+import { Auth } from "@app/auth"
 import { useProjectList } from "@app/hooks/useProjectList"
 import Title from "@components/Head/Title"
 import { AUTH_COOKIE_KEY } from "@context/AuthContext"
@@ -8,6 +8,7 @@ import {
     Box,
     Card,
     CardContent,
+    CircularProgress,
     Grid,
     Menu,
     MenuItem,
@@ -23,6 +24,8 @@ import type {
 import { useRouter } from "next/dist/client/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
+import { SWRConfig, unstable_serialize } from "swr"
+import { Routes } from "@api/routes"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -156,21 +159,12 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     )
 }
 
-type ProjectsPageProps = {
-    projectList: PM.Project.List
-}
-const ProjectsPage: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = props => {
+const ProjectList: React.FC = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const {
-        tablesList: projectList,
-        createProject,
-        renameProject,
-        deleteProject,
-    } = useProjectList(props.projectList)
+    const { projectList, createProject, renameProject, deleteProject, error } =
+        useProjectList()
 
     const handleCreateProject = async () => {
         try {
@@ -182,7 +176,7 @@ const ProjectsPage: NextPage<
                 enqueueSnackbar(isValid.message, { variant: "error" })
                 return
             }
-            const nameIsTaken = projectList
+            const nameIsTaken = projectList!
                 .map(proj => proj.projectName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
@@ -207,7 +201,7 @@ const ProjectsPage: NextPage<
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
-            const nameIsTaken = projectList
+            const nameIsTaken = projectList!
                 .map(proj => proj.projectName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
@@ -244,6 +238,8 @@ const ProjectsPage: NextPage<
             })
         }
     }
+    if (error) return <>Error: {error}</>
+    if (projectList == null) return <CircularProgress />
 
     return (
         <>
@@ -273,18 +269,28 @@ const ProjectsPage: NextPage<
     )
 }
 
+type PageProps = {
+    // fallback: PM.Project.List
+    fallback: any // TODO: remove this any
+}
+const Page: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ fallback }) => (
+    <SWRConfig value={{ fallback }}>
+        <ProjectList />
+    </SWRConfig>
+)
+
 export const getServerSideProps: GetServerSideProps<
-    ProjectsPageProps
+    PageProps
 > = async context => {
     const { req } = context
 
     const authCookie = req.cookies[AUTH_COOKIE_KEY]
-
-    const user = await getCurrentUser(authCookie).catch(e => {
+    const user = await Auth.getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })
-
     if (!user)
         return {
             redirect: {
@@ -294,15 +300,20 @@ export const getServerSideProps: GetServerSideProps<
         }
     const API = makeAPI(user)
 
-    const serverRequest = await API.get.projectsList()
-    const error = serverRequest == null
-    if (error) return { notFound: true }
+    const list = await API.get.projectsList()
+    if (list == null) return { notFound: true }
 
     return {
         props: {
-            projectList: serverRequest,
+            fallback: {
+                [unstable_serialize([
+                    Routes.get.projectList,
+                    user,
+                    { userId: user.id },
+                ])]: list,
+            },
         },
     }
 }
 
-export default ProjectsPage
+export default Page
