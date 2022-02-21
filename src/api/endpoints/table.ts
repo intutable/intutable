@@ -55,6 +55,8 @@ export const getTableData = async (
         user.authCookie
     )) as PM.DBFormat.Table
 
+    // TODO: move this kinna code to SerializableTable
+
     // rename props: parse backend col to `ServerColumn`
     const columns: SerializedColumn[] = coreResponse.columns
         .map(col => {
