@@ -1,5 +1,5 @@
 import { makeAPI } from "@app/api"
-import { coreLogin, coreLogout, getCurrentUser } from "@app/api/utils/coreLogin"
+import { Auth } from "@app/auth"
 import { useRouter } from "next/router"
 import React, { useEffect, useState } from "react"
 
@@ -51,20 +51,19 @@ export const AuthProvider: React.FC = props => {
     )
 
     useEffect(() => {
-        setLoading(true)
         // check if a user is already logged in
         ;(async () => {
-            setUser(await getCurrentUser())
-            setLoading(false)
+            const user = await Auth.getCurrentUser()
+            if (user) setUser(user)
         })()
     }, [])
 
     const login = async (username: string, password: string) => {
         setLoading(true)
         try {
-            await coreLogout()
-            await coreLogin(username, password)
-            const user = await getCurrentUser()
+            await logout()
+            await Auth.login(username, password)
+            const user = await Auth.getCurrentUser()
             setUser(user)
         } finally {
             setLoading(false)
@@ -73,7 +72,7 @@ export const AuthProvider: React.FC = props => {
 
     const logout = async () => {
         setLoading(true)
-        return coreLogout()
+        return Auth.logout()
             .then(() => {
                 setUser(null)
                 router.push("/")
