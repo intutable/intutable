@@ -1,5 +1,5 @@
-import { useTableCtx } from "@app/context/TableContext"
-import { Row } from "@app/types/types"
+import { useTableCtx } from "context"
+import { Row } from "types"
 import { Menu, MenuItem, useTheme, Box } from "@mui/material"
 import { useSnackbar } from "notistack"
 import React, { useCallback, useState } from "react"

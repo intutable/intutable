@@ -1,9 +1,8 @@
-import { CurrentUser } from "@app/context/AuthContext"
-import Obj from "@app/utils/Obj"
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
+import { User } from "auth"
 import type { Fetcher } from "swr"
+import { Route } from "./routes"
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 const CORE = process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
-import { Route, ResponseTypeOf, Routes } from "./routes"
 
 /**
  * Fetcher function for use with useSWR hook
@@ -16,7 +15,7 @@ export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
  */
 export const fetchWithUser = (
     url: Route,
-    user: CurrentUser,
+    user: User,
     body: RequestInit["body"]
 ) =>
     fetch(CORE + url, {

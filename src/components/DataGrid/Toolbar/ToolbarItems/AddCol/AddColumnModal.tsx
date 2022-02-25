@@ -1,8 +1,8 @@
-import { SerializedColumn } from "@app/types/types"
+import type { Column } from "types"
 import {
     EditorType,
     RuntimeEditorMap,
-} from "@app/components/DataGrid/Editor/editor-management/editorTypes"
+} from "@datagrid/Editor/editor-management/editorTypes"
 import {
     Box,
     Button,
@@ -25,14 +25,14 @@ import React, { useEffect, useState } from "react"
 type AddColumnModalProps = {
     open: boolean
     onClose: () => void
-    onHandleCreateColumn: (column: SerializedColumn) => Promise<void>
+    onHandleCreateColumn: (column: Column.Serialized) => Promise<void>
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const theme = useTheme()
 
     const [moreOptionsActive, setMoreOptionsActive] = useState(false)
-    const [options, setOptions] = useState<SerializedColumn>({
+    const [options, setOptions] = useState<Column.Serialized>({
         name: "",
         key: "",
         editable: true,
@@ -53,9 +53,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         }
     }, [options.editor])
 
-    const setOption = <T extends keyof SerializedColumn>(
+    const setOption = <T extends keyof Column.Serialized>(
         option: T,
-        value: SerializedColumn[T]
+        value: Column.Serialized[T]
     ) => {
         setOptions(prev => ({
             ...prev,

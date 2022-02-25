@@ -1,20 +1,20 @@
 import { coreRequest } from "../../api/utils/coreRequest"
-import { CurrentUser } from "@context/AuthContext"
-import { CHANNEL } from "../../api/utils"
+import { User } from "auth"
+import { CHANNEL } from "api/constants"
 
 /**
  * Check if logged into core by using the session cookie.
  */
 export const getCurrentUser = async (
     authCookie?: string
-): Promise<CurrentUser | null> => {
+): Promise<User | null> => {
     try {
         const user = (await coreRequest(
             CHANNEL.USER_AUTHENTICATION,
             getCurrentUser.name,
             {},
             authCookie
-        )) as Omit<CurrentUser, "authCookie">
+        )) as Omit<User, "authCookie">
 
         return Promise.resolve({
             ...user,

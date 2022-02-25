@@ -1,26 +1,22 @@
-import { useState } from "react"
-import type { NextPage } from "next"
+import Title from "components/Head/Title"
+import FlashlightOffIcon from "@mui/icons-material/FlashlightOff"
+import FlashlightOnIcon from "@mui/icons-material/FlashlightOn"
+import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices"
 import {
-    Typography,
-    Button,
-    Switch,
     Divider,
-    styled,
-    PaletteMode,
     List,
-    ListSubheader,
     ListItem,
     ListItemIcon,
     ListItemText,
+    ListSubheader,
+    Switch,
+    Typography,
 } from "@mui/material"
-import Title from "@components/Head/Title"
-import ThemeSwitch from "../components/ThemeSwitch/ThemeSwitch"
-import FlashlightOnIcon from "@mui/icons-material/FlashlightOn"
-import FlashlightOffIcon from "@mui/icons-material/FlashlightOff"
-import { useThemeToggler } from "./_app"
-import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices"
+import type { NextPage } from "next"
+import ThemeSwitch from "components/ThemeSwitch/ThemeSwitch"
+import { useThemeToggler } from "pages/_app"
 
-const Settings: NextPage = props => {
+const Settings: NextPage = () => {
     const { getTheme } = useThemeToggler()
     return (
         <>

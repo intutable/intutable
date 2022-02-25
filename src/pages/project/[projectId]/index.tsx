@@ -1,11 +1,16 @@
-import { makeAPI, ProjectManagement as PM } from "@app/api"
-import { Routes } from "@app/api/routes"
-import { Auth } from "@app/auth"
-import { useTableList } from "@app/hooks/useTableList"
-import { DynamicRouteQuery } from "@app/utils/DynamicRouteQuery"
-import Title from "@components/Head/Title"
-import Link from "@components/Link"
-import { AUTH_COOKIE_KEY } from "@context/AuthContext"
+/**
+ * Don't worry, this messy file will be deprecated in the future.
+ * No need to split this up.
+ */
+
+import { makeAPI, Routes } from "api"
+import type { PMTypes as PM } from "types"
+import { Auth } from "auth"
+import { useTableList } from "hooks"
+import { DynamicRouteQuery } from "types/DynamicRouteQuery"
+import Title from "components/Head/Title"
+import Link from "components/Link"
+import { AUTH_COOKIE_KEY } from "context"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -18,13 +23,13 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import { isValidName, prepareName } from "@utils/validateName"
+import { isValidName, prepareName } from "utils/validateName"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { useRouter } from "next/dist/client/router"
+import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
@@ -188,7 +193,7 @@ const TableList: React.FC<TableListProps> = props => {
                 return
             }
             const nameIsTaken = tableList!
-                .map(tbl => tbl.tableName.toLowerCase())
+                .map((tbl: PM.Table) => tbl.tableName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -213,7 +218,7 @@ const TableList: React.FC<TableListProps> = props => {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
             const nameIsTaken = tableList!
-                .map(tbl => tbl.tableName.toLowerCase())
+                .map((tbl: PM.Table) => tbl.tableName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -261,7 +266,7 @@ const TableList: React.FC<TableListProps> = props => {
                 <Link href={`/projects`}>{props.project.projectName}</Link>
             </Typography>
             <Grid container spacing={2}>
-                {tableList.map((tbl, i) => (
+                {tableList.map((tbl: PM.Table, i: number) => (
                     <Grid item key={i}>
                         <TableCard
                             table={tbl}
@@ -286,6 +291,7 @@ const TableList: React.FC<TableListProps> = props => {
 type PageProps = {
     project: PM.Project
     // fallback: PM.Table.List
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fallback: any // TODO: remove this any
 }
 const Page: NextPage<
@@ -324,7 +330,7 @@ export const getServerSideProps: GetServerSideProps<
     const projectId: PM.Project.ID = Number.parseInt(query.projectId)
 
     const project = (await API.get.projectList()).find(
-        proj => proj.projectId === projectId
+        (proj: PM.Project) => proj.projectId === projectId
     )
     if (project == null) return { notFound: true }
 

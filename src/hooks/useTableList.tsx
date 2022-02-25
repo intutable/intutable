@@ -1,9 +1,7 @@
-import { Routes } from "@api/routes"
-import type { ProjectManagement as PM } from "@app/api"
-import { fetchWithUser } from "@app/api/fetcher"
-import { useAuth } from "@app/context/AuthContext"
-import { useState } from "react"
+import { fetchWithUser, Routes } from "api"
+import { useAuth } from "context"
 import useSWR from "swr"
+import type { PMTypes as PM } from "types"
 
 export const useTableList = (project: PM.Project) => {
     const { user, API } = useAuth()
@@ -12,7 +10,7 @@ export const useTableList = (project: PM.Project) => {
         data: list,
         error,
         mutate,
-    } = useSWR<PM.Table.List>(
+    } = useSWR<PM.Table[]>(
         user
             ? [Routes.get.tableList, user, { projectId: project.projectId }]
             : null,

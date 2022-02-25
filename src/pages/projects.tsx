@@ -1,8 +1,13 @@
-import { makeAPI, ProjectManagement as PM } from "@app/api"
-import { Auth } from "@app/auth"
-import { useProjectList } from "@app/hooks/useProjectList"
-import Title from "@components/Head/Title"
-import { AUTH_COOKIE_KEY } from "@context/AuthContext"
+/**
+ * Don't worry, this messy file will be deprecated in the future.
+ * No need to split this up.
+ */
+
+import { makeAPI, Routes } from "api"
+import { Auth } from "auth"
+import { useProjectList } from "hooks"
+import Title from "components/Head/Title"
+import { AUTH_COOKIE_KEY } from "context"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -15,17 +20,17 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import { isValidName, prepareName } from "@utils/validateName"
+import { isValidName, prepareName } from "utils/validateName"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { useRouter } from "next/dist/client/router"
+import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
-import { Routes } from "@api/routes"
+import type { PMTypes as PM } from "types"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -159,7 +164,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     )
 }
 
-const ProjectList: React.FC = props => {
+const ProjectList: React.FC = () => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
@@ -177,7 +182,7 @@ const ProjectList: React.FC = props => {
                 return
             }
             const nameIsTaken = projectList!
-                .map(proj => proj.projectName.toLowerCase())
+                .map((proj: PM.Project) => proj.projectName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -202,7 +207,7 @@ const ProjectList: React.FC = props => {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
             const nameIsTaken = projectList!
-                .map(proj => proj.projectName.toLowerCase())
+                .map((proj: PM.Project) => proj.projectName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -249,7 +254,7 @@ const ProjectList: React.FC = props => {
                 Deine Projekte
             </Typography>
             <Grid container spacing={2}>
-                {projectList.map((proj, i) => (
+                {projectList.map((proj: PM.Project, i: number) => (
                     <Grid item key={i}>
                         <ProjectCard
                             handleDelete={handleDeleteProject}
@@ -272,6 +277,7 @@ const ProjectList: React.FC = props => {
 
 type PageProps = {
     // fallback: PM.Project.List
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fallback: any // TODO: remove this any
 }
 const Page: NextPage<

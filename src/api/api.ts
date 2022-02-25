@@ -1,4 +1,4 @@
-import { CurrentUser } from "@app/context/AuthContext"
+import { User } from "auth"
 import {
     getProjects,
     createProject,
@@ -19,9 +19,8 @@ import {
     changeColumnName,
 } from "./endpoints/column"
 import { updateRow, createRow, deleteRow } from "./endpoints/row"
-import { Routes } from "./routes/"
 
-export const makeAPI = (user: CurrentUser) =>
+export const makeAPI = (user: User) =>
     ({
         get: {
             projectList: getProjects.bind(null, user),

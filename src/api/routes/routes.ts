@@ -1,11 +1,9 @@
+import type { User } from "auth"
+import type { TableData } from "types"
+import type Obj from "types/Obj"
+import type { PMTypes as PM } from "../../types"
 import { CHANNEL } from "../constants/CHANNEL"
 import { METHOD } from "../constants/METHODS"
-import type { ProjectManagement as PM } from "../utils/ProjectManagement_TypeAnnotations"
-import type { CurrentUser } from "@app/context/AuthContext"
-import type { SerializedTableData } from "@app/types/types"
-import type { Key } from "swr"
-import type Obj from "@utils/Obj"
-import { RouteHas } from "next/dist/lib/load-custom-routes"
 
 /**
  * @constant
@@ -15,14 +13,14 @@ export const Routes = {
         /**
          * Fetches a list of projects.
          * @function
-         * @param {CurrentUser} user
+         * @param {User} user
          * @returns {Promise.resolve<PM.Project.List>}
          */
         projectList: `/request/${CHANNEL.PROJECT_MANAGEMENT}/${METHOD.getProjects}`,
         /**
          * Fetches a list of tables of a certain project.
          * @function
-         * @param {CurrentUser} user
+         * @param {User} user
          * @param {PM.Project.ID} projectId id of the project
          * @returns {Promise.resolve<PM.Table.List>}
          */
@@ -30,9 +28,9 @@ export const Routes = {
         /**
          * Fetches a table with its data.
          * @function
-         * @param {CurrentUser} user
+         * @param {User} user
          * @param {PM.Table.ID} tableId
-         * @returns {Promise<SerializedTableData>}
+         * @returns {Promise<TableData.Serialized>}
          */
         table: `/request/${CHANNEL.PROJECT_MANAGEMENT}/${METHOD.getTableData}`,
     },
@@ -43,11 +41,11 @@ export const Routes = {
  */
 export type ResponseTypeOf<ROUTE extends Route> =
     ROUTE extends "/request/project-management/getProjects"
-        ? PM.Project.List
+        ? PM.Project[]
         : ROUTE extends "/request/project-management/getTablesFromProject"
-        ? PM.Table.List
+        ? PM.Table[]
         : ROUTE extends "/request/project-management/getTableData"
-        ? SerializedTableData
+        ? TableData.Serialized
         : void
 
 type ValuesOf<T> = {

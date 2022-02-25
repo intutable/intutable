@@ -1,6 +1,6 @@
-import { EditorType } from "@app/components/DataGrid/Editor/editor-management"
-import { useTableCtx } from "@app/context/TableContext"
-import { Column } from "@app/types/types"
+import { EditorType } from "@datagrid/Editor/editor-management"
+import { useTableCtx } from "context"
+import { Column } from "types"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import {
     Box,

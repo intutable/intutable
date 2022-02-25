@@ -1,4 +1,4 @@
-import { Row } from "../../../types/types"
+import { Row } from "../../../types"
 import {
     Modal,
     Box,

@@ -1,8 +1,7 @@
-import { Routes } from "@api/routes"
-import type { ProjectManagement as PM } from "@app/api"
-import { fetchWithUser } from "@app/api/fetcher"
-import { useAuth } from "@app/context/AuthContext"
+import { fetchWithUser, Routes } from "api"
+import { useAuth } from "context"
 import useSWR from "swr"
+import type { PMTypes as PM } from "types"
 
 export const useProjectList = () => {
     const { user, API } = useAuth()
@@ -11,7 +10,7 @@ export const useProjectList = () => {
         data: list,
         error,
         mutate,
-    } = useSWR<PM.Project.List>(
+    } = useSWR<PM.Project[]>(
         user ? [Routes.get.projectList, user, { userId: user.id }] : null,
         fetchWithUser
     )

@@ -1,21 +1,18 @@
-import { useAuth } from "@app/context/AuthContext"
+import LoginIcon from "@mui/icons-material/Login"
+import PersonIcon from "@mui/icons-material/Person"
 import {
     Avatar as MUIAvatar,
-    Box,
     Button,
+    Menu,
+    MenuItem,
     Stack,
     Typography,
     useTheme,
-    Menu,
-    MenuItem,
 } from "@mui/material"
-import React, { useState } from "react"
-import LoginIcon from "@mui/icons-material/Login"
-import LogoutIcon from "@mui/icons-material/Logout"
-import PersonIcon from "@mui/icons-material/Person"
-import Link from "@components/Link"
+import { useAuth } from "context"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
+import React, { useState } from "react"
 
 type ContextMenuProps = {
     anchorEL: Element

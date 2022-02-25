@@ -1,7 +1,7 @@
 import type { NextPage } from "next"
 
-import Title from "@components/Head/Title"
-import Link from "@components/Link/Link"
+import Title from "components/Head/Title"
+import Link from "components/Link"
 import {
     Avatar,
     Divider,
@@ -11,7 +11,7 @@ import {
     ListItemText,
     Typography,
 } from "@mui/material"
-import { useAuth } from "@app/context/AuthContext"
+import { useAuth } from "context"
 
 const Home: NextPage = () => {
     const { user } = useAuth()

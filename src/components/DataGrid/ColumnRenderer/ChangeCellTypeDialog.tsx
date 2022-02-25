@@ -19,11 +19,11 @@ import {
     isEditorType,
     RuntimeEditorMap,
     EditorInputData,
-} from "@app/components/DataGrid/Editor/editor-management/editorTypes"
+} from "@datagrid/Editor/editor-management/editorTypes"
 import {
     isConvertable,
     IsConvertableResponse,
-} from "@app/components/DataGrid/Editor/editor-management"
+} from "@datagrid/Editor/editor-management"
 
 type ChangeCellTypeDialogProps = {
     currentType: EditorType

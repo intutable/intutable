@@ -1,4 +1,4 @@
-import Obj from "@utils/Obj"
+import Obj from "types/Obj"
 const CORE_ENDPOINT = process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 

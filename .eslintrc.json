@@ -9,7 +9,9 @@
         "no-unused-vars": "off",
         "@typescript-eslint/no-empty-function": "off",
         "no-empty-function": "off",
-        "prettier/prettier": "error"
+        "prettier/prettier": "error",
+        "no-extra-semi": "off",
+        "@typescript-eslint/no-extra-semi": "off"
     },
     "extends": [
         "next/core-web-vitals",

@@ -1,6 +1,5 @@
-import { EditorType, isEditorType, RuntimeEditorMap } from "./editorTypes"
-import Obj from "@utils/Obj"
 import { EditorInputData } from "."
+import { EditorType, isEditorType } from "./editorTypes"
 
 /**
  * • 'none' means that one type A is not convertable to another type B regardless of the circumstances. Note that 'none' is not used in a whitelist because this would be redundant.

@@ -1,4 +1,4 @@
-import { Row } from "@app/types/types"
+import { Row } from "types"
 import React from "react"
 import { EditorProps } from "react-data-grid"
 import { EditorType } from "../editor-management/editorTypes"
@@ -50,3 +50,5 @@ const EditorComponentMap: {
 export type Editor = React.ComponentType<EditorProps<Row>>
 
 export const getEditor = (type: EditorType): Editor => EditorComponentMap[type]
+
+export const inferEditorType = (component: Editor): EditorType => "string" // TODO: infer somehow

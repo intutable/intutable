@@ -1,14 +1,14 @@
-import { AUTH_COOKIE_KEY, useAuth } from "@app/context/AuthContext"
-import Title from "@components/Head/Title"
-import { Paper } from "@components/LoginOutRegister/Paper"
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
+import { Auth } from "auth"
+import Title from "components/Head/Title"
+import { Paper } from "components/LoginOutRegister/Paper"
+import { AUTH_COOKIE_KEY, useAuth } from "context"
 import type { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
-import { makeError } from "@app/utils/makeError"
-import { Auth } from "@app/auth"
+import { makeError } from "utils/makeError"
 
 const validateUsername = (username: string): true | Error =>
     username.length > 7

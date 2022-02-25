@@ -1,5 +1,5 @@
-import { useTableCtx } from "@app/context/TableContext"
-import { SerializedColumn } from "@app/types/types"
+import { useTableCtx } from "context"
+import { Column } from "types"
 import AddIcon from "@mui/icons-material/Add"
 import { Button } from "@mui/material"
 import { useSnackbar } from "notistack"
@@ -21,7 +21,7 @@ const AddCol: React.FC = () => {
 
     const { createColumn } = useTableCtx()
 
-    const handleCreateColumn = async (col: SerializedColumn) => {
+    const handleCreateColumn = async (col: Column.Serialized) => {
         try {
             // TODO: check if name or key is already taken
             await createColumn(col)

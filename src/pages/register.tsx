@@ -1,9 +1,8 @@
-import React from "react"
-import { Paper } from "@components/LoginOutRegister/Paper"
-import type { NextPage } from "next"
-import { useRouter } from "next/router"
-import Title from "@components/Head/Title"
+import Title from "src/components/Head/Title"
+import { Paper } from "src/components/LoginOutRegister/Paper"
 import { Box } from "@mui/material"
+import type { NextPage } from "next"
+import React from "react"
 
 const Register: NextPage = () => {
     const handleRegister = () => {

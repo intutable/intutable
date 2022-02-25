@@ -1,26 +1,12 @@
-import { makeAPI } from "@app/api"
-import { Auth } from "@app/auth"
+import { makeAPI } from "api"
+import { Auth, User } from "auth"
 import { useRouter } from "next/router"
 import React, { useEffect, useState } from "react"
 
 export const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
-/**
- * Authentication data of the current user.
- * @property {string} username
- * @property {number} id
- * @property {string | undefined} authCookie the back-end authentication
- * cookie. In front-end use, this is undefined, as the cookie is HttpOnly
- * and passed along automatically. Still necessary for SSR.
- */
-export type CurrentUser = {
-    username: string
-    id: number
-    authCookie: string | undefined
-}
-
 export type AuthContextProps = {
-    user: CurrentUser | null
+    user: User | null
     loading: boolean
     login: (username: string, password: string) => Promise<void>
     logout: () => Promise<void>

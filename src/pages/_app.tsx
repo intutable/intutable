@@ -1,13 +1,13 @@
-import Layout from "@components/Layout/Layout"
+import Layout from "components/Layout/Layout"
 import { CssBaseline, PaletteMode, useMediaQuery } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
-import { getDesignToken } from "@theme"
+import { getDesignToken } from "theme"
 import type { AppProps } from "next/app"
 import Head from "next/head"
 import { SnackbarProvider } from "notistack"
 import React, { useEffect, useMemo, useState } from "react"
-import { AuthProvider } from "../context/AuthContext"
-import createTheme from "../theme/utils"
+import { AuthProvider } from "context"
+import createTheme from "theme/utils"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void

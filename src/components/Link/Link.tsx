@@ -3,7 +3,7 @@ import { Link as MUILink } from "@mui/material"
 import type { LinkProps } from "next/link"
 import NextLink from "next/link"
 import React from "react"
-import Obj from "@utils/Obj"
+import Obj from "types/Obj"
 
 export type CombinedLinkProps = {
     href: string
