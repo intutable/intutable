@@ -3,7 +3,7 @@
 # Install dependencies when needed
 FROM node:lts-alpine AS deps
 
-#https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine
+# https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine
 # This MIGHT be needed
 RUN apk add --no-cache libc6-compat
 
