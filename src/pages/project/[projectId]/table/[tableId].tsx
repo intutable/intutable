@@ -108,7 +108,6 @@ type Page = {
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ project, table, tableList, fallback }) => {
-    console.log(fallback)
     return (
         <SWRConfig value={{ fallback }}>
             <TableCtxProvider table={table} project={project}>
