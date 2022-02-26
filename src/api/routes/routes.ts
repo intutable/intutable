@@ -1,9 +1,7 @@
+import { CHANNEL, METHOD } from "api/constants"
 import type { User } from "auth"
-import type { TableData } from "types"
+import type { PMTypes as PM, TableData } from "types"
 import type Obj from "types/Obj"
-import type { PMTypes as PM } from "../../types"
-import { CHANNEL } from "../constants/CHANNEL"
-import { METHOD } from "../constants/METHODS"
 
 /**
  * @constant
@@ -14,7 +12,7 @@ export const Routes = {
          * Fetches a list of projects.
          * @function
          * @param {User} user
-         * @returns {Promise.resolve<PM.Project.List>}
+         * @returns {PM.Project[]}
          */
         projectList: `/request/${CHANNEL.PROJECT_MANAGEMENT}/${METHOD.getProjects}`,
         /**
@@ -22,7 +20,7 @@ export const Routes = {
          * @function
          * @param {User} user
          * @param {PM.Project.ID} projectId id of the project
-         * @returns {Promise.resolve<PM.Table.List>}
+         * @returns {PM.Table[]}
          */
         tableList: `/request/${CHANNEL.PROJECT_MANAGEMENT}/${METHOD.getTablesFromProject}`,
         /**
@@ -30,11 +28,18 @@ export const Routes = {
          * @function
          * @param {User} user
          * @param {PM.Table.ID} tableId
-         * @returns {Promise<TableData.Serialized>}
+         * @returns {TableData.DBSchema>} after the hook run
+         * @returns {TableData.Serialized>} after the middelware parsed it
+         *  @returns {TableData.Serialized>} finally after the middelware deserialized it
          */
         table: `/request/${CHANNEL.PROJECT_MANAGEMENT}/${METHOD.getTableData}`,
     },
 } as const
+
+export const getAllRoutes = () =>
+    Object.entries(Routes)
+        .map(([_, value]) => Object.entries(value).map(([_, route]) => route))
+        .flat()
 
 /**
  * Utility type that returns the type of the response of a method of `Routes`.
@@ -58,3 +63,8 @@ type ValueMap = {
  * Utility type that returns a union type of all nested values of `Routes`.
  */
 export type Route = keyof ValueMap
+
+export const isRoute = (value: unknown): value is Route => {
+    if (typeof value !== "string") return false
+    return (getAllRoutes() as string[]).includes(value)
+}

@@ -12,7 +12,7 @@ import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
 import { AUTH_COOKIE_KEY, TableCtxProvider, useTableCtx } from "context"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import DataGrid, { CalculatedColumn } from "react-data-grid"
 import { SWRConfig, unstable_serialize } from "swr"
 import type { PMTypes as PM, Row } from "types"
@@ -35,6 +35,11 @@ const TablePage: React.FC<TablePageProps> = props => {
     } | null>(null)
 
     const { data: table, error, partialRowUpdate } = useTableCtx()
+
+    useEffect(() => {
+        console.log(21)
+        console.log(table)
+    }, [table])
 
     return (
         <>
@@ -99,6 +104,7 @@ const TablePage: React.FC<TablePageProps> = props => {
 
 type Page = {
     project: PM.Project
+    table: PM.Table
     tableList: PM.Table[]
     // fallback: SerializedTableData
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,13 +112,14 @@ type Page = {
 }
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ project, tableList, fallback }) => {
+> = ({ project, table, tableList, fallback }) => {
+    console.log(fallback)
     return (
         <SWRConfig value={{ fallback }}>
-            <TableCtxProvider table={fallback.table} project={project}>
+            <TableCtxProvider table={table} project={project}>
                 <TablePage
                     project={project}
-                    table={fallback.table}
+                    table={table}
                     tableList={tableList}
                 />
             </TableCtxProvider>
@@ -153,6 +160,7 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
     return {
         props: {
             project,
+            table: data.table,
             tableList,
             fallback: {
                 [unstable_serialize([

@@ -1,10 +1,10 @@
 import { fetchWithUser, Routes } from "api"
 import { useAuth } from "context"
-import React from "react"
+import React, { useEffect } from "react"
 import { RowsChangeData } from "react-data-grid"
 import useSWR from "swr"
 import { Column, PM as PMKEY, PMTypes as PM, Row, TableData } from "types"
-import { DeSerialize, Parser } from "api/utils"
+import { DeSerialize } from "api/utils"
 
 export type TableContextProps = {
     data: TableData | undefined
@@ -48,7 +48,7 @@ export type TabletCtxProviderProps = {
 export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     const { user, API } = useAuth()
 
-    const { data, error, mutate } = useSWR<TableData.DBSchema>(
+    const { data, error, mutate } = useSWR<TableData>(
         user
             ? [Routes.get.table, user, { tableId: props.table.tableId }]
             : null,
@@ -140,12 +140,7 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         <TableContext.Provider
             value={{
                 // states
-                data:
-                    data != null
-                        ? DeSerialize.Table.deserialize(
-                              Parser.Table.parse(data)
-                          )
-                        : undefined,
+                data,
                 error,
                 // row
                 createRow,
