@@ -1,5 +1,5 @@
-import Title from "src/components/Head/Title"
-import { Paper } from "src/components/LoginOutRegister/Paper"
+import Title from "components/Head/Title"
+import { Paper } from "components/LoginOutRegister/Paper"
 import { Box } from "@mui/material"
 import type { NextPage } from "next"
 import React from "react"

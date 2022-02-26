@@ -1,5 +1,5 @@
-import { TableData as Table } from "@app/types"
-import Obj from "@app/utils/Obj"
+import { TableData } from "types"
+import Obj from "types/Obj"
 
 export const makeObservableVirtualTable = (
     target: Table,
