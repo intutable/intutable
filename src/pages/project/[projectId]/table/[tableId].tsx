@@ -36,11 +36,6 @@ const TablePage: React.FC<TablePageProps> = props => {
 
     const { data: table, error, partialRowUpdate } = useTableCtx()
 
-    useEffect(() => {
-        console.log(21)
-        console.log(table)
-    }, [table])
-
     return (
         <>
             <Title title={props.project.projectName} />
