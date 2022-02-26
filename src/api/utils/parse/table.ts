@@ -1,6 +1,6 @@
 import type { TableData } from "types"
 import { EditorType } from "@datagrid/Editor/editor-management"
-import { Column } from "types"
+import { Column, PM } from "types"
 
 const renameKeys = (col: Column.DBSchema): Column.Serialized => ({
     key: col.columnName,
@@ -12,6 +12,8 @@ const renameKeys = (col: Column.DBSchema): Column.Serialized => ({
 export const parse = (table: TableData.DBSchema): TableData.Serialized => {
     return {
         ...table,
-        columns: table.columns.map(renameKeys),
+        columns: table.columns
+            .map(renameKeys)
+            .filter(col => col.key !== PM.UID_KEY),
     }
 }
