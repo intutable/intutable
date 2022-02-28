@@ -1,4 +1,4 @@
-import { ProjectManagement as PM } from "@app/api"
+import { PMTypes as PM } from "types"
 import { ToggleButton, ToggleButtonGroup, useTheme } from "@mui/material"
 import { useRouter } from "next/router"
 import React from "react"
@@ -6,7 +6,7 @@ import React from "react"
 type TableNavigatorProps = {
     project: PM.Project
     currentTable: PM.Table
-    tableList: PM.Table.List
+    tableList: PM.Table[]
 }
 
 export const TableNavigator: React.FC<TableNavigatorProps> = props => {

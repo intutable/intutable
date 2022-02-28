@@ -1,6 +1,5 @@
-import { TableData as Table } from "@app/types/types"
-
-export {}
+import { TableData } from "types"
+import Obj from "types/Obj"
 
 export const makeObservableVirtualTable = (
     target: Table,
@@ -60,3 +59,14 @@ const VirtualTable = new Proxy(
         },
     }
 )
+const validator: ProxyHandler<Obj> = {
+    set: (target, property) => {
+        return Reflect.get(target, property)
+    },
+}
+
+class Table {
+    constructor(table: { x: unknown }) {
+        return new Proxy(table, validator)
+    }
+}

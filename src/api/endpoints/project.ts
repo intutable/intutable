@@ -1,17 +1,15 @@
-import { coreRequest } from "@app/api/utils/coreRequest"
-import type { CurrentUser } from "@context/AuthContext"
-import { CHANNEL } from "../utils"
-import { ProjectManagement as PM } from "../utils/ProjectManagement_TypeAnnotations"
+import { coreRequest } from "api/utils/coreRequest"
+import type { User } from "auth"
+import { CHANNEL } from "api/constants"
+import { PMTypes as PM } from "types"
 
 /**
  * Fetches a list with objects each describing a project of a specific user containg an id and name.
- * @param {CurrentUser} user Currently logged in user.
+ * @param {User} user Currently logged in user.
  * @returns {Promise.resolve<PM.Project.List>} List of projects with name and id.
  * @returns {Promise.reject<Error>} If the returned data does not match the expected type.
  */
-export const getProjects = async (
-    user: CurrentUser
-): Promise<PM.Project.List> => {
+export const getProjects = async (user: User): Promise<PM.Project[]> => {
     const coreResponse = await coreRequest(
         CHANNEL.PROJECT_MANAGEMENT,
         getProjects.name,
@@ -22,11 +20,11 @@ export const getProjects = async (
     if (Array.isArray(coreResponse) === false)
         throw new Error("Expected an Array!")
 
-    return coreResponse as PM.Project.List
+    return coreResponse as PM.Project[]
 }
 
 export const createProject = async (
-    user: CurrentUser,
+    user: User,
     newProject: PM.Project.Name
 ): Promise<void> => {
     await coreRequest(
@@ -38,7 +36,7 @@ export const createProject = async (
 }
 
 export const changeProjectName = async (
-    user: CurrentUser,
+    user: User,
     projectId: PM.Project.ID,
     newName: PM.Project.Name
 ): Promise<void> => {
@@ -51,7 +49,7 @@ export const changeProjectName = async (
 }
 
 export const removeProject = async (
-    user: CurrentUser,
+    user: User,
     projectId: PM.Project.ID
 ): Promise<void> => {
     await coreRequest(

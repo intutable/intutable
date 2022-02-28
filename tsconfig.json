@@ -14,18 +14,9 @@
         "isolatedModules": true,
         "jsx": "preserve",
         "incremental": true,
-        "baseUrl": ".",
+        "baseUrl": "./src",
         "paths": {
-            "@app/*": ["src/*"],
-            "@utils/*": ["src/utils/*"],
-            "@public/*": ["public/*"],
-            "@components/*": ["src/components/*"],
-            "@theme": ["src/theme/index.ts"],
-            "@context/*": ["src/context/*"],
-            "@datagrid/*": ["src/components/DataGrid/*"],
-            "@api": ["src/api/index.ts"],
-            "@api/*": ["src/api/*"],
-            "@types/*": ["src/types/*"]
+            "@datagrid/*": ["components/DataGrid/*"]
         }
     },
     "include": ["src", "next-env.d.ts"],

@@ -1,8 +1,7 @@
-import { coreRequest } from "@app/api/utils/coreRequest"
-import { Column } from "@app/types/types"
-import type { CurrentUser } from "@context/AuthContext"
-import { CHANNEL } from "../utils"
-import { ProjectManagement as PM } from "../utils/ProjectManagement_TypeAnnotations"
+import { coreRequest } from "api/utils/coreRequest"
+import type { User } from "auth"
+import { CHANNEL } from "api/constants"
+import { PMTypes as PM, TableData, Column } from "types"
 import { getTableData } from "./table"
 
 /**
@@ -13,7 +12,7 @@ import { getTableData } from "./table"
  * @returns
  */
 const _getColumnId = async (
-    user: CurrentUser,
+    user: User,
     tableId: PM.Table.ID,
     key: Column["key"]
 ): Promise<PM.Column.ID> => {
@@ -22,7 +21,7 @@ const _getColumnId = async (
         getTableData.name,
         { tableId },
         user.authCookie
-    )) as PM.DBFormat.Table
+    )) as TableData.DBSchema
     const column = table.columns.find(col => col.columnName === key)
     if (column == null)
         throw new Error(`Did not found a column where key equals '${key}'`)
@@ -30,7 +29,7 @@ const _getColumnId = async (
 }
 
 export const createColumnInTable = async (
-    user: CurrentUser,
+    user: User,
     tableId: PM.Table.ID,
     columnName: PM.Column.Name
 ): Promise<void> => {
@@ -43,7 +42,7 @@ export const createColumnInTable = async (
 }
 
 export const changeColumnKey = async (
-    user: CurrentUser,
+    user: User,
     tableId: PM.Table.ID,
     key: Column["key"],
     newName: PM.Column.Name
@@ -58,7 +57,7 @@ export const changeColumnKey = async (
 }
 
 export const changeColumnName = async (
-    user: CurrentUser,
+    user: User,
     tableId: PM.Table.ID,
     key: Column["key"],
     newName: PM.Column.Name
@@ -89,10 +88,10 @@ export const changeColumnName = async (
  * @param attributes
  */
 export const changeColumnAttributes = async (
-    user: CurrentUser,
+    user: User,
     tableId: PM.Table.ID,
     key: Column["key"],
-    attributes: [keyof PM.DBFormat.Table["columns"], unknown]
+    attributes: [keyof Column.DBSchema, unknown]
 ): Promise<void> => {
     const columnId = await _getColumnId(user, tableId, key)
     await coreRequest(
@@ -106,7 +105,7 @@ export const changeColumnAttributes = async (
 }
 
 export const removeColumn = async (
-    user: CurrentUser,
+    user: User,
     tableId: PM.Table.ID,
     key: Column["key"]
 ): Promise<void> => {

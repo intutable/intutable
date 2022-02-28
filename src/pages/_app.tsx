@@ -1,13 +1,15 @@
-import Layout from "@components/Layout/Layout"
+import Layout from "components/Layout/Layout"
 import { CssBaseline, PaletteMode, useMediaQuery } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
-import { getDesignToken } from "@theme"
+import { getDesignToken } from "theme"
 import type { AppProps } from "next/app"
 import Head from "next/head"
 import { SnackbarProvider } from "notistack"
 import React, { useEffect, useMemo, useState } from "react"
-import { AuthProvider } from "../context/AuthContext"
-import createTheme from "../theme/utils"
+import { AuthProvider } from "context"
+import createTheme from "theme/utils"
+import { parseResponse, logger } from "api/middelware"
+import { SWRConfig } from "swr"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void
@@ -74,16 +76,18 @@ const MyApp = (props: AppProps) => {
             </Head>
 
             <AuthProvider>
-                <ThemeTogglerContext.Provider value={colorMode}>
-                    <ThemeProvider theme={theme}>
-                        <SnackbarProvider maxSnack={5}>
-                            <CssBaseline />
-                            <Layout>
-                                <Component {...pageProps} />
-                            </Layout>
-                        </SnackbarProvider>
-                    </ThemeProvider>
-                </ThemeTogglerContext.Provider>
+                <SWRConfig value={{ use: [logger, parseResponse] }}>
+                    <ThemeTogglerContext.Provider value={colorMode}>
+                        <ThemeProvider theme={theme}>
+                            <SnackbarProvider maxSnack={5}>
+                                <CssBaseline />
+                                <Layout>
+                                    <Component {...pageProps} />
+                                </Layout>
+                            </SnackbarProvider>
+                        </ThemeProvider>
+                    </ThemeTogglerContext.Provider>
+                </SWRConfig>
             </AuthProvider>
         </>
     )

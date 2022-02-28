@@ -1,4 +1,4 @@
-import { Row } from "@app/types/types"
+import { Row } from "types"
 import React, { useState } from "react"
 import type { Editor } from "."
 import { Input } from "./Input"

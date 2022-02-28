@@ -1,34 +1,31 @@
-import { makeAPI } from "@api"
-import { getCurrentUser, ProjectManagement as PM } from "@api/utils"
-import { TableNavigator } from "@app/components/TableNavigator"
-import { TableCtxProvider, useTableCtx } from "@app/context/TableContext"
-import { Row, SerializedTableData, TableData } from "@app/types/types"
-import { DynamicRouteQuery } from "@app/utils/DynamicRouteQuery"
-import { DetailedViewModal } from "@components/DataGrid/Detail View/DetailedViewModal"
-import LoadingSkeleton from "@components/DataGrid/LoadingSkeleton/LoadingSkeleton"
-import NoRowsRenderer from "@components/DataGrid/NoRowsOverlay/NoRowsRenderer"
-import Toolbar from "@components/DataGrid/Toolbar/Toolbar"
-import * as ToolbarItem from "@components/DataGrid/Toolbar/ToolbarItems"
-import { rowKeyGetter } from "@components/DataGrid/utils"
-import Title from "@components/Head/Title"
-import { AUTH_COOKIE_KEY, useAuth } from "@context/AuthContext"
+import { DetailedViewModal } from "@datagrid/Detail View/DetailedViewModal"
+import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
+import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
+import { RowRenderer } from "@datagrid/RowRenderer"
+import Toolbar from "@datagrid/Toolbar/Toolbar"
+import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { Box, Typography, useTheme } from "@mui/material"
+import { makeAPI, Routes } from "api"
+import { Auth } from "auth"
+import Title from "components/Head/Title"
+import Link from "components/Link"
+import { TableNavigator } from "components/TableNavigator"
+import { AUTH_COOKIE_KEY, TableCtxProvider, useTableCtx } from "context"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
-import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
-import Link from "@components/Link"
-import { RowRenderer } from "@components/DataGrid/RowRenderer"
+import DataGrid, { CalculatedColumn } from "react-data-grid"
+import { SWRConfig, unstable_serialize } from "swr"
+import type { PMTypes as PM, Row } from "types"
+import { DynamicRouteQuery } from "types/DynamicRouteQuery"
+import { rowKeyGetter } from "utils/rowKeyGetter"
 
 type TablePageProps = {
     project: PM.Project
-    tableList: PM.Table.List
-    currentTable: PM.Table
+    table: PM.Table
+    tableList: PM.Table[]
 }
-
 const TablePage: React.FC<TablePageProps> = props => {
     const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
 
     // #################### states ####################
 
@@ -37,18 +34,7 @@ const TablePage: React.FC<TablePageProps> = props => {
         column: CalculatedColumn<Row>
     } | null>(null)
 
-    const { table, rows, columns, error, loading, partialRowUpdate } =
-        useTableCtx()
-
-    // #################### private methods ####################
-
-    // #################### life cycle methods ####################
-
-    useEffect(() => {
-        console.info(table)
-    }, [table])
-
-    // #################### component ####################
+    const { data: table, error, partialRowUpdate } = useTableCtx()
 
     return (
         <>
@@ -57,13 +43,13 @@ const TablePage: React.FC<TablePageProps> = props => {
                 <Link href={`/projects`}>{props.project.projectName}</Link>{" "}
                 {"> "}
                 <Link href={`/project/${props.project.projectId}`}>
-                    {props.currentTable.tableName}
+                    {props.table.tableName}
                 </Link>
             </Typography>
 
             {error ? (
                 error.message
-            ) : loading ? (
+            ) : table == null ? (
                 <LoadingSkeleton />
             ) : (
                 <>
@@ -76,7 +62,7 @@ const TablePage: React.FC<TablePageProps> = props => {
                     )}
                     <TableNavigator
                         project={props.project}
-                        currentTable={props.currentTable}
+                        currentTable={props.table}
                         tableList={props.tableList}
                     />
                     <Box>
@@ -87,8 +73,8 @@ const TablePage: React.FC<TablePageProps> = props => {
                         </Toolbar>
                         <DataGrid
                             className={"rdg-" + theme.palette.mode}
-                            rows={rows}
-                            columns={columns}
+                            rows={table.rows}
+                            columns={table.columns}
                             noRowsFallback={<NoRowsRenderer />}
                             rowKeyGetter={rowKeyGetter}
                             defaultColumnOptions={{
@@ -111,32 +97,31 @@ const TablePage: React.FC<TablePageProps> = props => {
     )
 }
 
-type TablePageWrapperProps = {
+type Page = {
     project: PM.Project
-    tableList: PM.Table.List
-    ssrHydratedTableData: SerializedTableData
+    table: PM.Table
+    tableList: PM.Table[]
+    // fallback: SerializedTableData
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fallback: any // TODO: remove this any
 }
-
-const TablePageWrapper: NextPage<
+const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
-> = props => {
+> = ({ project, table, tableList, fallback }) => {
     return (
-        <TableCtxProvider
-            project={props.project}
-            ssrHydratedTableData={props.ssrHydratedTableData}
-        >
-            <TablePage
-                project={props.project}
-                tableList={props.tableList}
-                currentTable={props.ssrHydratedTableData.table}
-            />
-        </TableCtxProvider>
+        <SWRConfig value={{ fallback }}>
+            <TableCtxProvider table={table} project={project}>
+                <TablePage
+                    project={project}
+                    table={table}
+                    tableList={tableList}
+                />
+            </TableCtxProvider>
+        </SWRConfig>
     )
 }
 
-export const getServerSideProps: GetServerSideProps<
-    TablePageWrapperProps
-> = async context => {
+export const getServerSideProps: GetServerSideProps<Page> = async context => {
     const { req } = context
     const query = context.query as DynamicRouteQuery<
         typeof context.query,
@@ -146,7 +131,7 @@ export const getServerSideProps: GetServerSideProps<
     const tableId: PM.Table.ID = Number.parseInt(query.tableId)
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-    const user = await getCurrentUser(authCookie).catch(e => {
+    const user = await Auth.getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })
@@ -159,20 +144,27 @@ export const getServerSideProps: GetServerSideProps<
         }
     const API = makeAPI(user)
 
-    const project = (await API.get.projectsList()).find(
-        proj => proj.projectId === projectId
+    const project = (await API.get.projectList()).find(
+        (proj: PM.Project) => proj.projectId === projectId
     )
     if (project == null) return { notFound: true }
-    const tableList = await API.get.tablesList(project.projectId)
+    const tableList = await API.get.tableList(project.projectId)
     const data = await API.get.table(tableId)
 
     return {
         props: {
             project,
+            table: data.table,
             tableList,
-            ssrHydratedTableData: data,
+            fallback: {
+                [unstable_serialize([
+                    Routes.get.table,
+                    user,
+                    { tableId: tableId },
+                ])]: data, // TODO: where to deserialize?
+            },
         },
     }
 }
 
-export default TablePageWrapper
+export default Page

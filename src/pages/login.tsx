@@ -1,14 +1,14 @@
-import { AUTH_COOKIE_KEY, useAuth } from "@app/context/AuthContext"
-import Title from "@components/Head/Title"
-import { Paper } from "@components/LoginOutRegister/Paper"
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
+import { Auth } from "auth"
+import Title from "components/Head/Title"
+import { Paper } from "components/LoginOutRegister/Paper"
+import { AUTH_COOKIE_KEY, useAuth } from "context"
 import type { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
-import { makeError } from "@app/utils/makeError"
-import { getCurrentUser } from "@app/api/utils"
+import { makeError } from "utils/makeError"
 
 const validateUsername = (username: string): true | Error =>
     username.length > 7
@@ -171,7 +171,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
 
-    const user = await getCurrentUser(authCookie).catch(e => {
+    const user = await Auth.getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })

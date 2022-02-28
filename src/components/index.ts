@@ -1,0 +1,1 @@
+export { EditableTypography } from "./EditableTypography"

@@ -1,31 +1,38 @@
-import { makeAPI, ProjectManagement as PM } from "@app/api"
-import { getCurrentUser } from "@app/api/utils"
-import { useProjectList } from "@app/hooks/useProjectList"
-import { useTableList } from "@app/hooks/useTableList"
-import Title from "@components/Head/Title"
-import { AUTH_COOKIE_KEY } from "@context/AuthContext"
+/**
+ * Don't worry, this messy file will be deprecated in the future.
+ * No need to split this up.
+ */
+
+import { makeAPI, Routes } from "api"
+import type { PMTypes as PM } from "types"
+import { Auth } from "auth"
+import { useTableList } from "hooks"
+import { DynamicRouteQuery } from "types/DynamicRouteQuery"
+import Title from "components/Head/Title"
+import Link from "components/Link"
+import { AUTH_COOKIE_KEY } from "context"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
     Card,
     CardContent,
+    CircularProgress,
     Grid,
     Menu,
     MenuItem,
     Typography,
     useTheme,
 } from "@mui/material"
-import { isValidName, prepareName } from "@utils/validateName"
+import { isValidName, prepareName } from "utils/validateName"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { useRouter } from "next/dist/client/router"
+import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
-import Link from "@components/Link"
-import { DynamicRouteQuery } from "@app/utils/DynamicRouteQuery"
+import { SWRConfig, unstable_serialize } from "swr"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -165,20 +172,15 @@ const TableCard: React.FC<TableCardProps> = props => {
     )
 }
 
-type ProjectSlugProps = {
+type TableListProps = {
     project: PM.Project
-    tablesList: PM.Table.List
 }
-const ProjectSlug: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = props => {
+const TableList: React.FC<TableListProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { tableList, createTable, renameTable, deleteTable } = useTableList(
-        props.project,
-        props.tablesList
-    )
+    const { tableList, error, createTable, renameTable, deleteTable } =
+        useTableList(props.project)
 
     const handleCreateTable = async () => {
         try {
@@ -190,8 +192,8 @@ const ProjectSlug: NextPage<
                 enqueueSnackbar(isValid.message, { variant: "error" })
                 return
             }
-            const nameIsTaken = tableList
-                .map(tbl => tbl.tableName.toLowerCase())
+            const nameIsTaken = tableList!
+                .map((tbl: PM.Table) => tbl.tableName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -215,8 +217,8 @@ const ProjectSlug: NextPage<
         try {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
-            const nameIsTaken = tableList
-                .map(tbl => tbl.tableName.toLowerCase())
+            const nameIsTaken = tableList!
+                .map((tbl: PM.Table) => tbl.tableName.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -253,6 +255,9 @@ const ProjectSlug: NextPage<
         }
     }
 
+    if (error) return <>Error: {error}</>
+    if (tableList == null) return <CircularProgress />
+
     return (
         <>
             <Title title="Projekte" />
@@ -261,7 +266,7 @@ const ProjectSlug: NextPage<
                 <Link href={`/projects`}>{props.project.projectName}</Link>
             </Typography>
             <Grid container spacing={2}>
-                {tableList.map((tbl, i) => (
+                {tableList.map((tbl: PM.Table, i: number) => (
                     <Grid item key={i}>
                         <TableCard
                             table={tbl}
@@ -283,8 +288,22 @@ const ProjectSlug: NextPage<
     )
 }
 
+type PageProps = {
+    project: PM.Project
+    // fallback: PM.Table.List
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fallback: any // TODO: remove this any
+}
+const Page: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ fallback, project }) => (
+    <SWRConfig value={{ fallback }}>
+        <TableList project={project} />
+    </SWRConfig>
+)
+
 export const getServerSideProps: GetServerSideProps<
-    ProjectSlugProps
+    PageProps
 > = async context => {
     const { req } = context
     const query = context.query as DynamicRouteQuery<
@@ -294,7 +313,7 @@ export const getServerSideProps: GetServerSideProps<
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
 
-    const user = await getCurrentUser(authCookie).catch(e => {
+    const user = await Auth.getCurrentUser(authCookie).catch(e => {
         console.error(e)
         return null
     })
@@ -310,19 +329,25 @@ export const getServerSideProps: GetServerSideProps<
 
     const projectId: PM.Project.ID = Number.parseInt(query.projectId)
 
-    const project = (await API.get.projectsList()).find(
-        proj => proj.projectId === projectId
+    const project = (await API.get.projectList()).find(
+        (proj: PM.Project) => proj.projectId === projectId
     )
     if (project == null) return { notFound: true }
 
-    const tablesList = await API.get.tablesList(project.projectId)
+    const list = await API.get.tableList(project.projectId)
 
     return {
         props: {
             project: project,
-            tablesList,
+            fallback: {
+                [unstable_serialize([
+                    Routes.get.tableList,
+                    user,
+                    { projectId: project.projectId },
+                ])]: list,
+            },
         },
     }
 }
 
-export default ProjectSlug
+export default Page

@@ -1,18 +1,15 @@
-import type { NextPage } from "next"
-import Title from "@components/Head/Title"
+import Title from "components/Head/Title"
 import {
+    Avatar,
     Divider,
-    Typography,
-    Box,
-    useTheme,
-    IconButton,
     List,
     ListItem,
     ListItemAvatar,
-    Avatar,
     ListItemText,
+    Typography,
+    useTheme,
 } from "@mui/material"
-import Link from "@components/Link/Link"
+import type { NextPage } from "next"
 
 const ServiceDesk: NextPage = () => {
     const theme = useTheme()

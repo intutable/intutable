@@ -1,64 +1,46 @@
-import type { ProjectManagement as PM } from "@app/api"
-import { useAuth } from "@app/context/AuthContext"
-import { useState } from "react"
+import { fetchWithUser, Routes } from "api"
+import { useAuth } from "context"
+import useSWR from "swr"
+import type { PMTypes as PM } from "types"
 
-export const useProjectList = (ssrHydrated: PM.Project.List) => {
+export const useProjectList = () => {
     const { user, API } = useAuth()
 
-    const [loading, setLoading] = useState<boolean>(false)
-    const [projectList, setProjectList] = useState<PM.Project.List>(ssrHydrated)
+    const {
+        data: list,
+        error,
+        mutate,
+    } = useSWR<PM.Project[]>(
+        user ? [Routes.get.projectList, user, { userId: user.id }] : null,
+        fetchWithUser
+    )
 
-    // #################### project dispatchers ####################
+    /**
+     * // TODO:
+     *  once these api methods return the updatet data, inject it into mutate
+     */
 
     const createProject = async (name: PM.Project.Name): Promise<void> => {
-        if (user == null || API == null)
-            throw new Error("Could not access the API!")
-        try {
-            setLoading(true)
-            await API.post.project(name)
-            await _refresh()
-        } finally {
-            setLoading(false)
-        }
+        await API?.post.project(name)
+        await mutate()
     }
 
     const renameProject = async (
         project: PM.Project,
         newName: PM.Project.Name
     ): Promise<void> => {
-        if (user == null || API == null)
-            throw new Error("Could not access the API!")
-        try {
-            setLoading(true)
-            await API.put.projectName(project.projectId, newName)
-            await _refresh()
-        } finally {
-            setLoading(false)
-        }
+        await API?.put.projectName(project.projectId, newName)
+        await mutate()
     }
 
     const deleteProject = async (project: PM.Project): Promise<void> => {
-        if (user == null || API == null)
-            throw new Error("Could not access the API!")
-        try {
-            setLoading(true)
-            await API.delete.project(project.projectId)
-            await _refresh()
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const _refresh = async () => {
-        if (user == null || API == null)
-            throw new Error("Could not access the API!")
-        const newProjectList = await API.get.projectsList()
-        setProjectList(newProjectList)
+        await API?.delete.project(project.projectId)
+        await mutate()
     }
 
     return {
-        tablesList: projectList,
-        loading,
+        projectList: list,
+        error,
         createProject,
         renameProject,
         deleteProject,

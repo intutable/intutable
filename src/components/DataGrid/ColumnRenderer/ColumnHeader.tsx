@@ -1,6 +1,6 @@
-import { EditorType } from "@app/components/DataGrid/Editor/editor-management"
-import { useTableCtx } from "@app/context/TableContext"
-import { Column } from "@app/types/types"
+import { EditorType } from "@datagrid/Editor/editor-management"
+import { useTableCtx } from "context"
+import { Column } from "types"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import {
     Box,
@@ -135,6 +135,7 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
                         Typ ändern ({props.type})
                     </MenuItem>
                     <MenuItem>Eigenschaften ändern</MenuItem>
+                    <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
                     <MenuItem
                         onClick={handleDeleteColumn}
                         sx={{ color: theme.palette.warning.main }}

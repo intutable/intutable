@@ -1,14 +1,6 @@
-import React, { ReactHTML, useEffect, useState } from "react"
-import {
-    Typography,
-    Button,
-    Switch,
-    FormControlLabel,
-    useTheme,
-    PaletteMode,
-    styled,
-} from "@mui/material"
-import { useThemeToggler, THEME_MODE_STORAGE_KEY } from "@app/pages/_app"
+import { styled, Switch } from "@mui/material"
+import { THEME_MODE_STORAGE_KEY, useThemeToggler } from "pages/_app"
+import React from "react"
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     width: 62,
