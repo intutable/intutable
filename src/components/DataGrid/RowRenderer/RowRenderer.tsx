@@ -1,15 +1,32 @@
 import { useTableCtx } from "context"
 import { Row } from "types"
-import { Menu, MenuItem, useTheme, Box } from "@mui/material"
+import {
+    Menu,
+    MenuItem,
+    useTheme,
+    Box,
+    Theme,
+    PaletteMode,
+} from "@mui/material"
 import { useSnackbar } from "notistack"
 import React, { useCallback, useState } from "react"
 import { RowRendererProps, Row as GridRow } from "react-data-grid"
+import { useDrag, useDrop } from "react-dnd"
+import { css } from "@emotion/css"
+import clsx from "clsx"
 
 /**
- * // TODO:
- * This component needs to be highly performant and memoized.
- * Consider optimizing this soon.
+ * // TODO: This component needs to be highly performant and memoized...
  */
+
+const rowDraggingClassname = css`
+    opacity: 0.5;
+    cursor: "move";
+`
+
+const rowOverClassname = (themeMode: PaletteMode) => css`
+    background-color: ${themeMode === "dark" ? "#dedede" : "#888"};
+`
 
 /**
  * Row Renderer
@@ -17,7 +34,35 @@ import { RowRendererProps, Row as GridRow } from "react-data-grid"
 const _RowRenderer = (props: RowRendererProps<Row>) => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
-    const { deleteRow } = useTableCtx()
+    const { deleteRow, onRowReorder } = useTableCtx()
+
+    // draggable
+
+    const [{ isDragging }, drag] = useDrag({
+        type: "ROW_DRAG",
+        item: { index: props.rowIdx },
+        collect: monitor => ({
+            isDragging: monitor.isDragging(),
+        }),
+    })
+
+    const [{ isOver }, drop] = useDrop({
+        accept: "ROW_DRAG",
+        drop({ index }: { index: number }) {
+            onRowReorder(index, props.rowIdx)
+        },
+        collect: monitor => ({
+            isOver: monitor.isOver(),
+            canDrop: monitor.canDrop(),
+        }),
+    })
+
+    const className = clsx(props.className, {
+        [rowDraggingClassname]: isDragging,
+        [rowOverClassname(theme.palette.mode)]: isOver,
+    })
+
+    // context menu
 
     const [anchorEL, setAnchorEL] = useState<HTMLDivElement | null>(null)
 
@@ -50,7 +95,15 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
 
     return (
         <>
-            <GridRow onContextMenu={handleOpenContextMenu} {...props} />
+            <GridRow
+                ref={ref => {
+                    if (ref) drag(ref.children[1])
+                    drop(ref)
+                }}
+                onContextMenu={handleOpenContextMenu}
+                {...props}
+                className={className}
+            />
             <Menu
                 elevation={0}
                 // anchorOrigin={{ vertical: "top", horizontal: "right" }}

@@ -1,6 +1,7 @@
 import { ColumnHeader } from "@datagrid/ColumnRenderer"
-import { isEditorType } from "@datagrid/Editor/editor-management"
-import { getEditor, inferEditorType } from "@datagrid/Editor/EditorComponents"
+import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
+import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
+import { CellContentTypeComponents } from "@datagrid/Editor_Formatter"
 import type { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
 
@@ -33,8 +34,14 @@ export const deserialize = (col: Column.Serialized): Column => ({
     name: col.name,
     key: col.key,
     editable: col.editable,
-    editor: isEditorType(col.editor) ? getEditor(col.editor) : undefined, // TODO: maybe add the default TextEditor from rdg?!
+    editor:
+        col.editable && isCellContentType(col.editor)
+            ? CellContentTypeComponents[col.editor].editor
+            : undefined, // TODO: maybe add the default TextEditor from rdg?!
     // editor: TextEditor,
+    formatter: isCellContentType(col.editor)
+        ? CellContentTypeComponents[col.editor].formatter
+        : undefined,
     editorOptions: {
         editOnClick: true,
     },

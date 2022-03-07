@@ -1,6 +1,6 @@
 import { Row } from "types"
 import React, { useState } from "react"
-import type { Editor } from "."
+import { Editor } from "../../types/Editor"
 import { Input } from "./Input"
 
 /**

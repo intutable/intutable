@@ -1,7 +1,7 @@
 import React from "react"
 import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
-import type { EditorType } from "components/DataGrid/Editor/editor-management/editorTypes"
+import type { CellContentType } from "@datagrid/Editor_Formatter/types/CellContentType"
 
 // #################################################################
 //       Backend / Database
@@ -60,7 +60,7 @@ namespace DB {
         displayName: string // display name
         editable: DB.Boolean
         hidden: DB.Boolean
-        type: EditorType // `editor`
+        type: CellContentType // `editor`
     }
     export type Row = {
         readonly [PM.UID_KEY]: number
@@ -140,7 +140,7 @@ type SerializedColumn = {
     /**
      * @default string
      */
-    editor: EditorType
+    editor: CellContentType
 }
 
 // #################################################################

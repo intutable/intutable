@@ -1,4 +1,8 @@
-import { Currency, Percentage, Avatar } from "./utility-classes"
+import {
+    Currency,
+    Percentage,
+    Avatar,
+} from "@datagrid/Editor_Formatter/type-management/utility-classes"
 
 /**
  * Different types of editors.
@@ -17,7 +21,7 @@ import { Currency, Percentage, Avatar } from "./utility-classes"
  * • `multiSelect` is stored as an array of strings which represents a selectable list of options (multiple options can be selected)
  * • `complex` is stored as a complex object
  */
-type EditorTypeMap = {
+type CellContentTypeMap = {
     string: string
     number: number
     percentage: Percentage
@@ -34,8 +38,7 @@ type EditorTypeMap = {
     complex: Record<string, unknown>
 }
 
-// Note: keep this up to date with the types in `EditorTypeMap`
-export const RuntimeEditorMap = [
+export const Runtime_CellContentType = [
     "string",
     "number",
     "percentage",
@@ -55,7 +58,7 @@ export const RuntimeEditorMap = [
 /**
  * Types that can be used in a cell.
  */
-export type EditorType = keyof EditorTypeMap
+export type CellContentType = keyof CellContentTypeMap
 
 /**
  * Tells if a ReadonlyArray includes the element
@@ -71,13 +74,13 @@ const includes = <T extends U, U>(
  * @param value The value to check
  * @returns
  */
-export const isEditorType = (value: unknown): value is EditorType => {
+export const isCellContentType = (value: unknown): value is CellContentType => {
     if (typeof value !== "string") return false
-    return includes(RuntimeEditorMap, value)
+    return includes(Runtime_CellContentType, value)
 }
 
 /**
  * Specifies the type of input for a editor; e.g. (`string` -> string) or ("currency" -> Currency Class)
  */
-export type EditorInputData<T extends EditorType> =
-    T extends keyof EditorTypeMap ? EditorTypeMap[T] : never
+export type CellInputData<T extends CellContentType> =
+    T extends keyof CellContentTypeMap ? CellContentTypeMap[T] : never

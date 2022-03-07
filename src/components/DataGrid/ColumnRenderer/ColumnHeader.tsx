@@ -1,4 +1,4 @@
-import { EditorType } from "@datagrid/Editor/editor-management"
+import { CellContentType } from "@datagrid/Editor_Formatter/type-management"
 import { useTableCtx } from "context"
 import { Column } from "types"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
@@ -17,7 +17,7 @@ import { ChangeCellTypeDialog } from "./ChangeCellTypeDialog"
 type ColumnHeaderProps = {
     ckey: Column["key"]
     label: string
-    type: EditorType
+    type: CellContentType
 }
 
 export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
@@ -36,7 +36,7 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOpenChangeTypeModal = () => setChangeTypeModalOpen(true)
-    const handleCloseChangeTypeModal = (newType?: EditorType) => {
+    const handleCloseChangeTypeModal = (newType?: CellContentType) => {
         // TODO: change type
         /**
          * Things to do:
@@ -144,11 +144,11 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
                     </MenuItem>
                 </Menu>
             )}
-            <ChangeCellTypeDialog
+            {/* <ChangeCellTypeDialog
                 currentType={props.type}
                 open={changeTypeModalOpen}
                 onClose={handleCloseChangeTypeModal}
-            />
+            /> */}
         </>
     )
 }

@@ -15,35 +15,35 @@ import {
     Typography,
 } from "@mui/material"
 import {
-    EditorType,
-    isEditorType,
-    RuntimeEditorMap,
-    EditorInputData,
-} from "@datagrid/Editor/editor-management/editorTypes"
+    CellContentType,
+    isCellContentType,
+    Runtime_CellContentType,
+    CellInputData,
+} from "@datagrid/Editor_Formatter/types/CellContentType"
 import {
     isConvertable,
     IsConvertableResponse,
-} from "@datagrid/Editor/editor-management"
+} from "@datagrid/Editor_Formatter/type-management"
 
 type ChangeCellTypeDialogProps = {
-    currentType: EditorType
+    currentType: CellContentType
     open: boolean
-    onClose: (newType?: EditorType) => void
+    onClose: (newType?: CellContentType) => void
 }
 
 export const ChangeCellTypeDialog: React.FC<
     ChangeCellTypeDialogProps
 > = props => {
-    const [cellType, setCellType] = useState<EditorType>(props.currentType)
+    const [cellType, setCellType] = useState<CellContentType>(props.currentType)
     const [conflict, setConflict] = useState<IsConvertableResponse | null>(null)
 
-    const handleChangeCellType = (newType: EditorType) => {
-        if (isEditorType(newType)) setCellType(newType)
+    const handleChangeCellType = (newType: CellContentType) => {
+        if (isCellContentType(newType)) setCellType(newType)
     }
 
     useEffect(() => {
-        const from: EditorType = props.currentType
-        const to: EditorType = cellType
+        const from: CellContentType = props.currentType
+        const to: CellContentType = cellType
         // check if old type can be converted to new type
         const req = isConvertable(from, to)
 
@@ -83,10 +83,12 @@ export const ChangeCellTypeDialog: React.FC<
                         label="Neuer Typ"
                         value={cellType}
                         onChange={e =>
-                            handleChangeCellType(e.target.value as EditorType)
+                            handleChangeCellType(
+                                e.target.value as CellContentType
+                            )
                         }
                     >
-                        {RuntimeEditorMap.map((type, i) => (
+                        {Runtime_CellContentType.map((type, i) => (
                             <MenuItem key={i} value={type}>
                                 {type}
                             </MenuItem>

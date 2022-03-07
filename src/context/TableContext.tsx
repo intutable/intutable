@@ -9,6 +9,7 @@ import { DeSerialize } from "api/utils"
 export type TableContextProps = {
     data: TableData | undefined
     error: Error | null
+    onRowReorder: (sourceIndex: number, targetIndex: number) => void
     createRow: () => Promise<void>
     deleteRow: (rowIndex: number, row: Row) => Promise<void>
     partialRowUpdate: (rows: Row[], data: RowsChangeData<Row>) => Promise<void>
@@ -27,6 +28,7 @@ export type TableContextProps = {
 const initialState: TableContextProps = {
     data: undefined!,
     error: undefined!,
+    onRowReorder: undefined!,
     createRow: undefined!,
     deleteRow: undefined!,
     partialRowUpdate: undefined!,
@@ -60,6 +62,18 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
      *  1. once these api methods return the updatet data, inject it into mutate
      *  2. seperate rows to a distinct state (required for performance by rdg)
      */
+
+    // #################### row utils ####################
+
+    const onRowReorder = (fromIndex: number, toIndex: number) => {
+        if (data) {
+            const newRows = [...data.rows]
+            newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0])
+            mutate({ ...data, rows: newRows })
+            // await XYZ() // update data
+            // mutate() // make sure data is updated
+        }
+    }
 
     // #################### row ####################
 
@@ -142,6 +156,8 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
                 // states
                 data,
                 error,
+                // row utils
+                onRowReorder,
                 // row
                 createRow,
                 deleteRow,

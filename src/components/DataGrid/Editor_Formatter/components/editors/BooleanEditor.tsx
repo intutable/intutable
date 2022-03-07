@@ -1,6 +1,6 @@
 import { Checkbox } from "@mui/material"
 import { useState } from "react"
-import type { Editor } from "."
+import { Editor } from "../../types/Editor"
 
 export const BooleanEditor: Editor = props => {
     const [checked, setChecked] = useState(false)

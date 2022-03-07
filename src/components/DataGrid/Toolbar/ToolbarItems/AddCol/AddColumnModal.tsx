@@ -1,8 +1,8 @@
 import type { Column } from "types"
 import {
-    EditorType,
-    RuntimeEditorMap,
-} from "@datagrid/Editor/editor-management/editorTypes"
+    CellContentType,
+    Runtime_CellContentType,
+} from "@datagrid/Editor_Formatter/types/CellContentType"
 import {
     Box,
     Button,
@@ -86,11 +86,11 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             onChange={e =>
                                 setOption(
                                     "editor",
-                                    e.target.value as EditorType
+                                    e.target.value as CellContentType
                                 )
                             }
                         >
-                            {RuntimeEditorMap.map((type, i) => (
+                            {Runtime_CellContentType.map((type, i) => (
                                 <MenuItem key={i} value={type}>
                                     {type}
                                 </MenuItem>

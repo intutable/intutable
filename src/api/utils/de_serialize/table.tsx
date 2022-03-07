@@ -1,5 +1,6 @@
 import { Checkbox } from "@mui/material"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
+import { SelectColumn } from "react-data-grid"
 import { Column, Row, TableData } from "types"
 import * as Util from "."
 
@@ -60,15 +61,16 @@ export const deserialize = (table: TableData.Serialized): TableData => {
     columns.unshift(rdgIndexCol)
 
     // add a selector column
-    const selectorCol: Column = {
-        name: <Checkbox />,
-        key: PLACEHOLDER.SELECTOR_COLUMN_KEY,
-        editable: true,
-        resizable: false,
-        sortable: true,
-        width: 50,
-    }
-    columns.unshift(selectorCol)
+    // const selectorCol: Column = {
+    //     name: <Checkbox />,
+    //     key: PLACEHOLDER.SELECTOR_COLUMN_KEY,
+    //     editable: true,
+    //     resizable: false,
+    //     sortable: true,
+    //     width: 50,
+    // }
+    // columns.unshift(selectorCol)
+    columns.unshift(SelectColumn)
 
     return {
         table: table.table,

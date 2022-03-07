@@ -12,12 +12,15 @@ import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
 import { AUTH_COOKIE_KEY, TableCtxProvider, useTableCtx } from "context"
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
+import { useRouter } from "next/router"
 import React, { useEffect, useState } from "react"
 import DataGrid, { CalculatedColumn } from "react-data-grid"
 import { SWRConfig, unstable_serialize } from "swr"
 import type { PMTypes as PM, Row } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
 
 type TablePageProps = {
     project: PM.Project
@@ -26,8 +29,13 @@ type TablePageProps = {
 }
 const TablePage: React.FC<TablePageProps> = props => {
     const theme = useTheme()
+    const router = useRouter()
 
     // #################### states ####################
+
+    const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
+        () => new Set()
+    )
 
     const [detailedViewOpen, setDetailedViewOpen] = useState<{
         row: Row
@@ -71,22 +79,26 @@ const TablePage: React.FC<TablePageProps> = props => {
                             <ToolbarItem.AddRow />
                             <ToolbarItem.FileDownload getData={() => []} />
                         </Toolbar>
-                        <DataGrid
-                            className={"rdg-" + theme.palette.mode}
-                            rows={table.rows}
-                            columns={table.columns}
-                            noRowsFallback={<NoRowsRenderer />}
-                            rowKeyGetter={rowKeyGetter}
-                            defaultColumnOptions={{
-                                sortable: true,
-                                resizable: true,
-                            }}
-                            onRowsChange={partialRowUpdate}
-                            onRowDoubleClick={(row, column) => {
-                                setDetailedViewOpen({ row, column })
-                            }}
-                            rowRenderer={RowRenderer}
-                        />
+                        <DndProvider backend={HTML5Backend}>
+                            <DataGrid
+                                className={"rdg-" + theme.palette.mode}
+                                rows={table.rows}
+                                columns={table.columns}
+                                noRowsFallback={<NoRowsRenderer />}
+                                rowKeyGetter={rowKeyGetter}
+                                defaultColumnOptions={{
+                                    sortable: true,
+                                    resizable: true,
+                                }}
+                                selectedRows={selectedRows}
+                                onSelectedRowsChange={setSelectedRows}
+                                onRowsChange={partialRowUpdate}
+                                onRowDoubleClick={(row, column) => {
+                                    setDetailedViewOpen({ row, column })
+                                }}
+                                rowRenderer={RowRenderer}
+                            />
+                        </DndProvider>
                         <Toolbar position="bottom">
                             <ToolbarItem.Connection status={"connected"} />
                         </Toolbar>
