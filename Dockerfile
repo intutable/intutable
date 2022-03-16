@@ -41,7 +41,7 @@ USER nextjs
 
 EXPOSE 3000
 
-# Disable telemetry => might not be needed so chang eif neccessary
+# Disable telemetry => might not be needed so change if neccessary
 RUN npx next telemetry disable
 
 CMD ["node_modules/.bin/next", "start"]
