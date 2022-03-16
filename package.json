@@ -4,14 +4,13 @@
     "private": true,
     "scripts": {
         "build": "npm run build-core && next build",
-        "dev": "npm run build-core && npm run db:setup && node ./dist/start/index dev",
+        "dev": "sudo docker-compose up & cd database/ && sudo docker-compose up",
         "start": "node ./dist/start start",
         "build-core": "cd src/backend && tsc && cd ../..",
         "start-core": "node ./dist/start/core",
         "dev-next": "next dev",
         "build-next": "next build",
         "start-next": "next start",
-        "db:setup": "npx rimraf data.db && sqlite3 data.db < database/createDB.sql",
         "lint": "next lint",
         "lint:fix": "npm run lint -- --fix",
         "ci": "npm run lint && npm run build"
