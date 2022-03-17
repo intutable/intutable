@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "build": "npm run build-core && next build",
-        "dev": "sudo docker-compose up & cd database/ && sudo docker-compose up",
+        "dev": "npm run build-core && node ./dist/start/index dev",
         "start": "node ./dist/start start",
         "build-core": "cd src/backend && tsc && cd ../..",
         "start-core": "node ./dist/start/core",
@@ -20,7 +20,7 @@
         "@emotion/server": "^11.4.0",
         "@emotion/styled": "^11.3.0",
         "@intutable/core": "^0.1.6",
-        "@intutable/database": "1.2.2",
+        "@intutable/database": "1.3.0",
         "@intutable/http": "^0.1.5",
         "@intutable/http-cors": "0.1.0",
         "@intutable/project-management": "0.4.2",

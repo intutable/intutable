@@ -45,6 +45,14 @@ CREATE TABLE columns(
     FOREIGN KEY("tableId") REFERENCES tables(_id)
 );
 
+CREATE TABLE tablecolumns(
+    _id SERIAL PRIMARY KEY,
+    "tableId" INTEGER,
+    "columnId" INTEGER,
+    FOREIGN KEY("tableId") REFERENCES tables(_id),
+    FOREIGN KEY("columnId") REFERENCES columns(_id)
+);
+
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');
 insert into projects("projectName", "ownerId") values('Personal', 1);
 insert into userprojects("userId", "projectId") values(1, 1);
