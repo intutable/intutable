@@ -1,0 +1,10 @@
+# TODO: Check which version makes most sense
+version: "3.3"
+services:
+    pg-database:
+        build: .
+        ports:
+            - "5432:5432"
+        #volumes:
+        # TODO: Where to save the data?
+        # - ./database-data:/var/lib/postgresql/data

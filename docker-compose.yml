@@ -1,0 +1,8 @@
+# TODO: Check which version makes most sense
+version: '3.3'
+services:
+  dekanat-db-application:
+    build:
+      .
+    ports:
+      - "3000:3000"
