@@ -3,4 +3,4 @@ export const makeError = (error: unknown): Error =>
         ? error
         : typeof error === "string"
         ? new Error(error)
-        : new Error("Internal Unknown Error: Could not load the Table!")
+        : new Error("Unknown Error")

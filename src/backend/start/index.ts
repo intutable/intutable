@@ -110,11 +110,11 @@ function usage(): ProgramArgs {
 // process control
 function shutdown(components: AppComponent[], reason?: string) {
     if (reason) logWithName(reason + "\n")
-    for (let component of components) {
+    for (const component of components) {
         logWithName("shutting down " + component.description)
         if (component.process.exitCode === null) {
             // means it's still running
-            let shutdownSuccessfully = component.process.kill("SIGTERM")
+            const shutdownSuccessfully = component.process.kill("SIGTERM")
             if (shutdownSuccessfully) log("    ...done\n")
             else log("    ...failed\n")
         } else log("    ...already terminated\n")
