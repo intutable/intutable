@@ -14,4 +14,8 @@ export enum CHANNEL {
      * User Authentication core plugin.
      */
     USER_AUTHENTICATION = "user-authentication",
+    /**
+     * Join Tables core plugin.
+     */
+    JOIN_TABLES = "join-tables",
 }
