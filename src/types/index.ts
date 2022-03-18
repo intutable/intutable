@@ -25,8 +25,8 @@ export namespace PMTypes {
         export type Name = string
     }
     export type Project = {
-        projectId: Project.ID
-        projectName: Project.Name
+        id: Project.ID
+        name: Project.Name
     }
 
     export namespace Table {
@@ -34,8 +34,8 @@ export namespace PMTypes {
         export type Name = string
     }
     export type Table = {
-        tableId: Table.ID
-        tableName: Table.Name
+        id: Table.ID
+        name: Table.Name
     }
 
     export namespace Column {
@@ -43,8 +43,8 @@ export namespace PMTypes {
         export type Name = string
     }
     export type Column = {
-        columnId: Column.ID
-        columnName: Column.Name
+        id: Column.ID
+        name: Column.Name
     }
 }
 

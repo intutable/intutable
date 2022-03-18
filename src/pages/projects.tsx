@@ -113,7 +113,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push("/project/" + props.project.projectId)
+        router.push("/project/" + props.project.id)
     }
 
     return (
@@ -182,7 +182,7 @@ const ProjectList: React.FC = () => {
                 return
             }
             const nameIsTaken = projectList!
-                .map((proj: PM.Project) => proj.projectName.toLowerCase())
+                .map((proj: PM.Project) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -207,7 +207,7 @@ const ProjectList: React.FC = () => {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
             const nameIsTaken = projectList!
-                .map((proj: PM.Project) => proj.projectName.toLowerCase())
+                .map((proj: PM.Project) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -261,7 +261,7 @@ const ProjectList: React.FC = () => {
                             handleRename={handleRenameProject}
                             project={proj}
                         >
-                            {proj.projectName}
+                            {proj.name}
                         </ProjectCard>
                     </Grid>
                 ))}

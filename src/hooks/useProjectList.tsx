@@ -29,12 +29,12 @@ export const useProjectList = () => {
         project: PM.Project,
         newName: PM.Project.Name
     ): Promise<void> => {
-        await API?.put.projectName(project.projectId, newName)
+        await API?.put.projectName(project.id, newName)
         await mutate()
     }
 
     const deleteProject = async (project: PM.Project): Promise<void> => {
-        await API?.delete.project(project.projectId)
+        await API?.delete.project(project.id)
         await mutate()
     }
 

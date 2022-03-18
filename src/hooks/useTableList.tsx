@@ -11,9 +11,7 @@ export const useTableList = (project: PM.Project) => {
         error,
         mutate,
     } = useSWR<PM.Table[]>(
-        user
-            ? [Routes.get.tableList, user, { projectId: project.projectId }]
-            : null,
+        user ? [Routes.get.tableList, user, { projectId: project.id }] : null,
         fetchWithUser
     )
 
@@ -23,7 +21,7 @@ export const useTableList = (project: PM.Project) => {
      */
 
     const createTable = async (name: PM.Table.Name): Promise<void> => {
-        await API?.post.table(project.projectId, name)
+        await API?.post.table(project.id, name)
         await mutate()
     }
 
@@ -31,12 +29,12 @@ export const useTableList = (project: PM.Project) => {
         table: PM.Table,
         name: PM.Table.Name
     ): Promise<void> => {
-        await API?.put.tableName(table.tableId, name)
+        await API?.put.tableName(table.id, name)
         await mutate()
     }
 
     const deleteTable = async (table: PM.Table): Promise<void> => {
-        await API?.delete.table(table.tableId)
+        await API?.delete.table(table.id)
         await mutate()
     }
 

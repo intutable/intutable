@@ -51,9 +51,7 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     const { user, API } = useAuth()
 
     const { data, error, mutate } = useSWR<TableData>(
-        user
-            ? [Routes.get.table, user, { tableId: props.table.tableId }]
-            : null,
+        user ? [Routes.get.table, user, { tableId: props.table.id }] : null,
         fetchWithUser
     )
 
@@ -120,9 +118,9 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     // #################### column ####################
 
     const createColumn = async (col: Column.Serialized): Promise<void> => {
-        await API?.post.column(props.table.tableId, col.key.toLocaleLowerCase())
+        await API?.post.column(props.table.id, col.key.toLocaleLowerCase())
         await API?.put.columnName(
-            props.table.tableId,
+            props.table.id,
             col.key.toLowerCase(),
             col.name
         )
@@ -133,7 +131,7 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         key: Column["key"],
         newKey: Column["key"]
     ): Promise<void> => {
-        await API?.put.columnKey(props.table.tableId, key, newKey)
+        await API?.put.columnKey(props.table.id, key, newKey)
         await mutate()
     }
 
@@ -141,12 +139,12 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         key: Column["key"],
         newName: PM.Column.Name
     ): Promise<void> => {
-        await API?.put.columnName(props.table.tableId, key, newName)
+        await API?.put.columnName(props.table.id, key, newName)
         await mutate()
     }
 
     const deleteColumn = async (key: Column["key"]): Promise<void> => {
-        await API?.delete.column(props.table.tableId, key)
+        await API?.delete.column(props.table.id, key)
         await mutate()
     }
 

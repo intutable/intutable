@@ -46,12 +46,11 @@ const TablePage: React.FC<TablePageProps> = props => {
 
     return (
         <>
-            <Title title={props.project.projectName} />
+            <Title title={props.project.name} />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
-                <Link href={`/projects`}>{props.project.projectName}</Link>{" "}
-                {"> "}
-                <Link href={`/project/${props.project.projectId}`}>
-                    {props.table.tableName}
+                <Link href={`/projects`}>{props.project.name}</Link> {"> "}
+                <Link href={`/project/${props.project.id}`}>
+                    {props.table.name}
                 </Link>
             </Typography>
 
@@ -157,10 +156,10 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
     const API = makeAPI(user)
 
     const project = (await API.get.projectList()).find(
-        (proj: PM.Project) => proj.projectId === projectId
+        (proj: PM.Project) => proj.id === projectId
     )
     if (project == null) return { notFound: true }
-    const tableList = await API.get.tableList(project.projectId)
+    const tableList = await API.get.tableList(project.id)
     const data = await API.get.table(tableId)
 
     return {

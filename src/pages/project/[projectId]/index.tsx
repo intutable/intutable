@@ -116,12 +116,7 @@ const TableCard: React.FC<TableCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push(
-            "/project/" +
-                props.project.projectId +
-                "/table/" +
-                props.table.tableId
-        )
+        router.push("/project/" + props.project.id + "/table/" + props.table.id)
     }
 
     return (
@@ -193,7 +188,7 @@ const TableList: React.FC<TableListProps> = props => {
                 return
             }
             const nameIsTaken = tableList!
-                .map((tbl: PM.Table) => tbl.tableName.toLowerCase())
+                .map((tbl: PM.Table) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -218,7 +213,7 @@ const TableList: React.FC<TableListProps> = props => {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
             const nameIsTaken = tableList!
-                .map((tbl: PM.Table) => tbl.tableName.toLowerCase())
+                .map((tbl: PM.Table) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -263,7 +258,7 @@ const TableList: React.FC<TableListProps> = props => {
             <Title title="Projekte" />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
                 Deine Tabellen in{" "}
-                <Link href={`/projects`}>{props.project.projectName}</Link>
+                <Link href={`/projects`}>{props.project.name}</Link>
             </Typography>
             <Grid container spacing={2}>
                 {tableList.map((tbl: PM.Table, i: number) => (
@@ -274,7 +269,7 @@ const TableList: React.FC<TableListProps> = props => {
                             handleRename={handleRenameTable}
                             project={props.project}
                         >
-                            {tbl.tableName}
+                            {tbl.name}
                         </TableCard>
                     </Grid>
                 ))}
@@ -330,11 +325,11 @@ export const getServerSideProps: GetServerSideProps<
     const projectId: PM.Project.ID = Number.parseInt(query.projectId)
 
     const project = (await API.get.projectList()).find(
-        (proj: PM.Project) => proj.projectId === projectId
+        (proj: PM.Project) => proj.id === projectId
     )
     if (project == null) return { notFound: true }
 
-    const list = await API.get.tableList(project.projectId)
+    const list = await API.get.tableList(project.id)
 
     return {
         props: {
@@ -343,7 +338,7 @@ export const getServerSideProps: GetServerSideProps<
                 [unstable_serialize([
                     Routes.get.tableList,
                     user,
-                    { projectId: project.projectId },
+                    { projectId: project.id },
                 ])]: list,
             },
         },

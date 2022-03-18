@@ -18,7 +18,7 @@ export const updateRow = async (
         CHANNEL.DATABASE,
         "update",
         {
-            table: `p${project.projectId}_${table.tableName}`,
+            table: `p${project.id}_${table.name}`,
             condition,
             update,
         },
@@ -36,7 +36,7 @@ export const createRow = async (
         CHANNEL.DATABASE,
         "insert",
         {
-            table: `p${project.projectId}_${table.tableName}`,
+            table: `p${project.id}_${table.name}`,
             values,
         },
         user.authCookie
@@ -53,7 +53,7 @@ export const deleteRow = async (
         CHANNEL.DATABASE,
         "deleteRow",
         {
-            table: `p${project.projectId}_${table.tableName}`,
+            table: `p${project.id}_${table.name}`,
             condition,
         },
         user.authCookie

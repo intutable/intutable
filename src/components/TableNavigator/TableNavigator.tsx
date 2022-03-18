@@ -16,7 +16,7 @@ export const TableNavigator: React.FC<TableNavigatorProps> = props => {
     return (
         <>
             <ToggleButtonGroup
-                value={props.currentTable.tableId}
+                value={props.currentTable.id}
                 exclusive
                 onChange={(
                     event: React.MouseEvent<HTMLElement, MouseEvent>,
@@ -25,10 +25,7 @@ export const TableNavigator: React.FC<TableNavigatorProps> = props => {
                     if (value == null || value === "null") return
 
                     router.push(
-                        "/project/" +
-                            props.project.projectId +
-                            "/table/" +
-                            value,
+                        "/project/" + props.project.id + "/table/" + value,
                         undefined,
                         { shallow: false }
                     )
@@ -37,8 +34,8 @@ export const TableNavigator: React.FC<TableNavigatorProps> = props => {
                 sx={{ display: "block", mb: theme.spacing(5) }}
             >
                 {props.tableList.map((table, index) => (
-                    <ToggleButton key={index} value={table.tableId}>
-                        {table.tableName}
+                    <ToggleButton key={index} value={table.id}>
+                        {table.name}
                     </ToggleButton>
                 ))}
             </ToggleButtonGroup>
