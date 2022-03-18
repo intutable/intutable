@@ -24,12 +24,12 @@ export class CoreRequestError extends Error {
  * @returns {Promise<object>} - The response parsed from JSON as an object.
  * @throws {CoreRequestError}
  */
-export const coreRequest = (
+export const coreRequest = <T = unknown>(
     channel: string,
     method: string,
     body: Obj,
     authCookie?: string
-): Promise<unknown> =>
+): Promise<T> =>
     fetch(CORE_ENDPOINT + "/request/" + channel + "/" + method, {
         method: "post",
         headers: {
