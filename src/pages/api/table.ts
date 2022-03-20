@@ -1,46 +1,16 @@
-import {
-    createJt,
-    deleteJt,
-    getJtData,
-    renameJt,
-} from "@intutable/join-tables/dist/requests"
+import { createJt } from "@intutable/join-tables/dist/requests"
 import {
     ColumnOptions,
-    JtData,
     JtDescriptor,
     RowOptions,
 } from "@intutable/join-tables/dist/types"
-import {
-    createTableInProject,
-    removeTable,
-} from "@intutable/project-management/dist/requests"
+import { createTableInProject } from "@intutable/project-management/dist/requests"
 import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
-
-const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const { user, table } = req.body as {
-            user: User
-            table: PM.Table
-        }
-
-        const tableData = await coreRequest<JtData>(
-            CHANNEL.JOIN_TABLES,
-            getJtData.name,
-            getJtData(table.id),
-            user.authCookie
-        )
-
-        res.status(200).json(tableData)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
-    }
-}
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
@@ -76,76 +46,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const { user, table, newName } = req.body as {
-            user: User
-            table: PM.Table
-            newName: PM.Table.Name
-        }
-
-        // rename table in join-tables
-        const updatedTable = await coreRequest<PM.Table>(
-            CHANNEL.JOIN_TABLES,
-            renameJt.name,
-            renameJt(table.id, newName),
-            user.authCookie
-        )
-
-        res.status(200).json(updatedTable)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
-    }
-}
-
-const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const { user, table } = req.body as {
-            user: User
-            table: PM.Table
-        }
-
-        // delete table in project-management
-        await coreRequest(
-            CHANNEL.PROJECT_MANAGEMENT,
-            removeTable.name,
-            removeTable(table.id),
-            user.authCookie
-        )
-
-        // delete table in join-tables
-        await coreRequest(
-            CHANNEL.JOIN_TABLES,
-            deleteJt.name,
-            deleteJt(table.id),
-            user.authCookie
-        )
-
-        res.status(200).send({})
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
-    }
-}
-
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    switch (req.method) {
-        case "GET":
-            GET(req, res)
-            break
+    const { method } = req
+
+    switch (method) {
         case "POST":
             POST(req, res)
             break
-        case "PATCH":
-            PATCH(req, res)
-            break
-        case "DELETE":
-            DELETE(req, res)
-            break
         default:
-            res.status(req.method === "HEAD" ? 500 : 501).send(
-                "This method is not supported!"
-            )
+            res.setHeader("Allow", ["POST"])
+            res.status(405).end(`Method ${method} Not Allowed`)
     }
 }

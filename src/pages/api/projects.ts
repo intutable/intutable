@@ -1,3 +1,4 @@
+import { PMTypes as PM } from "types"
 import { getProjects } from "@intutable/project-management/dist/requests"
 import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
@@ -11,7 +12,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
             user: User
         }
 
-        const projects = await coreRequest(
+        const projects = await coreRequest<PM.Project[]>(
             CHANNEL.PROJECT_MANAGEMENT,
             getProjects.name,
             getProjects(user.id),
@@ -25,13 +26,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    switch (req.method) {
+    const { method } = req
+
+    switch (method) {
         case "GET":
             GET(req, res)
             break
         default:
-            res.status(req.method === "HEAD" ? 500 : 501).send(
-                "This method is not supported!"
-            )
+            res.setHeader("Allow", ["GET"])
+            res.status(405).end(`Method ${method} Not Allowed`)
     }
 }

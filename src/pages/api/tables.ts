@@ -13,7 +13,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
             project: PM.Project
         }
 
-        const tables = await coreRequest(
+        const tables = await coreRequest<PM.Table[]>(
             CHANNEL.JOIN_TABLES,
             listJts.name,
             listJts(project.id),
@@ -32,8 +32,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             GET(req, res)
             break
         default:
-            res.status(req.method === "HEAD" ? 500 : 501).send(
-                "This method is not supported!"
-            )
+            res.setHeader("Allow", ["GET"])
+            res.status(405).end(`Method ${req.method} Not Allowed`)
     }
 }

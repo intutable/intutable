@@ -134,8 +134,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             DELETE(req, res)
             break
         default:
-            res.status(["HEAD", "GET"].includes(req.method!) ? 500 : 501).send(
-                "This method is not supported!"
-            )
+            res.setHeader("Allow", ["POST", "PATCH", "DELETE"])
+            res.status(405).end(`Method ${req.method} Not Allowed`)
     }
 }
