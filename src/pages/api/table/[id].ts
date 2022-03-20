@@ -12,6 +12,17 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
+/**
+ * GET a single table @type {PM.Table}.
+ *
+ * @tutorial
+ * ```
+ * - URL: `/api/table/[id]` e.g. `/api/table/[1]`
+ * - Body: {
+ *  user: {@type {User}}
+ * }
+ * ```
+ */
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,
@@ -36,6 +47,21 @@ const GET = async (
     }
 }
 
+/**
+ * PATCH/update the name of a single table.
+ * Returns the updated table {@type {PM.Table}}.
+ *
+ * // TODO: In a future version this api point will be able to adjust more than the name.
+ *
+ * @tutorial
+ * ```
+ * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
+ * - Body: {
+ *  user: {@type {User}}
+ *  newName: {@type {PM.Table.Name}}
+ * }
+ * ```
+ */
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
@@ -62,6 +88,17 @@ const PATCH = async (
     }
 }
 
+/**
+ * DELETE a table. Returns an empty object.
+ *
+ * @tutorial
+ * ```
+ * - URL: `/api/table/[id]` e.g. `/api/table/[1]`
+ * - Body: {
+ *  user: {@type {User}}
+ * }
+ * ```
+ */
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
