@@ -62,7 +62,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(parsedColumn)
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -94,7 +94,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(parsedColumn)
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -118,7 +118,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).send({})
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 

@@ -1,24 +1,24 @@
-import { CHANNEL, METHOD } from "api/constants"
-import { coreRequest } from "api/utils"
-import { User } from "auth"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { PMTypes as PM } from "types"
+import {
+    createJt,
+    deleteJt,
+    getJtData,
+    renameJt,
+} from "@intutable/join-tables/dist/requests"
+import {
+    ColumnOptions,
+    JtData,
+    JtDescriptor,
+    RowOptions,
+} from "@intutable/join-tables/dist/types"
 import {
     createTableInProject,
     removeTable,
 } from "@intutable/project-management/dist/requests"
-import {
-    createJt,
-    renameJt,
-    deleteJt,
-    getJtData,
-} from "@intutable/join-tables/dist/requests"
-import {
-    ColumnOptions,
-    JtDescriptor,
-    RowOptions,
-    JtData,
-} from "@intutable/join-tables/dist/types"
+import { CHANNEL } from "api/constants"
+import { coreRequest } from "api/utils"
+import { User } from "auth"
+import type { NextApiRequest, NextApiResponse } from "next"
+import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -38,7 +38,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(tableData)
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -72,7 +72,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(jtTable)
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -95,7 +95,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(updatedTable)
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -125,7 +125,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).send({})
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 

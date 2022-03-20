@@ -1,28 +1,12 @@
-import { CHANNEL, METHOD } from "api/constants"
+import { deleteRow, insert, update } from "@intutable/database/dist/requests"
+import { TableDescriptor } from "@intutable/join-tables/dist/types"
+import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PMTypes as PM, Row, PM as PMKeys } from "types"
-import { insert, update, deleteRow } from "@intutable/database/dist/requests"
-import {
-    createTableInProject,
-    removeTable,
-} from "@intutable/project-management/dist/requests"
-import {
-    createJt,
-    renameJt,
-    deleteJt,
-    getJtData,
-} from "@intutable/join-tables/dist/requests"
-import {
-    ColumnOptions,
-    JtDescriptor,
-    RowOptions,
-    JtData,
-    TableDescriptor,
-} from "@intutable/join-tables/dist/types"
-import { makeError } from "utils/makeError"
+import { PM as PMKeys, PMTypes as PM, Row } from "types"
 import Obj from "types/Obj"
+import { makeError } from "utils/makeError"
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
@@ -47,7 +31,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).send(rowId)
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -74,7 +58,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(updatedRow)
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -96,7 +80,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).send({})
     } catch (err) {
         const error = makeError(err)
-        res.status(500).send(error.message)
+        res.status(500).json({ error: error.message })
     }
 }
 
