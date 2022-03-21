@@ -1,7 +1,13 @@
+import {
+    getTablesFromProject,
+    getTableData,
+    createTableInProject,
+    removeTable,
+    changeTableName,
+} from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils/coreRequest"
 import type { User } from "auth"
 import { Parser } from "api/utils"
-import { CHANNEL } from "api/constants"
 import { PMTypes as PM, TableData } from "types"
 
 /**
@@ -15,9 +21,7 @@ export const getTablesFromProject = async (
     projectId: number
 ): Promise<PM.Table[]> => {
     const coreResponse = await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        getTablesFromProject.name,
-        { projectId },
+        getTablesFromProject(projectId),
         user.authCookie
     )
     return coreResponse as PM.Table[]
@@ -35,9 +39,7 @@ export const getTableData = async (
     tableId: PM.Table.ID
 ): Promise<TableData.Serialized> => {
     const coreResponse = (await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        getTableData.name,
-        { tableId },
+        getTableData(tableId),
         user.authCookie
     )) as TableData.DBSchema
     return Parser.Table.parse(coreResponse)
@@ -46,40 +48,25 @@ export const getTableData = async (
 export const createTableInProject = async (
     user: User,
     projectId: PM.Project.ID,
-    tableName: PM.Table.Name
+    name: PM.Table.Name
 ): Promise<void> => {
     await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        createTableInProject.name,
-        { userId: user.id, projectId, tableName },
+        createTableInProject(user.id, projectId, name),
         user.authCookie
     )
 }
 
 export const removeTable = async (
     user: User,
-    tableId: PM.Table.ID
+    id: PM.Table.ID
 ): Promise<void> => {
-    await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        removeTable.name,
-        { tableId: tableId },
-        user.authCookie
-    )
+    await coreRequest(removeTable(id), user.authCookie)
 }
 
 export const changeTableName = async (
     user: User,
-    tableId: PM.Table.ID,
+    id: PM.Table.ID,
     newName: PM.Table.Name
 ): Promise<void> => {
-    await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        changeTableName.name,
-        {
-            tableId,
-            newName,
-        },
-        user.authCookie
-    )
+    await coreRequest(changeTableName(id, newName), user.authCookie)
 }

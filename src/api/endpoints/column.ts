@@ -1,6 +1,12 @@
+import {
+    getTableInfo,
+    createColumnInTable,
+    changeColumnName,
+    changeColumnAttributes,
+    removeColumn,
+} from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils/coreRequest"
 import type { User } from "auth"
-import { CHANNEL } from "api/constants"
 import { PMTypes as PM, TableData, Column } from "types"
 import { getTableData } from "./table"
 
@@ -17,9 +23,7 @@ const _getColumnId = async (
     key: Column["key"]
 ): Promise<PM.Column.ID> => {
     const table = (await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        getTableData.name,
-        { tableId },
+        getTableInfo(tableId),
         user.authCookie
     )) as TableData.DBSchema
     const column = table.columns.find(col => col.columnName === key)
@@ -31,16 +35,12 @@ const _getColumnId = async (
 export const createColumnInTable = async (
     user: User,
     tableId: PM.Table.ID,
-    columnName: PM.Column.Name
+    name: PM.Column.Name
 ): Promise<void> => {
-    await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        createColumnInTable.name,
-        { tableId, columnName },
-        user.authCookie
-    )
+    await coreRequest(createColumnInTable(tableId, name), user.authCookie)
 }
 
+/** Change the name of a column (in the database) */
 export const changeColumnKey = async (
     user: User,
     tableId: PM.Table.ID,
@@ -48,14 +48,10 @@ export const changeColumnKey = async (
     newName: PM.Column.Name
 ): Promise<void> => {
     const columnId = await _getColumnId(user, tableId, key)
-    await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        "changeColumnKey",
-        { columnId, newName },
-        user.authCookie
-    )
+    await coreRequest(changeColumnName(columnId, newName), user.authCookie)
 }
 
+/** Change the display name of a column */
 export const changeColumnName = async (
     user: User,
     tableId: PM.Table.ID,
@@ -64,14 +60,7 @@ export const changeColumnName = async (
 ): Promise<void> => {
     const columnId = await _getColumnId(user, tableId, key)
     await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        "changeColumnAttributes",
-        {
-            columnId,
-            attributes: {
-                displayName: newName,
-            },
-        },
+        changeColumnAttributes(columnId, { displayName: newName }),
         user.authCookie
     )
 }
@@ -95,9 +84,7 @@ export const changeColumnAttributes = async (
 ): Promise<void> => {
     const columnId = await _getColumnId(user, tableId, key)
     await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        changeColumnAttributes.name,
-        { columnId, attributes: attributes },
+        changeColumnAttributes(columnId, attributes),
         user.authCookie
     )
 
@@ -107,14 +94,8 @@ export const changeColumnAttributes = async (
 export const removeColumn = async (
     user: User,
     tableId: PM.Table.ID,
-    key: Column["key"]
+    name: Column["key"]
 ): Promise<void> => {
-    const columnId = await _getColumnId(user, tableId, key)
-    console.log(key, tableId, columnId)
-    await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        removeColumn.name,
-        { columnId },
-        user.authCookie
-    )
+    const columnId = await _getColumnId(user, tableId, name)
+    await coreRequest(removeColumn(columnId), user.authCookie)
 }

@@ -4,7 +4,6 @@ import {
     getTableData,
     removeColumn,
 } from "@intutable/project-management/dist/requests"
-import { CHANNEL } from "api/constants"
 import { coreRequest, Parser } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -20,8 +19,6 @@ const _getColumnId = async (
     key: Column["key"]
 ): Promise<PM.Column.ID> => {
     const table = (await coreRequest(
-        CHANNEL.PROJECT_MANAGEMENT,
-        getTableData.name,
         getTableData(tableId),
         user.authCookie
     )) as TableData.DBSchema
@@ -41,8 +38,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // add column in project-management
         const colDescriptor = await coreRequest<PM.Column>(
-            CHANNEL.PROJECT_MANAGEMENT,
-            createColumnInTable.name,
             createColumnInTable(table.id, column.key),
             user.authCookie
         )
@@ -51,8 +46,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // add props to that column
         const col = await coreRequest<Column.DBSchema>(
-            CHANNEL.PROJECT_MANAGEMENT,
-            changeColumnAttributes.name,
             changeColumnAttributes(colDescriptor.id, deparsedUpdate),
             user.authCookie
         )
@@ -83,8 +76,6 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // change property in project-management
         const updatedCol = await coreRequest<Column.DBSchema>(
-            CHANNEL.PROJECT_MANAGEMENT,
-            changeColumnAttributes.name,
             changeColumnAttributes(columnId, deparsedUpdate),
             user.authCookie
         )
@@ -108,12 +99,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // delete column in project-management
         const columnId = await _getColumnId(user, table.id, key)
-        await coreRequest(
-            CHANNEL.PROJECT_MANAGEMENT,
-            removeColumn.name,
-            removeColumn(columnId),
-            user.authCookie
-        )
+        await coreRequest(removeColumn(columnId), user.authCookie)
 
         res.status(200).send({})
     } catch (err) {

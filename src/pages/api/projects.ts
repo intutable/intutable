@@ -1,6 +1,5 @@
 import { PMTypes as PM } from "types"
 import { getProjects } from "@intutable/project-management/dist/requests"
-import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -13,8 +12,6 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         const projects = await coreRequest<PM.Project[]>(
-            CHANNEL.PROJECT_MANAGEMENT,
-            getProjects.name,
             getProjects(user.id),
             user.authCookie
         )

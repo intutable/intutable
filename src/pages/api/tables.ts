@@ -1,5 +1,4 @@
 import { listJts } from "@intutable/join-tables/dist/requests"
-import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -14,8 +13,6 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         const tables = await coreRequest<PM.Table[]>(
-            CHANNEL.JOIN_TABLES,
-            listJts.name,
             listJts(project.id),
             user.authCookie
         )

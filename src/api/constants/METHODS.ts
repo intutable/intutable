@@ -15,7 +15,6 @@ export enum METHOD {
     createRow = "createRow",
     deleteRow = "deleteRow",
     createColumnInTable = "createColumnInTable",
-    changeColumnKey = "changeColumnKey",
     changeColumnName = "changeColumnName",
     changeColumnAttributes = "changeColumnAttributes",
     removeColumn = "removeColumn",

@@ -3,7 +3,6 @@ import {
     getProjects,
     removeProject,
 } from "@intutable/project-management/dist/requests"
-import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -33,8 +32,6 @@ const GET = async (
 
         // get all projects from project-management
         const projects = await coreRequest<PM.Project[]>(
-            CHANNEL.PROJECT_MANAGEMENT,
-            getProjects.name,
             getProjects(id),
             user.authCookie
         )
@@ -78,8 +75,6 @@ const PATCH = async (
 
         // rename project in project-management
         const updatedProject = await coreRequest(
-            CHANNEL.PROJECT_MANAGEMENT,
-            changeProjectName.name,
             changeProjectName(id, newName),
             user.authCookie
         )
@@ -113,12 +108,7 @@ const DELETE = async (
         }
 
         // delete project in project-management
-        await coreRequest(
-            CHANNEL.PROJECT_MANAGEMENT,
-            removeProject.name,
-            removeProject(id),
-            user.authCookie
-        )
+        await coreRequest(removeProject(id), user.authCookie)
 
         res.status(200).send({})
     } catch (err) {

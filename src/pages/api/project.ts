@@ -1,5 +1,4 @@
 import { createProject } from "@intutable/project-management/dist/requests"
-import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -15,8 +14,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // create project in project-management
         const project = await coreRequest<PM.Project>(
-            CHANNEL.PROJECT_MANAGEMENT,
-            createProject.name,
             createProject(user.id, name),
             user.authCookie
         )

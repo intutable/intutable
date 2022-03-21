@@ -10,9 +10,10 @@ export const getCurrentUser = async (
 ): Promise<User | null> => {
     try {
         const user = (await coreRequest(
-            CHANNEL.USER_AUTHENTICATION,
-            getCurrentUser.name,
-            {},
+            {
+                channel: CHANNEL.USER_AUTHENTICATION,
+                method: getCurrentUser.name,
+            },
             authCookie
         )) as Omit<User, "authCookie">
 

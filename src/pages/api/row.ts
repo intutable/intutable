@@ -1,6 +1,5 @@
 import { deleteRow, insert, update } from "@intutable/database/dist/requests"
 import { TableDescriptor } from "@intutable/join-tables/dist/types"
-import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -19,8 +18,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // create row in database
         const rowId = await coreRequest<typeof PMKeys.UID_KEY>(
-            CHANNEL.DATABASE,
-            insert.name,
             insert(basetable.key, {
                 table: `key`,
                 values,
@@ -46,8 +43,6 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         const updatedRow = await coreRequest<Row>(
-            CHANNEL.DATABASE,
-            update.name,
             update(basetable.key, {
                 condition,
                 update: rowUpdate,
@@ -70,12 +65,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
             condition: unknown[]
         }
 
-        await coreRequest(
-            CHANNEL.DATABASE,
-            deleteRow.name,
-            deleteRow(basetable.key, condition),
-            user.authCookie
-        )
+        await coreRequest(deleteRow(basetable.key, condition), user.authCookie)
 
         res.status(200).send({})
     } catch (err) {

@@ -5,7 +5,6 @@ import {
 } from "@intutable/join-tables/dist/requests"
 import { JtData } from "@intutable/join-tables/dist/types"
 import { removeTable } from "@intutable/project-management/dist/requests"
-import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -34,8 +33,6 @@ const GET = async (
         }
 
         const tableData = await coreRequest<JtData>(
-            CHANNEL.JOIN_TABLES,
-            getJtData.name,
             getJtData(id),
             user.authCookie
         )
@@ -75,8 +72,6 @@ const PATCH = async (
 
         // rename table in join-tables
         const updatedTable = await coreRequest<PM.Table>(
-            CHANNEL.JOIN_TABLES,
-            renameJt.name,
             renameJt(id, newName),
             user.authCookie
         )
@@ -110,20 +105,10 @@ const DELETE = async (
         }
 
         // delete table in project-management
-        await coreRequest(
-            CHANNEL.PROJECT_MANAGEMENT,
-            removeTable.name,
-            removeTable(id),
-            user.authCookie
-        )
+        await coreRequest(removeTable(id), user.authCookie)
 
         // delete table in join-tables
-        await coreRequest(
-            CHANNEL.JOIN_TABLES,
-            deleteJt.name,
-            deleteJt(id),
-            user.authCookie
-        )
+        await coreRequest(deleteJt(id), user.authCookie)
 
         res.status(200).send({})
     } catch (err) {

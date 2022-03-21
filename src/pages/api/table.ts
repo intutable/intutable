@@ -5,7 +5,6 @@ import {
     RowOptions,
 } from "@intutable/join-tables/dist/types"
 import { createTableInProject } from "@intutable/project-management/dist/requests"
-import { CHANNEL } from "api/constants"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -25,16 +24,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // create table in project-management
         const table = await coreRequest<PM.Table>(
-            CHANNEL.PROJECT_MANAGEMENT,
-            createTableInProject.name,
             createTableInProject(user.id, project.id, tableName),
             user.authCookie
         )
 
         // create table in join-tables
         const jtTable = await coreRequest<JtDescriptor>(
-            CHANNEL.JOIN_TABLES,
-            createJt.name,
             createJt(table.id, table.name, columnOptions, rowOptions, user.id),
             user.authCookie
         )

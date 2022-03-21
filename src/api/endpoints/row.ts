@@ -1,10 +1,10 @@
 // Todo: use returning instead of last-index (database)
 // get table key from projman plugin instead of cobbling it together manually
+import { insert, update, deleteRow } from "@intutable/database/dist/requests"
 import { inspect } from "util"
 import { coreRequest } from "api/utils/coreRequest"
 import { Row, PMTypes as PM } from "types"
 import type { User } from "auth"
-import { CHANNEL } from "api/constants"
 import Obj from "types/Obj"
 
 export const updateRow = async (
@@ -15,13 +15,7 @@ export const updateRow = async (
     update: { [index: string]: unknown }
 ): Promise<void> => {
     await coreRequest(
-        CHANNEL.DATABASE,
-        "update",
-        {
-            table: `p${project.id}_${table.name}`,
-            condition,
-            update,
-        },
+        update(`p${project.id}_${table.name}`, { condition, update }),
         user.authCookie
     )
 }
@@ -33,12 +27,7 @@ export const createRow = async (
     values: Obj = {}
 ): Promise<void> => {
     await coreRequest(
-        CHANNEL.DATABASE,
-        "insert",
-        {
-            table: `p${project.id}_${table.name}`,
-            values,
-        },
+        insert(`p${project.id}_${table.name}`, values),
         user.authCookie
     )
 }
@@ -50,12 +39,7 @@ export const deleteRow = async (
     condition: unknown[]
 ): Promise<void> => {
     await coreRequest(
-        CHANNEL.DATABASE,
-        "deleteRow",
-        {
-            table: `p${project.id}_${table.name}`,
-            condition,
-        },
+        deleteRow(`p${project.id}_${table.name}`, condition),
         user.authCookie
     )
 }
