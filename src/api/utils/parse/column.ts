@@ -1,20 +1,24 @@
-import { Column, PM as PMKeys, PMTypes as PM } from "types"
+import {
+    ColumnSpecifier,
+    ColumnDescriptor,
+} from "@intutable/join-tables/dist/types"
+import { Column, PMTypes as PM } from "types"
 
-export const parse = (column: Column.DBSchema): Column.Serialized => ({
-    key: column.columnName,
-    name: column.displayName,
-    editable: Boolean(column.editable),
-    editor: column.type,
+export const parse = (column: ColumnDescriptor): Column.Serialized => ({
+    key: column.key,
+    name: column.attributes.displayName!,
+    editable: Boolean(column.attributes.editable!),
+    editor: column.attributes.editor!,
 })
 
 export const deparse = (
     column: Column.Serialized,
     colId: PM.Column.ID
-): Column.DBSchema => ({
-    [PMKeys.UID_KEY]: colId,
-    columnName: column.key,
-    displayName: column.name,
-    editable: column.editable ? 1 : 0,
-    hidden: 0,
-    type: column.editor,
+): ColumnSpecifier => ({
+    parentColumnId: colId,
+    attributes: {
+        displayName: column.name,
+        editable: column.editable ? 1 : 0,
+        editor: column.editor,
+    },
 })

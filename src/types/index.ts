@@ -90,7 +90,6 @@ type Table<COL, ROW> = {
 export type Column = ReactDataGrid_Column<Row>
 
 export type Row = {
-    [PLACEHOLDER.SELECTOR_COLUMN_KEY]: React.ReactElement
     readonly [PLACEHOLDER.ROW_INDEX_KEY]: number
     readonly [PM.UID_KEY]: number
     [key: string]: unknown

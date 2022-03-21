@@ -73,7 +73,11 @@ CREATE TABLE jt_columns(
     _id SERIAL PRIMARY KEY,
     jt_id INTEGER NOT NULL,
     join_id INTEGER NULL,
-    column_id INTEGER NOT NULL
+    column_id INTEGER NOT NULL,
+    -- custom metadata
+    "displayName" TEXT NULL,
+    editable INTEGER DEFAULT 1 NOT NULL,
+    editor TEXT NULL
 );
 
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');

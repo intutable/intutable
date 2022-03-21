@@ -4,7 +4,6 @@ import { PLACEHOLDER } from "./PLACEHOLDER_KEYS"
 export const serialize = (row: Row): Row.Serialized => {
     const sRow = { ...row } as Row.Serialized
     delete sRow[PLACEHOLDER.ROW_INDEX_KEY]
-    delete sRow[PLACEHOLDER.SELECTOR_COLUMN_KEY]
     return sRow
 }
 
