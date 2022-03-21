@@ -1,9 +1,11 @@
 import {
     changeColumnAttributes,
-    getJtInfo,
+    getColumnInfo,
     removeColumnFromJt,
 } from "@intutable/join-tables/dist/requests"
-import { JtDescriptor, JtInfo } from "@intutable/join-tables/dist/types"
+import {
+    ColumnDescriptor
+} from "@intutable/join-tables/dist/types"
 import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest, Parser } from "api/utils"
 import { User } from "auth"
@@ -17,27 +19,18 @@ const PATCH = async (
     id: PM.Column.ID
 ) => {
     try {
-        const { user, joinTable, update } = req.body as {
+        const { user, update } = req.body as {
             user: User
-            joinTable: JtDescriptor
             update: Column.Serialized
         }
 
         const deparsedUpdate = Parser.Column.deparse(update, id)
 
-        // change property in join-tables
-        await coreRequest(
+        // change property in join-tables, underlying table column is never used
+        const updatedColumn = await coreRequest<ColumnDescriptor>(
             changeColumnAttributes(id, deparsedUpdate.attributes),
             user.authCookie
         )
-
-        const updatedColumn = await coreRequest<JtInfo>(
-            getJtInfo(joinTable.id),
-            user.authCookie
-        ).then(info => info.columns.find(c => c.id === id))
-
-        if (updatedColumn == null)
-            throw new Error("Internal Error: Column not found after update")
 
         res.status(200).json(updatedColumn)
     } catch (err) {
@@ -52,25 +45,19 @@ const DELETE = async (
     id: PM.Column.ID
 ) => {
     try {
-        const { user, joinTable } = req.body as {
-            joinTable: JtDescriptor
+        const { user } = req.body as {
             user: User
         }
-
-        const info = await coreRequest<JtInfo>(
-            getJtInfo(joinTable.id),
+        const column = await coreRequest<ColumnDescriptor>(
+            getColumnInfo(id),
             user.authCookie
         )
+        if (column.joinId !== null)
+            throw new Error(
+                "cannot delete column of other (join) table."
+                    + ` ID: ${id}`
+            )
 
-        const column = info.columns.find(c => c.id === id)!
-        if (!column) {
-            res.status(400).json({
-                error: `no column with ID ${id} in join table #${joinTable.id}`,
-            })
-            return
-        }
-
-        // delete column in join-tables
         await coreRequest(removeColumnFromJt(id))
         await coreRequest(removeColumn(column.parentColumnId))
 
