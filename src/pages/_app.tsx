@@ -10,6 +10,7 @@ import { AuthProvider } from "context"
 import createTheme from "theme/utils"
 import { parseResponse, logger } from "api/middelware"
 import { SWRConfig } from "swr"
+import { fetchWithUser } from "api"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void
@@ -76,7 +77,12 @@ const MyApp = (props: AppProps) => {
             </Head>
 
             <AuthProvider>
-                <SWRConfig value={{ use: [logger, parseResponse] }}>
+                <SWRConfig
+                    value={{
+                        fetcher: fetchWithUser, // TODO: change this
+                        use: [logger, parseResponse],
+                    }}
+                >
                     <ThemeTogglerContext.Provider value={colorMode}>
                         <ThemeProvider theme={theme}>
                             <SnackbarProvider maxSnack={5}>

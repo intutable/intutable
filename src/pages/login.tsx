@@ -1,6 +1,7 @@
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
 import { Auth } from "auth"
+import { useUser } from "auth/useUser"
 import Title from "components/Head/Title"
 import { Paper } from "components/LoginOutRegister/Paper"
 import { AUTH_COOKIE_KEY, useAuth } from "context"
@@ -31,16 +32,16 @@ const textFieldStyle: SxProps<Theme> = {
 
 const Login: NextPage = () => {
     const router = useRouter()
-    const errorMessage =
-        typeof router.query.error === "string"
-            ? new Error(router.query.error)
-            : Array.isArray(router.query.error)
-            ? new Error(router.query.error.toString())
-            : null
-    const { enqueueSnackbar } = useSnackbar()
-    const { user, login } = useAuth()
 
-    const [loading, setLoading] = useState<boolean>(false)
+    const errorMessage = makeError(router.query.error)
+
+    const { mutateUser } = useUser({
+        redirectTo: "/profile-sg",
+        redirectIfFound: true,
+    })
+
+    const { enqueueSnackbar } = useSnackbar()
+
     const [usernameValid, setUsernameValid] = useState<Error | true | null>(
         null
     )
@@ -51,8 +52,6 @@ const Login: NextPage = () => {
         username: "",
         password: "",
     })
-    // TODO: implement error handling correctly
-    const [error, setError] = useState<Error | null>(errorMessage)
 
     const handleUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value
@@ -69,10 +68,6 @@ const Login: NextPage = () => {
         setPasswordValid(isValid)
     }
 
-    useEffect(() => {
-        if (error) enqueueSnackbar(error.message, { variant: "error" })
-    }, [error, enqueueSnackbar])
-
     const handleEnter = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
             e.preventDefault()
@@ -83,16 +78,22 @@ const Login: NextPage = () => {
     const handleLogin = async () => {
         if (usernameValid !== true || passwordValid !== true || error != null)
             return
+
+        const body = {
+            username: form.username,
+            password: form.password,
+        }
+
         try {
-            setLoading(true)
-            await login(form.username, form.password)
-            router.push("/")
-        } catch (err) {
-            const _error = makeError(err)
-            setError(_error)
-            enqueueSnackbar(_error.message, { variant: "error" })
-        } finally {
-            setLoading(false)
+            mutateUser(
+                await fetchJSON("/api/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                })
+            )
+        } catch (error) {
+            enqueueSnackbar(makeError(error).message, { variant: "error" })
         }
     }
 
@@ -112,7 +113,7 @@ const Login: NextPage = () => {
                 <Paper
                     mode="login"
                     handleAction={handleLogin}
-                    loading={loading}
+                    loading={false}
                     disabled={
                         usernameValid instanceof Error ||
                         usernameValid == null ||
