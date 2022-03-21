@@ -3,16 +3,15 @@ import {
     getJtData,
     renameJt,
 } from "@intutable/join-tables/dist/requests"
-import { JtData } from "@intutable/join-tables/dist/types"
+import { JtData, JtOptions } from "@intutable/join-tables/dist/types"
 import { removeTable } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
 /**
- * GET a single table @type {PM.Table}.
+ * GET a single join table's data @type {JtData}.
  *
  * @tutorial
  * ```
@@ -25,7 +24,7 @@ import { makeError } from "utils/makeError"
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    id: PM.Table.ID
+    id: JtDescriptor["id"]
 ) => {
     try {
         const { user } = req.body as {
@@ -46,7 +45,7 @@ const GET = async (
 
 /**
  * PATCH/update the name of a single table.
- * Returns the updated table {@type {PM.Table}}.
+ * Returns the updated join table {@type {JtDescriptor}}.
  *
  * // TODO: In a future version this api point will be able to adjust more than the name.
  *
@@ -55,23 +54,23 @@ const GET = async (
  * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
  * - Body: {
  *  user: {@type {User}}
- *  newName: {@type {PM.Table.Name}}
+ *  newName: {@type {string}}
  * }
  * ```
  */
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    id: PM.Table.ID
+    id: JtDescriptor["id"]
 ) => {
     try {
         const { user, newName } = req.body as {
             user: User
-            newName: PM.Table.Name
+            newName: JtDescriptor["name"]
         }
 
         // rename table in join-tables
-        const updatedTable = await coreRequest<PM.Table>(
+        const updatedTable = await coreRequest<JtDescriptor>(
             renameJt(id, newName),
             user.authCookie
         )
@@ -97,7 +96,7 @@ const PATCH = async (
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    id: PM.Table.ID
+    id: JtDescriptor["id"]
 ) => {
     try {
         const { user } = req.body as {
@@ -105,7 +104,8 @@ const DELETE = async (
         }
 
         // delete table in project-management
-        await coreRequest(removeTable(id), user.authCookie)
+        const options = await coreRequest<JtOptions>(getJtOptions(id))
+        await coreRequest(removeTable(options.tableId), user.authCookie)
 
         // delete table in join-tables
         await coreRequest(deleteJt(id), user.authCookie)

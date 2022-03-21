@@ -1,10 +1,13 @@
+import { TableDescriptor } from "@intutable/project-management/dist/types"
 import { createJt } from "@intutable/join-tables/dist/requests"
 import {
     ColumnOptions,
     JtDescriptor,
     RowOptions,
 } from "@intutable/join-tables/dist/types"
-import { createTableInProject } from "@intutable/project-management/dist/requests"
+import {
+    createTableInProject
+} from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -13,18 +16,18 @@ import { makeError } from "utils/makeError"
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { user, project, tableName, columnOptions, rowOptions } =
+        const { user, project, name, columnOptions, rowOptions } =
             req.body as {
                 user: User
                 project: PM.Project
-                tableName: PM.Table.Name
+                name: PM.Table.Name
                 columnOptions: ColumnOptions
                 rowOptions: RowOptions
             }
 
         // create table in project-management
-        const table = await coreRequest<PM.Table>(
-            createTableInProject(user.id, project.id, tableName),
+        const table = await coreRequest<TableDescriptor>(
+            createTableInProject(user.id, project.id, name),
             user.authCookie
         )
 

@@ -1,3 +1,4 @@
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { listJts } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
@@ -12,7 +13,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
             project: PM.Project
         }
 
-        const tables = await coreRequest<PM.Table[]>(
+        const tables = await coreRequest<JtDescriptor[]>(
             listJts(project.id),
             user.authCookie
         )
