@@ -15,6 +15,7 @@ import {
 import {
     createColumnInTable,
     removeColumn,
+    changeColumnKey,
     changeColumnName,
 } from "./endpoints/column"
 import { updateRow, createRow, deleteRow } from "./endpoints/row"
@@ -35,6 +36,7 @@ export const makeAPI = (user: User) =>
         put: {
             projectName: changeProjectName.bind(null, user),
             tableName: changeTableName.bind(null, user),
+            columnKey: changeColumnKey.bind(null, user),
             columnName: changeColumnName.bind(null, user),
             columnAttribute: () => "not implemented",
             row: updateRow.bind(null, user),

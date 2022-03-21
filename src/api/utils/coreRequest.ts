@@ -32,7 +32,7 @@ export const coreRequest = <T = unknown>(
     const method = request.method
     delete request.channel
     delete request.method
-    fetch(CORE_ENDPOINT + "/request/" + channel + "/" + method, {
+    return fetch(CORE_ENDPOINT + "/request/" + channel + "/" + method, {
         method: "post",
         headers: {
             "Content-Type": "application/json",

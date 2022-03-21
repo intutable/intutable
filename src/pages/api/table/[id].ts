@@ -2,8 +2,13 @@ import {
     deleteJt,
     getJtData,
     renameJt,
+    getJtOptions,
 } from "@intutable/join-tables/dist/requests"
-import { JtData, JtOptions } from "@intutable/join-tables/dist/types"
+import {
+    JtDescriptor,
+    JtData,
+    JtOptions,
+} from "@intutable/join-tables/dist/types"
 import { removeTable } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"

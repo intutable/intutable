@@ -1,8 +1,8 @@
 import {
-    getProjects,
-    createProject,
-    changeProjectName,
-    removeProject
+    getProjects as getProjectsR,
+    createProject as createProjectR,
+    changeProjectName as changeProjectNameR,
+    removeProject as removeProjectR
 } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils/coreRequest"
 import type { User } from "auth"
@@ -19,7 +19,7 @@ import { PMTypes as PM } from "types"
  */
 export const getProjects = async (user: User): Promise<PM.Project[]> => {
     const coreResponse = await coreRequest(
-        getProjects(user.id),
+        getProjectsR(user.id),
         user.authCookie
     )
 
@@ -33,7 +33,7 @@ export const createProject = async (
     user: User,
     newProject: PM.Project.Name
 ): Promise<void> => {
-    await coreRequest(createProject(user.id, newProject), user.authCookie)
+    await coreRequest(createProjectR(user.id, newProject), user.authCookie)
 }
 
 export const changeProjectName = async (
@@ -41,12 +41,12 @@ export const changeProjectName = async (
     projectId: PM.Project.ID,
     newName: PM.Project.Name
 ): Promise<void> => {
-    await coreRequest(changeProjectName(projectId, newName), user.authCookie)
+    await coreRequest(changeProjectNameR(projectId, newName), user.authCookie)
 }
 
 export const removeProject = async (
     user: User,
     projectId: PM.Project.ID
 ): Promise<void> => {
-    await coreRequest(removeProject(projectId)), user.authCookie)
+    await coreRequest(removeProjectR(projectId), user.authCookie)
 }

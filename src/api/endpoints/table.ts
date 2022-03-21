@@ -1,9 +1,9 @@
 import {
-    getTablesFromProject,
-    getTableData,
-    createTableInProject,
-    removeTable,
-    changeTableName,
+    getTablesFromProject as getTablesFromProjectR,
+    getTableData as getTableDataR,
+    createTableInProject as createTableInProjectR,
+    removeTable as removeTableR,
+    changeTableName as changeTableNameR,
 } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils/coreRequest"
 import type { User } from "auth"
@@ -21,7 +21,7 @@ export const getTablesFromProject = async (
     projectId: number
 ): Promise<PM.Table[]> => {
     const coreResponse = await coreRequest(
-        getTablesFromProject(projectId),
+        getTablesFromProjectR(projectId),
         user.authCookie
     )
     return coreResponse as PM.Table[]
@@ -39,7 +39,7 @@ export const getTableData = async (
     tableId: PM.Table.ID
 ): Promise<TableData.Serialized> => {
     const coreResponse = (await coreRequest(
-        getTableData(tableId),
+        getTableDataR(tableId),
         user.authCookie
     )) as TableData.DBSchema
     return Parser.Table.parse(coreResponse)
@@ -51,7 +51,7 @@ export const createTableInProject = async (
     name: PM.Table.Name
 ): Promise<void> => {
     await coreRequest(
-        createTableInProject(user.id, projectId, name),
+        createTableInProjectR(user.id, projectId, name),
         user.authCookie
     )
 }
@@ -60,7 +60,7 @@ export const removeTable = async (
     user: User,
     id: PM.Table.ID
 ): Promise<void> => {
-    await coreRequest(removeTable(id), user.authCookie)
+    await coreRequest(removeTableR(id), user.authCookie)
 }
 
 export const changeTableName = async (
@@ -68,5 +68,5 @@ export const changeTableName = async (
     id: PM.Table.ID,
     newName: PM.Table.Name
 ): Promise<void> => {
-    await coreRequest(changeTableName(id, newName), user.authCookie)
+    await coreRequest(changeTableNameR(id, newName), user.authCookie)
 }
