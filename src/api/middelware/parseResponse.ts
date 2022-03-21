@@ -1,4 +1,3 @@
-import { isRoute, Route } from "api"
 import { DeSerialize, Parser } from "api/utils"
 import { Middleware, SWRHook } from "swr"
 import { TableData } from "types"

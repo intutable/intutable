@@ -1,8 +1,6 @@
 import { User } from "auth"
 import type { Fetcher } from "swr"
-import { Route } from "./routes"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
-const CORE = process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 
 /**
  * Fetcher function for use with useSWR hook
@@ -14,11 +12,11 @@ export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
  * Fetcher function (with user) for use with useSWR hook
  */
 export const fetchWithUser = (
-    url: Route,
+    url: string,
     user: User,
     body: RequestInit["body"]
 ) =>
-    fetch(CORE + url, {
+    fetch(url, {
         method: "post",
         headers: {
             "Content-Type": "application/json",

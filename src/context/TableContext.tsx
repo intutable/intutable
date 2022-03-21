@@ -48,7 +48,7 @@ export type TabletCtxProviderProps = {
 }
 
 export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
-    const { user, API } = useAuth()
+    const { user } = useAuth()
 
     const { data, error, mutate } = useSWR<TableData>(
         user ? [Routes.get.table, user, { tableId: props.table.id }] : null,

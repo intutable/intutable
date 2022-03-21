@@ -1,4 +1,3 @@
-import { makeAPI } from "api"
 import { Auth, User } from "auth"
 import { useRouter } from "next/router"
 import React, { useEffect, useState } from "react"
@@ -10,13 +9,11 @@ export type AuthContextProps = {
     loading: boolean
     login: (username: string, password: string) => Promise<void>
     logout: () => Promise<void>
-    API: ReturnType<typeof makeAPI> | null
 }
 
 const initialState: AuthContextProps = {
     user: null,
     loading: false,
-    API: null,
     login: undefined!,
     logout: undefined!,
 }
@@ -73,7 +70,6 @@ export const AuthProvider: React.FC = props => {
                 loading,
                 login,
                 logout,
-                API: user ? makeAPI(user) : null,
             }}
         >
             {props.children}

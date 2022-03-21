@@ -1,24 +1,14 @@
 import {
-    TableDescriptor,
-    ColumnDescriptor as PM_Column,
-} from "@intutable/project-management/dist/types"
-import {
-    createColumnInTable,
-    getTableData,
-    removeColumn,
-} from "@intutable/project-management/dist/requests"
-import {
-    JtDescriptor,
-    ColumnDescriptor as JT_Column,
-} from "@intutable/join-tables/dist/types"
-import {
-    addColumnToJt,
     changeColumnAttributes,
+    getJtInfo,
+    removeColumnFromJt,
 } from "@intutable/join-tables/dist/requests"
+import { JtDescriptor, JtInfo } from "@intutable/join-tables/dist/types"
+import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest, Parser } from "api/utils"
 import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { Column, PMTypes as PM, TableData } from "types"
+import { Column, PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
 const PATCH = async (
@@ -27,21 +17,29 @@ const PATCH = async (
     id: PM.Column.ID
 ) => {
     try {
-        const { user, update } = req.body as {
+        const { user, joinTable, update } = req.body as {
             user: User
+            joinTable: JtDescriptor
             update: Column.Serialized
         }
 
         const deparsedUpdate = Parser.Column.deparse(update, id)
 
-        // change property in project-management
+        // change property in join-tables
         await coreRequest(
             changeColumnAttributes(id, deparsedUpdate.attributes),
             user.authCookie
         )
 
-        const updatedColumn = await coreRequest<JT_Column>()
-        res.status(200).send()
+        const updatedColumn = await coreRequest<JtInfo>(
+            getJtInfo(joinTable.id),
+            user.authCookie
+        ).then(info => info.columns.find(c => c.id === id))
+
+        if (updatedColumn == null)
+            throw new Error("Internal Error: Column not found after update")
+
+        res.status(200).json(updatedColumn)
     } catch (err) {
         const error = makeError(err)
         res.status(500).json({ error: error.message })
@@ -54,12 +52,27 @@ const DELETE = async (
     id: PM.Column.ID
 ) => {
     try {
-        const { user } = req.body as {
+        const { user, joinTable } = req.body as {
+            joinTable: JtDescriptor
             user: User
         }
 
-        // delete column in project-management
-        await coreRequest(removeColumn(id), user.authCookie)
+        const info = await coreRequest<JtInfo>(
+            getJtInfo(joinTable.id),
+            user.authCookie
+        )
+
+        const column = info.columns.find(c => c.id === id)!
+        if (!column) {
+            res.status(400).json({
+                error: `no column with ID ${id} in join table #${joinTable.id}`,
+            })
+            return
+        }
+
+        // delete column in join-tables
+        await coreRequest(removeColumnFromJt(id))
+        await coreRequest(removeColumn(column.parentColumnId))
 
         res.status(200).send({})
     } catch (err) {
