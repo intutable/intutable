@@ -40,8 +40,6 @@ CREATE TABLE columns(
     "columnName" TEXT,
     "tableId" INTEGER,
     type TEXT default 'string' NOT NULL,
-    editable INTEGER DEFAULT 1 NOT NULL,
-    "displayName" TEXT NULL,
     FOREIGN KEY("tableId") REFERENCES tables(_id)
 );
 
@@ -93,17 +91,22 @@ create table if not exists p1_personen(
 );
 insert into tables(_id, key, name, "ownerId") values(1, 'p1_personen', 'personen', 1);
 insert into projecttables("projectId", "tableId") values(1, 1);
-insert into columns(_id, "columnName", "tableId", "displayName") values(1, '_id', 1, 'ID');
-insert into columns(_id, "columnName", "tableId", "displayName") values(2, 'vorname', 1, 'Vorname');
-insert into columns(_id, "columnName", "tableId", "displayName") values(3, 'nachname', 1, 'Nachname');
-insert into columns(_id, "columnName", "tableId", "displayName") values(4, 'email', 1, 'E-Mail');
+insert into columns(_id, "columnName", "tableId") values(1, '_id', 1);
+insert into columns(_id, "columnName", "tableId") values(2, 'vorname', 1);
+insert into columns(_id, "columnName", "tableId") values(3, 'nachname', 1);
+insert into columns(_id, "columnName", "tableId") values(4, 'email', 1);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
-  VALUES(1, 'Personen', 1, NULL, '{conditions: [], groupColumns: [], sortColumns: []}')
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(1, 1, NULL, 1);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(2, 1, NULL, 2);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(3, 1, NULL, 3);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(4, 1, NULL, 4);
+  VALUES(1, 'Personen', 1, NULL,
+         '{conditions: [], groupColumns: [], sortColumns: []}');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(1, 1, NULL, 1, 'ID', 'NumberEditor');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(2, 1, NULL, 2, 'Vorname', 'StringEditor');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(3, 1, NULL, 3, 'Nachname', 'StringEditor');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(4, 1, NULL, 4, 'E-Mail', 'StringEditor');
 
 
 create table if not exists p1_kommissionen(
@@ -114,17 +117,22 @@ create table if not exists p1_kommissionen(
 );
 insert into tables(_id, key, name, "ownerId") values(2, 'p1_kommissionen', 'kommissionen', 1);
 insert into projecttables("projectId", "tableId") values(1, 2);
-insert into columns(_id, "columnName", "tableId", "displayName") values(5, '_id', 2, 'ID');
-insert into columns(_id, "columnName", "tableId", "displayName") values(6, 'bezeichnung', 2, 'Bezeichnung');
-insert into columns(_id, "columnName", "tableId", "displayName") values(7, 'gruendung', 2, 'Gründung');
-insert into columns(_id, "columnName", "tableId", "displayName") values(8, 'aufloesung', 2, 'Auflösung');
+insert into columns(_id, "columnName", "tableId") values(5, '_id', 2);
+insert into columns(_id, "columnName", "tableId") values(6, 'bezeichnung', 2);
+insert into columns(_id, "columnName", "tableId") values(7, 'gruendung', 2);
+insert into columns(_id, "columnName", "tableId") values(8, 'aufloesung', 2);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
-  VALUES(2, 'Kommissionen', 2, NULL, '{conditions: [], groupColumns: [], sortColumns: []}')
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(5, 2, NULL, 5);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(6, 2, NULL, 6);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(7, 2, NULL, 7);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(8, 2, NULL, 8);
+  VALUES(2, 'Kommissionen', 2, NULL,
+         '{conditions: [], groupColumns: [], sortColumns: []}');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(5, 2, NULL, 5, 'ID', 'NumberEditor');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(6, 2, NULL, 6, 'Bezeichnung', 'StringEditor');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(7, 2, NULL, 7, 'Gründung', 'StringEditor');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(8, 2, NULL, 8, 'Auflösung', 'StringEditor');
 
 
 create table if not exists p1_einrichtungen(
@@ -132,17 +140,22 @@ create table if not exists p1_einrichtungen(
     name text,
     adresse text
 );
-insert into tables(key, name, "ownerId") values('p1_einrichtungen', 'einrichtungen', 1);
+insert into tables(_id, key, name, "ownerId")
+  values(3, 'p1_einrichtungen', 'einrichtungen', 1);
 insert into projecttables("projectId", "tableId") values(1, 3);
-insert into columns(_id, "columnName", "tableId", "displayName") values(9, '_id', 3, 'ID');
-insert into columns(_id, "columnName", "tableId", "displayName") values(10, 'name', 3, 'Name');
-insert into columns(_id, "columnName", "tableId", "displayName") values(11, 'adresse', 3, 'Vorname');
+insert into columns(_id, "columnName", "tableId") values(9, '_id', 3);
+insert into columns(_id, "columnName", "tableId") values(10, 'name', 3);
+insert into columns(_id, "columnName", "tableId") values(11, 'adresse', 3);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
-  VALUES(3, 'Einrichtungen', 3, NULL, '{conditions: [], groupColumns: [], sortColumns: []}')
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(9, 3, NULL, 9);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(10, 3, NULL, 10);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id) VALUES(11, 3, NULL, 11);
+  VALUES(3, 'Einrichtungen', 3, NULL,
+         '{conditions: [], groupColumns: [], sortColumns: []}');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(9, 3, NULL, 9, 'ID', 'NumberEditor');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+  VALUES(10, 3, NULL, 10, 'Name', 'StringEditor');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
+VALUES(11, 3, NULL, 11, 'Adresse', 'StringEditor');
 
 
 -- object data
