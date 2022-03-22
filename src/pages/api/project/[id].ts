@@ -5,6 +5,7 @@ import {
 } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
+import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
@@ -68,15 +69,14 @@ const PATCH = async (
     id: PM.Project.ID
 ) => {
     try {
-        const { user, newName } = req.body as {
-            user: User
+        const { newName } = req.body as {
             newName: PM.Table.Name
         }
 
         // rename project in project-management
-        const updatedProject = await coreRequest(
+        const updatedProject = await coreRequest<PM.Project>( // TODO: does not return the proper type
             changeProjectName(id, newName),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).json(updatedProject)
@@ -103,12 +103,8 @@ const DELETE = async (
     id: PM.Project.ID
 ) => {
     try {
-        const { user } = req.body as {
-            user: User
-        }
-
         // delete project in project-management
-        await coreRequest(removeProject(id), user.authCookie)
+        await coreRequest(removeProject(id), req.cookies[AUTH_COOKIE_KEY])
 
         res.status(200).send({})
     } catch (err) {
@@ -120,6 +116,8 @@ const DELETE = async (
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const { query, method } = req
     const id = parseInt(query.id as string)
+
+    console.debug(9, id)
 
     switch (method) {
         case "GET":

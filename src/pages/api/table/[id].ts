@@ -11,7 +11,7 @@ import {
 } from "@intutable/join-tables/dist/types"
 import { removeTable } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
-import { User } from "auth"
+import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
 
@@ -32,13 +32,9 @@ const GET = async (
     id: JtDescriptor["id"]
 ) => {
     try {
-        const { user } = req.body as {
-            user: User
-        }
-
         const tableData = await coreRequest<JtData>(
             getJtData(id),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).json(tableData)
@@ -69,15 +65,14 @@ const PATCH = async (
     id: JtDescriptor["id"]
 ) => {
     try {
-        const { user, newName } = req.body as {
-            user: User
+        const { newName } = req.body as {
             newName: JtDescriptor["name"]
         }
 
         // rename table in join-tables
         const updatedTable = await coreRequest<JtDescriptor>(
             renameJt(id, newName),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).json(updatedTable)
@@ -104,16 +99,15 @@ const DELETE = async (
     id: JtDescriptor["id"]
 ) => {
     try {
-        const { user } = req.body as {
-            user: User
-        }
-
         // delete table in project-management
         const options = await coreRequest<JtOptions>(getJtOptions(id))
-        await coreRequest(removeTable(options.tableId), user.authCookie)
+        await coreRequest(
+            removeTable(options.tableId),
+            req.cookies[AUTH_COOKIE_KEY]
+        )
 
         // delete table in join-tables
-        await coreRequest(deleteJt(id), user.authCookie)
+        await coreRequest(deleteJt(id), req.cookies[AUTH_COOKIE_KEY])
 
         res.status(200).send({})
     } catch (err) {

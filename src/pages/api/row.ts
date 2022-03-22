@@ -1,7 +1,7 @@
 import { deleteRow, insert, update } from "@intutable/database/dist/requests"
 import { TableDescriptor } from "@intutable/join-tables/dist/types"
 import { coreRequest } from "api/utils"
-import { User } from "auth"
+import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { PM as PMKeys, PMTypes as PM, Row } from "types"
 import Obj from "types/Obj"
@@ -9,8 +9,7 @@ import { makeError } from "utils/makeError"
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { user, basetable, values } = req.body as {
-            user: User
+        const { basetable, values } = req.body as {
             table: PM.Table
             basetable: TableDescriptor
             values: Obj
@@ -22,7 +21,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                 table: `key`,
                 values,
             }),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).send(rowId)
@@ -34,8 +33,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { user, basetable, condition, rowUpdate } = req.body as {
-            user: User
+        const { basetable, condition, rowUpdate } = req.body as {
             basetable: TableDescriptor
             newName: PM.Table.Name
             condition: unknown[]
@@ -47,7 +45,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
                 condition,
                 update: rowUpdate,
             }),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).json(updatedRow)
@@ -59,13 +57,15 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { user, basetable, condition } = req.body as {
-            user: User
+        const { basetable, condition } = req.body as {
             basetable: TableDescriptor
             condition: unknown[]
         }
 
-        await coreRequest(deleteRow(basetable.key, condition), user.authCookie)
+        await coreRequest(
+            deleteRow(basetable.key, condition),
+            req.cookies[AUTH_COOKIE_KEY]
+        )
 
         res.status(200).send({})
     } catch (err) {

@@ -1,22 +1,24 @@
+import { JtData } from "@intutable/join-tables/dist/types"
 import { DeSerialize, Parser } from "api/utils"
 import { Middleware, SWRHook } from "swr"
 import { TableData } from "types"
 
-export const parseResponse: Middleware =
+export const parseTableData: Middleware =
     (useSWRNext: SWRHook) => (key, fetcher, config) => {
         const swr = useSWRNext(key, fetcher, config)
 
-        const _key: string = Array.isArray(key) ? key[0] : key
-        if (isRoute(_key) === false) return swr
+        const route: string = Array.isArray(key) ? key[0] : key
 
-        const route = _key as Route
-        if (route !== "/request/project-management/getTableData") return swr
+        const routeRegex = RegExp("/api/table/\\[\\d*\\]") // "/api/table/[id]"
+        if (routeRegex.test(route) === false || swr.data == null) return swr
 
-        if (swr.data == null) return swr
+        const unparsedTableData = swr.data as unknown as JtData
 
-        const unparsedTableData = swr.data as unknown as TableData.DBSchema
+        // parse
         const parsedTableData: TableData.Serialized =
             Parser.Table.parse(unparsedTableData)
+
+        // deserialize
         const deserializedTableData: TableData.Deserialized =
             DeSerialize.Table.deserialize(parsedTableData)
 

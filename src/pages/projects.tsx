@@ -1,13 +1,3 @@
-/**
- * Don't worry, this messy file will be deprecated in the future.
- * No need to split this up.
- */
-
-import { makeAPI, Routes } from "api"
-import { Auth } from "auth"
-import { useProjectList } from "hooks"
-import Title from "components/Head/Title"
-import { AUTH_COOKIE_KEY } from "context"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -20,7 +10,10 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import { isValidName, prepareName } from "utils/validateName"
+import { fetchWithUser } from "api"
+import { Auth } from "auth"
+import Title from "components/Head/Title"
+import { AUTH_COOKIE_KEY, useAuth } from "context"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
@@ -29,8 +22,9 @@ import type {
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
-import { SWRConfig, unstable_serialize } from "swr"
+import useSWR, { SWRConfig, unstable_serialize } from "swr"
 import type { PMTypes as PM } from "types"
+import { isValidName, prepareName } from "utils/validateName"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -167,11 +161,19 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 const ProjectList: React.FC = () => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
+    const { user } = useAuth()
 
-    const { projectList, createProject, renameProject, deleteProject, error } =
-        useProjectList()
+    const {
+        data: projects,
+        error,
+        mutate,
+    } = useSWR<PM.Project[]>(
+        user ? [`/api/projects/${user.id}`, user, undefined, "GET"] : null,
+        fetchWithUser
+    )
 
     const handleCreateProject = async () => {
+        if (projects == null || user == null) return
         try {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
@@ -181,7 +183,7 @@ const ProjectList: React.FC = () => {
                 enqueueSnackbar(isValid.message, { variant: "error" })
                 return
             }
-            const nameIsTaken = projectList!
+            const nameIsTaken = projects!
                 .map((proj: PM.Project) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
@@ -191,7 +193,13 @@ const ProjectList: React.FC = () => {
                 )
                 return
             }
-            await createProject(name)
+            await fetchWithUser<PM.Project>(
+                "/api/project",
+                user,
+                { user, name },
+                "POST"
+            )
+            await mutate()
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })
@@ -203,10 +211,11 @@ const ProjectList: React.FC = () => {
     }
 
     const handleRenameProject = async (project: PM.Project) => {
+        if (projects == null || user == null) return
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
-            const nameIsTaken = projectList!
+            const nameIsTaken = projects!
                 .map((proj: PM.Project) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
@@ -216,7 +225,13 @@ const ProjectList: React.FC = () => {
                 )
                 return
             }
-            await renameProject(project, name)
+            await fetchWithUser<PM.Project>(
+                `/api/project/${project.id}`,
+                user,
+                { newName: name },
+                "PATCH"
+            )
+            await mutate()
             enqueueSnackbar("Das Projekt wurde umbenannt.", {
                 variant: "success",
             })
@@ -228,12 +243,19 @@ const ProjectList: React.FC = () => {
     }
 
     const handleDeleteProject = async (project: PM.Project) => {
+        if (projects == null || user == null) return
         try {
             const confirmed = confirm(
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            await deleteProject(project)
+            await fetchWithUser(
+                `/api/project/${project.id}`,
+                user,
+                undefined,
+                "DELETE"
+            )
+            await mutate()
             enqueueSnackbar("Projekt wurde gelöscht.", {
                 variant: "success",
             })
@@ -245,7 +267,7 @@ const ProjectList: React.FC = () => {
     }
 
     if (error) return <>Error: {error}</>
-    if (projectList == null) return <CircularProgress />
+    if (projects == null) return <CircularProgress />
 
     return (
         <>
@@ -254,7 +276,7 @@ const ProjectList: React.FC = () => {
                 Deine Projekte
             </Typography>
             <Grid container spacing={2}>
-                {projectList.map((proj: PM.Project, i: number) => (
+                {projects.map((proj: PM.Project, i: number) => (
                     <Grid item key={i}>
                         <ProjectCard
                             handleDelete={handleDeleteProject}
@@ -305,19 +327,20 @@ export const getServerSideProps: GetServerSideProps<
                 destination: "/login",
             },
         }
-    const API = makeAPI(user)
 
-    const list = await API.get.projectList()
+    const list = await fetchWithUser<PM.Project[]>(
+        `/api/projects/${user.id}`, // Note: userId is tmp
+        user,
+        undefined,
+        "GET"
+    )
     if (list == null) return { notFound: true }
 
     return {
         props: {
             fallback: {
-                [unstable_serialize([
-                    Routes.get.projectList,
-                    user,
-                    { userId: user.id },
-                ])]: list,
+                [unstable_serialize(["/api/projects", user, { user: user }])]:
+                    list,
             },
         },
     }

@@ -3,12 +3,10 @@ import {
     getColumnInfo,
     removeColumnFromJt,
 } from "@intutable/join-tables/dist/requests"
-import {
-    ColumnDescriptor
-} from "@intutable/join-tables/dist/types"
+import { ColumnDescriptor } from "@intutable/join-tables/dist/types"
 import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest, Parser } from "api/utils"
-import { User } from "auth"
+import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Column, PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
@@ -19,8 +17,7 @@ const PATCH = async (
     id: PM.Column.ID
 ) => {
     try {
-        const { user, update } = req.body as {
-            user: User
+        const { update } = req.body as {
             update: Column.Serialized
         }
 
@@ -29,7 +26,7 @@ const PATCH = async (
         // change property in join-tables, underlying table column is never used
         const updatedColumn = await coreRequest<ColumnDescriptor>(
             changeColumnAttributes(id, deparsedUpdate.attributes),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).json(updatedColumn)
@@ -45,17 +42,13 @@ const DELETE = async (
     id: PM.Column.ID
 ) => {
     try {
-        const { user } = req.body as {
-            user: User
-        }
         const column = await coreRequest<ColumnDescriptor>(
             getColumnInfo(id),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
         if (column.joinId !== null)
             throw new Error(
-                "cannot delete column of other (join) table."
-                    + ` ID: ${id}`
+                "cannot delete column of other (join) table." + ` ID: ${id}`
             )
 
         await coreRequest(removeColumnFromJt(id))

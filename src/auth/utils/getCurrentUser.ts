@@ -1,6 +1,5 @@
 import { coreRequest } from "../../api/utils/coreRequest"
 import { User } from "auth"
-import { CHANNEL } from "api/constants"
 
 /**
  * Check if logged into core by using the session cookie.
@@ -11,7 +10,7 @@ export const getCurrentUser = async (
     try {
         const user = (await coreRequest(
             {
-                channel: CHANNEL.USER_AUTHENTICATION,
+                channel: "user-authentication",
                 method: getCurrentUser.name,
             },
             authCookie

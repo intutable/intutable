@@ -1,19 +1,15 @@
-import { PMTypes as PM } from "types"
 import { getProjects } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
-import { User } from "auth"
+import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
+import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
-const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+const GET = async (req: NextApiRequest, res: NextApiResponse, id: number) => {
     try {
-        const { user } = req.body as {
-            user: User
-        }
-
         const projects = await coreRequest<PM.Project[]>(
-            getProjects(user.id),
-            user.authCookie
+            getProjects(id),
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).json(projects)
@@ -23,11 +19,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { method } = req
+    const { query, method } = req
+    const id = parseInt(query.id as string)
+
+    console.log(method)
 
     switch (method) {
         case "GET":
-            GET(req, res)
+            GET(req, res, id)
             break
         default:
             res.setHeader("Allow", ["GET"])

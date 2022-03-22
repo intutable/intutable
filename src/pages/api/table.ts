@@ -11,6 +11,7 @@ import { User } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
+import { AUTH_COOKIE_KEY } from "context/AuthContext"
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
@@ -25,13 +26,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         // create table in project-management
         const table = await coreRequest<TableDescriptor>(
             createTableInProject(user.id, project.id, name),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         // create table in join-tables
         const jtTable = await coreRequest<JtDescriptor>(
             createJt(table.id, table.name, columnOptions, rowOptions, user.id),
-            user.authCookie
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).json(jtTable)

@@ -1,5 +1,6 @@
 import { User } from "auth"
 import type { Fetcher } from "swr"
+import Obj from "types/Obj"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 /**
@@ -11,13 +12,14 @@ export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
 /**
  * Fetcher function (with user) for use with useSWR hook
  */
-export const fetchWithUser = (
+export const fetchWithUser = <T = void>(
     url: string,
     user: User,
-    body: RequestInit["body"]
-) =>
-    fetch(url, {
-        method: "post",
+    body?: Obj,
+    method: "GET" | "POST" | "PATCH" | "DELETE" = "POST"
+): Promise<T> =>
+    fetch(process.env.NEXT_PUBLIC_API_URL! + url, {
+        method: method,
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
@@ -25,8 +27,13 @@ export const fetchWithUser = (
         },
         credentials: "include",
         redirect: "manual",
-        body: JSON.stringify(body),
+        body: body ? JSON.stringify(body) : undefined,
     })
+        // .then(async res => {
+        //     console.log(await res.text())
+        //     console.log(await res.status)
+        //     return res
+        // })
         .then(passedLogin)
         .then(res => res.json())
 
