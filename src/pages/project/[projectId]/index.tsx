@@ -1,16 +1,9 @@
-/**
- * Don't worry, this messy file will be deprecated in the future.
- * No need to split this up.
- */
-
-import { makeAPI, Routes } from "api"
 import type { PMTypes as PM } from "types"
 import { Auth } from "auth"
-import { useTableList } from "hooks"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import Title from "components/Head/Title"
 import Link from "components/Link"
-import { AUTH_COOKIE_KEY } from "context"
+import { AUTH_COOKIE_KEY, useAuth } from "context"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -32,7 +25,9 @@ import type {
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
-import { SWRConfig, unstable_serialize } from "swr"
+import useSWR, { SWRConfig, unstable_serialize } from "swr"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { fetchWithUser } from "api"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -173,9 +168,18 @@ type TableListProps = {
 const TableList: React.FC<TableListProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
+    const { user } = useAuth()
 
-    const { tableList, error, createTable, renameTable, deleteTable } =
-        useTableList(props.project)
+    const {
+        data: tables,
+        error,
+        mutate,
+    } = useSWR<JtDescriptor[]>(
+        user
+            ? [`/api/tables/${props.project.id}`, user, undefined, "GET"]
+            : null,
+        fetchWithUser
+    )
 
     const handleCreateTable = async () => {
         try {
@@ -187,7 +191,7 @@ const TableList: React.FC<TableListProps> = props => {
                 enqueueSnackbar(isValid.message, { variant: "error" })
                 return
             }
-            const nameIsTaken = tableList!
+            const nameIsTaken = tables!
                 .map((tbl: PM.Table) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
@@ -197,7 +201,19 @@ const TableList: React.FC<TableListProps> = props => {
                 )
                 return
             }
-            await createTable(name)
+            await fetchWithUser(
+                "/api/table",
+                user!,
+                {
+                    user,
+                    project: props.project,
+                    name,
+                    columnOptions: {},
+                    rowOptions: {},
+                },
+                "POST"
+            )
+            await mutate()
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })
@@ -212,7 +228,7 @@ const TableList: React.FC<TableListProps> = props => {
         try {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
-            const nameIsTaken = tableList!
+            const nameIsTaken = tables!
                 .map((tbl: PM.Table) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
@@ -222,7 +238,15 @@ const TableList: React.FC<TableListProps> = props => {
                 )
                 return
             }
-            await renameTable(table, name)
+            await fetchWithUser(
+                `/api/table/${table.id}`,
+                user!,
+                {
+                    newName: name,
+                },
+                "PATCH"
+            )
+            await mutate()
             enqueueSnackbar("Die Tabelle wurde umbenannt.", {
                 variant: "success",
             })
@@ -239,7 +263,13 @@ const TableList: React.FC<TableListProps> = props => {
                 "Möchtest du deine Tabelle wirklich löschen?"
             )
             if (!confirmed) return
-            await deleteTable(table)
+            await fetchWithUser(
+                `/api/table/${table.id}`,
+                user!,
+                undefined,
+                "DELETE"
+            )
+            await mutate()
             enqueueSnackbar("Tabelle wurde gelöscht.", {
                 variant: "success",
             })
@@ -251,7 +281,7 @@ const TableList: React.FC<TableListProps> = props => {
     }
 
     if (error) return <>Error: {error}</>
-    if (tableList == null) return <CircularProgress />
+    if (tables == null) return <CircularProgress />
 
     return (
         <>
@@ -261,7 +291,7 @@ const TableList: React.FC<TableListProps> = props => {
                 <Link href={`/projects`}>{props.project.name}</Link>
             </Typography>
             <Grid container spacing={2}>
-                {tableList.map((tbl: PM.Table, i: number) => (
+                {tables.map((tbl: PM.Table, i: number) => (
                     <Grid item key={i}>
                         <TableCard
                             table={tbl}
@@ -320,26 +350,37 @@ export const getServerSideProps: GetServerSideProps<
                 destination: "/login",
             },
         }
-    const API = makeAPI(user)
 
     const projectId: PM.Project.ID = Number.parseInt(query.projectId)
 
-    const project = (await API.get.projectList()).find(
-        (proj: PM.Project) => proj.id === projectId
+    const projects = await fetchWithUser<PM.Project[]>(
+        `/api/projects/${user.id}`,
+        user,
+        undefined,
+        "GET"
     )
+    const project = projects.find(p => p.id === projectId)
     if (project == null) return { notFound: true }
 
-    const list = await API.get.tableList(project.id)
+    const tables = await fetchWithUser<JtDescriptor[]>(
+        `/api/tables/${project.id}`,
+        user,
+        undefined,
+        "GET"
+    )
+
+    console.log(tables)
 
     return {
         props: {
             project: project,
             fallback: {
                 [unstable_serialize([
-                    Routes.get.tableList,
+                    `/api/tables/${project.id}`,
                     user,
-                    { projectId: project.id },
-                ])]: list,
+                    undefined,
+                    "GET",
+                ])]: tables,
             },
         },
     }

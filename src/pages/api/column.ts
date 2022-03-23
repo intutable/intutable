@@ -45,10 +45,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
     switch (req.method) {
         case "POST":
-            POST(req, res)
+            await POST(req, res)
             break
         default:
             res.setHeader("Allow", ["POST"])

@@ -339,8 +339,12 @@ export const getServerSideProps: GetServerSideProps<
     return {
         props: {
             fallback: {
-                [unstable_serialize(["/api/projects", user, { user: user }])]:
-                    list,
+                [unstable_serialize([
+                    `/api/projects/${user.id}`,
+                    user,
+                    undefined,
+                    "GET",
+                ])]: list,
             },
         },
     }

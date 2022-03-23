@@ -6,12 +6,14 @@ import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 
-const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+const GET = async (
+    req: NextApiRequest,
+    res: NextApiResponse,
+    projectId: PM.Project.ID
+) => {
     try {
-        const { project } = req.body as { project: PM.Project }
-
         const tables = await coreRequest<JtDescriptor[]>(
-            listJts(project.id),
+            listJts(projectId),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
@@ -21,13 +23,19 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(500).json({ error: error.message })
     }
 }
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    switch (req.method) {
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
+    const { query, method } = req
+    const projectId = parseInt(query.projectId as string)
+
+    switch (method) {
         case "GET":
-            GET(req, res)
+            await GET(req, res, projectId)
             break
         default:
             res.setHeader("Allow", ["GET"])
-            res.status(405).end(`Method ${req.method} Not Allowed`)
+            res.status(405).end(`Method ${method} Not Allowed`)
     }
 }

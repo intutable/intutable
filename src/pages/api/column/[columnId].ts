@@ -14,18 +14,18 @@ import { makeError } from "utils/makeError"
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    id: PM.Column.ID
+    columnId: PM.Column.ID
 ) => {
     try {
         const { update } = req.body as {
             update: Column.Serialized
         }
 
-        const deparsedUpdate = Parser.Column.deparse(update, id)
+        const deparsedUpdate = Parser.Column.deparse(update, columnId)
 
         // change property in join-tables, underlying table column is never used
         const updatedColumn = await coreRequest<ColumnDescriptor>(
-            changeColumnAttributes(id, deparsedUpdate.attributes),
+            changeColumnAttributes(columnId, deparsedUpdate.attributes),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
@@ -39,19 +39,20 @@ const PATCH = async (
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    id: PM.Column.ID
+    columnId: PM.Column.ID
 ) => {
     try {
         const column = await coreRequest<ColumnDescriptor>(
-            getColumnInfo(id),
+            getColumnInfo(columnId),
             req.cookies[AUTH_COOKIE_KEY]
         )
         if (column.joinId !== null)
             throw new Error(
-                "cannot delete column of other (join) table." + ` ID: ${id}`
+                "cannot delete column of other (join) table." +
+                    ` ID: ${columnId}`
             )
 
-        await coreRequest(removeColumnFromJt(id))
+        await coreRequest(removeColumnFromJt(columnId))
         await coreRequest(removeColumn(column.parentColumnId))
 
         res.status(200).send({})
@@ -61,16 +62,19 @@ const DELETE = async (
     }
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
     const { query, method } = req
-    const id = parseInt(query.id as string)
+    const columnId = parseInt(query.columnId as string)
 
     switch (method) {
         case "PATCH":
-            PATCH(req, res, id)
+            await PATCH(req, res, columnId)
             break
         case "DELETE":
-            DELETE(req, res, id)
+            await DELETE(req, res, columnId)
             break
         default:
             res.setHeader("Allow", ["PATCH", "DELETE"])

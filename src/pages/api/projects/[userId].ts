@@ -5,10 +5,14 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
-const GET = async (req: NextApiRequest, res: NextApiResponse, id: number) => {
+const GET = async (
+    req: NextApiRequest,
+    res: NextApiResponse,
+    userId: number
+) => {
     try {
         const projects = await coreRequest<PM.Project[]>(
-            getProjects(id),
+            getProjects(userId),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
@@ -18,15 +22,16 @@ const GET = async (req: NextApiRequest, res: NextApiResponse, id: number) => {
         res.status(500).json({ error: error.message })
     }
 }
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
     const { query, method } = req
-    const id = parseInt(query.id as string)
-
-    console.log(method)
+    const userId = parseInt(query.userId as string)
 
     switch (method) {
         case "GET":
-            GET(req, res, id)
+            await GET(req, res, userId)
             break
         default:
             res.setHeader("Allow", ["GET"])

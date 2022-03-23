@@ -74,16 +74,19 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
     switch (req.method) {
         case "POST":
-            POST(req, res)
+            await POST(req, res)
             break
         case "PATCH":
-            PATCH(req, res)
+            await PATCH(req, res)
             break
         case "DELETE":
-            DELETE(req, res)
+            await DELETE(req, res)
             break
         default:
             res.status(["HEAD", "GET"].includes(req.method!) ? 500 : 501).send(

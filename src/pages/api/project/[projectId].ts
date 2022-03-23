@@ -1,26 +1,21 @@
 import {
-    deleteJt,
-    getJtData,
-    renameJt,
-    getJtOptions,
-} from "@intutable/join-tables/dist/requests"
-import {
-    JtDescriptor,
-    JtData,
-    JtOptions,
-} from "@intutable/join-tables/dist/types"
-import { removeTable } from "@intutable/project-management/dist/requests"
+    changeProjectName,
+    getProjects,
+    removeProject,
+} from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
+import { User } from "auth"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
+import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
 /**
- * GET a single join table's data @type {JtData}.
+ * GET a single project @type {PM.Project}.
  *
  * @tutorial
  * ```
- * - URL: `/api/table/[id]` e.g. `/api/table/[1]`
+ * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
  * - Body: {
  *  user: {@type {User}}
  * }
@@ -29,15 +24,24 @@ import { makeError } from "utils/makeError"
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    id: JtDescriptor["id"]
+    projectId: PM.Project.ID
 ) => {
     try {
-        const tableData = await coreRequest<JtData>(
-            getJtData(id),
-            req.cookies[AUTH_COOKIE_KEY]
+        const { user } = req.body as {
+            user: User
+        }
+
+        // get all projects from project-management
+        const projects = await coreRequest<PM.Project[]>(
+            getProjects(projectId),
+            user.authCookie
         )
 
-        res.status(200).json(tableData)
+        const project = projects.find(proj => proj)
+        if (project == null)
+            throw new Error(`Could not find project with id: ${projectId}`)
+
+        res.status(200).json(project)
     } catch (err) {
         const error = makeError(err)
         res.status(500).json({ error: error.message })
@@ -45,8 +49,8 @@ const GET = async (
 }
 
 /**
- * PATCH/update the name of a single table.
- * Returns the updated join table {@type {JtDescriptor}}.
+ * PATCH/update the name of a single project.
+ * Returns the updated project {@type {PM.Project}}.
  *
  * // TODO: In a future version this api point will be able to adjust more than the name.
  *
@@ -55,27 +59,27 @@ const GET = async (
  * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
  * - Body: {
  *  user: {@type {User}}
- *  newName: {@type {string}}
+ *  newName: {@type {PM.Table.Name}}
  * }
  * ```
  */
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    id: JtDescriptor["id"]
+    projectId: PM.Project.ID
 ) => {
     try {
         const { newName } = req.body as {
-            newName: JtDescriptor["name"]
+            newName: PM.Table.Name
         }
 
-        // rename table in join-tables
-        const updatedTable = await coreRequest<JtDescriptor>(
-            renameJt(id, newName),
+        // rename project in project-management
+        const updatedProject = await coreRequest<PM.Project>( // TODO: does not return the proper type
+            changeProjectName(projectId, newName),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
-        res.status(200).json(updatedTable)
+        res.status(200).json(updatedProject)
     } catch (err) {
         const error = makeError(err)
         res.status(500).json({ error: error.message })
@@ -83,11 +87,11 @@ const PATCH = async (
 }
 
 /**
- * DELETE a table. Returns an empty object.
+ * DELETE a project. Returns an empty object.
  *
  * @tutorial
  * ```
- * - URL: `/api/table/[id]` e.g. `/api/table/[1]`
+ * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
  * - Body: {
  *  user: {@type {User}}
  * }
@@ -96,18 +100,14 @@ const PATCH = async (
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    id: JtDescriptor["id"]
+    projectId: PM.Project.ID
 ) => {
     try {
-        // delete table in project-management
-        const options = await coreRequest<JtOptions>(getJtOptions(id))
+        // delete project in project-management
         await coreRequest(
-            removeTable(options.tableId),
+            removeProject(projectId),
             req.cookies[AUTH_COOKIE_KEY]
         )
-
-        // delete table in join-tables
-        await coreRequest(deleteJt(id), req.cookies[AUTH_COOKIE_KEY])
 
         res.status(200).send({})
     } catch (err) {
@@ -116,19 +116,22 @@ const DELETE = async (
     }
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
     const { query, method } = req
-    const id = parseInt(query.id as string)
+    const projectId = parseInt(query.projectId as string)
 
     switch (method) {
         case "GET":
-            GET(req, res, id)
+            await GET(req, res, projectId)
             break
         case "PATCH":
-            PATCH(req, res, id)
+            await PATCH(req, res, projectId)
             break
         case "DELETE":
-            DELETE(req, res, id)
+            await DELETE(req, res, projectId)
             break
         default:
             res.setHeader("Allow", ["GET", "PATCH", "DELETE"])
