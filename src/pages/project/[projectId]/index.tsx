@@ -291,7 +291,7 @@ const TableList: React.FC<TableListProps> = props => {
                 <Link href={`/projects`}>{props.project.name}</Link>
             </Typography>
             <Grid container spacing={2}>
-                {tables.map((tbl: PM.Table, i: number) => (
+                {tables.map((tbl: JtDescriptor, i: number) => (
                     <Grid item key={i}>
                         <TableCard
                             table={tbl}
