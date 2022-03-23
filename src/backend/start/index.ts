@@ -124,11 +124,11 @@ function shutdown(components: AppComponent[], reason?: string) {
 }
 
 // logging
-function log(...stuff) {
+function log(...stuff: any[]) {
     process.stdout.write(stuff.reduce((s1, s2) => s1 + ", " + s2))
 }
 
-function logWithName(...stuff) {
+function logWithName(...stuff: any[]) {
     process.stdout.write(APP_NAME + ": ")
     log(...stuff)
 }
