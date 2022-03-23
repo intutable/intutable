@@ -10,7 +10,7 @@ import { getFrontendUrl } from "../runtimeconfig"
 
 const PLUGIN_PATHS = [path.join(process.cwd(), "node_modules/@intutable/*")]
 const PG_PORT = 5432
-const RETRIES = 5
+const RETRIES = 10
 
 
 main()
@@ -38,7 +38,7 @@ async function waitForDatabase() {
         await testPort(PG_PORT)
             .then(r => { connected = true })
             .catch(e => { lastError = e })
-        await new Promise((res, rej) => setTimeout(res, 1000))
+        await new Promise((res, rej) => setTimeout(res, 3000))
         retries--
     }
     if (connected){
