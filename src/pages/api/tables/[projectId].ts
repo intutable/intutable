@@ -1,7 +1,5 @@
 import { TableDescriptor } from "@intutable/project-management/dist/types"
-import {
-    getTablesFromProject
-} from "@intutable/project-management/dist/requests"
+import { getTablesFromProject } from "@intutable/project-management/dist/requests"
 import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { listJts } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
@@ -22,8 +20,8 @@ const GET = async (
         )
 
         const tables = await Promise.all(
-            baseTables.map(
-                t => coreRequest<JtDescriptor[]>(
+            baseTables.map(t =>
+                coreRequest<JtDescriptor[]>(
                     listJts(t.id),
                     req.cookies[AUTH_COOKIE_KEY]
                 )
