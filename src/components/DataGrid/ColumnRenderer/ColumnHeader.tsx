@@ -27,7 +27,7 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const [changeTypeModalOpen, setChangeTypeModalOpen] = useState(false)
 
-    const { renameColumnName, deleteColumn } = useTableCtx()
+    const { renameColumn, deleteColumn } = useTableCtx()
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -71,7 +71,7 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
             const name = prompt("Gib einen neuen Namen für diese Spalte ein:")
             if (!name) return
             // TODO: check if the column name is already taken
-            await renameColumnName(props.ckey, name)
+            await renameColumn(props.ckey, name)
             enqueueSnackbar("Die Spalte wurde umbenannt.", {
                 variant: "success",
             })

@@ -1,8 +1,10 @@
 import React from "react"
 import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
-import type { CellContentType } from "@datagrid/Editor_Formatter/types/CellContentType"
-import { JtDescriptor, JoinDescriptor } from "@intutable/join-tables/dist/types"
+import type {
+    CellContentType
+} from "@datagrid/Editor_Formatter/types/CellContentType"
+import { JtInfo } from "@intutable/join-tables/dist/types"
 import { TableDescriptor } from "@intutable/project-management/dist/types"
 
 // #################################################################
@@ -80,11 +82,7 @@ namespace DB {
 // #################################################################
 
 type Table<COL, ROW> = {
-    table: {
-        descriptor: JtDescriptor
-        baseTable: TableDescriptor
-        joins: JoinDescriptor[]
-    }
+    metadata: JtInfo
     columns: COL[]
     rows: ROW[]
 }

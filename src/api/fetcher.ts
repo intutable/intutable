@@ -1,5 +1,6 @@
 import { User } from "auth"
 import type { Fetcher } from "swr"
+import { passedLogin, checkError } from "./utils/coreRequest"
 import Obj from "types/Obj"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
@@ -29,21 +30,6 @@ export const fetchWithUser = <T = void>(
         redirect: "manual",
         body: body ? JSON.stringify(body) : undefined,
     })
-        // .then(async res => {
-        //     console.log(await res.text())
-        //     console.log(await res.status)
-        //     return res
-        // })
         .then(passedLogin)
+        .then(checkError)
         .then(res => res.json())
-
-/**
- * Set of error checking functions that are intended to operate by fall-through principle
- */
-const passedLogin = (res: Response): Promise<Response> =>
-    res.type === "opaqueredirect" || [301, 302].includes(res.status)
-        ? Promise.reject({
-              status: 302,
-              message: "core call blocked by authentication middleware",
-          })
-        : Promise.resolve(res)

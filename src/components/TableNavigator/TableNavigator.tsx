@@ -1,12 +1,13 @@
-import { PMTypes as PM } from "types"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { ToggleButton, ToggleButtonGroup, useTheme } from "@mui/material"
 import { useRouter } from "next/router"
 import React from "react"
 
 type TableNavigatorProps = {
-    project: PM.Project
-    currentTable: PM.Table
-    tableList: PM.Table[]
+    project: ProjectDescriptor
+    currentTable: JtDescriptor
+    tableList: JtDescriptor[]
 }
 
 export const TableNavigator: React.FC<TableNavigatorProps> = props => {

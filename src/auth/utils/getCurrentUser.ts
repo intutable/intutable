@@ -27,6 +27,6 @@ export const getCurrentUser = async (
                 ? Promise.resolve(null)
                 : Promise.reject(err as unknown)
         }
-        return Promise.reject(new Error("Internal Error"))
+        return Promise.reject(new Error("could not reach core"))
     }
 }
