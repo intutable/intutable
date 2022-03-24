@@ -29,11 +29,11 @@ import { makeError } from "utils/makeError"
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    jtDescriptorId: JtDescriptor["id"]
+    tableId: JtDescriptor["id"]
 ) => {
     try {
         const tableData = await coreRequest<JtData>(
-            getJtData(jtDescriptorId),
+            getJtData(tableId),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
@@ -62,7 +62,7 @@ const GET = async (
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    jtDescriptorId: JtDescriptor["id"]
+    tableId: JtDescriptor["id"]
 ) => {
     try {
         const { newName } = req.body as {
@@ -71,7 +71,7 @@ const PATCH = async (
 
         // rename table in join-tables
         const updatedTable = await coreRequest<JtDescriptor>(
-            renameJt(jtDescriptorId, newName),
+            renameJt(tableId, newName),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
@@ -96,23 +96,18 @@ const PATCH = async (
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    jtDescriptorId: JtDescriptor["id"]
+    tableId: JtDescriptor["id"]
 ) => {
     try {
         // delete table in project-management
-        const options = await coreRequest<JtOptions>(
-            getJtOptions(jtDescriptorId)
-        )
+        const options = await coreRequest<JtOptions>(getJtOptions(tableId))
         await coreRequest(
             removeTable(options.tableId),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
         // delete table in join-tables
-        await coreRequest(
-            deleteJt(jtDescriptorId),
-            req.cookies[AUTH_COOKIE_KEY]
-        )
+        await coreRequest(deleteJt(tableId), req.cookies[AUTH_COOKIE_KEY])
 
         res.status(200).send({})
     } catch (err) {
@@ -126,17 +121,17 @@ export default async function handler(
     res: NextApiResponse
 ) {
     const { query, method } = req
-    const jtDescriptorId = parseInt(query.jtDescriptorId as string)
+    const tableId = parseInt(query.tableId as string)
 
     switch (method) {
         case "GET":
-            await GET(req, res, jtDescriptorId)
+            await GET(req, res, tableId)
             break
         case "PATCH":
-            await PATCH(req, res, jtDescriptorId)
+            await PATCH(req, res, tableId)
             break
         case "DELETE":
-            await DELETE(req, res, jtDescriptorId)
+            await DELETE(req, res, tableId)
             break
         default:
             res.setHeader("Allow", ["GET", "PATCH", "DELETE"])
