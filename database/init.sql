@@ -98,7 +98,7 @@ insert into columns(_id, "columnName", "tableId") values(4, 'email', 1);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(1, 'Personen', 1, NULL,
-         '{conditions: [], groupColumns: [], sortColumns: []}');
+         '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(1, 1, NULL, 1, 'ID', 'NumberEditor');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
@@ -124,7 +124,7 @@ insert into columns(_id, "columnName", "tableId") values(8, 'aufloesung', 2);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(2, 'Kommissionen', 2, NULL,
-         '{conditions: [], groupColumns: [], sortColumns: []}');
+         '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(5, 2, NULL, 5, 'ID', 'NumberEditor');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
@@ -149,7 +149,7 @@ insert into columns(_id, "columnName", "tableId") values(11, 'adresse', 3);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(3, 'Einrichtungen', 3, NULL,
-         '{conditions: [], groupColumns: [], sortColumns: []}');
+         '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(9, 3, NULL, 9, 'ID', 'NumberEditor');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
