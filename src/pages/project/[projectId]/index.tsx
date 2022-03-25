@@ -208,8 +208,6 @@ const TableList: React.FC<TableListProps> = props => {
                     user,
                     project: props.project,
                     name,
-                    columnOptions: {}, // TODO: ?
-                    rowOptions: {}, // TODO: ?
                 },
                 "POST"
             )
@@ -263,8 +261,7 @@ const TableList: React.FC<TableListProps> = props => {
                 "Möchtest du deine Tabelle wirklich löschen?"
             )
             if (!confirmed) return
-            console.log(joinTable)
-            const res = await fetchWithUser(
+            await fetchWithUser(
                 `/api/table/${joinTable.id}`,
                 user!,
                 undefined,
