@@ -92,9 +92,9 @@ const TableProjectCard: React.FC<AddTableCardProps> = props => {
 
 type TableCardProps = {
     project: PM.Project
-    table: PM.Table
-    handleRename: (project: PM.Table) => Promise<void>
-    handleDelete: (project: PM.Table) => Promise<void>
+    table: JtDescriptor
+    handleRename: (joinTable: JtDescriptor) => Promise<void>
+    handleDelete: (joinTable: JtDescriptor) => Promise<void>
     children: string
 }
 const TableCard: React.FC<TableCardProps> = props => {
@@ -208,8 +208,8 @@ const TableList: React.FC<TableListProps> = props => {
                     user,
                     project: props.project,
                     name,
-                    columnOptions: {},
-                    rowOptions: {},
+                    columnOptions: {}, // TODO: ?
+                    rowOptions: {}, // TODO: ?
                 },
                 "POST"
             )
@@ -224,7 +224,7 @@ const TableList: React.FC<TableListProps> = props => {
         }
     }
 
-    const handleRenameTable = async (table: PM.Table) => {
+    const handleRenameTable = async (joinTable: JtDescriptor) => {
         try {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
@@ -239,7 +239,7 @@ const TableList: React.FC<TableListProps> = props => {
                 return
             }
             await fetchWithUser(
-                `/api/table/${table.id}`,
+                `/api/table/${joinTable.id}`,
                 user!,
                 {
                     newName: name,
@@ -257,14 +257,15 @@ const TableList: React.FC<TableListProps> = props => {
         }
     }
 
-    const handleDeleteTable = async (table: PM.Table) => {
+    const handleDeleteTable = async (joinTable: JtDescriptor) => {
         try {
             const confirmed = confirm(
                 "Möchtest du deine Tabelle wirklich löschen?"
             )
             if (!confirmed) return
-            await fetchWithUser(
-                `/api/table/${table.id}`,
+            console.log(joinTable)
+            const res = await fetchWithUser(
+                `/api/table/${joinTable.id}`,
                 user!,
                 undefined,
                 "DELETE"

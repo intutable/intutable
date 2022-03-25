@@ -4,20 +4,28 @@ import Obj from "types/Obj"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 /**
- * Fetcher function for use with useSWR hook
+ * Fetcher function for use with useSWR hookb
  */
 export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
     fetch(...args).then(res => res.json())
 
 /**
- * Fetcher function (with user) for use with useSWR hook
+ * Fetcher for use with `swr`.
+ * Implements the native `fetcher` method and sets default values.
+ *
+ * Note: Forwarding the user is only temporarily and will be deprecated in a fute version.
+ *
+ * In case an exception is returned (301, 302 and 4xx to 5xx), the response is thrown.
+ * This is allows catching the response in a catch-block rather than checking manually the status code.+
+ *
+ * Otherwise the deserialized json is returned.
  */
-export const fetchWithUser = <T = void>(
+export const fetchWithUser = <R>(
     url: string,
     user: User,
     body?: Obj,
     method: "GET" | "POST" | "PATCH" | "DELETE" = "POST"
-): Promise<T> =>
+): Promise<R> =>
     fetch(process.env.NEXT_PUBLIC_API_URL! + url, {
         method: method,
         headers: {
@@ -29,21 +37,26 @@ export const fetchWithUser = <T = void>(
         redirect: "manual",
         body: body ? JSON.stringify(body) : undefined,
     })
-        // .then(async res => {
-        //     console.log(await res.text())
-        //     console.log(await res.status)
-        //     return res
-        // })
         .then(passedLogin)
-        .then(res => res.json())
+        .then(catchException)
+        .then(r => r.json())
 
 /**
- * Set of error checking functions that are intended to operate by fall-through principle
+ * Checks if the fetch request was successfully or if authentication plugin blocked.
  */
-const passedLogin = (res: Response): Promise<Response> =>
-    res.type === "opaqueredirect" || [301, 302].includes(res.status)
-        ? Promise.reject({
-              status: 302,
-              message: "core call blocked by authentication middleware",
-          })
-        : Promise.resolve(res)
+const passedLogin = (res: Response): Promise<Response> => {
+    if (res.type === "opaqueredirect" || [301, 302].includes(res.status))
+        throw new Error("core call blocked by authentication middleware")
+
+    return Promise.resolve(res)
+}
+
+/**
+ * Catches Exceptions (http status codes in range of 4xx to 5xx)
+ * and throws them to allow the handlers to catch them in a catch-block
+ */
+const catchException = (res: Response): Promise<Response> => {
+    if (res.status >= 400 && res.status < 600) throw res
+
+    return Promise.resolve(res)
+}
