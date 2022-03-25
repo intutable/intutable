@@ -68,6 +68,12 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         }
     }
 
+    function getRowId(row: Row){
+        const uidColumn = data?.metadata.columns.find(
+            c => c.name === PM.UID_KEY)!
+        return row[uidColumn.key]
+    }
+
     // #################### row ####################
 
     const onRowReorder = (fromIndex: number, toIndex: number) => {
@@ -107,7 +113,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             user!,
             {
                 baseTable: data?.metadata.baseTable,
-                condition: { [PM.UID_KEY]: row[PM.UID_KEY] },
+                condition: [ PM.UID_KEY, getRowId(row) ],
             },
             "DELETE"
         )
@@ -123,11 +129,6 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         const changedRow = rows[changeData.indexes[0]]
         const joinColumnKey = changeData.column.key
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-        const uidColumn = data?.metadata.columns.find(
-            c => c.name === PM.UID_KEY
-        )!
-
         const metaColumn = getColumnByKey(joinColumnKey)
 
         if (metaColumn.joinId !== null)
@@ -138,7 +139,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             user!,
             {
                 baseTable: data?.metadata.baseTable,
-                condition: [PM.UID_KEY, changedRow[uidColumn.key]],
+                condition: [PM.UID_KEY, getRowId(changedRow)],
                 update: {
                     [baseColumnKey]: changedRow[joinColumnKey],
                 },
