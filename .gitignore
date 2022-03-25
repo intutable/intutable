@@ -4,6 +4,7 @@ dist/
 data.db
 todo
 .DS_Store
+.log/
 
 # Database stuff for now
 ./database/database-data

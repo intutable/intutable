@@ -5,10 +5,11 @@ import { Column as ColumnParser } from "."
 
 export const parse = (joinTable: JtData): TableData.Serialized => {
     return {
-        table: {
+        metadata: {
             descriptor: joinTable.descriptor,
             baseTable: joinTable.baseTable,
             joins: joinTable.joins,
+            columns: joinTable.columns
         },
         columns: joinTable.columns
             .map(ColumnParser.parse)

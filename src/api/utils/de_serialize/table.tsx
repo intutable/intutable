@@ -1,4 +1,3 @@
-import { Checkbox } from "@mui/material"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import { SelectColumn } from "react-data-grid"
 import { Column, Row, TableData } from "types"
@@ -32,7 +31,7 @@ export const serialize = (table: TableData): TableData.Serialized => {
     columns.shift()
 
     return {
-        table: table.table,
+        metadata: table.metadata,
         columns,
         rows,
     }
@@ -73,7 +72,7 @@ export const deserialize = (table: TableData.Serialized): TableData => {
     columns.unshift(SelectColumn)
 
     return {
-        table: table.table,
+        metadata: table.metadata,
         columns,
         rows,
     }

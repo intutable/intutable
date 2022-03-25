@@ -1,10 +1,17 @@
-import { fetchWithUser, Routes } from "api"
-import { useAuth } from "context"
-import React, { useEffect } from "react"
-import { RowsChangeData } from "react-data-grid"
+import React from "react"
 import useSWR from "swr"
-import { Column, PM as PMKEY, PMTypes as PM, Row, TableData } from "types"
-import { DeSerialize } from "api/utils"
+import { RowsChangeData } from "react-data-grid"
+
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import {
+    JtDescriptor,
+    ColumnDescriptor
+} from "@intutable/join-tables/dist/types"
+import { fetchWithUser } from "api"
+import { useAuth } from "context"
+import { PM, Row, Column, TableData } from "types"
+import { Parser } from "api/utils"
+
 
 export type TableContextProps = {
     data: TableData | undefined
@@ -14,13 +21,9 @@ export type TableContextProps = {
     deleteRow: (rowIndex: number, row: Row) => Promise<void>
     partialRowUpdate: (rows: Row[], data: RowsChangeData<Row>) => Promise<void>
     createColumn: (col: Column.Serialized) => Promise<void>
-    renameColumnKey: (
+    renameColumn: (
         key: Column["key"],
-        newName: PM.Column.Name
-    ) => Promise<void>
-    renameColumnName: (
-        key: Column["key"],
-        newName: PM.Column.Name
+        newName: Column["name"]
     ) => Promise<void>
     deleteColumn: (key: Column["key"]) => Promise<void>
 }
@@ -33,8 +36,7 @@ const initialState: TableContextProps = {
     deleteRow: undefined!,
     partialRowUpdate: undefined!,
     createColumn: undefined!,
-    renameColumnKey: undefined!,
-    renameColumnName: undefined!,
+    renameColumn: undefined!,
     deleteColumn: undefined!,
 }
 
@@ -42,26 +44,43 @@ const TableContext = React.createContext<TableContextProps>(initialState)
 
 export const useTableCtx = () => React.useContext(TableContext)
 
-export type TabletCtxProviderProps = {
-    project: PM.Project
-    table: PM.Table
+export type TableCtxProviderProps = {
+    project: ProjectDescriptor
+    table: JtDescriptor
 }
 
-export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
+export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const { user } = useAuth()
 
     const { data, error, mutate } = useSWR<TableData>(
-        user ? [Routes.get.table, user, { tableId: props.table.id }] : null,
+        user
+        ? [
+            `/api/table/${props.table.id}`,
+            user,
+            undefined,
+            "GET" ]
+        : null,
         fetchWithUser
     )
 
     /**
      * // TODO:
-     *  1. once these api methods return the updatet data, inject it into mutate
-     *  2. seperate rows to a distinct state (required for performance by rdg)
+     *  1. once these api methods return the updated data, inject it into mutate
+     *  2. separate rows to a distinct state (required for performance by rdg)
      */
 
-    // #################### row utils ####################
+
+    // #################### utils ####################
+    function getColumnByKey(key: Column["key"]): ColumnDescriptor {
+        const column = data!.metadata.columns.find(c => c.key === key)
+        if(!column)
+            throw Error(`could not find column with key ${key}`)
+        else {
+            return column
+        }
+    }
+
+    // #################### row ####################
 
     const onRowReorder = (fromIndex: number, toIndex: number) => {
         if (data) {
@@ -73,10 +92,15 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
         }
     }
 
-    // #################### row ####################
-
     const createRow = async (): Promise<void> => {
-        await API?.post.row(props.project, props.table)
+        // baseTable, values
+        await fetchWithUser(
+            "/api/row",
+            user!,
+            { baseTable: data?.metadata.baseTable, values: {} },
+            "POST"
+        )
+
         await mutate()
         // const lastRowIndex = rows.length
         // const deserializedRow = SerializableTable.deserializeRow(
@@ -90,26 +114,41 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
     }
 
     const deleteRow = async (rowIndex: number, row: Row): Promise<void> => {
-        await API?.delete.row(props.project, props.table, [
-            PMKEY.UID_KEY,
-            row._id,
-        ])
+        await fetchWithUser(
+            "/api/row",
+            user!,
+            { baseTable: data?.metadata.baseTable,
+              condition: { [PM.UID_KEY]: row[PM.UID_KEY] } },
+            "DELETE"
+        )
+
         await mutate()
         // todo: filter row and delete by index and then shift them
     }
 
     const partialRowUpdate = async (
         rows: Row[],
-        data: RowsChangeData<Row>
+        changeData: RowsChangeData<Row>
     ): Promise<void> => {
-        const changedRow = rows[data.indexes[0]]
-        await API?.put.row(
-            props.project,
-            props.table,
-            [PMKEY.UID_KEY, changedRow._id],
+        const changedRow = rows[changeData.indexes[0]]
+
+        const joinColumnKey = changeData.column.key
+        const joinTableColumn = getColumnByKey(joinColumnKey)
+
+        if (joinTableColumn.joinId !== null)
+            throw Error("attempted to edit data of a different table")
+        const baseColumnKey = joinTableColumn.name
+        await fetchWithUser(
+            "/api/row",
+            user!,
             {
-                [data.column.key]: changedRow[data.column.key],
-            }
+                baseTable: data?.metadata.baseTable,
+                condition: [PM.UID_KEY, changedRow[PM.UID_KEY]],
+                update: {
+                    [baseColumnKey]: changedRow[joinColumnKey]
+                }
+            },
+            "PATCH"
         )
         await mutate()
         // setRows(rows)
@@ -117,34 +156,44 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
 
     // #################### column ####################
 
-    const createColumn = async (col: Column.Serialized): Promise<void> => {
-        await API?.post.column(props.table.id, col.key.toLocaleLowerCase())
-        await API?.put.columnName(
-            props.table.id,
-            col.key.toLowerCase(),
-            col.name
+    const createColumn = async (column: Column.Serialized): Promise<void> => {
+        await fetchWithUser(
+            "/api/column",
+            user!,
+            { joinTable: data?.metadata.descriptor,
+              baseTable: data?.metadata.baseTable, column },
+            "POST"
         )
         await mutate()
     }
 
-    const renameColumnKey = async (
+    const renameColumn = async (
         key: Column["key"],
-        newKey: Column["key"]
+        newName: Column["name"]
     ): Promise<void> => {
-        await API?.put.columnKey(props.table.id, key, newKey)
-        await mutate()
-    }
-
-    const renameColumnName = async (
-        key: Column["key"],
-        newName: PM.Column.Name
-    ): Promise<void> => {
-        await API?.put.columnName(props.table.id, key, newName)
+        const column = getColumnByKey(key)
+        const updatedColumn = {
+            ...Parser.Column.parse(column),
+            name: newName
+        }
+        await fetchWithUser(
+            `/api/column/${column.id}`,
+            user!,
+            { update: updatedColumn },
+            "PATCH"
+        )
         await mutate()
     }
 
     const deleteColumn = async (key: Column["key"]): Promise<void> => {
-        await API?.delete.column(props.table.id, key)
+        const column = getColumnByKey(key)
+        await fetchWithUser(
+            `/api/column/${column.id}`,
+            user!,
+            undefined,
+            "DELETE"
+        )
+
         await mutate()
     }
 
@@ -154,16 +203,14 @@ export const TableCtxProvider: React.FC<TabletCtxProviderProps> = props => {
                 // states
                 data,
                 error,
-                // row utils
-                onRowReorder,
                 // row
+                onRowReorder,
                 createRow,
                 deleteRow,
                 partialRowUpdate,
                 // column dispatchers
                 createColumn,
-                renameColumnKey,
-                renameColumnName,
+                renameColumn,
                 deleteColumn,
             }}
         >

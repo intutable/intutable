@@ -46,14 +46,11 @@ const DELETE = async (
             getColumnInfo(columnId),
             req.cookies[AUTH_COOKIE_KEY]
         )
-        if (column.joinId !== null)
-            throw new Error(
-                "cannot delete column of other (join) table." +
-                    ` ID: ${columnId}`
-            )
 
         await coreRequest(removeColumnFromJt(columnId))
-        await coreRequest(removeColumn(column.parentColumnId))
+        // if column belongs to base table, delete underlying TableColumn too
+        if (column.joinId === null)
+            await coreRequest(removeColumn(column.parentColumnId))
 
         res.status(200).send({})
     } catch (err) {

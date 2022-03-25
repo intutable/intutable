@@ -43,14 +43,6 @@ CREATE TABLE columns(
     FOREIGN KEY("tableId") REFERENCES tables(_id)
 );
 
-CREATE TABLE tablecolumns(
-    _id SERIAL PRIMARY KEY,
-    "tableId" INTEGER,
-    "columnId" INTEGER,
-    FOREIGN KEY("tableId") REFERENCES tables(_id),
-    FOREIGN KEY("columnId") REFERENCES columns(_id)
-);
-
 -- join-tables meta tables
 CREATE TABLE jts(
     _id SERIAL PRIMARY KEY,
@@ -98,7 +90,7 @@ insert into columns(_id, "columnName", "tableId") values(4, 'email', 1);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(1, 'Personen', 1, NULL,
-         '{conditions: [], groupColumns: [], sortColumns: []}');
+         '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(1, 1, NULL, 1, 'ID', 'NumberEditor');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
@@ -124,7 +116,7 @@ insert into columns(_id, "columnName", "tableId") values(8, 'aufloesung', 2);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(2, 'Kommissionen', 2, NULL,
-         '{conditions: [], groupColumns: [], sortColumns: []}');
+         '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(5, 2, NULL, 5, 'ID', 'NumberEditor');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
@@ -149,7 +141,7 @@ insert into columns(_id, "columnName", "tableId") values(11, 'adresse', 3);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(3, 'Einrichtungen', 3, NULL,
-         '{conditions: [], groupColumns: [], sortColumns: []}');
+         '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(9, 3, NULL, 9, 'ID', 'NumberEditor');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
@@ -161,8 +153,8 @@ VALUES(11, 3, NULL, 11, 'Adresse', 'StringEditor');
 -- object data
 insert into p1_personen(vorname, nachname, email) 
 values('Raphael', 'Kirchholtes', 'dk457@stud.uni-heidelberg');
-insert into p1_personen(_id, vorname, nachname, email) 
-values(1337, 'Kilian', 'Folger', 'ub437@stud.uni-heidelberg');
+insert into p1_personen(vorname, nachname, email) 
+values('Kilian', 'Folger', 'ub437@stud.uni-heidelberg');
 insert into p1_personen(vorname, nachname, email) 
 values('Nikita-Nick', 'Funk', 'kf235@stud.uni-heidelberg');
 
@@ -171,3 +163,14 @@ values ('IT-Gruppe Dekanat', '15. September 2021', null);
 
 insert into p1_einrichtungen(name, adresse)
 values ('Dekanat MathInf', 'Mathematikon Neuenheim');
+
+-- stupid pkey sequences evidently don't count up when we do manual IDs
+SELECT setval('users__id_seq', (SELECT MAX(_id) FROM users)+1);
+SELECT setval('projects__id_seq', (SELECT MAX(_id) FROM projects)+1);
+SELECT setval('userprojects__id_seq', (SELECT MAX(_id) FROM userprojects)+1);
+SELECT setval('tables__id_seq', (SELECT MAX(_id) FROM tables)+1);
+SELECT setval('projecttables__id_seq', (SELECT MAX(_id) FROM projecttables)+1);
+SELECT setval('columns__id_seq', (SELECT MAX(_id) FROM columns)+1);
+SELECT setval('jts__id_seq', (SELECT MAX(_id) FROM jts)+1);
+SELECT setval('jt_joins__id_seq', (SELECT MAX(_id) FROM jt_joins)+1);
+SELECT setval('jt_columns__id_seq', (SELECT MAX(_id) FROM jt_columns)+1);

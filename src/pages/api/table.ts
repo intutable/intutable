@@ -31,7 +31,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // create table in join-tables
         const jtTable = await coreRequest<JtDescriptor>(
-            createJt(table.id, table.name, columnOptions, rowOptions, user.id),
+            createJt(
+                table.id,
+                table.name,
+                { columns: [], joins: [] },
+                { conditions: [], sortColumns: [], groupColumns: [] },
+                user.id
+            ),
             req.cookies[AUTH_COOKIE_KEY]
         )
 

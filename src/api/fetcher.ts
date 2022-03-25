@@ -1,6 +1,7 @@
 import { User } from "auth"
 import type { Fetcher } from "swr"
 import Obj from "types/Obj"
+import { passedLogin } from "./utils/coreRequest"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 /**
@@ -40,16 +41,6 @@ export const fetchWithUser = <R>(
         .then(passedLogin)
         .then(catchException)
         .then(r => r.json())
-
-/**
- * Checks if the fetch request was successfully or if authentication plugin blocked.
- */
-const passedLogin = (res: Response): Promise<Response> => {
-    if (res.type === "opaqueredirect" || [301, 302].includes(res.status))
-        throw new Error("core call blocked by authentication middleware")
-
-    return Promise.resolve(res)
-}
 
 /**
  * Catches Exceptions (http status codes in range of 4xx to 5xx)
