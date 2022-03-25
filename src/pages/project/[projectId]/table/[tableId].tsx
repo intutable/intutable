@@ -158,7 +158,7 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
         }
 
     // workaround until PM exposes the required method
-    const projects = await fetchWithUser<ProjectDescriptor>(
+    const projects = await fetchWithUser<ProjectDescriptor[]>(
         `/api/projects/${user.id}`,
         user,
         undefined,

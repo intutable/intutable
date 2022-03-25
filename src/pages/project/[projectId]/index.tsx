@@ -208,8 +208,6 @@ const TableList: React.FC<TableListProps> = props => {
                     user,
                     project: props.project,
                     name,
-                    columnOptions: {},
-                    rowOptions: {},
                 },
                 "POST"
             )
