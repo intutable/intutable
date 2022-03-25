@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react"
 import type { Column } from "types"
 import {
     CellContentType,
@@ -20,7 +21,7 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import sanitizeName from "utils/sanitizeName"
 
 type AddColumnModalProps = {
     open: boolean
@@ -42,7 +43,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
 
     useEffect(() => {
         if (options.name.length > 0) setValid(true)
-        setOption("key", options.name)
+        setOption("key", sanitizeName(options.name))
     }, [options.name])
 
     // DEV ONLY
