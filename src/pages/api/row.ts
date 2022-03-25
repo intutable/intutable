@@ -31,7 +31,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         console.log("body; " + JSON.stringify(req.body))
-        const { baseTable, condition, update: rowUpdate } = req.body as {
+        const {
+            baseTable,
+            condition,
+            update: rowUpdate,
+        } = req.body as {
             baseTable: TableDescriptor
             condition: unknown[]
             update: { [index: string]: unknown }

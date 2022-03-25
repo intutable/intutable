@@ -123,8 +123,10 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         const changedRow = rows[changeData.indexes[0]]
         const joinColumnKey = changeData.column.key
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         const uidColumn = data?.metadata.columns.find(
-            c => c.name === PM.UID_KEY)!
+            c => c.name === PM.UID_KEY
+        )!
 
         const metaColumn = getColumnByKey(joinColumnKey)
 
