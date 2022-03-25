@@ -20,11 +20,10 @@ import { AUTH_COOKIE_KEY, TableCtxProvider, useTableCtx } from "context"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
-import type { Row, TableData } from "types"
+import type { Row } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { fetchWithUser } from "api"
-import { DeSerialize, Parser } from "api/utils"
 
 type TablePageProps = {
     project: ProjectDescriptor
@@ -181,7 +180,7 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
         undefined,
         "GET"
     )
-    
+
     return {
         props: {
             project,
@@ -193,7 +192,7 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
                     user,
                     undefined,
                     "GET",
-                ])]: data
+                ])]: data,
             },
         },
     }
