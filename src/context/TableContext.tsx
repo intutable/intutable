@@ -121,19 +121,22 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         changeData: RowsChangeData<Row>
     ): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
-
         const joinColumnKey = changeData.column.key
-        const joinTableColumn = getColumnByKey(joinColumnKey)
 
-        if (joinTableColumn.joinId !== null)
+        const uidColumn = data?.metadata.columns.find(
+            c => c.name === PM.UID_KEY)!
+
+        const metaColumn = getColumnByKey(joinColumnKey)
+
+        if (metaColumn.joinId !== null)
             throw Error("attempted to edit data of a different table")
-        const baseColumnKey = joinTableColumn.name
+        const baseColumnKey = metaColumn.name
         await fetchWithUser(
             "/api/row",
             user!,
             {
                 baseTable: data?.metadata.baseTable,
-                condition: [PM.UID_KEY, changedRow[PM.UID_KEY]],
+                condition: [PM.UID_KEY, changedRow[uidColumn.key]],
                 update: {
                     [baseColumnKey]: changedRow[joinColumnKey],
                 },

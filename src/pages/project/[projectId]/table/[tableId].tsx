@@ -95,9 +95,6 @@ const TablePage: React.FC<TablePageProps> = props => {
                                 selectedRows={selectedRows}
                                 onSelectedRowsChange={setSelectedRows}
                                 onRowsChange={partialRowUpdate}
-                                onRowDoubleClick={(row, column) => {
-                                    setDetailedViewOpen({ row, column })
-                                }}
                                 rowRenderer={RowRenderer}
                             />
                         </DndProvider>

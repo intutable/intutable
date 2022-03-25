@@ -30,11 +30,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { baseTable, condition, rowUpdate } = req.body as {
+        console.log("body; " + JSON.stringify(req.body))
+        const { baseTable, condition, update: rowUpdate } = req.body as {
             baseTable: TableDescriptor
-            newName: PM.Table.Name
             condition: unknown[]
-            rowUpdate: { [index: string]: unknown }
+            update: { [index: string]: unknown }
         }
 
         const updatedRow = await coreRequest<Row>(
@@ -47,6 +47,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
         res.status(200).json(updatedRow)
     } catch (err) {
+        console.error(err)
         const error = makeError(err)
         res.status(500).json({ error: error.message })
     }
