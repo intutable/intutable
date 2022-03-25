@@ -92,13 +92,13 @@ INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(1, 'Personen', 1, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(1, 1, NULL, 1, 'ID', 'NumberEditor');
+  VALUES(1, 1, NULL, 1, 'ID', 'number');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(2, 1, NULL, 2, 'Vorname', 'StringEditor');
+  VALUES(2, 1, NULL, 2, 'Vorname', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(3, 1, NULL, 3, 'Nachname', 'StringEditor');
+  VALUES(3, 1, NULL, 3, 'Nachname', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(4, 1, NULL, 4, 'E-Mail', 'StringEditor');
+  VALUES(4, 1, NULL, 4, 'E-Mail', 'string');
 
 
 create table if not exists p1_kommissionen(
@@ -118,13 +118,13 @@ INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(2, 'Kommissionen', 2, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(5, 2, NULL, 5, 'ID', 'NumberEditor');
+  VALUES(5, 2, NULL, 5, 'ID', 'number');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(6, 2, NULL, 6, 'Bezeichnung', 'StringEditor');
+  VALUES(6, 2, NULL, 6, 'Bezeichnung', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(7, 2, NULL, 7, 'Gründung', 'StringEditor');
+  VALUES(7, 2, NULL, 7, 'Gründung', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(8, 2, NULL, 8, 'Auflösung', 'StringEditor');
+  VALUES(8, 2, NULL, 8, 'Auflösung', 'string');
 
 
 create table if not exists p1_einrichtungen(
@@ -143,11 +143,11 @@ INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(3, 'Einrichtungen', 3, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(9, 3, NULL, 9, 'ID', 'NumberEditor');
+  VALUES(9, 3, NULL, 9, 'ID', 'number');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(10, 3, NULL, 10, 'Name', 'StringEditor');
+  VALUES(10, 3, NULL, 10, 'Name', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-VALUES(11, 3, NULL, 11, 'Adresse', 'StringEditor');
+VALUES(11, 3, NULL, 11, 'Adresse', 'string');
 
 
 -- object data
