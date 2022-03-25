@@ -8,13 +8,13 @@ import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest, Parser } from "api/utils"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { Column, PMTypes as PM } from "types"
+import { Column } from "types"
 import { makeError } from "utils/makeError"
 
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    columnId: PM.Column.ID
+    columnId: ColumnDescriptor["id"]
 ) => {
     try {
         const { update } = req.body as {
@@ -39,7 +39,7 @@ const PATCH = async (
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    columnId: PM.Column.ID
+    columnId: ColumnDescriptor["id"]
 ) => {
     try {
         const column = await coreRequest<ColumnDescriptor>(
@@ -47,10 +47,16 @@ const DELETE = async (
             req.cookies[AUTH_COOKIE_KEY]
         )
 
-        await coreRequest(removeColumnFromJt(columnId))
+        await coreRequest(
+            removeColumnFromJt(columnId),
+            req.cookies[AUTH_COOKIE_KEY]
+        )
         // if column belongs to base table, delete underlying TableColumn too
         if (column.joinId === null)
-            await coreRequest(removeColumn(column.parentColumnId))
+            await coreRequest(
+                removeColumn(column.parentColumnId),
+                req.cookies[AUTH_COOKIE_KEY]
+            )
 
         res.status(200).send({})
     } catch (err) {

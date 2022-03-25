@@ -9,7 +9,7 @@ export const parseTableData: Middleware =
 
         const route: string = Array.isArray(key) ? key[0] : key
 
-        const routeRegex = RegExp("/api/table/\\[\\d*\\]") // "/api/table/[id]"
+        const routeRegex = RegExp("/api/table/\\d*") // "/api/table/[id]"
         if (routeRegex.test(route) === false || swr.data == null) return swr
 
         const unparsedTableData = swr.data as unknown as JtData

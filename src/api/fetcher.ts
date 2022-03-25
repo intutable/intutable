@@ -1,6 +1,7 @@
 import { User } from "auth"
 import type { Fetcher } from "swr"
 import Obj from "types/Obj"
+import { inspect } from "util"
 import { passedLogin } from "./utils/coreRequest"
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
@@ -21,12 +22,12 @@ export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
  *
  * Otherwise the deserialized json is returned.
  */
-export const fetchWithUser = <R>(
+export const fetchWithUser = <T>(
     url: string,
     user: User,
     body?: Obj,
     method: "GET" | "POST" | "PATCH" | "DELETE" = "POST"
-): Promise<R> =>
+): Promise<T> =>
     fetch(process.env.NEXT_PUBLIC_API_URL! + url, {
         method: method,
         headers: {
@@ -47,7 +48,12 @@ export const fetchWithUser = <R>(
  * and throws them to allow the handlers to catch them in a catch-block
  */
 const catchException = (res: Response): Promise<Response> => {
-    if (res.status >= 400 && res.status < 600) throw res
+    if (res.status >= 400 && res.status < 600) {
+        console.error(
+            `Fetcher Received Exception (${res.status}): ${inspect(res)}`
+        )
+        throw res
+    }
 
     return Promise.resolve(res)
 }

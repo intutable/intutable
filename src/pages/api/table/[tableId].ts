@@ -100,7 +100,10 @@ const DELETE = async (
 ) => {
     try {
         // delete table in project-management
-        const options = await coreRequest<JtOptions>(getJtOptions(tableId))
+        const options = await coreRequest<JtOptions>(
+            getJtOptions(tableId),
+            req.cookies[AUTH_COOKIE_KEY]
+        )
         await coreRequest(
             removeTable(options.tableId),
             req.cookies[AUTH_COOKIE_KEY]
