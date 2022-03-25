@@ -1,17 +1,16 @@
-import React from "react"
+import React, { useEffect } from "react"
 import useSWR from "swr"
 import { RowsChangeData } from "react-data-grid"
 
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import {
     JtDescriptor,
-    ColumnDescriptor
+    ColumnDescriptor,
 } from "@intutable/join-tables/dist/types"
 import { fetchWithUser } from "api"
 import { useAuth } from "context"
 import { PM, Row, Column, TableData } from "types"
 import { Parser } from "api/utils"
-
 
 export type TableContextProps = {
     data: TableData | undefined
@@ -21,10 +20,7 @@ export type TableContextProps = {
     deleteRow: (rowIndex: number, row: Row) => Promise<void>
     partialRowUpdate: (rows: Row[], data: RowsChangeData<Row>) => Promise<void>
     createColumn: (col: Column.Serialized) => Promise<void>
-    renameColumn: (
-        key: Column["key"],
-        newName: Column["name"]
-    ) => Promise<void>
+    renameColumn: (key: Column["key"], newName: Column["name"]) => Promise<void>
     deleteColumn: (key: Column["key"]) => Promise<void>
 }
 
@@ -53,13 +49,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const { user } = useAuth()
 
     const { data, error, mutate } = useSWR<TableData>(
-        user
-        ? [
-            `/api/table/${props.table.id}`,
-            user,
-            undefined,
-            "GET" ]
-        : null,
+        user ? [`/api/table/${props.table.id}`, user, undefined, "GET"] : null,
         fetchWithUser
     )
 
@@ -69,12 +59,10 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
      *  2. separate rows to a distinct state (required for performance by rdg)
      */
 
-
     // #################### utils ####################
     function getColumnByKey(key: Column["key"]): ColumnDescriptor {
         const column = data!.metadata.columns.find(c => c.key === key)
-        if(!column)
-            throw Error(`could not find column with key ${key}`)
+        if (!column) throw Error(`could not find column with key ${key}`)
         else {
             return column
         }
@@ -117,8 +105,10 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         await fetchWithUser(
             "/api/row",
             user!,
-            { baseTable: data?.metadata.baseTable,
-              condition: { [PM.UID_KEY]: row[PM.UID_KEY] } },
+            {
+                baseTable: data?.metadata.baseTable,
+                condition: { [PM.UID_KEY]: row[PM.UID_KEY] },
+            },
             "DELETE"
         )
 
@@ -145,8 +135,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
                 baseTable: data?.metadata.baseTable,
                 condition: [PM.UID_KEY, changedRow[PM.UID_KEY]],
                 update: {
-                    [baseColumnKey]: changedRow[joinColumnKey]
-                }
+                    [baseColumnKey]: changedRow[joinColumnKey],
+                },
             },
             "PATCH"
         )
@@ -160,8 +150,11 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         await fetchWithUser(
             "/api/column",
             user!,
-            { joinTable: data?.metadata.descriptor,
-              baseTable: data?.metadata.baseTable, column },
+            {
+                joinTable: data?.metadata.descriptor,
+                baseTable: data?.metadata.baseTable,
+                column,
+            },
             "POST"
         )
         await mutate()
@@ -174,7 +167,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         const column = getColumnByKey(key)
         const updatedColumn = {
             ...Parser.Column.parse(column),
-            name: newName
+            name: newName,
         }
         await fetchWithUser(
             `/api/column/${column.id}`,

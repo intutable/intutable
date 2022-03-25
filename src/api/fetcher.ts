@@ -49,9 +49,8 @@ export const fetchWithUser = <T>(
  */
 const catchException = (res: Response): Promise<Response> => {
     if (res.status >= 400 && res.status < 600) {
-        console.error(
-            `Fetcher Received Exception (${res.status}): ${inspect(res)}`
-        )
+        console.error(res)
+        console.error(`Fetcher Received Exception (${res.status}): ${res}`)
         throw res
     }
 

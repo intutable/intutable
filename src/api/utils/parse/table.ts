@@ -9,11 +9,11 @@ export const parse = (joinTable: JtData): TableData.Serialized => {
             descriptor: joinTable.descriptor,
             baseTable: joinTable.baseTable,
             joins: joinTable.joins,
-            columns: joinTable.columns
+            columns: joinTable.columns,
         },
         columns: joinTable.columns
-            .map(ColumnParser.parse)
-            .filter(col => col.key !== PM.UID_KEY),
+            .filter(col => col.name !== PM.UID_KEY)
+            .map(ColumnParser.parse),
         rows: joinTable.rows as Row[],
     }
 }

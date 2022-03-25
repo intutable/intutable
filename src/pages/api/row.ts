@@ -9,23 +9,20 @@ import { makeError } from "utils/makeError"
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { basetable, values } = req.body as {
-            table: PM.Table
-            basetable: TableDescriptor
+        const { baseTable, values } = req.body as {
+            baseTable: TableDescriptor
             values: Obj
         }
 
         // create row in database
         const rowId = await coreRequest<typeof PMKeys.UID_KEY>(
-            insert(basetable.key, {
-                table: `key`,
-                values,
-            }),
+            insert(baseTable.key, values),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
         res.status(200).send(rowId)
     } catch (err) {
+        console.error(err)
         const error = makeError(err)
         res.status(500).json({ error: error.message })
     }
@@ -33,15 +30,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { basetable, condition, rowUpdate } = req.body as {
-            basetable: TableDescriptor
+        const { baseTable, condition, rowUpdate } = req.body as {
+            baseTable: TableDescriptor
             newName: PM.Table.Name
             condition: unknown[]
             rowUpdate: { [index: string]: unknown }
         }
 
         const updatedRow = await coreRequest<Row>(
-            update(basetable.key, {
+            update(baseTable.key, {
                 condition,
                 update: rowUpdate,
             }),
@@ -57,13 +54,13 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { basetable, condition } = req.body as {
-            basetable: TableDescriptor
+        const { baseTable, condition } = req.body as {
+            baseTable: TableDescriptor
             condition: unknown[]
         }
 
         await coreRequest(
-            deleteRow(basetable.key, condition),
+            deleteRow(baseTable.key, condition),
             req.cookies[AUTH_COOKIE_KEY]
         )
 
