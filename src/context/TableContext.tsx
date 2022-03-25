@@ -51,7 +51,6 @@ export type TableCtxProviderProps = {
 
 export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const { user } = useAuth()
-    if (user == null) throw Error("no use logged in")
 
     const { data, error, mutate } = useSWR<TableData>(
         user
@@ -63,8 +62,6 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         : null,
         fetchWithUser
     )
-    if (data == null)
-        throw Error(`could not load data for table ${props.table.id} `)
 
     /**
      * // TODO:
@@ -72,8 +69,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
      *  2. separate rows to a distinct state (required for performance by rdg)
      */
 
-    // #################### row utils ####################
 
+    // #################### utils ####################
     function getColumnByKey(key: Column["key"]): ColumnDescriptor {
         const column = data!.metadata.columns.find(c => c.key === key)
         if(!column)
@@ -82,6 +79,9 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             return column
         }
     }
+
+    // #################### row ####################
+
     const onRowReorder = (fromIndex: number, toIndex: number) => {
         if (data) {
             const newRows = [...data.rows]
@@ -92,14 +92,12 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         }
     }
 
-    // #################### row ####################
-
     const createRow = async (): Promise<void> => {
         // baseTable, values
         await fetchWithUser(
             "/api/row",
-            user,
-            { baseTable: data.metadata.baseTable, values: {}},
+            user!,
+            { baseTable: data?.metadata.baseTable, values: {} },
             "POST"
         )
 
@@ -118,8 +116,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const deleteRow = async (rowIndex: number, row: Row): Promise<void> => {
         await fetchWithUser(
             "/api/row",
-            user,
-            { baseTable: data.metadata.baseTable,
+            user!,
+            { baseTable: data?.metadata.baseTable,
               condition: { [PM.UID_KEY]: row[PM.UID_KEY] } },
             "DELETE"
         )
@@ -142,9 +140,9 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         const baseColumnKey = joinTableColumn.name
         await fetchWithUser(
             "/api/row",
-            user,
+            user!,
             {
-                baseTable: data.metadata.baseTable,
+                baseTable: data?.metadata.baseTable,
                 condition: [PM.UID_KEY, changedRow[PM.UID_KEY]],
                 update: {
                     [baseColumnKey]: changedRow[joinColumnKey]
@@ -161,9 +159,9 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const createColumn = async (column: Column.Serialized): Promise<void> => {
         await fetchWithUser(
             "/api/column",
-            user,
-            { joinTable: data.metadata.descriptor,
-              baseTable: data.metadata.baseTable, column },
+            user!,
+            { joinTable: data?.metadata.descriptor,
+              baseTable: data?.metadata.baseTable, column },
             "POST"
         )
         await mutate()
@@ -180,7 +178,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         }
         await fetchWithUser(
             `/api/column/${column.id}`,
-            user,
+            user!,
             { update: updatedColumn },
             "PATCH"
         )
@@ -191,7 +189,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         const column = getColumnByKey(key)
         await fetchWithUser(
             `/api/column/${column.id}`,
-            user,
+            user!,
             undefined,
             "DELETE"
         )
@@ -205,9 +203,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
                 // states
                 data,
                 error,
-                // row utils
-                onRowReorder,
                 // row
+                onRowReorder,
                 createRow,
                 deleteRow,
                 partialRowUpdate,

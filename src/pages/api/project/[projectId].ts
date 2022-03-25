@@ -1,3 +1,4 @@
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import {
     changeProjectName,
     getProjects,
@@ -7,15 +8,14 @@ import { coreRequest } from "api/utils"
 import { User } from "auth"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
 /**
- * GET a single project @type {PM.Project}.
+ * GET a single project @type {ProjectDescriptor}.
  *
  * @tutorial
  * ```
- * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
+ * - URL: `/api/project/[id]` e.g. `/api/project/1`
  * - Body: {
  *  user: {@type {User}}
  * }
@@ -24,22 +24,21 @@ import { makeError } from "utils/makeError"
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    projectId: PM.Project.ID
+    projectId: ProjectDescriptor["id"]
 ) => {
     try {
         const { user } = req.body as {
             user: User
         }
 
-        // get all projects from project-management
-        const projects = await coreRequest<PM.Project[]>(
-            getProjects(projectId),
-            user.authCookie
+        const allProjects = await coreRequest<ProjectDescriptor[]>(
+            getProjects(user.id),
+            req.cookies[AUTH_COOKIE_KEY]
         )
 
-        const project = projects.find(proj => proj)
+        const project = allProjects.find(proj => proj.id === projectId)
         if (project == null)
-            throw new Error(`Could not find project with id: ${projectId}`)
+            throw new Error(`could not find project with id: ${projectId}`)
 
         res.status(200).json(project)
     } catch (err) {
@@ -50,31 +49,30 @@ const GET = async (
 
 /**
  * PATCH/update the name of a single project.
- * Returns the updated project {@type {PM.Project}}.
+ * Returns the updated project {@type {ProjectDescriptor}}.
  *
  * // TODO: In a future version this api point will be able to adjust more than the name.
  *
  * @tutorial
  * ```
- * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
+ * - URL: `/api/project/[id]` e.g. `/api/project/1`
  * - Body: {
- *  user: {@type {User}}
- *  newName: {@type {PM.Table.Name}}
+ *  newName: {@type {ProjectDescriptor["name"}}
  * }
  * ```
  */
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    projectId: PM.Project.ID
+    projectId: ProjectDescriptor["id"]
 ) => {
     try {
         const { newName } = req.body as {
-            newName: PM.Table.Name
+            newName: ProjectDescriptor["name"]
         }
 
         // rename project in project-management
-        const updatedProject = await coreRequest<PM.Project>( // TODO: does not return the proper type
+        const updatedProject = await coreRequest<ProjectDescriptor>(
             changeProjectName(projectId, newName),
             req.cookies[AUTH_COOKIE_KEY]
         )
@@ -100,7 +98,7 @@ const PATCH = async (
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    projectId: PM.Project.ID
+    projectId: ProjectDescriptor["id"]
 ) => {
     try {
         // delete project in project-management

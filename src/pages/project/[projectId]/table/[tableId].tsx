@@ -157,12 +157,14 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
             },
         }
 
-    const project = await fetchWithUser<ProjectDescriptor>(
-        `/api/tables/${projectId}`,
+    // workaround until PM exposes the required method
+    const projects = await fetchWithUser<ProjectDescriptor>(
+        `/api/projects/${user.id}`,
         user,
         undefined,
         "GET"
     )
+    const project = projects.find(p => p.id === projectId)
 
     if (project == null) return { notFound: true }
 
@@ -179,19 +181,11 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
         undefined,
         "GET"
     )
-
-    const parsedTableData: TableData.Serialized =
-        Parser.Table.parse(data)
-
-    // deserialize
-    const deserializedTableData: TableData.Deserialized =
-        DeSerialize.Table.deserialize(parsedTableData)
-    
     
     return {
         props: {
             project,
-            table: deserializedTableData.metadata.descriptor,
+            table: data.descriptor,
             tableList,
             fallback: {
                 [unstable_serialize([
@@ -199,7 +193,7 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
                     user,
                     undefined,
                     "GET",
-                ])]: deserializedTableData
+                ])]: data
             },
         },
     }
