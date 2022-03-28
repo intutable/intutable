@@ -60,7 +60,6 @@ export const makeError = (err: unknown): Error => {
     return new Error(
         `Unparsable Error: tried to handle the following error but could not parse it: ${inspect(
             value
-        )}`,
-        { cause: new Error(Object.prototype.toString.call(value)) }
+        )}`
     )
 }
