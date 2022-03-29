@@ -1,9 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import { PM } from "types"
 import { ColumnType } from "@intutable/database/dist/column"
-import {
-    ColumnDescriptor as PM_Column
-} from "@intutable/project-management/dist/types"
+import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { JoinDescriptor, JtInfo } from "@intutable/join-tables/dist/types"
 import { getJtInfo, addJoinToJt } from "@intutable/join-tables/dist/requests"
@@ -48,7 +46,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             getJtInfo(foreignJtId),
             req.cookies[AUTH_COOKIE_KEY]
         )
-        
+
         const foreignIdColumn = foreignJtInfo.columns.find(
             c => c.name === PM.UID_KEY
         )!
@@ -58,15 +56,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         const join = await coreRequest<JoinDescriptor>(
             addJoinToJt(jtId, {
                 foreignJtId,
-                on: [ fkColumn.id, "=", foreignIdColumn.id ],
-                columns: [{
-                    parentColumnId: primaryColumn.id,
-                    attributes: {
-                        displayName: primaryColumn.attributes.displayName!
-                            || primaryColumn.name,
-                        editor: primaryColumn.attributes.editor!
-                    }
-                }]
+                on: [fkColumn.id, "=", foreignIdColumn.id],
+                columns: [
+                    {
+                        parentColumnId: primaryColumn.id,
+                        attributes: {
+                            displayName:
+                                primaryColumn.attributes.displayName! ||
+                                primaryColumn.name,
+                            editor: primaryColumn.attributes.editor!,
+                        },
+                    },
+                ],
             }),
             req.cookies[AUTH_COOKIE_KEY]
         )

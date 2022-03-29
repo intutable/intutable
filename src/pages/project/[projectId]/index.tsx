@@ -16,7 +16,8 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import { isValidName, prepareName } from "utils/validateName"
+import { prepareName } from "utils/validateName"
+import sanitizeName from "utils/sanitizeName"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
@@ -186,14 +187,9 @@ const TableList: React.FC<TableListProps> = props => {
             const namePrompt = prompt("Benenne deine neue Tabelle!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            const isValid = isValidName(name)
-            if (isValid instanceof Error) {
-                enqueueSnackbar(isValid.message, { variant: "error" })
-                return
-            }
             const nameIsTaken = tables!
-                .map((tbl: PM.Table) => tbl.name.toLowerCase())
-                .includes(name.toLowerCase())
+                .map((tbl: JtDescriptor) => sanitizeName(tbl.name))
+                .includes(sanitizeName(name))
             if (nameIsTaken) {
                 enqueueSnackbar(
                     "Dieser Name wird bereits für eine deiner Tabellen verwendet!",
@@ -216,6 +212,7 @@ const TableList: React.FC<TableListProps> = props => {
                 variant: "success",
             })
         } catch (error) {
+            console.error(error)
             enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
                 variant: "error",
             })
@@ -366,8 +363,6 @@ export const getServerSideProps: GetServerSideProps<
         undefined,
         "GET"
     )
-
-    console.log(tables)
 
     return {
         props: {

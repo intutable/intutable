@@ -13,8 +13,9 @@ import { createJt } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import { PMTypes as PM } from "types"
-import { makeError } from "utils/makeError"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
+import { makeError } from "utils/makeError"
+import sanitizeName from "utils/sanitizeName"
 
 /**
  * Create a new table with the specified name.
@@ -30,7 +31,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // create table in project-management with primary "name" column
         const table = await coreRequest<TableDescriptor>(
-            createTableInProject(user.id, project.id, name, [
+            createTableInProject(user.id, project.id, sanitizeName(name), [
                 { name: "name", type: ColumnType.string, options: [] },
             ]),
             req.cookies[AUTH_COOKIE_KEY]
@@ -53,7 +54,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         const jtTable = await coreRequest<JtDescriptor>(
             createJt(
                 table.id,
-                table.name,
+                name,
                 { columns: columnSpecs, joins: [] },
                 { conditions: [], sortColumns: [], groupColumns: [] },
                 user.id
