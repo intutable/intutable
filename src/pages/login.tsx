@@ -38,7 +38,7 @@ const Login: NextPage = () => {
             ? new Error(router.query.error.toString())
             : null
     const { enqueueSnackbar } = useSnackbar()
-    const { user, login } = useAuth()
+    const { login } = useAuth()
 
     const [loading, setLoading] = useState<boolean>(false)
     const [usernameValid, setUsernameValid] = useState<Error | true | null>(

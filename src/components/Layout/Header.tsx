@@ -102,7 +102,6 @@ const DrawerListItem: React.FC<DrawerListItemProps> = props => {
 }
 
 const Header = () => {
-    const router = useRouter()
     const { user } = useAuth()
     const theme = useTheme()
 
