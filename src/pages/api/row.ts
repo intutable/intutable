@@ -3,7 +3,7 @@ import { TableDescriptor } from "@intutable/join-tables/dist/types"
 import { coreRequest } from "api/utils"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PM as PMKeys, PMTypes as PM, Row } from "types"
+import { PM, Row } from "types"
 import Obj from "types/Obj"
 import { makeError } from "utils/makeError"
 
@@ -15,8 +15,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         // create row in database
-        const rowId = await coreRequest<typeof PMKeys.UID_KEY>(
-            insert(baseTable.key, values),
+        const rowId = await coreRequest<typeof PM.UID_KEY>(
+            insert(baseTable.key, values, [PM.UID_KEY]),
             req.cookies[AUTH_COOKIE_KEY]
         )
 

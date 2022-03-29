@@ -66,6 +66,7 @@ CREATE TABLE jt_columns(
     column_id INTEGER NOT NULL,
     -- custom metadata
     "displayName" TEXT NULL,
+    "userPrimary" INTEGER DEFAULT 0 NOT NULL,
     editable INTEGER DEFAULT 1 NOT NULL,
     editor TEXT NULL
 );
@@ -95,8 +96,9 @@ INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(1, 1, NULL, 1, 'ID', 'number');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(2, 1, NULL, 2, 'Vorname', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(3, 1, NULL, 3, 'Nachname', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", "userPrimary", editor)
+  VALUES(3, 1, NULL, 3, 'Nachname', 1, 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(4, 1, NULL, 4, 'E-Mail', 'string');
 
@@ -107,7 +109,8 @@ create table if not exists p1_kommissionen(
     gruendung text,
     aufloesung text
 );
-insert into tables(_id, key, name, "ownerId") values(2, 'p1_kommissionen', 'kommissionen', 1);
+insert into tables(_id, key, name, "ownerId")
+  values(2, 'p1_kommissionen', 'kommissionen', 1);
 insert into projecttables("projectId", "tableId") values(1, 2);
 insert into columns(_id, "columnName", "tableId") values(5, '_id', 2);
 insert into columns(_id, "columnName", "tableId") values(6, 'bezeichnung', 2);
@@ -119,8 +122,9 @@ INSERT INTO jts(_id, name, table_id, user_id, row_options)
          '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(5, 2, NULL, 5, 'ID', 'number');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(6, 2, NULL, 6, 'Bezeichnung', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", "userPrimary", editor)
+  VALUES(6, 2, NULL, 6, 'Bezeichnung', 1, 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(7, 2, NULL, 7, 'Gründung', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
@@ -144,8 +148,9 @@ INSERT INTO jts(_id, name, table_id, user_id, row_options)
          '{"conditions": [], "groupColumns": [], "sortColumns": []}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
   VALUES(9, 3, NULL, 9, 'ID', 'number');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(10, 3, NULL, 10, 'Name', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", "userPrimary", editor)
+  VALUES(10, 3, NULL, 10, 'Name', 1, 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
 VALUES(11, 3, NULL, 11, 'Adresse', 'string');
 
