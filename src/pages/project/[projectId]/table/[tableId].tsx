@@ -49,12 +49,23 @@ const TablePage: React.FC<TablePageProps> = props => {
     return (
         <>
             <Title title={props.project.name} />
-            <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
-                <Link href={`/project/${props.project.id}`}>
+            <Typography
+                sx={{
+                    mb: theme.spacing(4),
+                    color: theme.palette.text.secondary,
+                }}
+            >
+                Deine Tabellen in{" "}
+                <Link
+                    href={`/projects`}
+                    muiLinkProps={{
+                        underline: "hover",
+                        color: theme.palette.primary.main,
+                        textDecoration: "none",
+                    }}
+                >
                     {props.project.name}
                 </Link>
-                {"> "}
-                {props.table.name}
             </Typography>
 
             {error ? (

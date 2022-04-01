@@ -275,9 +275,23 @@ const TableList: React.FC<TableListProps> = props => {
     return (
         <>
             <Title title="Projekte" />
-            <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
+            <Typography
+                sx={{
+                    mb: theme.spacing(4),
+                    color: theme.palette.text.secondary,
+                }}
+            >
                 Deine Tabellen in{" "}
-                <Link href={`/projects`}>{props.project.name}</Link>
+                <Link
+                    href={`/projects`}
+                    muiLinkProps={{
+                        underline: "hover",
+                        color: theme.palette.primary.main,
+                        textDecoration: "none",
+                    }}
+                >
+                    {props.project.name}
+                </Link>
             </Typography>
             <Grid container spacing={2}>
                 {tables.map((tbl: JtDescriptor, i: number) => (
