@@ -13,6 +13,7 @@ import { PM, Row, Column, TableData } from "types"
 import { Parser } from "api/utils"
 
 export type TableContextProps = {
+    project: ProjectDescriptor
     data: TableData | undefined
     error: Error | null
     onRowReorder: (sourceIndex: number, targetIndex: number) => void
@@ -25,6 +26,7 @@ export type TableContextProps = {
 }
 
 const initialState: TableContextProps = {
+    project: undefined!,
     data: undefined!,
     error: undefined!,
     onRowReorder: undefined!,
@@ -60,7 +62,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
      */
 
     // #################### utils ####################
-    function getColumnByKey(key: Column["key"]): ColumnDescriptor {
+
+    const getColumnByKey = (key: Column["key"]): ColumnDescriptor => {
         const column = data!.metadata.columns.find(c => c.key === key)
         if (!column) throw Error(`could not find column with key ${key}`)
         else {
@@ -68,8 +71,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         }
     }
 
-    function getRowId(row: Row) {
-        const uidColumn = data?.metadata.columns.find(
+    const getRowId = (row: Row) => {
+        const uidColumn = data!.metadata.columns.find(
             c => c.name === PM.UID_KEY
         )!
         return row[uidColumn.key]
@@ -200,6 +203,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     return (
         <TableContext.Provider
             value={{
+                project: props.project,
                 // states
                 data,
                 error,

@@ -7,10 +7,19 @@ import {
     DialogContent,
     DialogTitle,
     useTheme,
+    CircularProgress,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
 } from "@mui/material"
 import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import { ColumnDescriptor } from "@intutable/join-tables/dist/types"
+import React, { useEffect, useState } from "react"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { useAuth, useTableCtx } from "context"
+import { fetchWithUser } from "api"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import useSWR from "swr"
 
 /**
  * Toolbar Item for adding rows to the data grid.
@@ -18,8 +27,10 @@ import { ColumnDescriptor } from "@intutable/join-tables/dist/types"
 export const AddLink: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
 
-    const [anchorEL, setAnchorEL] = useState<Element | null>(null)
+    const { data: currentTable, project } = useTableCtx()
+    const { user } = useAuth()
 
+    const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
         event: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ) => {
@@ -28,7 +39,29 @@ export const AddLink: React.FC = () => {
 
     const handleCloseModal = () => setAnchorEL(null)
 
-    const handleAddLink = () => Promise.resolve()
+    const handleAddLink = async (table: JtDescriptor) => {
+        try {
+            if (currentTable == null) throw new Error("A")
+            await fetchWithUser(
+                "/api/join",
+                user!,
+                {
+                    jtId: currentTable.metadata.descriptor.id,
+                    foreignJtId: table.id,
+                },
+                "POST"
+            )
+            enqueueSnackbar("Die Tabelle wurde erfolgreich verlinkt.", {
+                variant: "success",
+            })
+        } catch (err) {
+            enqueueSnackbar("Die Tabelle konnte nicht verlinkt werden!", {
+                variant: "error",
+            })
+        } finally {
+            handleCloseModal()
+        }
+    }
 
     return (
         <>
@@ -38,6 +71,7 @@ export const AddLink: React.FC = () => {
                 </Button>
             </Tooltip>
             <AddLinkModal
+                project={project}
                 open={anchorEL != null}
                 onClose={handleCloseModal}
                 onAddLink={handleAddLink}
@@ -46,31 +80,80 @@ export const AddLink: React.FC = () => {
     )
 }
 
-type AddLinkProps = {
+type AddLinkModalProps = {
+    project: ProjectDescriptor
     open: boolean
     onClose: () => void
-    onAddLink: (value: unknown) => Promise<void>
+    onAddLink: (table: JtDescriptor) => unknown
 }
 
-export const AddLinkModal: React.FC<AddLinkProps> = props => {
+export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
     const theme = useTheme()
+    const { user } = useAuth()
+    const { enqueueSnackbar } = useSnackbar()
 
-    const [selection, setSelection] = useState<Array<ColumnDescriptor>>([])
+    const { data: tables, error } = useSWR<JtDescriptor[]>(
+        user
+            ? [`/api/tables/${props.project.id}`, user, undefined, "GET"]
+            : null,
+        fetchWithUser
+    )
+    const [selection, setSelection] = useState<JtDescriptor | null>(null)
+
+    useEffect(() => {
+        if (error) {
+            enqueueSnackbar("Die Tabellen konnten nicht geladen werden", {
+                variant: "error",
+            })
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [error])
+
+    const onClickHandler = (table: JtDescriptor) => setSelection(table)
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
-            <DialogTitle>
-                Spalte aus einer anderen Tablle hinzufügen
-            </DialogTitle>
-            <DialogContent></DialogContent>
+            {tables == null && error == null ? (
+                <CircularProgress />
+            ) : error ? (
+                <>Error: {error}</>
+            ) : (
+                <>
+                    <DialogTitle>
+                        Spalte aus einer anderen Tablle hinzufügen
+                    </DialogTitle>
+                    <DialogContent>
+                        <List>
+                            {tables!.map((tbl, i) => (
+                                <ListItem
+                                    key={i}
+                                    disablePadding
+                                    sx={{
+                                        bgcolor:
+                                            selection?.id === tbl.id
+                                                ? theme.palette.action.selected
+                                                : undefined,
+                                    }}
+                                >
+                                    <ListItemButton
+                                        onClick={onClickHandler.bind(null, tbl)}
+                                    >
+                                        <ListItemText primary={tbl.name} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </DialogContent>
+                </>
+            )}
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <Button
                     onClick={async () => {
-                        await props.onAddLink(0)
+                        await props.onAddLink(selection!)
                         props.onClose()
                     }}
-                    disabled={selection.length < 1}
+                    disabled={selection == null || error}
                 >
                     Hinzufügen
                 </Button>
