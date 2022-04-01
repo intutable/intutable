@@ -22,6 +22,7 @@ import {
 } from "@mui/material"
 import { fetchWithUser } from "api"
 import { useAuth } from "context"
+import { useSnackbar } from "notistack"
 import React, { useState } from "react"
 import useSWR from "swr"
 
@@ -34,6 +35,7 @@ type ColumnPickerProps = {
 const ColumnPicker: React.FC<ColumnPickerProps> = props => {
     const { user } = useAuth()
     const theme = useTheme()
+    const { enqueueSnackbar } = useSnackbar()
 
     const { data, error } = useSWR<TableData>(
         user ? [`/api/table/${props.table.id}`, user, undefined, "GET"] : null,
@@ -47,13 +49,25 @@ const ColumnPicker: React.FC<ColumnPickerProps> = props => {
 
     const [selection, setSelection] = useState<ColumnDescriptor | null>(null)
 
-    const handlePickColumn = async () => {}
+    const handlePickColumn = async () => {
+        try {
+            enqueueSnackbar("Die X wurde erfolgreich hinzugefügt.", {
+                variant: "success",
+            })
+        } catch (err) {
+            enqueueSnackbar("Die X konnte nicht hinzugefügt werden!", {
+                variant: "error",
+            })
+        } finally {
+            props.onClose()
+        }
+    }
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>Wähle eine Zeile</DialogTitle>
             <DialogContent>
-                {data == null && data!.columns == null && error == null ? (
+                {(data == null || data.columns == null) && error == null ? (
                     <CircularProgress />
                 ) : error ? (
                     <>Error: {error}</>
@@ -124,7 +138,7 @@ export const LinkColumnFormatter: Formatter = props => {
                 ></Box>
             </Tooltip>
             <ColumnPicker
-                table={} // TODO: how do i calc the derived table?!
+                table={{ id: 1, name: "A" }} // TODO: how do i calc the derived table?!
                 open={anchorEL != null}
                 onClose={handleCloseModal}
             />
