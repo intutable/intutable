@@ -1,10 +1,8 @@
-import {
-    HeaderRenderer,
-    headerRenderer,
-} from "@datagrid/renderers/ColumnRenderer"
+import { headerRenderer } from "@datagrid/renderers"
 import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
 import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
 import { CellContentTypeComponents } from "@datagrid/Editor_Formatter"
+import { LinkedColumnFormmater } from "@datagrid/Editor_Formatter/components/formatters"
 import type { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
 
@@ -33,16 +31,22 @@ export const serialize = (col: Column): Column.Serialized => ({
  * @param {SerializedColumn} col
  * @returns {Column}
  */
-export const deserialize = (col: Column.Serialized): Column => ({
+export const deserialize = (
+    col: Column.Serialized,
+    options: { isLinkedCol: boolean } = { isLinkedCol: false }
+): Column => ({
     name: col.name,
     key: col.key,
-    editable: col.editable,
-    editor:
-        col.editable && isCellContentType(col.editor)
-            ? CellContentTypeComponents[col.editor].editor
-            : undefined,
+    editable: options.isLinkedCol !== true ?? col.editable,
+    editor: options.isLinkedCol
+        ? undefined
+        : col.editable && isCellContentType(col.editor)
+        ? CellContentTypeComponents[col.editor].editor
+        : undefined,
     // editor: TextEditor,
-    formatter: isCellContentType(col.editor)
+    formatter: options.isLinkedCol
+        ? LinkedColumnFormmater
+        : isCellContentType(col.editor)
         ? CellContentTypeComponents[col.editor].formatter
         : undefined,
     editorOptions: {
