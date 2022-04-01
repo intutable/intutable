@@ -1,33 +1,39 @@
-import { CellContentType } from "@datagrid/Editor_Formatter/type-management"
-import { useTableCtx } from "context"
-import { Column } from "types"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import {
     Box,
     IconButton,
     Menu,
     MenuItem,
+    Tooltip,
     Typography,
     useTheme,
 } from "@mui/material"
+import { useTableCtx } from "context"
 import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import { ChangeCellTypeDialog } from "./ChangeCellTypeDialog"
+import React, { useMemo, useState } from "react"
+import { HeaderRendererProps } from "react-data-grid"
+import { Row } from "types"
+import LinkIcon from "@mui/icons-material/Link"
+import { useRouter } from "next/router"
+import useSWR from "swr"
+import { useTables } from "hooks/useTables"
 
-type ColumnHeaderProps = {
-    ckey: Column["key"]
-    label: string
-    type: CellContentType
-}
-
-export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
+export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
+    const router = useRouter()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const [changeTypeModalOpen, setChangeTypeModalOpen] = useState(false)
 
-    const { renameColumn, deleteColumn } = useTableCtx()
+    const { renameColumn, deleteColumn, utils, project } = useTableCtx()
+
+    const col = utils.getColumnByKey(props.column.key)
+    const isLinkedCol = col.joinId !== null
+    const { tables } = useTables(project)
+    const foreignJt = useMemo(
+        () => tables?.find(tbl => tbl.id === col.joinId),
+        [tables]
+    )
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -35,27 +41,13 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    const handleOpenChangeTypeModal = () => setChangeTypeModalOpen(true)
-    const handleCloseChangeTypeModal = (newType?: CellContentType) => {
-        // TODO: change type
-        /**
-         * Things to do:
-         * 1. Check if the old type can be converted to the new type in general (e.g. a number can not be converted to a string)
-         * 2. If yes, check for every cell if the value can be converted to the new type
-         * 3. convert the values to the new type
-         */
-        if (newType) alert(`(not implemented) Neuer Typ: ${newType}`)
-        setChangeTypeModalOpen(false)
-        handleCloseContextMenu()
-    }
-
     const handleDeleteColumn = async () => {
         try {
             const confirmed = confirm(
                 "Möchtest du diese Spalte wirklich löschen?"
             )
             if (!confirmed) return
-            await deleteColumn(props.ckey)
+            await deleteColumn(props.column.key)
             enqueueSnackbar("Spalte wurde gelöscht.", {
                 variant: "success",
             })
@@ -66,12 +58,15 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
         }
     }
 
+    const navigateToJT = () =>
+        router.push(`/project/${project.id}/table/${foreignJt?.id}`)
+
     const handleRenameColumn = async () => {
         try {
             const name = prompt("Gib einen neuen Namen für diese Spalte ein:")
             if (!name) return
             // TODO: check if the column name is already taken
-            await renameColumn(props.ckey, name)
+            await renameColumn(props.column.key, name)
             enqueueSnackbar("Die Spalte wurde umbenannt.", {
                 variant: "success",
             })
@@ -94,15 +89,30 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
                     alignItems: "center",
                 }}
             >
-                <Typography
-                    sx={{
-                        fontWeight: "bold",
-                        cursor: "text",
-                    }}
-                    onDoubleClick={handleRenameColumn}
-                >
-                    {props.label}
-                </Typography>
+                {isLinkedCol && (
+                    <Tooltip
+                        title={`Ursprung: ${
+                            foreignJt ? foreignJt.name : "Lädt..."
+                        }`}
+                    >
+                        <IconButton
+                            onClick={navigateToJT}
+                            size="small"
+                            disabled={foreignJt == null}
+                        >
+                            <LinkIcon />
+                        </IconButton>
+                    </Tooltip>
+                )}
+                <Tooltip title={props.column.name}>
+                    <Typography
+                        sx={{
+                            fontWeight: "bold",
+                        }}
+                    >
+                        {props.column.name}
+                    </Typography>
+                </Tooltip>
                 <Box sx={{ flex: 1 }} />
                 <IconButton
                     onClick={handleOpenContextMenu}
@@ -128,27 +138,29 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = props => {
                         },
                     }}
                 >
-                    <MenuItem
-                        onClick={handleOpenChangeTypeModal}
-                        sx={{ color: theme.palette.warning.main }}
-                    >
-                        Typ ändern ({props.type})
-                    </MenuItem>
-                    <MenuItem>Eigenschaften ändern</MenuItem>
-                    <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
-                    <MenuItem
-                        onClick={handleDeleteColumn}
-                        sx={{ color: theme.palette.warning.main }}
-                    >
-                        Löschen
-                    </MenuItem>
+                    {isLinkedCol ? (
+                        <MenuItem onClick={handleRenameColumn}>
+                            Verlinkung aufheben
+                        </MenuItem>
+                    ) : (
+                        <>
+                            <MenuItem onClick={handleRenameColumn}>
+                                Umbenennen
+                            </MenuItem>
+                            <MenuItem
+                                onClick={handleDeleteColumn}
+                                sx={{ color: theme.palette.warning.main }}
+                            >
+                                Löschen
+                            </MenuItem>
+                        </>
+                    )}
                 </Menu>
             )}
-            {/* <ChangeCellTypeDialog
-                currentType={props.type}
-                open={changeTypeModalOpen}
-                onClose={handleCloseChangeTypeModal}
-            /> */}
         </>
     )
 }
+
+export const headerRenderer = (props: HeaderRendererProps<Row>) => (
+    <HeaderRenderer {...props} />
+)

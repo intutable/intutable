@@ -20,6 +20,7 @@ import { useAuth, useTableCtx } from "context"
 import { fetchWithUser } from "api"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import useSWR, { unstable_serialize, useSWRConfig } from "swr"
+import LoadingButton from "@mui/lab/LoadingButton"
 
 /**
  * Toolbar Item for adding rows to the data grid.
@@ -157,7 +158,9 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
             )}
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
-                <Button
+                <LoadingButton
+                    loading={tables == null}
+                    loadingIndicator="Lädt..."
                     onClick={async () => {
                         await props.onAddLink(selection!)
                         props.onClose()
@@ -165,7 +168,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                     disabled={selection == null || error}
                 >
                     Hinzufügen
-                </Button>
+                </LoadingButton>
             </DialogActions>
         </Dialog>
     )

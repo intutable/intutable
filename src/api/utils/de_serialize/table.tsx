@@ -50,7 +50,7 @@ export const deserialize = (table: TableData.Serialized): TableData => {
 
     // add rdg indice column
     const rdgIndexCol: Column = {
-        name: "ID",
+        name: "Index",
         key: PLACEHOLDER.ROW_INDEX_KEY,
         editable: false,
         resizable: true,

@@ -31,6 +31,7 @@ import type {
     NextPage,
 } from "next"
 import { fetchWithUser } from "api"
+import { makeCacheKey, useTables, useTablesConfig } from "hooks/useTables"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -173,16 +174,7 @@ const TableList: React.FC<TableListProps> = props => {
     const { enqueueSnackbar } = useSnackbar()
     const { user } = useAuth()
 
-    const {
-        data: tables,
-        error,
-        mutate,
-    } = useSWR<JtDescriptor[]>(
-        user
-            ? [`/api/tables/${props.project.id}`, user, undefined, "GET"]
-            : null,
-        fetchWithUser
-    )
+    const { tables, error, mutate } = useTables(props.project)
 
     const handleCreateTable = async () => {
         try {
@@ -370,12 +362,7 @@ export const getServerSideProps: GetServerSideProps<
         props: {
             project: project,
             fallback: {
-                [unstable_serialize([
-                    `/api/tables/${project.id}`,
-                    user,
-                    undefined,
-                    "GET",
-                ])]: tables,
+                [makeCacheKey(project, user)]: tables,
             },
         },
     }

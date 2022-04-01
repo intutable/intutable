@@ -53,9 +53,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         const primaryColumn = foreignJtInfo.columns.find(
             c => c.attributes.userPrimary! === 1
         )!
-        const displayName =
-            `${primaryColumn.attributes.displayName || primaryColumn.name}` +
-            `(from ${foreignJtInfo.descriptor.name})`
+        const displayName = (primaryColumn.attributes.displayName ||
+            primaryColumn.name) as string
         const join = await coreRequest<JoinDescriptor>(
             addJoinToJt(jtId, {
                 foreignJtId,

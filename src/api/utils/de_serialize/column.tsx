@@ -1,4 +1,7 @@
-import { ColumnHeader } from "@datagrid/ColumnRenderer"
+import {
+    HeaderRenderer,
+    headerRenderer,
+} from "@datagrid/renderers/ColumnRenderer"
 import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
 import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
 import { CellContentTypeComponents } from "@datagrid/Editor_Formatter"
@@ -37,21 +40,14 @@ export const deserialize = (col: Column.Serialized): Column => ({
     editor:
         col.editable && isCellContentType(col.editor)
             ? CellContentTypeComponents[col.editor].editor
-            : undefined, // TODO: maybe add the default TextEditor from rdg?!
+            : undefined,
     // editor: TextEditor,
     formatter: isCellContentType(col.editor)
         ? CellContentTypeComponents[col.editor].formatter
         : undefined,
     editorOptions: {
-        editOnClick: true,
+        editOnClick: col.editable,
+        commitOnOutsideClick: col.editable,
     },
-    headerRenderer: (props: HeaderRendererProps<Row>) => {
-        return (
-            <ColumnHeader
-                ckey={props.column.key}
-                label={props.column.name as string}
-                type={col.editor}
-            />
-        )
-    },
+    headerRenderer: headerRenderer,
 })

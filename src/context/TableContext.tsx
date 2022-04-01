@@ -23,6 +23,9 @@ export type TableContextProps = {
     createColumn: (col: Column.Serialized) => Promise<void>
     renameColumn: (key: Column["key"], newName: Column["name"]) => Promise<void>
     deleteColumn: (key: Column["key"]) => Promise<void>
+    utils: {
+        getColumnByKey: (key: Column["key"]) => ColumnDescriptor
+    }
 }
 
 const initialState: TableContextProps = {
@@ -36,6 +39,7 @@ const initialState: TableContextProps = {
     createColumn: undefined!,
     renameColumn: undefined!,
     deleteColumn: undefined!,
+    utils: undefined!,
 }
 
 const TableContext = React.createContext<TableContextProps>(initialState)
@@ -66,9 +70,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const getColumnByKey = (key: Column["key"]): ColumnDescriptor => {
         const column = data!.metadata.columns.find(c => c.key === key)
         if (!column) throw Error(`could not find column with key ${key}`)
-        else {
-            return column
-        }
+        return column
     }
 
     const getRowId = (row: Row) => {
@@ -216,6 +218,10 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
                 createColumn,
                 renameColumn,
                 deleteColumn,
+                // utils
+                utils: {
+                    getColumnByKey,
+                },
             }}
         >
             {props.children}
