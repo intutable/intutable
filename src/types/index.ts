@@ -18,61 +18,11 @@ export const PM = {
 } as const
 
 /**
- * Project Management Package
- * @namespace
- */
-export namespace PMTypes {
-    export namespace Project {
-        export type ID = number
-        export type Name = string
-    }
-    export type Project = {
-        id: Project.ID
-        name: Project.Name
-    }
-
-    export namespace Table {
-        export type ID = number
-        export type Name = string
-    }
-    export type Table = {
-        id: Table.ID
-        name: Table.Name
-    }
-
-    export namespace Column {
-        export type ID = number
-        export type Name = string
-    }
-    export type Column = {
-        id: Column.ID
-        name: Column.Name
-    }
-}
-
-/**
  * Database
  * @namespace
  */
 namespace DB {
     export type Boolean = 1 | 0
-    export type Column = {
-        readonly [PM.UID_KEY]: number // ID of meta column
-        columnName: string // internal name (key)
-        displayName: string // display name
-        editable: DB.Boolean
-        hidden: DB.Boolean
-        type: CellContentType // `editor`
-    }
-    export type Row = {
-        readonly [PM.UID_KEY]: number
-        [index: string]: unknown
-    }
-    export type TableData = {
-        table: PMTypes.Table
-        columns: DB.Column[]
-        rows: DB.Row[]
-    }
 }
 
 // #################################################################
@@ -152,15 +102,12 @@ export namespace Row {
     export type Serialized = SerializedRow
     export type Summary = SummaryRow
     export type Deserialized = Row
-    export type DBSchema = DB.Row
 }
 export namespace Column {
     export type Serialized = SerializedColumn
     export type Deserialized = Column
-    export type DBSchema = DB.Column
 }
 export namespace TableData {
     export type Serialized = SerializedTableData
     export type Deserialized = TableData
-    export type DBSchema = DB.TableData
 }

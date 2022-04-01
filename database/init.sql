@@ -157,11 +157,13 @@ VALUES(11, 3, NULL, 11, 'Adresse', 'string');
 
 -- object data
 insert into p1_personen(vorname, nachname, email) 
-values('Raphael', 'Kirchholtes', 'dk457@stud.uni-heidelberg');
+values('Raphael', 'Kirchholtes', 'dk457@stud.uni-heidelberg.de');
 insert into p1_personen(vorname, nachname, email) 
-values('Kilian', 'Folger', 'ub437@stud.uni-heidelberg');
+values('Kilian', 'Folger', 'ub437@stud.uni-heidelberg.de');
 insert into p1_personen(vorname, nachname, email) 
-values('Nikita-Nick', 'Funk', 'kf235@stud.uni-heidelberg');
+values('Nikita-Nick', 'Funk', 'kf235@stud.uni-heidelberg.de');
+INSERT INTO p1_personen(vorname, nachname, email)
+  VALUES('Luis', 'Schulte', 'luis.schulte@stud.uni-heidelberg.de');
 
 insert into p1_kommissionen(bezeichnung, gruendung, aufloesung)
 values ('IT-Gruppe Dekanat', '15. September 2021', null);

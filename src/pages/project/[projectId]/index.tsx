@@ -1,9 +1,8 @@
-import type { PMTypes as PM } from "types"
-import { Auth } from "auth"
+import { useRouter } from "next/router"
+import { useSnackbar } from "notistack"
+import React, { useState } from "react"
+import useSWR, { SWRConfig, unstable_serialize } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
-import Title from "components/Head/Title"
-import Link from "components/Link"
-import { AUTH_COOKIE_KEY, useAuth } from "context"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -16,6 +15,14 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
+
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+
+import { Auth } from "auth"
+import Title from "components/Head/Title"
+import Link from "components/Link"
+import { AUTH_COOKIE_KEY, useAuth } from "context"
 import { prepareName } from "utils/validateName"
 import sanitizeName from "utils/sanitizeName"
 import type {
@@ -23,11 +30,6 @@ import type {
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import useSWR, { SWRConfig, unstable_serialize } from "swr"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { fetchWithUser } from "api"
 
 type TableContextMenuProps = {
@@ -92,7 +94,7 @@ const TableProjectCard: React.FC<AddTableCardProps> = props => {
 }
 
 type TableCardProps = {
-    project: PM.Project
+    project: ProjectDescriptor
     table: JtDescriptor
     handleRename: (joinTable: JtDescriptor) => Promise<void>
     handleDelete: (joinTable: JtDescriptor) => Promise<void>
@@ -164,7 +166,7 @@ const TableCard: React.FC<TableCardProps> = props => {
 }
 
 type TableListProps = {
-    project: PM.Project
+    project: ProjectDescriptor
 }
 const TableList: React.FC<TableListProps> = props => {
     const theme = useTheme()
@@ -224,7 +226,7 @@ const TableList: React.FC<TableListProps> = props => {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
             const nameIsTaken = tables!
-                .map((tbl: PM.Table) => tbl.name.toLowerCase())
+                .map((tbl: JtDescriptor) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -309,8 +311,8 @@ const TableList: React.FC<TableListProps> = props => {
 }
 
 type PageProps = {
-    project: PM.Project
-    // fallback: PM.Table.List
+    project: ProjectDescriptor
+    // fallback: JtDescriptor[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fallback: any // TODO: remove this any
 }
@@ -346,9 +348,9 @@ export const getServerSideProps: GetServerSideProps<
             },
         }
 
-    const projectId: PM.Project.ID = Number.parseInt(query.projectId)
+    const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
 
-    const projects = await fetchWithUser<PM.Project[]>(
+    const projects = await fetchWithUser<ProjectDescriptor[]>(
         `/api/projects/${user.id}`,
         user,
         undefined,

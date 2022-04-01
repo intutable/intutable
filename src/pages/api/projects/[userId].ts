@@ -1,8 +1,8 @@
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { getProjects } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
 const GET = async (
@@ -11,7 +11,7 @@ const GET = async (
     userId: number
 ) => {
     try {
-        const projects = await coreRequest<PM.Project[]>(
+        const projects = await coreRequest<ProjectDescriptor[]>(
             getProjects(userId),
             req.cookies[AUTH_COOKIE_KEY]
         )

@@ -1,20 +1,20 @@
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { createProject } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         const { user, name } = req.body as {
             user: User
-            name: PM.Project.Name
+            name: ProjectDescriptor["name"]
         }
 
         // create project in project-management
-        const project = await coreRequest<PM.Project>(
+        const project = await coreRequest<ProjectDescriptor>(
             createProject(user.id, name),
             req.cookies[AUTH_COOKIE_KEY]
         )

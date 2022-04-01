@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import { ColumnType } from "@intutable/database/dist/column"
 import {
+    ProjectDescriptor,
     TableDescriptor,
     ColumnDescriptor as PM_Column,
 } from "@intutable/project-management/dist/types"
@@ -12,7 +13,6 @@ import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { createJt } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
-import { PMTypes as PM } from "types"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import { makeError } from "utils/makeError"
 import sanitizeName from "utils/sanitizeName"
@@ -25,8 +25,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         const { user, project, name } = req.body as {
             user: User
-            project: PM.Project
-            name: PM.Table.Name
+            project: ProjectDescriptor
+            name: string
         }
 
         // create table in project-management with primary "name" column

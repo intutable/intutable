@@ -1,17 +1,19 @@
-import { TableDescriptor } from "@intutable/project-management/dist/types"
+import {
+    ProjectDescriptor,
+    TableDescriptor,
+} from "@intutable/project-management/dist/types"
 import { getTablesFromProject } from "@intutable/project-management/dist/requests"
 import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { listJts } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PMTypes as PM } from "types"
 import { makeError } from "utils/makeError"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    projectId: PM.Project.ID
+    projectId: ProjectDescriptor["id"]
 ) => {
     try {
         const baseTables = await coreRequest<TableDescriptor[]>(

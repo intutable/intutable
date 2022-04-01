@@ -1,3 +1,7 @@
+import { useRouter } from "next/router"
+import { useSnackbar } from "notistack"
+import React, { useState } from "react"
+import useSWR, { SWRConfig, unstable_serialize } from "swr"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -10,6 +14,9 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
+
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+
 import { fetchWithUser } from "api"
 import { Auth } from "auth"
 import Title from "components/Head/Title"
@@ -19,11 +26,6 @@ import type {
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import useSWR, { SWRConfig, unstable_serialize } from "swr"
-import type { PMTypes as PM } from "types"
 import { isValidName, prepareName } from "utils/validateName"
 
 type ProjectContextMenuProps = {
@@ -88,9 +90,9 @@ const AddProjectCard: React.FC<AddProjectCardProps> = props => {
 }
 
 type ProjectCardProps = {
-    project: PM.Project
-    handleRename: (project: PM.Project) => Promise<void>
-    handleDelete: (project: PM.Project) => Promise<void>
+    project: ProjectDescriptor
+    handleRename: (project: ProjectDescriptor) => Promise<void>
+    handleDelete: (project: ProjectDescriptor) => Promise<void>
     children: string
 }
 const ProjectCard: React.FC<ProjectCardProps> = props => {
@@ -167,7 +169,7 @@ const ProjectList: React.FC = () => {
         data: projects,
         error,
         mutate,
-    } = useSWR<PM.Project[]>(
+    } = useSWR<ProjectDescriptor[]>(
         user ? [`/api/projects/${user.id}`, user, undefined, "GET"] : null,
         fetchWithUser
     )
@@ -184,7 +186,7 @@ const ProjectList: React.FC = () => {
                 return
             }
             const nameIsTaken = projects!
-                .map((proj: PM.Project) => proj.name.toLowerCase())
+                .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -193,7 +195,7 @@ const ProjectList: React.FC = () => {
                 )
                 return
             }
-            await fetchWithUser<PM.Project>(
+            await fetchWithUser<ProjectDescriptor>(
                 "/api/project",
                 user,
                 { user, name },
@@ -210,13 +212,13 @@ const ProjectList: React.FC = () => {
         }
     }
 
-    const handleRenameProject = async (project: PM.Project) => {
+    const handleRenameProject = async (project: ProjectDescriptor) => {
         if (projects == null || user == null) return
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
             const nameIsTaken = projects!
-                .map((proj: PM.Project) => proj.name.toLowerCase())
+                .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -225,7 +227,7 @@ const ProjectList: React.FC = () => {
                 )
                 return
             }
-            await fetchWithUser<PM.Project>(
+            await fetchWithUser<ProjectDescriptor>(
                 `/api/project/${project.id}`,
                 user,
                 { newName: name },
@@ -242,7 +244,7 @@ const ProjectList: React.FC = () => {
         }
     }
 
-    const handleDeleteProject = async (project: PM.Project) => {
+    const handleDeleteProject = async (project: ProjectDescriptor) => {
         if (projects == null || user == null) return
         try {
             const confirmed = confirm(
@@ -276,7 +278,7 @@ const ProjectList: React.FC = () => {
                 Deine Projekte
             </Typography>
             <Grid container spacing={2}>
-                {projects.map((proj: PM.Project, i: number) => (
+                {projects.map((proj: ProjectDescriptor, i: number) => (
                     <Grid item key={i}>
                         <ProjectCard
                             handleDelete={handleDeleteProject}
@@ -298,7 +300,7 @@ const ProjectList: React.FC = () => {
 }
 
 type PageProps = {
-    // fallback: PM.Project.List
+    // fallback: ProjectDescriptor.List
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fallback: any // TODO: remove this any
 }
@@ -328,7 +330,7 @@ export const getServerSideProps: GetServerSideProps<
             },
         }
 
-    const list = await fetchWithUser<PM.Project[]>(
+    const list = await fetchWithUser<ProjectDescriptor[]>(
         `/api/projects/${user.id}`, // Note: userId is tmp
         user,
         undefined,
