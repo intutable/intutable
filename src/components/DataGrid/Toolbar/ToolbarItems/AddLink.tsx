@@ -19,13 +19,14 @@ import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { useAuth, useTableCtx } from "context"
 import { fetchWithUser } from "api"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import useSWR from "swr"
+import useSWR, { unstable_serialize, useSWRConfig } from "swr"
 
 /**
  * Toolbar Item for adding rows to the data grid.
  */
 export const AddLink: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
+    const { mutate } = useSWRConfig()
 
     const { data: currentTable, project } = useTableCtx()
     const { user } = useAuth()
@@ -41,15 +42,26 @@ export const AddLink: React.FC = () => {
 
     const handleAddLink = async (table: JtDescriptor) => {
         try {
-            if (currentTable == null) throw new Error("A")
+            if (currentTable == null || user == null) throw new Error("A")
             await fetchWithUser(
                 "/api/join",
-                user!,
+                user,
                 {
                     jtId: currentTable.metadata.descriptor.id,
                     foreignJtId: table.id,
                 },
                 "POST"
+            )
+            await mutate(
+                unstable_serialize([
+                    "/api/join",
+                    user,
+                    {
+                        jtId: currentTable.metadata.descriptor.id,
+                        foreignJtId: table.id,
+                    },
+                    "POST",
+                ])
             )
             enqueueSnackbar("Die Tabelle wurde erfolgreich verlinkt.", {
                 variant: "success",
