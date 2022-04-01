@@ -9,19 +9,17 @@ export default function sanitizeName(name: string): string {
 }
 
 function spaceToUnderscore(char: string): string {
-    if (char.length !== 1){
+    if (char.length !== 1) {
         throw TypeError(`expected single char, got: ${char}`)
     } else {
-        return char.match(/^\s$/)
-            ? "_"
-            : char
+        return char.match(/^\s$/) ? "_" : char
     }
 }
 
 function isSimple(char: string): boolean {
-    if (char.length !== 1){
+    if (char.length !== 1) {
         throw TypeError(`expected single char, got: ${char}`)
     } else {
-        return !!(char.match(/^[a-zA-Z0-9-_]$/))
+        return !!char.match(/^[a-zA-Z0-9-_]$/)
     }
 }

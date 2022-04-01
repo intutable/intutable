@@ -95,15 +95,15 @@ function processArgs1(args: string[]): ProgramArgs {
         switch (args[0]) {
             case "dev":
                 return { frontendOption: "dev" }
-            case "preview":
-                return { frontendOption: "preview" }
+            case "start":
+                return { frontendOption: "start" }
             default:
                 usage()
         }
 }
 
 function usage(): ProgramArgs {
-    console.log("Usage: node start dev | node start preview")
+    console.log("Usage: node start dev | node start start")
     throw new Error("")
 }
 

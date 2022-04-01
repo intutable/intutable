@@ -36,15 +36,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         if (!parentColumn) {
             throw Error(`join table #${jtId} has no columnd #${parentColumnId}`)
-        } else if (parentColumn.joinId !== joinId){
-            throw Error(`column #${parentColumnId} does not belong to join`
-                + ` #${joinId}`)
+        } else if (parentColumn.joinId !== joinId) {
+            throw Error(
+                `column #${parentColumnId} does not belong to join` +
+                    ` #${joinId}`
+            )
         } else {
             const columnSpec = {
                 parentColumnId,
                 attributes: {
-                    displayName: parentColumn.attributes.displayName!
-                }
+                    displayName: parentColumn.attributes.displayName!,
+                },
             }
             const newColumn = await coreRequest<ColumnDescriptor>(
                 addColumnToJt(jtId, columnSpec, joinId),

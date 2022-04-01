@@ -68,9 +68,10 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         }
     }
 
-    function getRowId(row: Row){
+    function getRowId(row: Row) {
         const uidColumn = data?.metadata.columns.find(
-            c => c.name === PM.UID_KEY)!
+            c => c.name === PM.UID_KEY
+        )!
         return row[uidColumn.key]
     }
 
@@ -113,7 +114,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             user!,
             {
                 baseTable: data?.metadata.baseTable,
-                condition: [ PM.UID_KEY, getRowId(row) ],
+                condition: [PM.UID_KEY, getRowId(row)],
             },
             "DELETE"
         )
