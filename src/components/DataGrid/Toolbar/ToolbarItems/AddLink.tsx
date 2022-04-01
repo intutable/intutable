@@ -54,13 +54,10 @@ export const AddLink: React.FC = () => {
             )
             await mutate(
                 unstable_serialize([
-                    "/api/join",
+                    `/api/table/${currentTable.metadata.descriptor.id}`,
                     user,
-                    {
-                        jtId: currentTable.metadata.descriptor.id,
-                        foreignJtId: table.id,
-                    },
-                    "POST",
+                    undefined,
+                    "GET",
                 ])
             )
             enqueueSnackbar("Die Tabelle wurde erfolgreich verlinkt.", {
