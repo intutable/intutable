@@ -32,7 +32,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { tables } = useTables(project)
     const foreignJt = useMemo(
         () => tables?.find(tbl => tbl.id === col.joinId),
-        [tables]
+        [col.joinId, tables]
     )
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -95,13 +95,15 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                             foreignJt ? foreignJt.name : "Lädt..."
                         }`}
                     >
-                        <IconButton
-                            onClick={navigateToJT}
-                            size="small"
-                            disabled={foreignJt == null}
-                        >
-                            <LinkIcon />
-                        </IconButton>
+                        <span>
+                            <IconButton
+                                onClick={navigateToJT}
+                                size="small"
+                                disabled={foreignJt == null}
+                            >
+                                <LinkIcon />
+                            </IconButton>
+                        </span>
                     </Tooltip>
                 )}
                 <Tooltip title={props.column.name}>

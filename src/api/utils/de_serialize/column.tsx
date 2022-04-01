@@ -2,20 +2,22 @@ import { headerRenderer } from "@datagrid/renderers"
 import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
 import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
 import { CellContentTypeComponents } from "@datagrid/Editor_Formatter"
-import { LinkedColumnFormmater } from "@datagrid/Editor_Formatter/components/formatters"
+import { LinkedColumnFormatter } from "@datagrid/Editor_Formatter/components/formatters"
 import type { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
+import { inferFormatterType } from "@datagrid/Editor_Formatter/inferFormatterType"
 
 /**
  *
  * @param col
  * @returns
  */
-export const serialize = (col: Column): Column.Serialized => ({
-    name: col.name as string, // TODO: this might be also a component in a future version
+export const serialize = (col: Column.Deserialized): Column.Serialized => ({
+    name: col.name as string,
     key: col.key,
     editable: col.editable as boolean,
     editor: inferEditorType(col.editor!),
+    formatter: inferFormatterType(col.formatter!),
 })
 
 /**
@@ -31,27 +33,28 @@ export const serialize = (col: Column): Column.Serialized => ({
  * @param {SerializedColumn} col
  * @returns {Column}
  */
-export const deserialize = (
-    col: Column.Serialized,
-    options: { isLinkedCol: boolean } = { isLinkedCol: false }
-): Column => ({
-    name: col.name,
-    key: col.key,
-    editable: options.isLinkedCol !== true ?? col.editable,
-    editor: options.isLinkedCol
-        ? undefined
-        : col.editable && isCellContentType(col.editor)
-        ? CellContentTypeComponents[col.editor].editor
-        : undefined,
-    // editor: TextEditor,
-    formatter: options.isLinkedCol
-        ? LinkedColumnFormmater
-        : isCellContentType(col.editor)
-        ? CellContentTypeComponents[col.editor].formatter
-        : undefined,
-    editorOptions: {
-        editOnClick: col.editable,
-        commitOnOutsideClick: col.editable,
-    },
-    headerRenderer: headerRenderer,
-})
+export const deserialize = (col: Column.Serialized): Column => {
+    const isLinkedCol = col.editable === false && col.formatter === "linkColumn"
+
+    return {
+        name: col.name,
+        key: col.key,
+        editable: col.editable,
+        editor:
+            isLinkedCol === false &&
+            col.editable &&
+            isCellContentType(col.editor)
+                ? CellContentTypeComponents[col.editor].editor
+                : undefined,
+        formatter: isLinkedCol
+            ? LinkedColumnFormatter
+            : isCellContentType(col.editor)
+            ? CellContentTypeComponents[col.editor].formatter
+            : undefined,
+        editorOptions: {
+            editOnClick: col.editable,
+            commitOnOutsideClick: col.editable,
+        },
+        headerRenderer: headerRenderer,
+    }
+}

@@ -68,7 +68,8 @@ CREATE TABLE jt_columns(
     "displayName" TEXT NULL,
     "userPrimary" INTEGER DEFAULT 0 NOT NULL,
     editable INTEGER DEFAULT 1 NOT NULL,
-    editor TEXT NULL
+    editor TEXT NULL,
+    formatter TEXT NULL
 );
 
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');
@@ -92,15 +93,15 @@ insert into columns(_id, "columnName", "tableId") values(4, 'email', 1);
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(1, 'Personen', 1, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": []}');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(1, 1, NULL, 1, 'ID', 'number');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(2, 1, NULL, 2, 'Vorname', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor, formatter)
+  VALUES(1, 1, NULL, 1, 'ID', 'number', 'number');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor, formatter)
+  VALUES(2, 1, NULL, 2, 'Vorname', 'string', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
-                       "displayName", "userPrimary", editor)
-  VALUES(3, 1, NULL, 3, 'Nachname', 1, 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(4, 1, NULL, 4, 'E-Mail', 'string');
+                       "displayName", "userPrimary", editor, formatter)
+  VALUES(3, 1, NULL, 3, 'Nachname', 1, 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor, formatter)
+  VALUES(4, 1, NULL, 4, 'E-Mail', 'string', 'string');
 
 
 create table if not exists p1_kommissionen(
@@ -120,15 +121,15 @@ insert into columns(_id, "columnName", "tableId") values(8, 'aufloesung', 2);
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(2, 'Kommissionen', 2, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": []}');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(5, 2, NULL, 5, 'ID', 'number');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor, formatter)
+  VALUES(5, 2, NULL, 5, 'ID', 'number', 'number');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
-                       "displayName", "userPrimary", editor)
-  VALUES(6, 2, NULL, 6, 'Bezeichnung', 1, 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(7, 2, NULL, 7, 'Gründung', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(8, 2, NULL, 8, 'Auflösung', 'string');
+                       "displayName", "userPrimary", editor, formatter)
+  VALUES(6, 2, NULL, 6, 'Bezeichnung', 1, 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor, formatter)
+  VALUES(7, 2, NULL, 7, 'Gründung', 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor, formatter)
+  VALUES(8, 2, NULL, 8, 'Auflösung', 'string', 'string');
 
 
 create table if not exists p1_einrichtungen(
@@ -146,13 +147,13 @@ insert into columns(_id, "columnName", "tableId") values(11, 'adresse', 3);
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(3, 'Einrichtungen', 3, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": []}');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-  VALUES(9, 3, NULL, 9, 'ID', 'number');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor, formatter)
+  VALUES(9, 3, NULL, 9, 'ID', 'number', 'number');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
-                       "displayName", "userPrimary", editor)
-  VALUES(10, 3, NULL, 10, 'Name', 1, 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor)
-VALUES(11, 3, NULL, 11, 'Adresse', 'string');
+                       "displayName", "userPrimary", editor, formatter)
+  VALUES(10, 3, NULL, 10, 'Name', 1, 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName", editor, formatter)
+VALUES(11, 3, NULL, 11, 'Adresse', 'string', 'string');
 
 
 -- object data

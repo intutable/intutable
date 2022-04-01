@@ -10,6 +10,7 @@ export const parse = (column: ColumnDescriptor): Column.Serialized => ({
     name: column.attributes.displayName!,
     editable: Boolean(column.attributes.editable!),
     editor: column.attributes.editor!,
+    formatter: column.attributes.formatter,
 })
 
 /**
@@ -25,5 +26,6 @@ export const deparse = (
         displayName: column.name,
         editable: column.editable ? 1 : 0,
         editor: column.editor,
+        formatter: column.formatter,
     },
 })

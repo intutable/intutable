@@ -21,6 +21,7 @@ import { fetchWithUser } from "api"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import useSWR, { unstable_serialize, useSWRConfig } from "swr"
 import LoadingButton from "@mui/lab/LoadingButton"
+import { useTables } from "hooks/useTables"
 
 /**
  * Toolbar Item for adding rows to the data grid.
@@ -76,11 +77,17 @@ export const AddLink: React.FC = () => {
     return (
         <>
             <Tooltip title="Add link to another table">
-                <Button startIcon={<AddIcon />} onClick={handleOpenModal}>
+                <LoadingButton
+                    loading={currentTable == null}
+                    loadingIndicator="Lädt..."
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenModal}
+                >
                     Add Link
-                </Button>
+                </LoadingButton>
             </Tooltip>
             <AddLinkModal
+                table={currentTable!.metadata.descriptor}
                 project={project}
                 open={anchorEL != null}
                 onClose={handleCloseModal}
@@ -92,6 +99,7 @@ export const AddLink: React.FC = () => {
 
 type AddLinkModalProps = {
     project: ProjectDescriptor
+    table: JtDescriptor
     open: boolean
     onClose: () => void
     onAddLink: (table: JtDescriptor) => unknown
@@ -102,12 +110,8 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
     const { user } = useAuth()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data: tables, error } = useSWR<JtDescriptor[]>(
-        user
-            ? [`/api/tables/${props.project.id}`, user, undefined, "GET"]
-            : null,
-        fetchWithUser
-    )
+    const { tables, error } = useTables(props.project)
+
     const [selection, setSelection] = useState<JtDescriptor | null>(null)
 
     useEffect(() => {
@@ -134,24 +138,30 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                     </DialogTitle>
                     <DialogContent>
                         <List>
-                            {tables!.map((tbl, i) => (
-                                <ListItem
-                                    key={i}
-                                    disablePadding
-                                    sx={{
-                                        bgcolor:
-                                            selection?.id === tbl.id
-                                                ? theme.palette.action.selected
-                                                : undefined,
-                                    }}
-                                >
-                                    <ListItemButton
-                                        onClick={onClickHandler.bind(null, tbl)}
+                            {tables!
+                                .filter(tbl => tbl.id !== props.table.id)
+                                .map((tbl, i) => (
+                                    <ListItem
+                                        key={i}
+                                        disablePadding
+                                        sx={{
+                                            bgcolor:
+                                                selection?.id === tbl.id
+                                                    ? theme.palette.action
+                                                          .selected
+                                                    : undefined,
+                                        }}
                                     >
-                                        <ListItemText primary={tbl.name} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
+                                        <ListItemButton
+                                            onClick={onClickHandler.bind(
+                                                null,
+                                                tbl
+                                            )}
+                                        >
+                                            <ListItemText primary={tbl.name} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
                         </List>
                     </DialogContent>
                 </>

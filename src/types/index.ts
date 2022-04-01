@@ -92,6 +92,7 @@ type SerializedColumn = {
      * @default string
      */
     editor: CellContentType
+    formatter: CellContentType | "linkColumn"
 }
 
 // #################################################################
