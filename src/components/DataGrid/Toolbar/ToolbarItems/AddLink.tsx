@@ -37,6 +37,7 @@ export const AddLink: React.FC = () => {
     const handleOpenModal = (
         event: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ) => {
+        event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
 
@@ -127,16 +128,16 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
-            {tables == null && error == null ? (
-                <CircularProgress />
-            ) : error ? (
-                <>Error: {error}</>
-            ) : (
-                <>
-                    <DialogTitle>
-                        Spalte aus einer anderen Tablle hinzufügen
-                    </DialogTitle>
-                    <DialogContent>
+            <DialogTitle>
+                Spalte aus einer anderen Tablle hinzufügen
+            </DialogTitle>
+            <DialogContent>
+                {tables == null && error == null ? (
+                    <CircularProgress />
+                ) : error ? (
+                    <>Error: {error}</>
+                ) : (
+                    <>
                         <List>
                             {tables!
                                 .filter(tbl => tbl.id !== props.table.id)
@@ -163,13 +164,13 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                                     </ListItem>
                                 ))}
                         </List>
-                    </DialogContent>
-                </>
-            )}
+                    </>
+                )}
+            </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <LoadingButton
-                    loading={tables == null}
+                    loading={tables == null && error == null}
                     loadingIndicator="Lädt..."
                     onClick={async () => {
                         await props.onAddLink(selection!)

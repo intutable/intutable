@@ -2,7 +2,7 @@ import { headerRenderer } from "@datagrid/renderers"
 import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
 import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
 import { CellContentTypeComponents } from "@datagrid/Editor_Formatter"
-import { LinkedColumnFormatter } from "@datagrid/Editor_Formatter/components/formatters"
+import { LinkColumnFormatter } from "@datagrid/Editor_Formatter/components/formatters"
 import type { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { inferFormatterType } from "@datagrid/Editor_Formatter/inferFormatterType"
@@ -47,7 +47,7 @@ export const deserialize = (col: Column.Serialized): Column => {
                 ? CellContentTypeComponents[col.editor].editor
                 : undefined,
         formatter: isLinkedCol
-            ? LinkedColumnFormatter
+            ? LinkColumnFormatter
             : isCellContentType(col.editor)
             ? CellContentTypeComponents[col.editor].formatter
             : undefined,
