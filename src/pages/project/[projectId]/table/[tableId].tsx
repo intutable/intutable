@@ -78,7 +78,7 @@ const TablePage: React.FC<TablePageProps> = props => {
                     <Box>
                         <Toolbar position="top">
                             <ToolbarItem.AddCol />
-                            <ToolbarItem.AddLinkedCol />
+                            <ToolbarItem.AddLink />
                             <ToolbarItem.AddRow />
                             <ToolbarItem.FileDownload getData={() => []} />
                         </Toolbar>

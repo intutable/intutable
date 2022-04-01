@@ -1,5 +1,6 @@
 import AddIcon from "@mui/icons-material/Add"
 import {
+    Tooltip,
     Button,
     Dialog,
     DialogActions,
@@ -14,7 +15,7 @@ import { ColumnDescriptor } from "@intutable/join-tables/dist/types"
 /**
  * Toolbar Item for adding rows to the data grid.
  */
-export const AddLinkedCol: React.FC = () => {
+export const AddLink: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -27,29 +28,31 @@ export const AddLinkedCol: React.FC = () => {
 
     const handleCloseModal = () => setAnchorEL(null)
 
-    const handleAddLinkedCol = () => Promise.resolve()
+    const handleAddLink = () => Promise.resolve()
 
     return (
         <>
-            <Button startIcon={<AddIcon />} onClick={handleOpenModal}>
-                Add Linked Col
-            </Button>
-            <AddLinkedColModal
+            <Tooltip title="Add link to another table">
+                <Button startIcon={<AddIcon />} onClick={handleOpenModal}>
+                    Add Link
+                </Button>
+            </Tooltip>
+            <AddLinkModal
                 open={anchorEL != null}
                 onClose={handleCloseModal}
-                onAddLinkedCol={handleAddLinkedCol}
+                onAddLink={handleAddLink}
             />
         </>
     )
 }
 
-type AddLinkedColProps = {
+type AddLinkProps = {
     open: boolean
     onClose: () => void
-    onAddLinkedCol: (value: unknown) => Promise<void>
+    onAddLink: (value: unknown) => Promise<void>
 }
 
-export const AddLinkedColModal: React.FC<AddLinkedColProps> = props => {
+export const AddLinkModal: React.FC<AddLinkProps> = props => {
     const theme = useTheme()
 
     const [selection, setSelection] = useState<Array<ColumnDescriptor>>([])
@@ -64,7 +67,7 @@ export const AddLinkedColModal: React.FC<AddLinkedColProps> = props => {
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <Button
                     onClick={async () => {
-                        await props.onAddLinkedCol(0)
+                        await props.onAddLink(0)
                         props.onClose()
                     }}
                     disabled={selection.length < 1}
