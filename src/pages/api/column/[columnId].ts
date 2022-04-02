@@ -1,9 +1,15 @@
 import {
+    JtDescriptor,
+    JtInfo,
+    ColumnDescriptor,
+} from "@intutable/join-tables/dist/types"
+import {
     changeColumnAttributes,
     getColumnInfo,
+    getJtInfo,
     removeColumnFromJt,
+    removeJoinFromJt,
 } from "@intutable/join-tables/dist/requests"
-import { ColumnDescriptor } from "@intutable/join-tables/dist/types"
 import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest, Parser } from "api/utils"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
@@ -42,6 +48,8 @@ const DELETE = async (
     columnId: ColumnDescriptor["id"]
 ) => {
     try {
+        const { jtId } = req.body as { jtId: JtDescriptor["id"] }
+        
         const column = await coreRequest<ColumnDescriptor>(
             getColumnInfo(columnId),
             req.cookies[AUTH_COOKIE_KEY]
@@ -51,12 +59,29 @@ const DELETE = async (
             removeColumnFromJt(columnId),
             req.cookies[AUTH_COOKIE_KEY]
         )
-        // if column belongs to base table, delete underlying TableColumn too
+        // if column belongs to base table, delete underlying table column too
         if (column.joinId === null)
             await coreRequest(
                 removeColumn(column.parentColumnId),
                 req.cookies[AUTH_COOKIE_KEY]
             )
+        else if (column.attributes.formatter === "linkColumn"){
+            const info = await coreRequest<JtInfo>(
+                getJtInfo(jtId),
+                req.cookies[AUTH_COOKIE_KEY]
+            )
+            // delete foreign key column
+            const join = info.joins.find(j => j.id === column.joinId)!
+            const fkColumnId = join.on[0]
+            await coreRequest(
+                removeColumn(fkColumnId),
+                req.cookies[AUTH_COOKIE_KEY]
+            )
+            await coreRequest(
+                removeJoinFromJt(column.joinId),
+                req.cookies[AUTH_COOKIE_KEY]
+            )
+        }
 
         res.status(200).send({})
     } catch (err) {

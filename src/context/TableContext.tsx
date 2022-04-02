@@ -176,7 +176,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         key: Column["key"],
         newName: Column["name"]
     ): Promise<void> => {
-        if (data.columns.some(c => c.key !== key && c.name === newName))
+        if (data!.columns.some(c => c.key !== key && c.name === newName))
             return Promise.reject({
                 alreadyTaken: true,
                 message: "renameColumn: new name already taken"
@@ -201,7 +201,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         await fetchWithUser(
             `/api/column/${column.id}`,
             user!,
-            undefined,
+            { jtId: data!.metadata.descriptor.id },
             "DELETE"
         )
 
