@@ -176,6 +176,12 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         key: Column["key"],
         newName: Column["name"]
     ): Promise<void> => {
+        if (data.columns.some(c => c.key !== key && c.name === newName))
+            return Promise.reject({
+                alreadyTaken: true,
+                message: "renameColumn: new name already taken"
+            })
+        
         const column = getColumnByKey(key)
         const updatedColumn = {
             ...Parser.Column.parse(column),

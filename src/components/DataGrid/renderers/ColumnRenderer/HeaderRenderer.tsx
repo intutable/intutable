@@ -28,7 +28,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { renameColumn, deleteColumn, utils, project } = useTableCtx()
 
     const col = utils.getColumnByKey(props.column.key)
-    const isLinkedCol = col.joinId !== null
+    const isLinkCol = col.joinId !== null
     const { tables } = useTables(project)
     const foreignJt = useMemo(
         () => tables?.find(tbl => tbl.id === col.joinId),
@@ -71,9 +71,14 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 variant: "success",
             })
         } catch (error) {
-            enqueueSnackbar("Die Spalte konnte nicht umbenannt werden!", {
-                variant: "error",
-            })
+            if (error.alreadyTaken)
+                enqueueSnackbar(`Der Name ${name} ist bereits vergeben.`, {
+                    variant: "error",
+                })
+            else 
+                enqueueSnackbar("Die Spalte konnte nicht umbenannt werden!", {
+                    variant: "error",
+                })
         }
     }
 
@@ -89,7 +94,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     alignItems: "center",
                 }}
             >
-                {isLinkedCol && (
+                {isLinkCol && (
                     <Tooltip
                         title={`Ursprung: ${
                             foreignJt ? foreignJt.name : "Lädt..."
@@ -140,23 +145,15 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         },
                     }}
                 >
-                    {isLinkedCol ? (
-                        <MenuItem onClick={handleRenameColumn}>
-                            Verlinkung aufheben
-                        </MenuItem>
-                    ) : (
-                        <>
-                            <MenuItem onClick={handleRenameColumn}>
-                                Umbenennen
-                            </MenuItem>
-                            <MenuItem
-                                onClick={handleDeleteColumn}
-                                sx={{ color: theme.palette.warning.main }}
-                            >
-                                Löschen
-                            </MenuItem>
-                        </>
-                    )}
+                    <MenuItem onClick={handleRenameColumn}>
+                        Umbenennen
+                    </MenuItem>
+                    <MenuItem
+                        onClick={handleDeleteColumn}
+                        sx={{ color: theme.palette.warning.main }}
+                    >
+                        Löschen
+                    </MenuItem>
                 </Menu>
             )}
         </>
