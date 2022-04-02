@@ -170,7 +170,9 @@ insert into p1_kommissionen(bezeichnung, gruendung, aufloesung)
 values ('IT-Gruppe Dekanat', '15. September 2021', null);
 
 insert into p1_einrichtungen(name, adresse)
-values ('Dekanat MathInf', 'Mathematikon Neuenheim');
+  values ('Dekanat MathInf', 'INF 205');
+insert into p1_einrichtungen(name, adresse)
+  values ('Institut für Informatik', 'INF 205');
 
 -- stupid pkey sequences evidently don't count up when we do manual IDs
 SELECT setval('users__id_seq', (SELECT MAX(_id) FROM users)+1);
