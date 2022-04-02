@@ -71,7 +71,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 variant: "success",
             })
         } catch (error) {
-            if (error.alreadyTaken)
+            if (error === "alreadyTaken")
                 enqueueSnackbar(`Der Name ${name} ist bereits vergeben.`, {
                     variant: "error",
                 })

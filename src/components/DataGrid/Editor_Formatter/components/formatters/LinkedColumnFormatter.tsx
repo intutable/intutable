@@ -19,14 +19,16 @@ import {
     useTheme,
 } from "@mui/material"
 
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { JtDescriptor, JoinDescriptor } from "@intutable/join-tables/dist/types"
 
-import { PM, TableData } from "types"
+import { TableData } from "types"
 import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
 import { fetchWithUser } from "api"
 
 type RowPickerProps = {
-    tableId: JtDescriptor["id"]
+    rowId: number
+    joinId: JoinDescriptor["id"]
+    foreignTableId: JtDescriptor["id"]
     open: boolean
     onClose: () => void
 }
@@ -41,8 +43,12 @@ const RowPicker: React.FC<RowPickerProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data, error } = useSWR<TableData>(
-        user ? [`/api/table/${props.tableId}`, user, undefined, "GET"] : null,
+    const { data: baseTableData, utils } = useTableCtx()
+
+    const { data: linkTableData, error } = useSWR<TableData>(
+        user
+            ? [`/api/table/${props.foreignTableId}`, user, undefined, "GET"]
+            : null,
         fetchWithUser
     )
 
@@ -51,24 +57,34 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
     // get data from target table and generate previews for rows
     useEffect(() => {
-        if (!data){
+        if (!linkTableData) {
             setOptions([])
         } else {
-            const tableInfo = data!.metadata
+            const tableInfo = linkTableData!.metadata
             const primaryColumn = tableInfo.columns.find(
-                c => c.attributes.userPrimary! === 1)!
-            setOptions(data!.rows.map(r => ({
-                id: r[PM.UID_KEY],
-                text: r[primaryColumn.key] as string,
-            })))
+                c => c.attributes.userPrimary! === 1
+            )!
+            setOptions(
+                linkTableData!.rows.map(r => ({
+                    id: utils.getRowId(linkTableData, r),
+                    text: r[primaryColumn.key] as string,
+                }))
+            )
         }
-    }, [data])
+    }, [linkTableData, utils])
 
     const handlePickRow = async () => {
         try {
-            enqueueSnackbar("Die X wurde erfolgreich hinzugefügt.", {
-                variant: "success",
-            })
+            await fetchWithUser(
+                `/api/join/${props.joinId}`,
+                user!,
+                {
+                    jtId: baseTableData!.metadata.descriptor.id,
+                    rowId: props.rowId,
+                    value: selection?.id,
+                },
+                "POST"
+            )
         } catch (err) {
             enqueueSnackbar("Die X konnte nicht hinzugefügt werden!", {
                 variant: "error",
@@ -82,14 +98,14 @@ const RowPicker: React.FC<RowPickerProps> = props => {
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>Wähle eine Zeile</DialogTitle>
             <DialogContent>
-                {(data == null) && error == null ? (
+                {linkTableData == null && error == null ? (
                     <CircularProgress />
                 ) : error ? (
                     <>Error: {error}</>
                 ) : (
                     <>
                         <List>
-                            {options.map((row) => (
+                            {options.map(row => (
                                 <ListItem
                                     key={row.id}
                                     disablePadding
@@ -103,9 +119,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
                                     <ListItemButton
                                         onClick={() => setSelection(row)}
                                     >
-                                        <ListItemText
-                                            primary={row.text}
-                                        />
+                                        <ListItemText primary={row.text} />
                                     </ListItemButton>
                                 </ListItem>
                             ))}
@@ -117,7 +131,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <LoadingButton
-                    loading={data?.columns == null && error == null}
+                    loading={linkTableData?.rows == null && error == null}
                     loadingIndicator="Lädt..."
                     onClick={handlePickRow}
                     disabled={selection == null || error}
@@ -130,7 +144,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 }
 
 export const LinkColumnFormatter: Formatter = props => {
-    const { column } = props
+    const { row, column } = props
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
@@ -145,15 +159,18 @@ export const LinkColumnFormatter: Formatter = props => {
     const { data, utils } = useTableCtx()
 
     const [foreignTableId, setForeignTableId] = useState<JtDescriptor["id"]>(-1)
+    const [joinId, setJoinId] = useState<JoinDescriptor["id"]>(-1)
 
     useEffect(() => {
         const metaColumn = utils.getColumnByKey(column.key)
         const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
+        setJoinId(join.id)
         setForeignTableId(join.foreignJtId)
-    }, [data])
+    }, [data, utils, column.key])
 
     return (
         <>
+            {row[column.key]}
             <Tooltip enterDelay={1000} arrow title="Lookup-Feld hinzufügen">
                 <Box
                     sx={{
@@ -165,12 +182,12 @@ export const LinkColumnFormatter: Formatter = props => {
                 ></Box>
             </Tooltip>
             <RowPicker
-                tableId={foreignTableId}
+                rowId={utils.getRowId(data, row)}
+                joinId={joinId}
+                foreignTableId={foreignTableId}
                 open={anchorEL != null}
                 onClose={handleCloseModal}
             />
         </>
     )
 }
-
-// export const LinkedColumnFormatter = React.memo(_LinkedColumnFormatter)

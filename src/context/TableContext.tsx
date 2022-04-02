@@ -25,6 +25,7 @@ export type TableContextProps = {
     deleteColumn: (key: Column["key"]) => Promise<void>
     utils: {
         getColumnByKey: (key: Column["key"]) => ColumnDescriptor
+        getRowId: (data: TableData | undefined, row: Row) => number
     }
 }
 
@@ -73,11 +74,11 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         return column
     }
 
-    const getRowId = (row: Row) => {
+    const getRowId = (data: TableData | undefined, row: Row) => {
         const uidColumn = data!.metadata.columns.find(
             c => c.name === PM.UID_KEY
         )!
-        return row[uidColumn.key]
+        return row[uidColumn.key] as number
     }
 
     // #################### row ####################
@@ -119,7 +120,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             user!,
             {
                 baseTable: data?.metadata.baseTable,
-                condition: [PM.UID_KEY, getRowId(row)],
+                condition: [PM.UID_KEY, getRowId(data, row)],
             },
             "DELETE"
         )
@@ -145,7 +146,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             user!,
             {
                 baseTable: data?.metadata.baseTable,
-                condition: [PM.UID_KEY, getRowId(changedRow)],
+                condition: [PM.UID_KEY, getRowId(data, changedRow)],
                 update: {
                     [baseColumnKey]: changedRow[joinColumnKey],
                 },
@@ -177,10 +178,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         newName: Column["name"]
     ): Promise<void> => {
         if (data!.columns.some(c => c.key !== key && c.name === newName))
-            return Promise.reject({
-                alreadyTaken: true,
-                message: "renameColumn: new name already taken"
-            })
+            return Promise.reject("alreadyTaken")
         
         const column = getColumnByKey(key)
         const updatedColumn = {
@@ -227,6 +225,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
                 // utils
                 utils: {
                     getColumnByKey,
+                    getRowId
                 },
             }}
         >

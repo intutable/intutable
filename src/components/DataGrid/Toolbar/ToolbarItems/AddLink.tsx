@@ -139,29 +139,24 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                 ) : (
                     <>
                         <List>
-                            {tables!
-                                .map((tbl, i) => (
-                                    <ListItem
-                                        key={i}
-                                        disablePadding
-                                        sx={{
-                                            bgcolor:
-                                                selection?.id === tbl.id
-                                                    ? theme.palette.action
-                                                          .selected
-                                                    : undefined,
-                                        }}
+                            {tables!.map((tbl, i) => (
+                                <ListItem
+                                    key={i}
+                                    disablePadding
+                                    sx={{
+                                        bgcolor:
+                                            selection?.id === tbl.id
+                                                ? theme.palette.action.selected
+                                                : undefined,
+                                    }}
+                                >
+                                    <ListItemButton
+                                        onClick={onClickHandler.bind(null, tbl)}
                                     >
-                                        <ListItemButton
-                                            onClick={onClickHandler.bind(
-                                                null,
-                                                tbl
-                                            )}
-                                        >
-                                            <ListItemText primary={tbl.name} />
-                                        </ListItemButton>
-                                    </ListItem>
-                                ))}
+                                        <ListItemText primary={tbl.name} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
                         </List>
                     </>
                 )}

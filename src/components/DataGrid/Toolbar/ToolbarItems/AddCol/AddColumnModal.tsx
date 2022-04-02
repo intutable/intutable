@@ -38,6 +38,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         key: "",
         editable: true,
         editor: "string",
+        formatter: "string",
     })
     const [valid, setValid] = useState(false)
 

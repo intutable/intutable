@@ -49,7 +49,7 @@ const DELETE = async (
 ) => {
     try {
         const { jtId } = req.body as { jtId: JtDescriptor["id"] }
-        
+
         const column = await coreRequest<ColumnDescriptor>(
             getColumnInfo(columnId),
             req.cookies[AUTH_COOKIE_KEY]
@@ -65,7 +65,7 @@ const DELETE = async (
                 removeColumn(column.parentColumnId),
                 req.cookies[AUTH_COOKIE_KEY]
             )
-        else if (column.attributes.formatter === "linkColumn"){
+        else if (column.attributes.formatter === "linkColumn") {
             const info = await coreRequest<JtInfo>(
                 getJtInfo(jtId),
                 req.cookies[AUTH_COOKIE_KEY]
