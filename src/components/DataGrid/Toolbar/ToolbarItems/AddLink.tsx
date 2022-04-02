@@ -140,7 +140,6 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                     <>
                         <List>
                             {tables!
-                                .filter(tbl => tbl.id !== props.table.id)
                                 .map((tbl, i) => (
                                     <ListItem
                                         key={i}
