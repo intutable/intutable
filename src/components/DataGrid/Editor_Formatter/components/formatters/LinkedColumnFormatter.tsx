@@ -1,9 +1,7 @@
-import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
-import {
-    ColumnDescriptor,
-    TableData,
-} from "@intutable/project-management/dist/types"
+import { useAuth, useTableCtx } from "context"
+import { useSnackbar } from "notistack"
+import React, { useEffect, useState } from "react"
+import useSWR from "swr"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Box,
@@ -20,36 +18,53 @@ import {
     Tooltip,
     useTheme,
 } from "@mui/material"
-import { fetchWithUser } from "api"
-import { useAuth } from "context"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import useSWR from "swr"
 
-type ColumnPickerProps = {
-    table: JtDescriptor
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+
+import { PM, TableData } from "types"
+import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
+import { fetchWithUser } from "api"
+
+type RowPickerProps = {
+    tableId: JtDescriptor["id"]
     open: boolean
     onClose: () => void
 }
 
-const ColumnPicker: React.FC<ColumnPickerProps> = props => {
+type RowPreview = {
+    id: number
+    text: string
+}
+
+const RowPicker: React.FC<RowPickerProps> = props => {
     const { user } = useAuth()
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
     const { data, error } = useSWR<TableData>(
-        user ? [`/api/table/${props.table.id}`, user, undefined, "GET"] : null,
+        user ? [`/api/table/${props.tableId}`, user, undefined, "GET"] : null,
         fetchWithUser
     )
 
-    //     const data = fetch(...)
-    // const idColumn = data.columns.find(c => c.name === PM.UID_KEY)!
-    //     const nameColumn = data.columns.find(c => c.attributes.userPrimary! === 1)!
-    // selectOptions = data.rows.map(r => { id: r[idColumn.key], text: r[nameColumn.key] })
+    const [options, setOptions] = useState<RowPreview[]>([])
+    const [selection, setSelection] = useState<RowPreview | null>(null)
 
-    const [selection, setSelection] = useState<ColumnDescriptor | null>(null)
+    // get data from target table and generate previews for rows
+    useEffect(() => {
+        if (!data){
+            setOptions([])
+        } else {
+            const tableInfo = data!.metadata
+            const primaryColumn = tableInfo.columns.find(
+                c => c.attributes.userPrimary! === 1)!
+            setOptions(data!.rows.map(r => ({
+                id: r[PM.UID_KEY],
+                text: r[primaryColumn.key] as string,
+            })))
+        }
+    }, [data])
 
-    const handlePickColumn = async () => {
+    const handlePickRow = async () => {
         try {
             enqueueSnackbar("Die X wurde erfolgreich hinzugefügt.", {
                 variant: "success",
@@ -67,28 +82,30 @@ const ColumnPicker: React.FC<ColumnPickerProps> = props => {
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>Wähle eine Zeile</DialogTitle>
             <DialogContent>
-                {(data == null || data.columns == null) && error == null ? (
+                {(data == null) && error == null ? (
                     <CircularProgress />
                 ) : error ? (
                     <>Error: {error}</>
                 ) : (
                     <>
                         <List>
-                            {data!.columns.map((col, i) => (
+                            {options.map((row) => (
                                 <ListItem
-                                    key={i}
+                                    key={row.id}
                                     disablePadding
                                     sx={{
                                         bgcolor:
-                                            selection?.id === col.id
+                                            selection?.id === row.id
                                                 ? theme.palette.action.selected
                                                 : undefined,
                                     }}
                                 >
                                     <ListItemButton
-                                        onClick={() => setSelection(col)}
+                                        onClick={() => setSelection(row)}
                                     >
-                                        <ListItemText primary={col.name} />
+                                        <ListItemText
+                                            primary={row.text}
+                                        />
                                     </ListItemButton>
                                 </ListItem>
                             ))}
@@ -102,7 +119,7 @@ const ColumnPicker: React.FC<ColumnPickerProps> = props => {
                 <LoadingButton
                     loading={data?.columns == null && error == null}
                     loadingIndicator="Lädt..."
-                    onClick={handlePickColumn}
+                    onClick={handlePickRow}
                     disabled={selection == null || error}
                 >
                     Hinzufügen
@@ -125,6 +142,16 @@ export const LinkColumnFormatter: Formatter = props => {
 
     const handleCloseModal = () => setAnchorEL(null)
 
+    const { data, utils } = useTableCtx()
+
+    const [foreignTableId, setForeignTableId] = useState<JtDescriptor["id"]>(-1)
+
+    useEffect(() => {
+        const metaColumn = utils.getColumnByKey(column.key)
+        const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
+        setForeignTableId(join.foreignJtId)
+    }, [data])
+
     return (
         <>
             <Tooltip enterDelay={1000} arrow title="Lookup-Feld hinzufügen">
@@ -137,8 +164,8 @@ export const LinkColumnFormatter: Formatter = props => {
                     onClick={handleOpenModal}
                 ></Box>
             </Tooltip>
-            <ColumnPicker
-                table={{ id: 1, name: "A" }} // TODO: how do i calc the derived table?!
+            <RowPicker
+                tableId={foreignTableId}
                 open={anchorEL != null}
                 onClose={handleCloseModal}
             />

@@ -75,7 +75,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 enqueueSnackbar(`Der Name ${name} ist bereits vergeben.`, {
                     variant: "error",
                 })
-            else 
+            else
                 enqueueSnackbar("Die Spalte konnte nicht umbenannt werden!", {
                     variant: "error",
                 })
@@ -145,9 +145,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         },
                     }}
                 >
-                    <MenuItem onClick={handleRenameColumn}>
-                        Umbenennen
-                    </MenuItem>
+                    <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
                     <MenuItem
                         onClick={handleDeleteColumn}
                         sx={{ color: theme.palette.warning.main }}
