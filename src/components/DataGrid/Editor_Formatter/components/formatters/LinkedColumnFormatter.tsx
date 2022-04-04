@@ -87,7 +87,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
             )
             await utils.mutate()
         } catch (err) {
-            enqueueSnackbar("Die X konnte nicht hinzugefügt werden!", {
+            enqueueSnackbar("Die Zeile konnte nicht hinzugefügt werden!", {
                 variant: "error",
             })
         } finally {
