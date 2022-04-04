@@ -27,7 +27,7 @@ export const useUser = (options: UseUserOptions = UseUserDefaultOptions) => {
     const { data: user, mutate: mutateUser } = useSWR<User>("/api/user")
 
     useEffect(() => {
-        // if no redirect needed, just return (example: already on /dashboard)
+        // if no redirect needed, just return
         // if user data not yet there (fetch in progress, logged in or not) then don't do anything yet
         if (!redirectTo || !user) return
 

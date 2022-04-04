@@ -1,26 +1,35 @@
-import type { User } from "types/User"
-import { Octokit } from "octokit"
-import { withIronSessionApiRoute } from "iron-session/next"
-import { sessionOptions } from "auth/session"
+import { withSessionRoute } from "auth/withSessionRoute"
 import { NextApiRequest, NextApiResponse } from "next"
+import type { User } from "types/User"
 
-const octokit = new Octokit()
-
-export default withIronSessionApiRoute(loginRoute, sessionOptions)
-
-async function loginRoute(req: NextApiRequest, res: NextApiResponse) {
-    const { username } = await req.body
-
+const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
+    const { username, password } = await req.body
     try {
-        const {
-            data: { login },
-        } = await octokit.rest.users.getByUsername({ username })
+        const response = await fetch(
+            process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL! + "/login",
+            {
+                method: "post",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                credentials: "include",
+                body: `username=${username}&password=${password}`,
+            }
+        )
 
-        const user = { isLoggedIn: true, login } as User
+        if ((await response.text()).includes("secret") === false)
+            throw new Error(
+                "Kombination aus Nutzername und Passwort nicht gefunden!"
+            )
+
+        const user = { isLoggedIn: true, username: username, id: } as User
         req.session.user = user
         await req.session.save()
+
         res.json(user)
     } catch (error) {
-        res.status(500).json({ message: (error as Error).message })
+        res.status(500).json({ error: (error as Error).message })
     }
 }
+
+export default withSessionRoute(loginRoute)
