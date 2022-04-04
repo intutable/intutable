@@ -1,7 +1,7 @@
 import { useAuth, useTableCtx } from "context"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
-import useSWR from "swr"
+import useSWR, { useSWRConfig } from "swr"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Box,
@@ -85,6 +85,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
                 },
                 "POST"
             )
+            await utils.mutate()
         } catch (err) {
             enqueueSnackbar("Die X konnte nicht hinzugefügt werden!", {
                 variant: "error",

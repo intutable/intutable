@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import useSWR from "swr"
+import useSWR, { KeyedMutator } from "swr"
 import { RowsChangeData } from "react-data-grid"
 
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
@@ -26,6 +26,7 @@ export type TableContextProps = {
     utils: {
         getColumnByKey: (key: Column["key"]) => ColumnDescriptor
         getRowId: (data: TableData | undefined, row: Row) => number
+        mutate: KeyedMutator<TableData>
     }
 }
 
@@ -179,7 +180,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     ): Promise<void> => {
         if (data!.columns.some(c => c.key !== key && c.name === newName))
             return Promise.reject("alreadyTaken")
-        
+
         const column = getColumnByKey(key)
         const updatedColumn = {
             ...Parser.Column.parse(column),
@@ -225,7 +226,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
                 // utils
                 utils: {
                     getColumnByKey,
-                    getRowId
+                    getRowId,
+                    mutate,
                 },
             }}
         >
