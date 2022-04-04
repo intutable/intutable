@@ -159,8 +159,8 @@ export const LinkColumnFormatter: Formatter = props => {
 
     const { data, utils } = useTableCtx()
 
-    const [foreignTableId, setForeignTableId] = useState<JtDescriptor["id"]>(-1)
-    const [joinId, setJoinId] = useState<JoinDescriptor["id"]>(-1)
+    const [foreignTableId, setForeignTableId] = useState<JtDescriptor["id"]>()
+    const [joinId, setJoinId] = useState<JoinDescriptor["id"]>()
 
     useEffect(() => {
         const metaColumn = utils.getColumnByKey(column.key)
@@ -182,13 +182,15 @@ export const LinkColumnFormatter: Formatter = props => {
                     onClick={handleOpenModal}
                 ></Box>
             </Tooltip>
-            <RowPicker
-                rowId={utils.getRowId(data, row)}
-                joinId={joinId}
-                foreignTableId={foreignTableId}
-                open={anchorEL != null}
-                onClose={handleCloseModal}
-            />
+            {foreignTableId && joinId && (
+                <RowPicker
+                    rowId={utils.getRowId(data, row)}
+                    joinId={joinId}
+                    foreignTableId={foreignTableId}
+                    open={anchorEL != null}
+                    onClose={handleCloseModal}
+                />
+            )}
         </>
     )
 }

@@ -1,2 +1,2 @@
 export * from "./DefaultFormatter"
-export * from "./LinkedColumnFormatter"
+export * from "./LinkColumnFormatter"
