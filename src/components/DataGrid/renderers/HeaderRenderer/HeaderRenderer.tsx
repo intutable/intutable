@@ -1,3 +1,6 @@
+import { ColumnDescriptor } from "@intutable/project-management/dist/types"
+import KeyIcon from "@mui/icons-material/Key"
+import LinkIcon from "@mui/icons-material/Link"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import {
     Box,
@@ -10,25 +13,20 @@ import {
     useTheme,
 } from "@mui/material"
 import { useTableCtx } from "context"
-import { useSnackbar } from "notistack"
+import { useSnacki } from "hooks/useSnacki"
+import { useTables } from "hooks/useTables"
+import { useRouter } from "next/router"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
-import LinkIcon from "@mui/icons-material/Link"
-import KeyIcon from "@mui/icons-material/Key"
-import { useRouter } from "next/router"
-import { useTables } from "hooks/useTables"
-import { AddLookupCellModal } from "./AddLookupCellModal"
-import { useSnacki } from "hooks/useSnacki"
+import { AddLookupModal } from "./AddLookupModal"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
-    const { snackError, snackSuccess, snackWarning } = useSnacki()
     const router = useRouter()
-
+    const { snackError, snackSuccess, snackWarning, snack } = useSnacki()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-
-    const { renameColumn, deleteColumn, utils, project } = useTableCtx()
+    const { data, renameColumn, deleteColumn, utils, project } = useTableCtx()
 
     const col = utils.getColumnByKey(props.column.key)
     // column that represents a link to another table
@@ -36,11 +34,12 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     // a user-facing primary column distinct from the table's real PK
     const isUserPrimary = col.attributes.userPrimary === 1
     const { tables } = useTables(project)
-    // BUG: this does not get the linked table
-    const foreignJt = useMemo(
-        () => (tables ? tables.find(tbl => tbl.id === col.joinId) : undefined),
-        [col.joinId, tables]
-    )
+
+    const foreignJt = useMemo(() => {
+        if (!data || !tables) return undefined
+        const join = data.metadata.joins.find(j => j.id === col.joinId)
+        return tables.find(t => t.id === join?.foreignJtId)
+    }, [col.joinId, tables, data])
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -94,9 +93,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     }
     const handleCloseLookupCellModal = () => setAnchorEL_LookupCellModal(null)
 
-    const handleAddLookupCell = async () => {
+    const handleAddLookupCell = async (column: ColumnDescriptor) => {
         try {
-            console.log(1)
+            snack(`Spalte '${column.name}' wird als Lookup-Spalte hinzugefügt`)
         } catch (error) {
             snackError("Die Lookup-Zelle konnte nicht hinzugefügt werden!")
         }
@@ -116,9 +115,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             >
                 {isLinkCol && (
                     <Tooltip
-                        title={`Ursprung: ${
+                        title={`(Verlinkte Spalte) Ursprung: Primärspalte aus Tabelle '${
                             foreignJt ? foreignJt.name : "Lädt..."
-                        }`}
+                        }'.`}
                     >
                         <span>
                             <IconButton
@@ -134,7 +133,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 {isUserPrimary && (
                     <Tooltip
                         title={
-                            "Primärspalte. Inhalt sollte einzigartig sein," +
+                            "(Primärspalte). Inhalt sollte einzigartig sein," +
                             " z.B. ein Name oder eine ID-Nummer."
                         }
                     >
@@ -198,7 +197,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 </MenuItem>
             </Menu>
             {foreignJt && (
-                <AddLookupCellModal
+                <AddLookupModal
                     open={anchorEL_LookupCellModal != null}
                     onClose={handleCloseLookupCellModal}
                     onAddLookupModal={handleAddLookupCell}

@@ -14,26 +14,24 @@ import {
     ListItemText,
     useTheme,
 } from "@mui/material"
-import { useTableCtx } from "context"
+import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import { useSnacki } from "hooks/useSnacki"
 import { useTableData } from "hooks/useTableData"
 import React, { useEffect, useMemo, useState } from "react"
 import { Column } from "types"
-import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 
-type AddLookupCellModal = {
+type AddLookupModal = {
     open: boolean
     onClose: () => void
     onAddLookupModal: (column: ColumnDescriptor) => unknown
     foreignJt: JtDescriptor
 }
 
-export const AddLookupCellModal: React.FC<AddLookupCellModal> = props => {
+export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const theme = useTheme()
-    const { utils } = useTableCtx()
     const { snackError } = useSnacki()
 
-    const { data, error } = useTableData(props.foreignJt.id)
+    const { data, error, utils } = useTableData(props.foreignJt.id)
 
     const [selection, setSelection] = useState<Column | null>(null)
     const selectedColDescriptor = useMemo(
@@ -48,16 +46,13 @@ export const AddLookupCellModal: React.FC<AddLookupCellModal> = props => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    const onClickHandler = (column: Column) => {
-        const colDescriptor = utils.getColumnByKey(column.key)
-        setSelection(colDescriptor)
-    }
+    const onClickHandler = (column: Column) => setSelection(column)
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>
                 Spalte aus verlinkter Tabelle <i>{props.foreignJt.name}</i> als
-                Lookup-Zelle hinzufügen
+                Lookup hinzufügen
             </DialogTitle>
             <DialogContent>
                 {data == null && error == null ? (
