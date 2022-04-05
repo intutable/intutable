@@ -16,7 +16,6 @@ import { Row } from "types"
 import LinkIcon from "@mui/icons-material/Link"
 import KeyIcon from "@mui/icons-material/Key"
 import { useRouter } from "next/router"
-import useSWR from "swr"
 import { useTables } from "hooks/useTables"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
@@ -57,13 +56,12 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             })
         } catch (error) {
             if (
-                typeof error === "object" &&
-                error!.error === "deleteUserPrimary"
-            )
+                (error as Record<string, string>).error === "deleteUserPrimary"
+            ) {
                 enqueueSnackbar("Primärspalte kann nicht gelöscht werden.", {
                     variant: "error",
                 })
-            else {
+            } else {
                 enqueueSnackbar("Spalte konnte nicht gelöscht werden!", {
                     variant: "error",
                 })
