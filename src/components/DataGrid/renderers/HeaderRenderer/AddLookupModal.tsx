@@ -64,7 +64,9 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
                         <List>
                             {data!.columns
                                 .filter(
-                                    col => col.key !== PLACEHOLDER.ROW_INDEX_KEY
+                                    col =>
+                                        col.key !== PLACEHOLDER.ROW_INDEX_KEY &&
+                                        col.key !== PLACEHOLDER.COL_SELECTOR
                                 )
                                 .map((col, i) => (
                                     <ListItem

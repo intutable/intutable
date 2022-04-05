@@ -6,6 +6,8 @@ import {
     Box,
     Divider,
     IconButton,
+    ListItemIcon,
+    ListItemText,
     Menu,
     MenuItem,
     Tooltip,
@@ -20,6 +22,7 @@ import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
 import { AddLookupModal } from "./AddLookupModal"
+import LookupIcon from "@mui/icons-material/ManageSearch"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
@@ -183,17 +186,22 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 {isLinkCol && (
                     <>
                         <MenuItem onClick={handleOpenLookupCellModal}>
-                            Lookup-Zelle hinzufügen
+                            <ListItemIcon>
+                                <LookupIcon />
+                            </ListItemIcon>
+                            <ListItemText>Lookup hinzufügen</ListItemText>
                         </MenuItem>
                         <Divider />
                     </>
                 )}
-                <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
+                <MenuItem onClick={handleRenameColumn}>
+                    <ListItemText>Umbenennen</ListItemText>
+                </MenuItem>
                 <MenuItem
                     onClick={handleDeleteColumn}
                     sx={{ color: theme.palette.warning.main }}
                 >
-                    Löschen
+                    <ListItemText>Löschen</ListItemText>
                 </MenuItem>
             </Menu>
             {foreignJt && (
