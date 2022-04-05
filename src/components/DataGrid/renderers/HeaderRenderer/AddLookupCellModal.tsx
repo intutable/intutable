@@ -1,33 +1,25 @@
-import AddIcon from "@mui/icons-material/Add"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ColumnDescriptor } from "@intutable/project-management/dist/types"
+import LoadingButton from "@mui/lab/LoadingButton"
 import {
-    Tooltip,
     Button,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    useTheme,
-    CircularProgress,
     List,
     ListItem,
     ListItemButton,
     ListItemText,
+    useTheme,
 } from "@mui/material"
-import { useSnackbar } from "notistack"
-import React, { useEffect, useState } from "react"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
-import { useAuth, useTableCtx } from "context"
-import { fetchWithUser } from "api"
-import {
-    ColumnDescriptor,
-    ProjectDescriptor,
-} from "@intutable/project-management/dist/types"
-import useSWR, { unstable_serialize, useSWRConfig } from "swr"
-import LoadingButton from "@mui/lab/LoadingButton"
-import { useTables } from "hooks/useTables"
-import { useTableData } from "hooks/useTableData"
-import { Column } from "types"
+import { useTableCtx } from "context"
 import { useSnacki } from "hooks/useSnacki"
+import { useTableData } from "hooks/useTableData"
+import React, { useEffect, useMemo, useState } from "react"
+import { Column } from "types"
+import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 
 type AddLookupCellModal = {
     open: boolean
@@ -43,7 +35,11 @@ export const AddLookupCellModal: React.FC<AddLookupCellModal> = props => {
 
     const { data, error } = useTableData(props.foreignJt.id)
 
-    const [selection, setSelection] = useState<ColumnDescriptor | null>(null)
+    const [selection, setSelection] = useState<Column | null>(null)
+    const selectedColDescriptor = useMemo(
+        () => (selection ? utils.getColumnByKey(selection.key) : undefined),
+        [selection, utils]
+    )
 
     useEffect(() => {
         if (error) {
@@ -71,24 +67,32 @@ export const AddLookupCellModal: React.FC<AddLookupCellModal> = props => {
                 ) : (
                     <>
                         <List>
-                            {data!.columns.map((col, i) => (
-                                <ListItem
-                                    key={i}
-                                    disablePadding
-                                    sx={{
-                                        bgcolor:
-                                            selection?.name === col.key
-                                                ? theme.palette.action.selected
-                                                : undefined,
-                                    }}
-                                >
-                                    <ListItemButton
-                                        onClick={onClickHandler.bind(null, col)}
+                            {data!.columns
+                                .filter(
+                                    col => col.key !== PLACEHOLDER.ROW_INDEX_KEY
+                                )
+                                .map((col, i) => (
+                                    <ListItem
+                                        key={i}
+                                        disablePadding
+                                        sx={{
+                                            bgcolor:
+                                                selection?.key === col.key
+                                                    ? theme.palette.action
+                                                          .selected
+                                                    : undefined,
+                                        }}
                                     >
-                                        <ListItemText primary={col.name} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
+                                        <ListItemButton
+                                            onClick={onClickHandler.bind(
+                                                null,
+                                                col
+                                            )}
+                                        >
+                                            <ListItemText primary={col.name} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
                         </List>
                     </>
                 )}
@@ -99,10 +103,10 @@ export const AddLookupCellModal: React.FC<AddLookupCellModal> = props => {
                     loading={data == null && error == null}
                     loadingIndicator="Lädt..."
                     onClick={async () => {
-                        await props.onAddLookupModal(selection!)
+                        await props.onAddLookupModal(selectedColDescriptor!)
                         props.onClose()
                     }}
-                    disabled={selection == null || error}
+                    disabled={selectedColDescriptor == null || error}
                 >
                     Hinzufügen
                 </LoadingButton>
