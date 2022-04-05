@@ -54,7 +54,7 @@ const catchException = async (res: Response): Promise<Response> => {
         const body = await res.text()
         try {
             return Promise.reject(JSON.parse(body))
-        } catch(e) {
+        } catch (e) {
             return Promise.reject(body)
         }
     }

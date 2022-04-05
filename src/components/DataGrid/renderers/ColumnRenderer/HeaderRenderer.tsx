@@ -56,9 +56,12 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 variant: "success",
             })
         } catch (error) {
-            if (error.error && error.error === "deleteUserPrimary")
-                enqueueSnackbar("Hauptspalte kann nicht gelöscht werden.", {
-                    variant: "error"
+            if (
+                typeof error === "object" &&
+                error!.error === "deleteUserPrimary"
+            )
+                enqueueSnackbar("Primärspalte kann nicht gelöscht werden.", {
+                    variant: "error",
                 })
             else {
                 enqueueSnackbar("Spalte konnte nicht gelöscht werden!", {
@@ -123,14 +126,13 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 )}
                 {isUserPrimary && (
                     <Tooltip
-                        title={"Hauptspalte. Inhalt sollte einzigartig sein," +
-                               " z.B. der Name einer Person"}
+                        title={
+                            "Primärspalte. Inhalt sollte einzigartig sein," +
+                            " z.B. ein Name oder eine ID-Nummer."
+                        }
                     >
                         <span>
-                            <IconButton
-                                size="small"
-                                disabled={true}
-                            >
+                            <IconButton size="small" disabled={true}>
                                 <KeyIcon />
                             </IconButton>
                         </span>
