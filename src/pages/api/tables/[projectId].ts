@@ -10,6 +10,14 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 
+/**
+ * List tables that belong to a project. Note that these are join tables from
+ * the corresponding plugin.
+ * @tutorial
+ * ```
+ * URL: `/api/tables/[projectId]`
+ * ```
+ */
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,

@@ -165,8 +165,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             "/api/column",
             user!,
             {
-                joinTable: data?.metadata.descriptor,
-                baseTable: data?.metadata.baseTable,
+                jtId: data?.metadata.descriptor.id,
                 column,
             },
             "POST"

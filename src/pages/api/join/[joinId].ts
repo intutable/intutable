@@ -16,13 +16,17 @@ import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import { makeError } from "utils/makeError"
 
 /**
- * Add a link from one join table to another. The target table will be
- * represented by its user primary column, and the latter also provides
- * an "add more linked columns" feature in its context menu.
- * body: {
- *   jtId: {@type number} The ID of the JT in which to create the link.
- *   foreignJtId {@type number} The ID of the JT to which the link points.
+ * Link rows in linked tables, by setting the value in the linking table's
+ * foreign key column.
+ * @tutorial
+ * ```
+ * - URL: `/api/join/[id]`, e.g. `/api/join/3`
+ * - Body: {
+ *    jtId: {@type {number} The ID of the JT in which to create the link.
+ *    rowId: {@type {number}} Row of the linking table.
+ *    value: {@type {number}} The ID of the row in the linked table.
  * }
+ * ```
  */
 const POST = async (
     req: NextApiRequest,

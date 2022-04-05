@@ -16,14 +16,12 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
 
 /**
- * GET a single join table's data @type {JtData}.
+ * GET a single (join) table's data {@type {JtData}}.
  *
  * @tutorial
  * ```
- * - URL: `/api/table/[id]` e.g. `/api/table/[1]`
- * - Body: {
- *  user: {@type {User}}
- * }
+ * - URL: `/api/table/[id]` e.g. `/api/table/1`
+ * - Body: {}
  * ```
  */
 const GET = async (
@@ -47,15 +45,12 @@ const GET = async (
 /**
  * PATCH/update the name of a single table.
  * Returns the updated join table {@type {JtDescriptor}}.
- *
- * // TODO: In a future version this api point will be able to adjust more than the name.
- *
+
  * @tutorial
  * ```
- * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
+ * - URL: `/api/project/[id]` e.g. `/api/project/1`
  * - Body: {
- *  user: {@type {User}}
- *  newName: {@type {string}}
+ *    newName: {@type {string}}
  * }
  * ```
  */
@@ -87,10 +82,8 @@ const PATCH = async (
  *
  * @tutorial
  * ```
- * - URL: `/api/table/[id]` e.g. `/api/table/[1]`
- * - Body: {
- *  user: {@type {User}}
- * }
+ * - URL: `/api/table/[id]` e.g. `/api/table/1`
+ * - Body: {}
  * ```
  */
 const DELETE = async (

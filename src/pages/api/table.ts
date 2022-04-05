@@ -19,19 +19,31 @@ import sanitizeName from "utils/sanitizeName"
 
 /**
  * Create a new table with the specified name.
- * The table will contain an ID column
+ * The table will initially contain a column "Name" which can be
+ * renamed, but not deleted. We call this column "user primary", and it
+ * functions as the table's key for all directly user-relevant purposes, e.g.
+ * in making previews of rows for link columns. It has nothing to do with
+ * the actual, integer primary key in the database.
+ * @tutorial
+ * ```
+ * - Body: {
+ *    user: {@type {User}}
+ *    projectId: {@type {number}}
+ *    name: {@type {string}}
+ * }
+ * ```
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { user, project, name } = req.body as {
+        const { user, projectId, name } = req.body as {
             user: User
-            project: ProjectDescriptor
+            projectId: ProjectDescriptor["id"]
             name: string
         }
 
         // create table in project-management with primary "name" column
         const table = await coreRequest<TableDescriptor>(
-            createTableInProject(user.id, project.id, sanitizeName(name), [
+            createTableInProject(user.id, projectId, sanitizeName(name), [
                 { name: "name", type: ColumnType.string, options: [] },
             ]),
             req.cookies[AUTH_COOKIE_KEY]

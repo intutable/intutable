@@ -196,7 +196,7 @@ const TableList: React.FC<TableListProps> = props => {
                 user!,
                 {
                     user,
-                    project: props.project,
+                    projectId: props.project.id,
                     name,
                 },
                 "POST"

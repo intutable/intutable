@@ -89,7 +89,7 @@ const PATCH = async (
  *
  * @tutorial
  * ```
- * - URL: `/api/project/[id]` e.g. `/api/project/[1]`
+ * - URL: `/api/project/[id]` e.g. `/api/project/1`
  * - Body: {
  *  user: {@type {User}}
  * }

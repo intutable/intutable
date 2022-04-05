@@ -5,6 +5,13 @@ import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
 
+/**
+ * List projects that belong to a user.
+ * @tutorial
+ * ```
+ * URL: `/api/projects/[userId]`
+ * ```
+ */
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,

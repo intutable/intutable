@@ -15,10 +15,15 @@ import makeForeignKeyName from "utils/makeForeignKeyName"
  * Add a link from one join table to another. The target table will be
  * represented by its user primary column, and the latter also provides
  * an "add more linked columns" feature in its context menu.
- * body: {
+ * This requires creating an extra FK column in the underlying table. The join
+ * and the FK can be deleted by deleting the column that represents the link.
+ * @tutorial
+ * ```
+ * - Body: {
  *   jtId: {@type number} The ID of the JT in which to create the link.
  *   foreignJtId {@type number} The ID of the JT to which the link points.
  * }
+ * ```
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {

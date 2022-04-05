@@ -17,6 +17,20 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { Column } from "types"
 import { makeError } from "utils/makeError"
 
+/**
+ * Update the metadata of a column. Only its `attributes` can be changed, all
+ * other properties are directly necessary to functionality and must not be
+ * messed with.
+ * @tutorial
+ * ```
+ * URL : `/api/column/[id]`, e.g. `/api/column/32`
+ * - Body: {
+ *    user: {@type {User}}
+ *    projectId: {@type {number}}
+ *    name: {@type {string}}
+ * }
+ * ```
+ */
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
@@ -42,6 +56,16 @@ const PATCH = async (
     }
 }
 
+/**
+ * Delete a column.
+ * @tutorial
+ * ```
+ * URL : `/api/column/[id]`, e.g. `/api/column/32`
+ * - Body: {
+ *    jtId: {@type {number}}
+ * }
+ * ```
+ */
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,

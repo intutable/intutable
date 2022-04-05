@@ -7,6 +7,17 @@ import { PM, Row } from "types"
 import Obj from "types/Obj"
 import { makeError } from "utils/makeError"
 
+/**
+ * Create a new row with some starting values. Ensuring that the types of
+ * `values` match up with what the table can take is up to the user.
+ * @tutorial
+ * ```
+ * Body: {
+ *    baseTable: {@type {TableDescriptor}}
+ *    values: {@type {Record<string, unknown>}}
+ * }
+ * ```
+ */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         const { baseTable, values } = req.body as {
@@ -28,6 +39,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
+/**
+ * Update a row, identified by `condition`. Ensuring that the types of
+ * `values` match up with what the table can take is up to the user.
+ * @tutorial
+ * ```
+ * Body: {
+ *    baseTable: {@type {TableDescriptor}}
+ *    condition: {@type {Array<unknown>}}
+ *    values: {@type {Record<string, unknown>}}
+ * }
+ * ```
+ */
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         console.log("body; " + JSON.stringify(req.body))
@@ -56,7 +79,16 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(500).json({ error: error.message })
     }
 }
-
+/**
+ * Delete a row, identified by `condition`.
+ * @tutorial
+ * ```
+ * Body: {
+ *    baseTable: {@type {TableDescriptor}}
+ *    condition: {@type {Array<unknown>}}
+ * }
+ * ```
+ */
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         const { baseTable, condition } = req.body as {

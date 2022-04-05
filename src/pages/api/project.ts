@@ -6,6 +6,16 @@ import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
 
+/**
+ * Create a project in PM with the specified user as owner.
+ * @tutorial
+ * ```
+ * - Body: {
+ *    user: {@type {User}}
+ *    name: {@type {string}}
+ * }
+ * ```
+ */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         const { user, name } = req.body as {
