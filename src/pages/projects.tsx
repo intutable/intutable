@@ -26,7 +26,7 @@ import type {
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { isValidName, prepareName } from "utils/validateName"
+import { prepareName } from "utils/validateName"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -180,21 +180,6 @@ const ProjectList: React.FC = () => {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            const isValid = isValidName(name)
-            if (isValid instanceof Error) {
-                enqueueSnackbar(isValid.message, { variant: "error" })
-                return
-            }
-            const nameIsTaken = projects!
-                .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
-                .includes(name.toLowerCase())
-            if (nameIsTaken) {
-                enqueueSnackbar(
-                    "Dieser Name wird bereits für eines deiner Projekte verwendet!",
-                    { variant: "error" }
-                )
-                return
-            }
             await fetchWithUser<ProjectDescriptor>(
                 "/api/project",
                 user,
@@ -206,9 +191,21 @@ const ProjectList: React.FC = () => {
                 variant: "success",
             })
         } catch (error) {
-            enqueueSnackbar("Das Projekt konnte nicht erstellt werden!", {
-                variant: "error",
-            })
+            const errKey = (error as Record<string, string>).error
+            let errMsg: string
+            switch (errKey) {
+                case "alreadyTaken":
+                    errMsg = `Name bereits vergeben.`
+                    break
+                case "invalidName":
+                    errMsg =
+                        `Ungültiger Name: darf nur Buchstaben, Ziffern` +
+                        ` und Unterstriche enthalten.`
+                    break
+                default:
+                    errMsg = "Das Projekt konnte nicht erstellt werden!"
+            }
+            enqueueSnackbar(errMsg, { variant: "error" })
         }
     }
 

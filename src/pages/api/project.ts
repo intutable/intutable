@@ -1,5 +1,8 @@
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { createProject } from "@intutable/project-management/dist/requests"
+import {
+    getProjects,
+    createProject,
+} from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
@@ -21,6 +24,19 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         const { user, name } = req.body as {
             user: User
             name: ProjectDescriptor["name"]
+        }
+
+        // check validity: alphanum + underscore
+        if (!name.match(new RegExp(/^[\p{L}\p{N}_]*$/u)))
+            throw Error("invalidName")
+
+        // check if already exists
+        const projects = await coreRequest<ProjectDescriptor[]>(
+            getProjects(user.id),
+            req.cookies[AUTH_COOKIE_KEY]
+        )
+        if (projects.some(p => p.name === name)) {
+            throw Error("alreadyTaken")
         }
 
         // create project in project-management

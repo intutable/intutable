@@ -6,6 +6,7 @@ import {
     ColumnDescriptor as PM_Column,
 } from "@intutable/project-management/dist/types"
 import {
+    getTablesFromProject,
     createTableInProject,
     getColumnsFromTable,
 } from "@intutable/project-management/dist/requests"
@@ -41,9 +42,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             name: string
         }
 
+        const internalName = sanitizeName(name)
+
+        const existingTables = await coreRequest<TableDescriptor[]>(
+            getTablesFromProject(projectId),
+            req.cookies[AUTH_COOKIE_KEY]
+        )
+        if (existingTables.some(t => t.name === internalName))
+            throw Error("alreadyTaken")
+
         // create table in project-management with primary "name" column
         const table = await coreRequest<TableDescriptor>(
-            createTableInProject(user.id, projectId, sanitizeName(name), [
+            createTableInProject(user.id, projectId, internalName, [
                 { name: "name", type: ColumnType.string, options: [] },
             ]),
             req.cookies[AUTH_COOKIE_KEY]

@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
-import useSWR, { SWRConfig, unstable_serialize } from "swr"
+import { SWRConfig } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import AddIcon from "@mui/icons-material/Add"
 import {
@@ -24,14 +24,14 @@ import Title from "components/Head/Title"
 import Link from "components/Link"
 import { AUTH_COOKIE_KEY, useAuth } from "context"
 import { prepareName } from "utils/validateName"
-import sanitizeName from "utils/sanitizeName"
+
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
 import { fetchWithUser } from "api"
-import { makeCacheKey, useTables, useTablesConfig } from "hooks/useTables"
+import { makeCacheKey, useTables } from "hooks/useTables"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -181,16 +181,6 @@ const TableList: React.FC<TableListProps> = props => {
             const namePrompt = prompt("Benenne deine neue Tabelle!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            const nameIsTaken = tables!
-                .map((tbl: JtDescriptor) => sanitizeName(tbl.name))
-                .includes(sanitizeName(name))
-            if (nameIsTaken) {
-                enqueueSnackbar(
-                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!",
-                    { variant: "error" }
-                )
-                return
-            }
             await fetchWithUser(
                 "/api/table",
                 user!,
@@ -206,10 +196,17 @@ const TableList: React.FC<TableListProps> = props => {
                 variant: "success",
             })
         } catch (error) {
+            const errKey = (error as Record<string, string>).error
+            let errMsg: string
+            switch (errKey) {
+                case "alreadyTaken":
+                    errMsg = `Name bereits vergeben.`
+                    break
+                default:
+                    errMsg = "Die Tabelle konnte nicht erstellt werden!"
+            }
             console.error(error)
-            enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
-                variant: "error",
-            })
+            enqueueSnackbar(errMsg, { variant: "error" })
         }
     }
 
