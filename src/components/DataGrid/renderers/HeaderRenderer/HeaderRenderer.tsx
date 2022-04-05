@@ -23,6 +23,7 @@ import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
 import { AddLookupModal } from "./AddLookupModal"
 import LookupIcon from "@mui/icons-material/ManageSearch"
+import { mutate } from "swr"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
@@ -86,19 +87,20 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         }
     }
 
-    const [anchorEL_LookupCellModal, setAnchorEL_LookupCellModal] =
+    const [anchorEL_LookupModal, setAnchorEL_LookupModal] =
         useState<Element | null>(null)
-    const handleOpenLookupCellModal = (
+    const handleOpenLookupModal = (
         e: React.MouseEvent<HTMLLIElement, MouseEvent>
     ) => {
         e.preventDefault()
-        setAnchorEL_LookupCellModal(e.currentTarget)
+        setAnchorEL_LookupModal(e.currentTarget)
     }
-    const handleCloseLookupCellModal = () => setAnchorEL_LookupCellModal(null)
+    const handleCloseLookupModal = () => setAnchorEL_LookupModal(null)
 
-    const handleAddLookupCell = async (column: ColumnDescriptor) => {
+    const handleAddLookup = async (column: ColumnDescriptor) => {
         try {
             snack(`Spalte '${column.name}' wird als Lookup-Spalte hinzugefügt`)
+            await utils.mutate()
         } catch (error) {
             snackError("Die Lookup-Zelle konnte nicht hinzugefügt werden!")
         }
@@ -185,7 +187,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             >
                 {isLinkCol && (
                     <>
-                        <MenuItem onClick={handleOpenLookupCellModal}>
+                        <MenuItem onClick={handleOpenLookupModal}>
                             <ListItemIcon>
                                 <LookupIcon />
                             </ListItemIcon>
@@ -206,9 +208,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             </Menu>
             {foreignJt && (
                 <AddLookupModal
-                    open={anchorEL_LookupCellModal != null}
-                    onClose={handleCloseLookupCellModal}
-                    onAddLookupModal={handleAddLookupCell}
+                    open={anchorEL_LookupModal != null}
+                    onClose={handleCloseLookupModal}
+                    onAddLookupModal={handleAddLookup}
                     foreignJt={foreignJt}
                 />
             )}
