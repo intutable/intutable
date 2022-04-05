@@ -1,6 +1,7 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import {
     Box,
+    Divider,
     IconButton,
     Menu,
     MenuItem,
@@ -17,10 +18,12 @@ import LinkIcon from "@mui/icons-material/Link"
 import KeyIcon from "@mui/icons-material/Key"
 import { useRouter } from "next/router"
 import { useTables } from "hooks/useTables"
+import { AddLookupCellModal } from "./AddLookupCellModal"
+import { useSnacki } from "hooks/useSnacki"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
+    const { snackError, snackSuccess, snackWarning } = useSnacki()
     const router = useRouter()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -33,8 +36,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     // a user-facing primary column distinct from the table's real PK
     const isUserPrimary = col.attributes.userPrimary === 1
     const { tables } = useTables(project)
+    // BUG: this does not get the linked table
     const foreignJt = useMemo(
-        () => tables?.find(tbl => tbl.id === col.joinId),
+        () => (tables ? tables.find(tbl => tbl.id === col.joinId) : undefined),
         [col.joinId, tables]
     )
 
@@ -51,21 +55,13 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             )
             if (!confirmed) return
             await deleteColumn(props.column.key)
-            enqueueSnackbar("Spalte wurde gelöscht.", {
-                variant: "success",
-            })
+            snackSuccess("Spalte wurde gelöscht.")
         } catch (error) {
-            if (
+            const errMsg =
                 (error as Record<string, string>).error === "deleteUserPrimary"
-            ) {
-                enqueueSnackbar("Primärspalte kann nicht gelöscht werden.", {
-                    variant: "error",
-                })
-            } else {
-                enqueueSnackbar("Spalte konnte nicht gelöscht werden!", {
-                    variant: "error",
-                })
-            }
+                    ? "Primärspalte kann nicht gelöscht werden."
+                    : "Spalte konnte nicht gelöscht werden!"
+            snackError(errMsg)
         }
     }
 
@@ -78,18 +74,31 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             if (!name) return
             // TODO: check if the column name is already taken
             await renameColumn(props.column.key, name)
-            enqueueSnackbar("Die Spalte wurde umbenannt.", {
-                variant: "success",
-            })
+            snackSuccess("Die Spalte wurde umbenannt.")
         } catch (error) {
-            if (error === "alreadyTaken")
-                enqueueSnackbar(`Der Name ${name} ist bereits vergeben.`, {
-                    variant: "error",
-                })
-            else
-                enqueueSnackbar("Die Spalte konnte nicht umbenannt werden!", {
-                    variant: "error",
-                })
+            const errMsg =
+                error === "alreadyTaken"
+                    ? `Der Name ${name} ist bereits vergeben.`
+                    : "Die Spalte konnte nicht umbenannt werden!"
+            snackError(errMsg)
+        }
+    }
+
+    const [anchorEL_LookupCellModal, setAnchorEL_LookupCellModal] =
+        useState<Element | null>(null)
+    const handleOpenLookupCellModal = (
+        e: React.MouseEvent<HTMLLIElement, MouseEvent>
+    ) => {
+        e.preventDefault()
+        setAnchorEL_LookupCellModal(e.currentTarget)
+    }
+    const handleCloseLookupCellModal = () => setAnchorEL_LookupCellModal(null)
+
+    const handleAddLookupCell = async () => {
+        try {
+            console.log(1)
+        } catch (error) {
+            snackError("Die Lookup-Zelle konnte nicht hinzugefügt werden!")
         }
     }
 
@@ -130,7 +139,10 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         }
                     >
                         <span>
-                            <IconButton size="small" disabled={true}>
+                            <IconButton
+                                onClick={() => snackWarning("Not Implemented.")}
+                                size="small"
+                            >
                                 <KeyIcon />
                             </IconButton>
                         </span>
@@ -155,29 +167,43 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     <MoreVertIcon />
                 </IconButton>
             </Box>
-            {anchorEL && (
-                <Menu
-                    elevation={0}
-                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                    // transformOrigin={{ vertical: "top", horizontal: "right" }}
-                    open={anchorEL != null}
-                    anchorEl={anchorEL}
-                    keepMounted={true}
-                    onClose={handleCloseContextMenu}
-                    PaperProps={{
-                        sx: {
-                            boxShadow: theme.shadows[1],
-                        },
-                    }}
+            <Menu
+                elevation={0}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                // transformOrigin={{ vertical: "top", horizontal: "right" }}
+                open={anchorEL != null}
+                anchorEl={anchorEL}
+                keepMounted={true}
+                onClose={handleCloseContextMenu}
+                PaperProps={{
+                    sx: {
+                        boxShadow: theme.shadows[1],
+                    },
+                }}
+            >
+                {isLinkCol && (
+                    <>
+                        <MenuItem onClick={handleOpenLookupCellModal}>
+                            Lookup-Zelle hinzufügen
+                        </MenuItem>
+                        <Divider />
+                    </>
+                )}
+                <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
+                <MenuItem
+                    onClick={handleDeleteColumn}
+                    sx={{ color: theme.palette.warning.main }}
                 >
-                    <MenuItem onClick={handleRenameColumn}>Umbenennen</MenuItem>
-                    <MenuItem
-                        onClick={handleDeleteColumn}
-                        sx={{ color: theme.palette.warning.main }}
-                    >
-                        Löschen
-                    </MenuItem>
-                </Menu>
+                    Löschen
+                </MenuItem>
+            </Menu>
+            {foreignJt && (
+                <AddLookupCellModal
+                    open={anchorEL_LookupCellModal != null}
+                    onClose={handleCloseLookupCellModal}
+                    onAddLookupModal={handleAddLookupCell}
+                    foreignJt={foreignJt}
+                />
             )}
         </>
     )

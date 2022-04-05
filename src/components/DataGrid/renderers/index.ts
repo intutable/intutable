@@ -1,2 +1,2 @@
 export * from "./RowRenderer"
-export * from "./ColumnRenderer"
+export * from "./HeaderRenderer"
