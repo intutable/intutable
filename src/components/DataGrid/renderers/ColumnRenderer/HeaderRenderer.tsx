@@ -14,6 +14,7 @@ import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
 import LinkIcon from "@mui/icons-material/Link"
+import KeyIcon from "@mui/icons-material/Key"
 import { useRouter } from "next/router"
 import useSWR from "swr"
 import { useTables } from "hooks/useTables"
@@ -28,7 +29,10 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { renameColumn, deleteColumn, utils, project } = useTableCtx()
 
     const col = utils.getColumnByKey(props.column.key)
+    // column that represents a link to another table
     const isLinkCol = col.joinId !== null
+    // a user-facing primary column distinct from the table's real PK
+    const isUserPrimary = col.attributes.userPrimary === 1
     const { tables } = useTables(project)
     const foreignJt = useMemo(
         () => tables?.find(tbl => tbl.id === col.joinId),
@@ -52,9 +56,15 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 variant: "success",
             })
         } catch (error) {
-            enqueueSnackbar("Spalte konnte nicht gelöscht werden!", {
-                variant: "error",
-            })
+            if (error.error && error.error === "deleteUserPrimary")
+                enqueueSnackbar("Hauptspalte kann nicht gelöscht werden.", {
+                    variant: "error"
+                })
+            else {
+                enqueueSnackbar("Spalte konnte nicht gelöscht werden!", {
+                    variant: "error",
+                })
+            }
         }
     }
 
@@ -107,6 +117,21 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 disabled={foreignJt == null}
                             >
                                 <LinkIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                )}
+                {isUserPrimary && (
+                    <Tooltip
+                        title={"Hauptspalte. Inhalt sollte einzigartig sein," +
+                               " z.B. der Name einer Person"}
+                    >
+                        <span>
+                            <IconButton
+                                size="small"
+                                disabled={true}
+                            >
+                                <KeyIcon />
                             </IconButton>
                         </span>
                     </Tooltip>

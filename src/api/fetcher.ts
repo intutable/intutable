@@ -47,11 +47,16 @@ export const fetchWithUser = <T>(
  * Catches Exceptions (http status codes in range of 4xx to 5xx)
  * and throws them to allow the handlers to catch them in a catch-block
  */
-const catchException = (res: Response): Promise<Response> => {
+const catchException = async (res: Response): Promise<Response> => {
     if (res.status >= 400 && res.status < 600) {
         console.error(res)
         console.error(`Fetcher Received Exception (${res.status}): ${res}`)
-        throw res
+        const body = await res.text()
+        try {
+            return Promise.reject(JSON.parse(body))
+        } catch(e) {
+            return Promise.reject(body)
+        }
     }
 
     return Promise.resolve(res)

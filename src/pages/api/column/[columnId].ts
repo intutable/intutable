@@ -55,17 +55,22 @@ const DELETE = async (
             req.cookies[AUTH_COOKIE_KEY]
         )
 
+        if (column.attributes.userPrimary)
+            // cannot delete the primary column
+            throw Error("deleteUserPrimary")
+
         await coreRequest(
             removeColumnFromJt(columnId),
             req.cookies[AUTH_COOKIE_KEY]
         )
-        // if column belongs to base table, delete underlying table column too
         if (column.joinId === null)
+            // if column belongs to base table, delete underlying table column
             await coreRequest(
                 removeColumn(column.parentColumnId),
                 req.cookies[AUTH_COOKIE_KEY]
             )
         else if (column.attributes.formatter === "linkColumn") {
+            // if column is a link column, we need to do some more work:
             const info = await coreRequest<JtInfo>(
                 getJtInfo(jtId),
                 req.cookies[AUTH_COOKIE_KEY]
