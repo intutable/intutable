@@ -73,7 +73,7 @@ CREATE TABLE jt_columns(
 );
 
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');
-insert into projects("projectName", "ownerId") values('Personal', 1);
+insert into projects("projectName", "ownerId") values('Fakultät MathInf', 1);
 insert into userprojects("userId", "projectId") values(1, 1);
 
 
@@ -96,7 +96,7 @@ insert into columns(_id, "columnName", "tableId") values(6, 'stellung', 1);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(1, 'Personen', 1, NULL,
-         '{"conditions": [], "groupColumns": [], "sortColumns": []}');
+         '{"conditions": [], "groupColumns": [], "sortColumns": [{ "column":1, "order": "asc"}]}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(1, 1, NULL, 1, 'ID', 'number', 'number');
@@ -134,7 +134,7 @@ insert into columns(_id, "columnName", "tableId") values(10, 'fk_math_inf', 2);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(2, 'Organe', 2, NULL,
-         '{"conditions": [], "groupColumns": [], "sortColumns": []}');
+         '{"conditions": [], "groupColumns": [], "sortColumns": [{ "column":7, "order": "asc"}]}');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(7, 2, NULL, 7, 'ID', 'number', 'number');
