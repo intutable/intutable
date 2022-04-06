@@ -6,25 +6,31 @@ import {
     Box,
     Divider,
     IconButton,
+    InputAdornment,
     ListItemIcon,
     ListItemText,
     Menu,
     MenuItem,
+    Stack,
+    TextField,
     Tooltip,
     Typography,
     useTheme,
 } from "@mui/material"
-import { useTableCtx } from "context"
+import { useHeaderSearchField, useTableCtx } from "context"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
 import { useRouter } from "next/router"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { AddLookupModal } from "./AddLookupModal"
 import LookupIcon from "@mui/icons-material/ManageSearch"
 import { fetchWithUser } from "api/fetcher"
 import { useAuth } from "context"
+import FilterAltIcon from "@mui/icons-material/FilterAlt"
+import SearchIcon from "@mui/icons-material/Search"
+import Check from "@mui/icons-material/Check"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
@@ -33,6 +39,11 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { snackError, snackSuccess, snackWarning } = useSnacki()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const { data, renameColumn, deleteColumn, utils, project } = useTableCtx()
+    const {
+        open: headerOpen,
+        openSearchField,
+        closeSearchField,
+    } = useHeaderSearchField()
 
     const col = utils.getColumnByKey(props.column.key)
     // column that represents a link to another table
@@ -123,12 +134,24 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         }
     }
 
+    const handleToggleHeaderSearchField = () => {
+        console.log(headerOpen)
+        if (headerOpen) closeSearchField()
+        else openSearchField()
+    }
+
     return (
-        <>
+        <Stack
+            direction="column"
+            sx={{
+                width: "100%",
+                height: "100%",
+            }}
+        >
             <Box
                 sx={{
                     width: "100%",
-                    height: "100%",
+                    height: "35px",
                     display: "inline-flex",
                     justifyContent: "flex-start",
                     alignContent: "center",
@@ -192,53 +215,104 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 </Tooltip>
                 <Box sx={{ flex: 1 }} />
                 <Box>
+                    <Tooltip title="Filter">
+                        <IconButton size="small">
+                            <FilterAltIcon fontSize="inherit" />
+                        </IconButton>
+                    </Tooltip>
                     <IconButton onClick={handleOpenContextMenu} size="small">
                         <MoreVertIcon fontSize="inherit" />
                     </IconButton>
                 </Box>
-            </Box>
-            <Menu
-                elevation={0}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                // transformOrigin={{ vertical: "top", horizontal: "right" }}
-                open={anchorEL != null}
-                anchorEl={anchorEL}
-                keepMounted={true}
-                onClose={handleCloseContextMenu}
-                PaperProps={{
-                    sx: {
-                        boxShadow: theme.shadows[1],
-                    },
-                }}
-            >
-                {isLinkCol && [
-                    <MenuItem key={0} onClick={handleOpenLookupModal}>
-                        <ListItemIcon>
-                            <LookupIcon />
-                        </ListItemIcon>
-                        <ListItemText>Lookup hinzufügen</ListItemText>
-                    </MenuItem>,
-                    <Divider key={1} />,
-                ]}
-                <MenuItem onClick={handleRenameColumn}>
-                    <ListItemText>Umbenennen</ListItemText>
-                </MenuItem>
-                <MenuItem
-                    onClick={handleDeleteColumn}
-                    sx={{ color: theme.palette.warning.main }}
+                <Menu
+                    elevation={0}
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                    // transformOrigin={{ vertical: "top", horizontal: "right" }}
+                    open={anchorEL != null}
+                    anchorEl={anchorEL}
+                    keepMounted={true}
+                    onClose={handleCloseContextMenu}
+                    PaperProps={{
+                        sx: {
+                            boxShadow: theme.shadows[1],
+                        },
+                    }}
                 >
-                    <ListItemText>Löschen</ListItemText>
-                </MenuItem>
-            </Menu>
-            {foreignJt && (
-                <AddLookupModal
-                    open={anchorEL_LookupModal != null}
-                    onClose={handleCloseLookupModal}
-                    onAddLookupModal={handleAddLookup}
-                    foreignJt={foreignJt}
-                />
+                    {isLinkCol && [
+                        <MenuItem key={0} onClick={handleOpenLookupModal}>
+                            <ListItemIcon>
+                                <LookupIcon />
+                            </ListItemIcon>
+                            <ListItemText>Lookup hinzufügen</ListItemText>
+                        </MenuItem>,
+                        <Divider key={1} />,
+                    ]}
+                    <MenuItem onClick={handleToggleHeaderSearchField}>
+                        {headerOpen && (
+                            <ListItemIcon>
+                                <Check />
+                            </ListItemIcon>
+                        )}
+                        <ListItemText>Suchleiste</ListItemText>
+                    </MenuItem>
+                    <MenuItem onClick={handleRenameColumn}>
+                        <ListItemText>Umbenennen</ListItemText>
+                    </MenuItem>
+                    <MenuItem
+                        onClick={handleDeleteColumn}
+                        sx={{ color: theme.palette.warning.main }}
+                    >
+                        <ListItemText>Löschen</ListItemText>
+                    </MenuItem>
+                    {foreignJt && (
+                        <AddLookupModal
+                            open={anchorEL_LookupModal != null}
+                            onClose={handleCloseLookupModal}
+                            onAddLookupModal={handleAddLookup}
+                            foreignJt={foreignJt}
+                        />
+                    )}
+                </Menu>
+            </Box>
+            {headerOpen && (
+                <Box
+                    sx={{
+                        width: "100%",
+                        height: "35px",
+                        display: "inline-flex",
+                        justifyContent: "center",
+                        alignContent: "flex-start",
+                        alignItems: "flex-start",
+                        overflow: "hidden",
+                    }}
+                >
+                    <TextField
+                        sx={{
+                            maxHeight: "20px",
+                            width: "100%",
+                        }}
+                        size="small"
+                        disabled
+                        variant="outlined"
+                        value="Suche"
+                        margin="none"
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                            ),
+                        }}
+                        inputProps={{
+                            style: {
+                                height: "30px",
+                                padding: "0 14px",
+                            },
+                        }}
+                    />
+                </Box>
             )}
-        </>
+        </Stack>
     )
 }
 
