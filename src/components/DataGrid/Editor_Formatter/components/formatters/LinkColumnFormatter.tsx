@@ -108,24 +108,27 @@ const RowPicker: React.FC<RowPickerProps> = props => {
                 ) : (
                     <>
                         <List>
-                            {options.map(row => (
-                                <ListItem
-                                    key={row.id}
-                                    disablePadding
-                                    sx={{
-                                        bgcolor:
-                                            selection?.id === row.id
-                                                ? theme.palette.action.selected
-                                                : undefined,
-                                    }}
-                                >
-                                    <ListItemButton
-                                        onClick={() => setSelection(row)}
+                            {options
+                                .filter(row => row.text != null)
+                                .map(row => (
+                                    <ListItem
+                                        key={row.id}
+                                        disablePadding
+                                        sx={{
+                                            bgcolor:
+                                                selection?.id === row.id
+                                                    ? theme.palette.action
+                                                          .selected
+                                                    : undefined,
+                                        }}
                                     >
-                                        <ListItemText primary={row.text} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
+                                        <ListItemButton
+                                            onClick={() => setSelection(row)}
+                                        >
+                                            <ListItemText primary={row.text} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
                         </List>
                     </>
                 )}
