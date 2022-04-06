@@ -67,7 +67,7 @@ const TablePage: React.FC<TablePageProps> = props => {
             >
                 Deine Tabellen in{" "}
                 <Link
-                    href={`/projects`}
+                    href={`/project/${props.project.id}`}
                     muiLinkProps={{
                         underline: "hover",
                         color: theme.palette.primary.main,

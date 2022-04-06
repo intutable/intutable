@@ -278,7 +278,7 @@ const TableList: React.FC<TableListProps> = props => {
                     color: theme.palette.text.secondary,
                 }}
             >
-                Deine Tabellen in{" "}
+                Zurück zur{" "}
                 <Link
                     href={`/projects`}
                     muiLinkProps={{
@@ -287,7 +287,7 @@ const TableList: React.FC<TableListProps> = props => {
                         textDecoration: "none",
                     }}
                 >
-                    {props.project.name}
+                    {"Gesamtübersicht"}
                 </Link>
             </Typography>
             <Grid container spacing={2}>
