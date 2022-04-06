@@ -19,6 +19,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { useTableData } from "hooks/useTableData"
 import React, { useEffect, useMemo, useState } from "react"
 import { Column } from "types"
+import { useAuth } from "context"
 
 type AddLookupModal = {
     open: boolean
@@ -30,6 +31,8 @@ type AddLookupModal = {
 export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
+
+    const { user } = useAuth()
 
     const { data, error, utils } = useTableData(props.foreignJt.id)
 

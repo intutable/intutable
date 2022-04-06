@@ -18,8 +18,12 @@ export type TableContextProps = {
     onRowReorder: (sourceIndex: number, targetIndex: number) => void
     createRow: () => Promise<void>
     deleteRow: (rowIndex: number, row: Row) => Promise<void>
-    updateRow: (columnKey: string, rowId: number, value: unknown) => Promise<void>
-    createColumn: (col: Column.Serialized) => Promise<void>
+    updateRow: (
+        columnKey: string,
+        rowId: number,
+        value: unknown
+    ) => Promise<void>
+    createColumn: (col: Column.Serialized, joinId?: number) => Promise<void>
     renameColumn: (key: Column["key"], newName: Column["name"]) => Promise<void>
     deleteColumn: (key: Column["key"]) => Promise<void>
     utils: {
@@ -153,17 +157,20 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             "PATCH"
         )
         await mutate()
-        
     }
 
     // #################### column ####################
 
-    const createColumn = async (column: Column.Serialized): Promise<void> => {
+    const createColumn = async (
+        column: Column.Serialized,
+        joinId?: number
+    ): Promise<void> => {
         await fetchWithUser(
             "/api/column",
             user!,
             {
                 jtId: data?.metadata.descriptor.id,
+                joinId,
                 column,
             },
             "POST"

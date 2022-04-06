@@ -20,21 +20,28 @@ import { useTables } from "hooks/useTables"
 import { useRouter } from "next/router"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
 import { AddLookupModal } from "./AddLookupModal"
 import LookupIcon from "@mui/icons-material/ManageSearch"
-import { mutate } from "swr"
+import { fetchWithUser } from "api/fetcher"
+import { useAuth } from "context"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
     const router = useRouter()
-    const { snackError, snackSuccess, snackWarning, snack } = useSnacki()
+    const { user } = useAuth()
+    const { snackError, snackSuccess, snackWarning } = useSnacki()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const { data, renameColumn, deleteColumn, utils, project } = useTableCtx()
 
     const col = utils.getColumnByKey(props.column.key)
     // column that represents a link to another table
-    const isLinkCol = col.joinId !== null
+    const isLinkCol =
+        col.joinId !== null && col.attributes.formatter === "linkColumn"
+    const isLookupCol =
+        col.joinId !== null && col.attributes.formatter !== "linkColumn"
+
+    // const t = props.column.editorOptions?.renderFormatter
     // a user-facing primary column distinct from the table's real PK
     const isUserPrimary = col.attributes.userPrimary === 1
     const { tables } = useTables(project)
@@ -98,11 +105,21 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const handleCloseLookupModal = () => setAnchorEL_LookupModal(null)
 
     const handleAddLookup = async (column: ColumnDescriptor) => {
+        if (!isLinkCol || !user) return
         try {
-            snack(`Spalte '${column.name}' wird als Lookup-Spalte hinzugefügt`)
+            const joinId = col.joinId!
+            await fetchWithUser(
+                `/api/lookupField/${column.id}`,
+                user,
+                {
+                    jtId: data!.metadata.descriptor.id,
+                    joinId,
+                },
+                "POST"
+            )
             await utils.mutate()
         } catch (error) {
-            snackError("Die Lookup-Zelle konnte nicht hinzugefügt werden!")
+            snackError("Der Lookup konnte nicht hinzugefügt werden!")
         }
     }
 
@@ -152,6 +169,18 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         </span>
                     </Tooltip>
                 )}
+                {isLookupCol && (
+                    <Tooltip title={"(Lookup)"}>
+                        <span>
+                            <IconButton
+                                onClick={() => snackWarning("Not Implemented.")}
+                                size="small"
+                            >
+                                <LookupIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                )}
                 <Tooltip title={props.column.name}>
                     <Typography
                         sx={{
@@ -162,14 +191,11 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     </Typography>
                 </Tooltip>
                 <Box sx={{ flex: 1 }} />
-                <IconButton
-                    onClick={handleOpenContextMenu}
-                    sx={{
-                        transform: "scale(0.6)",
-                    }}
-                >
-                    <MoreVertIcon />
-                </IconButton>
+                <Box>
+                    <IconButton onClick={handleOpenContextMenu} size="small">
+                        <MoreVertIcon fontSize="inherit" />
+                    </IconButton>
+                </Box>
             </Box>
             <Menu
                 elevation={0}
