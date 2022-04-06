@@ -1,16 +1,8 @@
-/**
- * Don't worry, this messy file will be deprecated in the future.
- * No need to split this up.
- */
-
-import { makeAPI, Routes } from "api"
-import type { PMTypes as PM } from "types"
-import { Auth } from "auth"
-import { useTableList } from "hooks"
+import { useRouter } from "next/router"
+import { useSnackbar } from "notistack"
+import React, { useState } from "react"
+import { SWRConfig } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
-import Title from "components/Head/Title"
-import Link from "components/Link"
-import { AUTH_COOKIE_KEY } from "context"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -23,16 +15,23 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import { isValidName, prepareName } from "utils/validateName"
+
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+
+import { Auth } from "auth"
+import Title from "components/Head/Title"
+import Link from "components/Link"
+import { AUTH_COOKIE_KEY, useAuth } from "context"
+import { prepareName } from "utils/validateName"
+
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import { SWRConfig, unstable_serialize } from "swr"
+import { fetchWithUser } from "api"
+import { makeCacheKey, useTables } from "hooks/useTables"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -96,10 +95,10 @@ const TableProjectCard: React.FC<AddTableCardProps> = props => {
 }
 
 type TableCardProps = {
-    project: PM.Project
-    table: PM.Table
-    handleRename: (project: PM.Table) => Promise<void>
-    handleDelete: (project: PM.Table) => Promise<void>
+    project: ProjectDescriptor
+    table: JtDescriptor
+    handleRename: (joinTable: JtDescriptor) => Promise<void>
+    handleDelete: (joinTable: JtDescriptor) => Promise<void>
     children: string
 }
 const TableCard: React.FC<TableCardProps> = props => {
@@ -116,12 +115,7 @@ const TableCard: React.FC<TableCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push(
-            "/project/" +
-                props.project.projectId +
-                "/table/" +
-                props.table.tableId
-        )
+        router.push("/project/" + props.project.id + "/table/" + props.table.id)
     }
 
     return (
@@ -173,52 +167,55 @@ const TableCard: React.FC<TableCardProps> = props => {
 }
 
 type TableListProps = {
-    project: PM.Project
+    project: ProjectDescriptor
 }
 const TableList: React.FC<TableListProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
+    const { user } = useAuth()
 
-    const { tableList, error, createTable, renameTable, deleteTable } =
-        useTableList(props.project)
+    const { tables, error, mutate } = useTables(props.project)
 
     const handleCreateTable = async () => {
         try {
             const namePrompt = prompt("Benenne deine neue Tabelle!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            const isValid = isValidName(name)
-            if (isValid instanceof Error) {
-                enqueueSnackbar(isValid.message, { variant: "error" })
-                return
-            }
-            const nameIsTaken = tableList!
-                .map((tbl: PM.Table) => tbl.tableName.toLowerCase())
-                .includes(name.toLowerCase())
-            if (nameIsTaken) {
-                enqueueSnackbar(
-                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!",
-                    { variant: "error" }
-                )
-                return
-            }
-            await createTable(name)
+            await fetchWithUser(
+                "/api/table",
+                user!,
+                {
+                    user,
+                    projectId: props.project.id,
+                    name,
+                },
+                "POST"
+            )
+            await mutate()
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })
         } catch (error) {
-            enqueueSnackbar("Die Tabelle konnte nicht erstellt werden!", {
-                variant: "error",
-            })
+            const errKey = (error as Record<string, string>).error
+            let errMsg: string
+            switch (errKey) {
+                case "alreadyTaken":
+                    errMsg = `Name bereits vergeben.`
+                    break
+                default:
+                    errMsg = "Die Tabelle konnte nicht erstellt werden!"
+            }
+            console.error(error)
+            enqueueSnackbar(errMsg, { variant: "error" })
         }
     }
 
-    const handleRenameTable = async (table: PM.Table) => {
+    const handleRenameTable = async (joinTable: JtDescriptor) => {
         try {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
-            const nameIsTaken = tableList!
-                .map((tbl: PM.Table) => tbl.tableName.toLowerCase())
+            const nameIsTaken = tables!
+                .map((tbl: JtDescriptor) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -227,7 +224,15 @@ const TableList: React.FC<TableListProps> = props => {
                 )
                 return
             }
-            await renameTable(table, name)
+            await fetchWithUser(
+                `/api/table/${joinTable.id}`,
+                user!,
+                {
+                    newName: name,
+                },
+                "PATCH"
+            )
+            await mutate()
             enqueueSnackbar("Die Tabelle wurde umbenannt.", {
                 variant: "success",
             })
@@ -238,13 +243,19 @@ const TableList: React.FC<TableListProps> = props => {
         }
     }
 
-    const handleDeleteTable = async (table: PM.Table) => {
+    const handleDeleteTable = async (joinTable: JtDescriptor) => {
         try {
             const confirmed = confirm(
                 "Möchtest du deine Tabelle wirklich löschen?"
             )
             if (!confirmed) return
-            await deleteTable(table)
+            await fetchWithUser(
+                `/api/table/${joinTable.id}`,
+                user!,
+                undefined,
+                "DELETE"
+            )
+            await mutate()
             enqueueSnackbar("Tabelle wurde gelöscht.", {
                 variant: "success",
             })
@@ -256,17 +267,31 @@ const TableList: React.FC<TableListProps> = props => {
     }
 
     if (error) return <>Error: {error}</>
-    if (tableList == null) return <CircularProgress />
+    if (tables == null) return <CircularProgress />
 
     return (
         <>
             <Title title="Projekte" />
-            <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
+            <Typography
+                sx={{
+                    mb: theme.spacing(4),
+                    color: theme.palette.text.secondary,
+                }}
+            >
                 Deine Tabellen in{" "}
-                <Link href={`/projects`}>{props.project.projectName}</Link>
+                <Link
+                    href={`/projects`}
+                    muiLinkProps={{
+                        underline: "hover",
+                        color: theme.palette.primary.main,
+                        textDecoration: "none",
+                    }}
+                >
+                    {props.project.name}
+                </Link>
             </Typography>
             <Grid container spacing={2}>
-                {tableList.map((tbl: PM.Table, i: number) => (
+                {tables.map((tbl: JtDescriptor, i: number) => (
                     <Grid item key={i}>
                         <TableCard
                             table={tbl}
@@ -274,7 +299,7 @@ const TableList: React.FC<TableListProps> = props => {
                             handleRename={handleRenameTable}
                             project={props.project}
                         >
-                            {tbl.tableName}
+                            {tbl.name}
                         </TableCard>
                     </Grid>
                 ))}
@@ -289,8 +314,8 @@ const TableList: React.FC<TableListProps> = props => {
 }
 
 type PageProps = {
-    project: PM.Project
-    // fallback: PM.Table.List
+    project: ProjectDescriptor
+    // fallback: JtDescriptor[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fallback: any // TODO: remove this any
 }
@@ -325,26 +350,30 @@ export const getServerSideProps: GetServerSideProps<
                 destination: "/login",
             },
         }
-    const API = makeAPI(user)
 
-    const projectId: PM.Project.ID = Number.parseInt(query.projectId)
+    const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
 
-    const project = (await API.get.projectList()).find(
-        (proj: PM.Project) => proj.projectId === projectId
+    const projects = await fetchWithUser<ProjectDescriptor[]>(
+        `/api/projects/${user.id}`,
+        user,
+        undefined,
+        "GET"
     )
+    const project = projects.find(p => p.id === projectId)
     if (project == null) return { notFound: true }
 
-    const list = await API.get.tableList(project.projectId)
+    const tables = await fetchWithUser<JtDescriptor[]>(
+        `/api/tables/${project.id}`,
+        user,
+        undefined,
+        "GET"
+    )
 
     return {
         props: {
             project: project,
             fallback: {
-                [unstable_serialize([
-                    Routes.get.tableList,
-                    user,
-                    { projectId: project.projectId },
-                ])]: list,
+                [makeCacheKey(project, user)]: tables,
             },
         },
     }

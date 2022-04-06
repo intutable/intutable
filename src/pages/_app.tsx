@@ -8,7 +8,7 @@ import { SnackbarProvider } from "notistack"
 import React, { useEffect, useMemo, useState } from "react"
 import { AuthProvider } from "context"
 import createTheme from "theme/utils"
-import { parseResponse, logger } from "api/middelware"
+import { parseTableData, logger } from "api/middelware"
 import { SWRConfig } from "swr"
 
 type ThemeTogglerContextProps = {
@@ -70,13 +70,17 @@ const MyApp = (props: AppProps) => {
                 />
                 <meta charSet="utf-8" />
                 {/* Favicons */}
-                <link rel="icon" type="image/png" href="/favicon.ico" />
+                <link
+                    rel="shortcut icon"
+                    type="image/x-icon"
+                    href="/favicon.ico"
+                />
                 {/* Safari Tab Bar Style */}
                 <meta name="theme-color" content={theme.palette.primary.main} />
             </Head>
 
             <AuthProvider>
-                <SWRConfig value={{ use: [logger, parseResponse] }}>
+                <SWRConfig value={{ use: [logger, parseTableData] }}>
                     <ThemeTogglerContext.Provider value={colorMode}>
                         <ThemeProvider theme={theme}>
                             <SnackbarProvider maxSnack={5}>

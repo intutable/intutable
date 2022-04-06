@@ -1,6 +1,6 @@
 import { useTableCtx } from "context"
 import { Column } from "types"
-import AddIcon from "@mui/icons-material/Add"
+import AddIcon from "@mui/icons-material/ViewColumn"
 import { Button } from "@mui/material"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"

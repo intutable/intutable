@@ -1,7 +1,9 @@
 import React from "react"
 import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
-import type { EditorType } from "components/DataGrid/Editor/editor-management/editorTypes"
+import type { CellContentType } from "@datagrid/Editor_Formatter/types/CellContentType"
+import { JtInfo, JtData } from "@intutable/join-tables/dist/types"
+import { TableDescriptor } from "@intutable/project-management/dist/types"
 
 // #################################################################
 //       Backend / Database
@@ -16,69 +18,19 @@ export const PM = {
 } as const
 
 /**
- * Project Management Package
- * @namespace
- */
-export namespace PMTypes {
-    export namespace Project {
-        export type ID = number
-        export type Name = string
-    }
-    export type Project = {
-        projectId: Project.ID
-        projectName: Project.Name
-    }
-
-    export namespace Table {
-        export type ID = number
-        export type Name = string
-    }
-    export type Table = {
-        tableId: Table.ID
-        tableName: Table.Name
-    }
-
-    export namespace Column {
-        export type ID = number
-        export type Name = string
-    }
-    export type Column = {
-        columnId: Column.ID
-        columnName: Column.Name
-    }
-}
-
-/**
  * Database
  * @namespace
  */
 namespace DB {
     export type Boolean = 1 | 0
-    export type Column = {
-        readonly [PM.UID_KEY]: number // ID of meta column
-        columnName: string // internal name (key)
-        displayName: string // display name
-        editable: DB.Boolean
-        hidden: DB.Boolean
-        type: EditorType // `editor`
-    }
-    export type Row = {
-        readonly [PM.UID_KEY]: number
-        [index: string]: unknown
-    }
-    export type TableData = {
-        table: PMTypes.Table
-        columns: DB.Column[]
-        rows: DB.Row[]
-    }
 }
 
 // #################################################################
-//       Frontend / Deserialized
+//       Generic
 // #################################################################
 
 type Table<COL, ROW> = {
-    table: PMTypes.Table
+    metadata: JtInfo
     columns: COL[]
     rows: ROW[]
 }
@@ -90,7 +42,6 @@ type Table<COL, ROW> = {
 export type Column = ReactDataGrid_Column<Row>
 
 export type Row = {
-    [PLACEHOLDER.SELECTOR_COLUMN_KEY]: React.ReactElement
     readonly [PLACEHOLDER.ROW_INDEX_KEY]: number
     readonly [PM.UID_KEY]: number
     [key: string]: unknown
@@ -140,7 +91,8 @@ type SerializedColumn = {
     /**
      * @default string
      */
-    editor: EditorType
+    editor: CellContentType
+    formatter: CellContentType | "linkColumn"
 }
 
 // #################################################################
@@ -151,15 +103,12 @@ export namespace Row {
     export type Serialized = SerializedRow
     export type Summary = SummaryRow
     export type Deserialized = Row
-    export type DBSchema = DB.Row
 }
 export namespace Column {
     export type Serialized = SerializedColumn
     export type Deserialized = Column
-    export type DBSchema = DB.Column
 }
 export namespace TableData {
     export type Serialized = SerializedTableData
     export type Deserialized = TableData
-    export type DBSchema = DB.TableData
 }

@@ -1,13 +1,7 @@
-/**
- * Don't worry, this messy file will be deprecated in the future.
- * No need to split this up.
- */
-
-import { makeAPI, Routes } from "api"
-import { Auth } from "auth"
-import { useProjectList } from "hooks"
-import Title from "components/Head/Title"
-import { AUTH_COOKIE_KEY } from "context"
+import { useRouter } from "next/router"
+import { useSnackbar } from "notistack"
+import React, { useState } from "react"
+import useSWR, { SWRConfig, unstable_serialize } from "swr"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -20,17 +14,19 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import { isValidName, prepareName } from "utils/validateName"
+
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+
+import { fetchWithUser } from "api"
+import { Auth } from "auth"
+import Title from "components/Head/Title"
+import { AUTH_COOKIE_KEY, useAuth } from "context"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import { SWRConfig, unstable_serialize } from "swr"
-import type { PMTypes as PM } from "types"
+import { prepareName } from "utils/validateName"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -94,9 +90,9 @@ const AddProjectCard: React.FC<AddProjectCardProps> = props => {
 }
 
 type ProjectCardProps = {
-    project: PM.Project
-    handleRename: (project: PM.Project) => Promise<void>
-    handleDelete: (project: PM.Project) => Promise<void>
+    project: ProjectDescriptor
+    handleRename: (project: ProjectDescriptor) => Promise<void>
+    handleDelete: (project: ProjectDescriptor) => Promise<void>
     children: string
 }
 const ProjectCard: React.FC<ProjectCardProps> = props => {
@@ -113,7 +109,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push("/project/" + props.project.projectId)
+        router.push("/project/" + props.project.id)
     }
 
     return (
@@ -167,47 +163,59 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 const ProjectList: React.FC = () => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
+    const { user } = useAuth()
 
-    const { projectList, createProject, renameProject, deleteProject, error } =
-        useProjectList()
+    const {
+        data: projects,
+        error,
+        mutate,
+    } = useSWR<ProjectDescriptor[]>(
+        user ? [`/api/projects/${user.id}`, user, undefined, "GET"] : null,
+        fetchWithUser
+    )
 
     const handleCreateProject = async () => {
+        if (projects == null || user == null) return
         try {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            const isValid = isValidName(name)
-            if (isValid instanceof Error) {
-                enqueueSnackbar(isValid.message, { variant: "error" })
-                return
-            }
-            const nameIsTaken = projectList!
-                .map((proj: PM.Project) => proj.projectName.toLowerCase())
-                .includes(name.toLowerCase())
-            if (nameIsTaken) {
-                enqueueSnackbar(
-                    "Dieser Name wird bereits für eines deiner Projekte verwendet!",
-                    { variant: "error" }
-                )
-                return
-            }
-            await createProject(name)
+            await fetchWithUser<ProjectDescriptor>(
+                "/api/project",
+                user,
+                { user, name },
+                "POST"
+            )
+            await mutate()
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
             })
         } catch (error) {
-            enqueueSnackbar("Das Projekt konnte nicht erstellt werden!", {
-                variant: "error",
-            })
+            const errKey = (error as Record<string, string>).error
+            let errMsg: string
+            switch (errKey) {
+                case "alreadyTaken":
+                    errMsg = `Name bereits vergeben.`
+                    break
+                case "invalidName":
+                    errMsg =
+                        `Ungültiger Name: darf nur Buchstaben, Ziffern` +
+                        ` und Unterstriche enthalten.`
+                    break
+                default:
+                    errMsg = "Das Projekt konnte nicht erstellt werden!"
+            }
+            enqueueSnackbar(errMsg, { variant: "error" })
         }
     }
 
-    const handleRenameProject = async (project: PM.Project) => {
+    const handleRenameProject = async (project: ProjectDescriptor) => {
+        if (projects == null || user == null) return
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
-            const nameIsTaken = projectList!
-                .map((proj: PM.Project) => proj.projectName.toLowerCase())
+            const nameIsTaken = projects!
+                .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 enqueueSnackbar(
@@ -216,7 +224,13 @@ const ProjectList: React.FC = () => {
                 )
                 return
             }
-            await renameProject(project, name)
+            await fetchWithUser<ProjectDescriptor>(
+                `/api/project/${project.id}`,
+                user,
+                { newName: name },
+                "PATCH"
+            )
+            await mutate()
             enqueueSnackbar("Das Projekt wurde umbenannt.", {
                 variant: "success",
             })
@@ -227,13 +241,20 @@ const ProjectList: React.FC = () => {
         }
     }
 
-    const handleDeleteProject = async (project: PM.Project) => {
+    const handleDeleteProject = async (project: ProjectDescriptor) => {
+        if (projects == null || user == null) return
         try {
             const confirmed = confirm(
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            await deleteProject(project)
+            await fetchWithUser(
+                `/api/project/${project.id}`,
+                user,
+                undefined,
+                "DELETE"
+            )
+            await mutate()
             enqueueSnackbar("Projekt wurde gelöscht.", {
                 variant: "success",
             })
@@ -245,7 +266,7 @@ const ProjectList: React.FC = () => {
     }
 
     if (error) return <>Error: {error}</>
-    if (projectList == null) return <CircularProgress />
+    if (projects == null) return <CircularProgress />
 
     return (
         <>
@@ -254,14 +275,14 @@ const ProjectList: React.FC = () => {
                 Deine Projekte
             </Typography>
             <Grid container spacing={2}>
-                {projectList.map((proj: PM.Project, i: number) => (
+                {projects.map((proj: ProjectDescriptor, i: number) => (
                     <Grid item key={i}>
                         <ProjectCard
                             handleDelete={handleDeleteProject}
                             handleRename={handleRenameProject}
                             project={proj}
                         >
-                            {proj.projectName}
+                            {proj.name}
                         </ProjectCard>
                     </Grid>
                 ))}
@@ -276,7 +297,7 @@ const ProjectList: React.FC = () => {
 }
 
 type PageProps = {
-    // fallback: PM.Project.List
+    // fallback: ProjectDescriptor.List
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fallback: any // TODO: remove this any
 }
@@ -305,18 +326,23 @@ export const getServerSideProps: GetServerSideProps<
                 destination: "/login",
             },
         }
-    const API = makeAPI(user)
 
-    const list = await API.get.projectList()
+    const list = await fetchWithUser<ProjectDescriptor[]>(
+        `/api/projects/${user.id}`, // Note: userId is tmp
+        user,
+        undefined,
+        "GET"
+    )
     if (list == null) return { notFound: true }
 
     return {
         props: {
             fallback: {
                 [unstable_serialize([
-                    Routes.get.projectList,
+                    `/api/projects/${user.id}`,
                     user,
-                    { userId: user.id },
+                    undefined,
+                    "GET",
                 ])]: list,
             },
         },

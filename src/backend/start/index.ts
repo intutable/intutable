@@ -95,26 +95,26 @@ function processArgs1(args: string[]): ProgramArgs {
         switch (args[0]) {
             case "dev":
                 return { frontendOption: "dev" }
-            case "preview":
-                return { frontendOption: "preview" }
+            case "start":
+                return { frontendOption: "start" }
             default:
                 usage()
         }
 }
 
 function usage(): ProgramArgs {
-    console.log("Usage: node start dev | node start preview")
+    console.log("Usage: node start dev | node start start")
     throw new Error("")
 }
 
 // process control
 function shutdown(components: AppComponent[], reason?: string) {
     if (reason) logWithName(reason + "\n")
-    for (let component of components) {
+    for (const component of components) {
         logWithName("shutting down " + component.description)
         if (component.process.exitCode === null) {
             // means it's still running
-            let shutdownSuccessfully = component.process.kill("SIGTERM")
+            const shutdownSuccessfully = component.process.kill("SIGTERM")
             if (shutdownSuccessfully) log("    ...done\n")
             else log("    ...failed\n")
         } else log("    ...already terminated\n")
@@ -124,11 +124,11 @@ function shutdown(components: AppComponent[], reason?: string) {
 }
 
 // logging
-function log(...stuff) {
+function log(...stuff: any[]) {
     process.stdout.write(stuff.reduce((s1, s2) => s1 + ", " + s2))
 }
 
-function logWithName(...stuff) {
+function logWithName(...stuff: any[]) {
     process.stdout.write(APP_NAME + ": ")
     log(...stuff)
 }

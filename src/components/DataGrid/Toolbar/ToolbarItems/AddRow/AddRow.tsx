@@ -1,4 +1,4 @@
-import AddIcon from "@mui/icons-material/Add"
+import AddIcon from "@mui/icons-material/TableRows"
 import { Button } from "@mui/material"
 import { useTableCtx } from "context"
 import { useSnackbar } from "notistack"
