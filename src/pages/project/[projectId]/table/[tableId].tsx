@@ -55,7 +55,7 @@ const TablePage: React.FC<TablePageProps> = props => {
 
         await updateRow(key, utils.getRowId(data, changedRow), changedRow[key])
     }
-    
+
     return (
         <>
             <Title title={props.project.name} />
