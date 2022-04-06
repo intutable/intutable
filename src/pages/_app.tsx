@@ -70,7 +70,11 @@ const MyApp = (props: AppProps) => {
                 />
                 <meta charSet="utf-8" />
                 {/* Favicons */}
-                <link rel="icon" type="image/png" href="/favicon.ico" />
+                <link
+                    rel="shortcut icon"
+                    type="image/x-icon"
+                    href="/favicon.ico"
+                />
                 {/* Safari Tab Bar Style */}
                 <meta name="theme-color" content={theme.palette.primary.main} />
             </Head>
