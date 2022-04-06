@@ -1,6 +1,5 @@
-import React, { useEffect } from "react"
+import React from "react"
 import useSWR, { KeyedMutator } from "swr"
-import { RowsChangeData } from "react-data-grid"
 
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import {
@@ -19,7 +18,7 @@ export type TableContextProps = {
     onRowReorder: (sourceIndex: number, targetIndex: number) => void
     createRow: () => Promise<void>
     deleteRow: (rowIndex: number, row: Row) => Promise<void>
-    partialRowUpdate: (rows: Row[], data: RowsChangeData<Row>) => Promise<void>
+    updateRow: (columnKey: string, rowId: number, value: unknown) => Promise<void>
     createColumn: (col: Column.Serialized) => Promise<void>
     renameColumn: (key: Column["key"], newName: Column["name"]) => Promise<void>
     deleteColumn: (key: Column["key"]) => Promise<void>
@@ -37,7 +36,7 @@ const initialState: TableContextProps = {
     onRowReorder: undefined!,
     createRow: undefined!,
     deleteRow: undefined!,
-    partialRowUpdate: undefined!,
+    updateRow: undefined!,
     createColumn: undefined!,
     renameColumn: undefined!,
     deleteColumn: undefined!,
@@ -130,32 +129,31 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         // todo: filter row and delete by index and then shift them
     }
 
-    const partialRowUpdate = async (
-        rows: Row[],
-        changeData: RowsChangeData<Row>
+    const updateRow = async (
+        columnKey: string,
+        rowId: number,
+        value: unknown
     ): Promise<void> => {
-        const changedRow = rows[changeData.indexes[0]]
-        const joinColumnKey = changeData.column.key
-
-        const metaColumn = getColumnByKey(joinColumnKey)
+        const metaColumn = getColumnByKey(columnKey)
+        const baseColumnKey = metaColumn.name
 
         if (metaColumn.joinId !== null)
             throw Error("attempted to edit data of a different table")
-        const baseColumnKey = metaColumn.name
+
         await fetchWithUser(
             "/api/row",
             user!,
             {
                 baseTable: data?.metadata.baseTable,
-                condition: [PM.UID_KEY, getRowId(data, changedRow)],
+                condition: [PM.UID_KEY, rowId],
                 update: {
-                    [baseColumnKey]: changedRow[joinColumnKey],
+                    [baseColumnKey]: value,
                 },
             },
             "PATCH"
         )
         await mutate()
-        // setRows(rows)
+        
     }
 
     // #################### column ####################
@@ -217,7 +215,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
                 onRowReorder,
                 createRow,
                 deleteRow,
-                partialRowUpdate,
+                updateRow,
                 // column dispatchers
                 createColumn,
                 renameColumn,

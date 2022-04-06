@@ -2,7 +2,7 @@ import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
 import React, { useState } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import DataGrid, { CalculatedColumn } from "react-data-grid"
+import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DetailedViewModal } from "@datagrid/Detail Window/DetailedViewModal"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
 import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
@@ -44,8 +44,18 @@ const TablePage: React.FC<TablePageProps> = props => {
         column: CalculatedColumn<Row>
     } | null>(null)
 
-    const { data: tableData, error, partialRowUpdate } = useTableCtx()
+    const { data, error, updateRow, utils } = useTableCtx()
 
+    const partialRowUpdate = async (
+        rows: Row[],
+        changeData: RowsChangeData<Row>
+    ): Promise<void> => {
+        const changedRow = rows[changeData.indexes[0]]
+        const key = changeData.column.key
+
+        await updateRow(key, utils.getRowId(data, changedRow), changedRow[key])
+    }
+    
     return (
         <>
             <Title title={props.project.name} />
@@ -70,7 +80,7 @@ const TablePage: React.FC<TablePageProps> = props => {
 
             {error ? (
                 error.message
-            ) : tableData == null ? (
+            ) : data == null ? (
                 <LoadingSkeleton />
             ) : (
                 <>
@@ -96,8 +106,8 @@ const TablePage: React.FC<TablePageProps> = props => {
                         <DndProvider backend={HTML5Backend}>
                             <DataGrid
                                 className={"rdg-" + theme.palette.mode}
-                                rows={tableData.rows}
-                                columns={tableData.columns}
+                                rows={data.rows}
+                                columns={data.columns}
                                 noRowsFallback={<NoRowsRenderer />}
                                 rowKeyGetter={rowKeyGetter}
                                 defaultColumnOptions={{
