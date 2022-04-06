@@ -185,17 +185,15 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     },
                 }}
             >
-                {isLinkCol && (
-                    <>
-                        <MenuItem onClick={handleOpenLookupModal}>
-                            <ListItemIcon>
-                                <LookupIcon />
-                            </ListItemIcon>
-                            <ListItemText>Lookup hinzufügen</ListItemText>
-                        </MenuItem>
-                        <Divider />
-                    </>
-                )}
+                {isLinkCol && [
+                    <MenuItem key={0} onClick={handleOpenLookupModal}>
+                        <ListItemIcon>
+                            <LookupIcon />
+                        </ListItemIcon>
+                        <ListItemText>Lookup hinzufügen</ListItemText>
+                    </MenuItem>,
+                    <Divider key={1} />,
+                ]}
                 <MenuItem onClick={handleRenameColumn}>
                     <ListItemText>Umbenennen</ListItemText>
                 </MenuItem>

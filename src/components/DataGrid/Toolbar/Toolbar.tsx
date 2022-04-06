@@ -1,12 +1,17 @@
 import { Toolbar as MUIToolbar, Button, useTheme, Divider } from "@mui/material"
+import { Box } from "@mui/system"
+import React from "react"
 
 type ToolbarProps = {
     position: "top" | "bottom"
-    children: React.ReactElement | React.ReactElement[]
+    // children: React.ReactElement | React.ReactElement[]
 }
 
 const Toolbar: React.FC<ToolbarProps> = props => {
     const theme = useTheme()
+
+    const children = React.Children.toArray(props.children)
+
     return (
         <MUIToolbar
             sx={{
@@ -26,26 +31,24 @@ const Toolbar: React.FC<ToolbarProps> = props => {
             }}
             disableGutters
         >
-            {/* TODO: add key */}
-            {Array.isArray(props.children)
-                ? props.children.map((child, index, array) =>
-                      index + 1 === array.length ? (
-                          child
-                      ) : (
-                          <>
-                              {child}
-                              <Divider
-                                  orientation="vertical"
-                                  flexItem
-                                  variant="middle"
-                                  sx={{
-                                      mx: theme.spacing(1),
-                                  }}
-                              />
-                          </>
-                      )
-                  )
-                : props.children}
+            {children.map((child, index) =>
+                index + 1 === children.length ? (
+                    <Box key={index}>{child}</Box>
+                ) : (
+                    [
+                        <Box key={index}>{child}</Box>,
+                        <Divider
+                            key={`${index}-divider`}
+                            orientation="vertical"
+                            flexItem
+                            variant="middle"
+                            sx={{
+                                mx: theme.spacing(1),
+                            }}
+                        />,
+                    ]
+                )
+            )}
         </MUIToolbar>
     )
 }
