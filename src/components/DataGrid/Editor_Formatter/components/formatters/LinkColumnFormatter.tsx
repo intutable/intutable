@@ -1,7 +1,6 @@
-import { useAuth, useTableCtx } from "context"
-import { useSnackbar } from "notistack"
-import React, { useEffect, useState } from "react"
-import useSWR, { useSWRConfig } from "swr"
+import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
+import { JoinDescriptor, JtDescriptor } from "@intutable/join-tables/dist/types"
+import ClearIcon from "@mui/icons-material/Clear"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Box,
@@ -11,19 +10,22 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    IconButton,
     List,
     ListItem,
     ListItemButton,
     ListItemText,
     Tooltip,
     useTheme,
+    Stack,
 } from "@mui/material"
-
-import { JtDescriptor, JoinDescriptor } from "@intutable/join-tables/dist/types"
-
-import { TableData } from "types"
-import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
 import { fetchWithUser } from "api"
+import { useAuth, useTableCtx } from "context"
+import { useSnacki } from "hooks/useSnacki"
+import { useSnackbar } from "notistack"
+import React, { useEffect, useState } from "react"
+import useSWR from "swr"
+import { Row, TableData } from "types"
 
 type RowPickerProps = {
     rowId: number
@@ -146,6 +148,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
 export const LinkColumnFormatter: Formatter = props => {
     const { row, column } = props
+    const { snack, snackError } = useSnacki()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
@@ -154,7 +157,6 @@ export const LinkColumnFormatter: Formatter = props => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
-
     const handleCloseModal = () => setAnchorEL(null)
 
     const { data, utils } = useTableCtx()
@@ -169,18 +171,53 @@ export const LinkColumnFormatter: Formatter = props => {
         setForeignTableId(join.foreignJtId)
     }, [data, utils, column.key])
 
+    const key = column.key as keyof Row
+    const content = row[key] as string | null | undefined
+    const hasContent = content && content.length > 0
+
+    const [deleteIconVisible, setDeleteIconVisible] = useState<boolean>(false)
+    const handleDeleteContent = async (
+        e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    ) => {
+        try {
+            e.stopPropagation()
+            snack("Lösch dich")
+        } catch (error) {
+            snackError("Der Inhalt konnte nicht gelöscht werden")
+        }
+    }
+
     return (
         <>
-            {row[column.key]}
-            <Tooltip enterDelay={1000} arrow title="Lookup-Feld hinzufügen">
+            <Tooltip
+                enterDelay={1000}
+                arrow
+                title={`Lookup ${hasContent ? "ändern" : "hinzufügen"}`}
+            >
                 <Box
+                    onMouseOver={() => setDeleteIconVisible(true)}
+                    onMouseOut={() => setDeleteIconVisible(false)}
+                    onClick={handleOpenModal}
                     sx={{
                         width: "100%",
                         height: "100%",
                         cursor: "cell",
                     }}
-                    onClick={handleOpenModal}
-                ></Box>
+                >
+                    <Stack direction="row">
+                        <Box flexGrow="1">{content}</Box>
+                        {deleteIconVisible && hasContent && (
+                            <Box>
+                                <IconButton
+                                    size="small"
+                                    onClick={handleDeleteContent}
+                                >
+                                    <ClearIcon fontSize="inherit" />
+                                </IconButton>
+                            </Box>
+                        )}
+                    </Stack>
+                </Box>
             </Tooltip>
             {foreignTableId && joinId && (
                 <RowPicker
