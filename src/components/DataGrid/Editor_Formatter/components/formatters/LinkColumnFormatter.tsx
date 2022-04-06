@@ -25,7 +25,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import useSWR from "swr"
-import { Row, TableData } from "types"
+import { PM, Row, TableData } from "types"
 
 type RowPickerProps = {
     rowId: number
@@ -148,6 +148,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
 export const LinkColumnFormatter: Formatter = props => {
     const { row, column } = props
+    const { user } = useAuth()
     const { snack, snackError } = useSnacki()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -181,8 +182,19 @@ export const LinkColumnFormatter: Formatter = props => {
     ) => {
         try {
             e.stopPropagation()
-            snack("Lösch dich")
+            await fetchWithUser(
+                `/api/join/${joinId}`,
+                user!,
+                {
+                    jtId: data!.metadata.descriptor.id,
+                    rowId: utils.getRowId(data, row),
+                    value: null,
+                },
+                "POST"
+            )
+            await utils.mutate()
         } catch (error) {
+            console.error(error)
             snackError("Der Inhalt konnte nicht gelöscht werden")
         }
     }
