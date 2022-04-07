@@ -130,7 +130,8 @@ insert into projecttables("projectId", "tableId") values(1, 2);
 insert into columns(_id, "columnName", "tableId") values(7, '_id', 2);
 insert into columns(_id, "columnName", "tableId") values(8, 'name', 2);
 insert into columns(_id, "columnName", "tableId") values(9, 'kuerzel', 2);
-insert into columns(_id, "columnName", "tableId") values(10, 'fk_math_inf', 2);
+insert into columns(_id, "columnName", "tableId") values(10, 'typ', 2);
+insert into columns(_id, "columnName", "tableId") values(11, 'fk_math_inf', 2);
 
 INSERT INTO jts(_id, name, table_id, user_id, row_options)
   VALUES(2, 'Organe', 2, NULL,
@@ -146,7 +147,10 @@ INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
   VALUES(9, 2, NULL, 9, 'Kürzel', 'string', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
                        "displayName", editor, formatter)
-  VALUES(10, 2, NULL, 10, 'FK/Math/Inf', 'string', 'string');
+  VALUES(10, 2, NULL, 10, 'Typ', 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(11, 2, NULL, 11, 'FK/Math/Inf', 'string', 'string');
 
 
 -- object data
