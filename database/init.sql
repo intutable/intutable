@@ -90,7 +90,6 @@ insert into projecttables("projectId", "tableId") values(1, 1);
 insert into columns(_id, "columnName", "tableId") values(1, '_id', 1);
 insert into columns(_id, "columnName", "tableId") values(2, 'nachname', 1);
 insert into columns(_id, "columnName", "tableId") values(3, 'vorname', 1);
-insert into columns(_id, "columnName", "tableId") values(4, 'm_w', 1);
 insert into columns(_id, "columnName", "tableId") values(5, 'titel', 1);
 insert into columns(_id, "columnName", "tableId") values(6, 'stellung', 1);
 
@@ -106,9 +105,6 @@ INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(3, 1, NULL, 3, 'Vorname', 'string', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(4, 1, NULL, 4, 'M/W', 'string', 'string');
 INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(5, 1, NULL, 5, 'Titel', 'string', 'string');
@@ -152,28 +148,72 @@ INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(11, 2, NULL, 11, 'FK/Math/Inf', 'string', 'string');
 
+CREATE TABLE p1_rollen (
+    _id INTEGER NOT NULL,
+    name CHARACTER VARYING(255),
+    "j#1_fk" INTEGER,
+    "j#2_fk" INTEGER,
+    rolle CHARACTER VARYING(255)
+);
+INSERT INTO tables(_id, key, name, "ownerId")
+  VALUES(4, 'p1_rollen', 'rollen', 1);
+INSERT INTO projecttables("projectId", "tableId") VALUES(1, 4);
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(13, '_id', 4, 'increments');
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(14, 'name', 4, 'string');
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(15, 'j#1_fk', 4, 'integer');
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(16, 'j#2_fk', 4, 'integer');
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(17, 'rolle', 4, 'string');
+
+INSERT INTO jts(_id, name, table_id, user_id, row_options)
+  VALUES(4, 'Rollen', 4, 1, '{"conditions":[],"groupColumns":[],"sortColumns":[{"column":13,"order":"asc"}]}');
+INSERT INTO jt_joins(_id, jt_id, foreign_jt_id, "on")
+  VALUES(1, 4, 1, '[15,"=",1]');
+INSERT INTO jt_joins(_id, jt_id, foreign_jt_id, "on")
+  VALUES(2, 4, 2, '[16,"=",7]');
+
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(13, 4, NULL, 13, 'ID', 0, 1, 'number', NULL);
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(14, 4, NULL, 14, 'Name', 1, 1, 'string', NULL);
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(15, 4, 1, 2, 'Nachname', 0, 0, NULL, 'linkColumn');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(17, 4, NULL, 17, 'Rolle', 0, 1, 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(16, 4, 2, 8, 'Organ', 0, 0, NULL, 'linkColumn');
+
 
 -- object data
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Gertz', 'Michael', 'Herr', 'Prof.Dr.', 'Professor');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Paech', 'Barbara', 'Frau', 'Prof.Dr.', 'Professor');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Fröning', 'Holger', 'Herr', 'Prof.Dr.', 'Professor');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Schmidt', 'Jan-Philip', 'Herr', 'Dr.', 'FK-Leitung');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Strzodka', 'Robert', 'Herr', 'Prof.Dr.', 'Professor');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Walcher', 'Johannes', 'Herr', 'Prof.Dr.', 'Professor');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Knüpfer', 'Hannes', 'Herr', 'Prof.Dr.', 'Professor');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Albers', 'Peter', 'Herr', 'Prof.Dr.', 'Professor');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Johannes', 'Jan', 'Herr', 'Prof.Dr.', 'Professor');
-INSERT INTO p1_personen(nachname, vorname, m_w, titel, stellung)
-  VALUES('Andrzejak', 'Artur', 'Herr', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Gertz', 'Michael', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Paech', 'Barbara', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Fröning', 'Holger', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Schmidt', 'Jan-Philip', 'Dr.', 'FK-Leitung');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Strzodka', 'Robert', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Walcher', 'Johannes', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Knüpfer', 'Hannes', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Albers', 'Peter', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Johannes', 'Jan', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Andrzejak', 'Artur', 'Prof.Dr.', 'Professor');
 
 INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
   VALUES ('Dekanat', 'Dekanat', 'Einrichtung', 'FK');
@@ -199,7 +239,26 @@ INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
   VALUES ('StuKo Informatik', 'SK Inf', 'Kommission', 'Inf');
 INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
   VALUES ('StuKo Mathematik', 'SK Math', 'Kommission', 'Math');
- 
+
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(1, NULL, 10, 2, 'Prodekan');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(3, NULL, 6, 2, 'Dekan');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(4, NULL, 3, 11, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(5, NULL, 10, 11, 'Mitglied');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(6, NULL, 7, 12, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(7, NULL, 2, 9, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(8, NULL, 4, 1, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(2, NULL, 10, 8, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(9, NULL, 6, 10, 'Vorsitz');
+
 -- stupid pkey sequences evidently don't count up when we do manual IDs
 SELECT setval('users__id_seq', (SELECT MAX(_id) FROM users)+1);
 SELECT setval('projects__id_seq', (SELECT MAX(_id) FROM projects)+1);
