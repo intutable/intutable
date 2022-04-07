@@ -81,12 +81,16 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                 table.id,
                 name,
                 { columns: columnSpecs, joins: [] },
-                { conditions: [],
-                  groupColumns: [],
-                  sortColumns: [{
-                      column: baseIdColumn.id,
-                      order: SortOrder.Ascending
-                  }]},
+                {
+                    conditions: [],
+                    groupColumns: [],
+                    sortColumns: [
+                        {
+                            column: baseIdColumn.id,
+                            order: SortOrder.Ascending,
+                        },
+                    ],
+                },
                 user.id
             ),
             req.cookies[AUTH_COOKIE_KEY]
