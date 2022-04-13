@@ -128,9 +128,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
-            <DialogTitle>
-                Spalte aus einer anderen Tablle hinzufügen
-            </DialogTitle>
+            <DialogTitle>Tabelle zum Verlinken auswählen</DialogTitle>
             <DialogContent>
                 {tables == null && error == null ? (
                     <CircularProgress />

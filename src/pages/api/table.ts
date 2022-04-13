@@ -10,12 +10,13 @@ import {
     createTableInProject,
     getColumnsFromTable,
 } from "@intutable/project-management/dist/requests"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { JtDescriptor, SortOrder } from "@intutable/join-tables/dist/types"
 import { createJt } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "auth"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import { makeError } from "utils/makeError"
+import { PM } from "types"
 import sanitizeName from "utils/sanitizeName"
 
 /**
@@ -72,13 +73,24 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                     : { displayName: "ID", editor: "number" },
         }))
 
+        const baseIdColumn = baseColumns.find(c => c.name === PM.UID_KEY)!
+
         // create table in join-tables
         const jtTable = await coreRequest<JtDescriptor>(
             createJt(
                 table.id,
                 name,
                 { columns: columnSpecs, joins: [] },
-                { conditions: [], sortColumns: [], groupColumns: [] },
+                {
+                    conditions: [],
+                    groupColumns: [],
+                    sortColumns: [
+                        {
+                            column: baseIdColumn.id,
+                            order: SortOrder.Ascending,
+                        },
+                    ],
+                },
                 user.id
             ),
             req.cookies[AUTH_COOKIE_KEY]

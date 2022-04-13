@@ -16,7 +16,13 @@ import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { JtDescriptor, JtData } from "@intutable/join-tables/dist/types"
 
 import { Auth } from "auth"
-import { AUTH_COOKIE_KEY, TableCtxProvider, useTableCtx } from "context"
+import {
+    AUTH_COOKIE_KEY,
+    HeaderSearchFieldProvider,
+    TableCtxProvider,
+    useHeaderSearchField,
+    useTableCtx,
+} from "context"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
@@ -34,6 +40,8 @@ const TablePage: React.FC<TablePageProps> = props => {
     const theme = useTheme()
 
     // #################### states ####################
+
+    const { headerHeight } = useHeaderSearchField()
 
     const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
         () => new Set()
@@ -67,7 +75,7 @@ const TablePage: React.FC<TablePageProps> = props => {
             >
                 Deine Tabellen in{" "}
                 <Link
-                    href={`/projects`}
+                    href={`/project/${props.project.id}`}
                     muiLinkProps={{
                         underline: "hover",
                         color: theme.palette.primary.main,
@@ -118,6 +126,7 @@ const TablePage: React.FC<TablePageProps> = props => {
                                 onSelectedRowsChange={setSelectedRows}
                                 onRowsChange={partialRowUpdate}
                                 rowRenderer={RowRenderer}
+                                headerRowHeight={headerHeight}
                             />
                         </DndProvider>
                         <Toolbar position="bottom">
@@ -144,11 +153,13 @@ const Page: NextPage<
     return (
         <SWRConfig value={{ fallback }}>
             <TableCtxProvider table={table} project={project}>
-                <TablePage
-                    project={project}
-                    table={table}
-                    tableList={tableList}
-                />
+                <HeaderSearchFieldProvider>
+                    <TablePage
+                        project={project}
+                        table={table}
+                        tableList={tableList}
+                    />
+                </HeaderSearchFieldProvider>
             </TableCtxProvider>
         </SWRConfig>
     )
