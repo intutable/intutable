@@ -29,7 +29,7 @@ import { TableNavigator } from "components/TableNavigator"
 import type { Row } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
-import { fetchWithUser } from "api"
+import { fetch } from "api"
 
 type TablePageProps = {
     project: ProjectDescriptor
@@ -188,7 +188,7 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
         }
 
     // workaround until PM exposes the required method
-    const projects = await fetchWithUser<ProjectDescriptor[]>(
+    const projects = await fetch<ProjectDescriptor[]>(
         `/api/projects/${user.id}`,
         user,
         undefined,
@@ -198,14 +198,14 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
 
     if (project == null) return { notFound: true }
 
-    const tableList = await fetchWithUser<JtDescriptor[]>(
+    const tableList = await fetch<JtDescriptor[]>(
         `/api/tables/${projectId}`,
         user,
         undefined,
         "GET"
     )
 
-    const data = await fetchWithUser<JtData>(
+    const data = await fetch<JtData>(
         `/api/table/${tableId}`,
         user,
         undefined,

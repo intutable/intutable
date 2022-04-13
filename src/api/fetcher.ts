@@ -22,7 +22,7 @@ export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
  *
  * Otherwise the deserialized json is returned.
  */
-export const fetchWithUser = <T>(
+export const fetch = <T>(
     url: string,
     body?: Obj,
     method: "GET" | "POST" | "PATCH" | "DELETE" = "POST"

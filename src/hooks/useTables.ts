@@ -2,7 +2,7 @@ import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { useUser } from "auth"
 import useSWR, { unstable_serialize } from "swr"
-import { fetchWithUser } from "api"
+import { fetch } from "api"
 import { User } from "types/User"
 
 export const useTables = (project: ProjectDescriptor) => {
@@ -14,7 +14,7 @@ export const useTables = (project: ProjectDescriptor) => {
         mutate,
     } = useSWR<JtDescriptor[]>(
         user ? [`/api/tables/${project.id}`, user, undefined, "GET"] : null,
-        fetchWithUser
+        fetch
     )
 
     return { tables, error, mutate }

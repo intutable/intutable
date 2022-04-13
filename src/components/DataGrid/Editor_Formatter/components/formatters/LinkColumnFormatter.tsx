@@ -19,7 +19,7 @@ import {
     useTheme,
     Stack,
 } from "@mui/material"
-import { fetchWithUser } from "api"
+import { fetch } from "api"
 import { useUser, useTableCtx } from "context"
 import { useSnacki } from "hooks/useSnacki"
 import { useSnackbar } from "notistack"
@@ -51,7 +51,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
         user
             ? [`/api/table/${props.foreignTableId}`, user, undefined, "GET"]
             : null,
-        fetchWithUser
+        fetch
     )
 
     const [options, setOptions] = useState<RowPreview[]>([])
@@ -77,7 +77,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
     const handlePickRow = async () => {
         try {
-            await fetchWithUser(
+            await fetch(
                 `/api/join/${props.joinId}`,
                 user!,
                 {
@@ -185,7 +185,7 @@ export const LinkColumnFormatter: Formatter = props => {
     ) => {
         try {
             e.stopPropagation()
-            await fetchWithUser(
+            await fetch(
                 `/api/join/${joinId}`,
                 user!,
                 {

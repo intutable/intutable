@@ -3,7 +3,7 @@ import {
     ProjectDescriptor,
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
-import { fetchWithUser } from "api"
+import { fetch } from "api"
 import { User } from "types/User"
 import { useUser } from "auth"
 import useSWR, { unstable_serialize } from "swr"
@@ -14,7 +14,7 @@ export const useTableData = (tableId: TableDescriptor["id"]) => {
 
     const { data, error, mutate } = useSWR<TableData>(
         user ? [`/api/table/${tableId}`, user, undefined, "GET"] : null,
-        fetchWithUser
+        fetch
     )
 
     const getColumnByKey = (key: Column["key"]): ColumnDescriptor => {

@@ -17,7 +17,7 @@ import {
 
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
-import { fetchWithUser } from "api"
+import { fetch } from "api"
 import { Auth } from "auth"
 import Title from "components/Head/Title"
 import { AUTH_COOKIE_KEY, useUser } from "context"
@@ -171,7 +171,7 @@ const ProjectList: React.FC = () => {
         mutate,
     } = useSWR<ProjectDescriptor[]>(
         user ? [`/api/projects/${user.id}`, user, undefined, "GET"] : null,
-        fetchWithUser
+        fetch
     )
 
     const handleCreateProject = async () => {
@@ -180,7 +180,7 @@ const ProjectList: React.FC = () => {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            await fetchWithUser<ProjectDescriptor>(
+            await fetch<ProjectDescriptor>(
                 "/api/project",
                 user,
                 { user, name },
@@ -224,7 +224,7 @@ const ProjectList: React.FC = () => {
                 )
                 return
             }
-            await fetchWithUser<ProjectDescriptor>(
+            await fetch<ProjectDescriptor>(
                 `/api/project/${project.id}`,
                 user,
                 { newName: name },
@@ -248,12 +248,7 @@ const ProjectList: React.FC = () => {
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            await fetchWithUser(
-                `/api/project/${project.id}`,
-                user,
-                undefined,
-                "DELETE"
-            )
+            await fetch(`/api/project/${project.id}`, user, undefined, "DELETE")
             await mutate()
             enqueueSnackbar("Projekt wurde gelöscht.", {
                 variant: "success",
@@ -327,7 +322,7 @@ export const getServerSideProps: GetServerSideProps<
             },
         }
 
-    const list = await fetchWithUser<ProjectDescriptor[]>(
+    const list = await fetch<ProjectDescriptor[]>(
         `/api/projects/${user.id}`, // Note: userId is tmp
         user,
         undefined,

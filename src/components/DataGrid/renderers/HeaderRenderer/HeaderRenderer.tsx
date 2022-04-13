@@ -26,7 +26,7 @@ import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { AddLookupModal } from "./AddLookupModal"
 import LookupIcon from "@mui/icons-material/ManageSearch"
-import { fetchWithUser } from "api/fetcher"
+import { fetch } from "api/fetcher"
 import { useUser } from "auth"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import SearchIcon from "@mui/icons-material/Search"
@@ -119,7 +119,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         if (!isLinkCol || !user) return
         try {
             const joinId = col.joinId!
-            await fetchWithUser(
+            await fetch(
                 `/api/lookupField/${column.id}`,
                 user,
                 {
