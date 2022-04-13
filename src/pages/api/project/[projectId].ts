@@ -5,7 +5,7 @@ import {
     removeProject,
 } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
-import { User } from "auth"
+import { User } from "types/User"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"

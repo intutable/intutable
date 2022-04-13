@@ -1,5 +1,5 @@
-import { coreRequest } from "../../api/utils/coreRequest"
-import { User } from "auth"
+import { coreRequest } from "../api/utils/coreRequest"
+import { User } from "types/User"
 
 /**
  * Check if logged into core by using the session cookie.

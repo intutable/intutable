@@ -18,7 +18,7 @@ import {
     useTheme,
 } from "@mui/material"
 import { CSSObject, styled, Theme } from "@mui/material/styles"
-import { useAuth } from "context"
+import { useUser } from "auth"
 import { useRouter } from "next/router"
 import React from "react"
 
@@ -100,7 +100,7 @@ type DrawerProps = {
 
 const DrawerBar: React.FC<DrawerProps> = props => {
     const theme = useTheme()
-    const { user } = useAuth()
+    const { user } = useUser()
     return (
         <Drawer
             variant="permanent"

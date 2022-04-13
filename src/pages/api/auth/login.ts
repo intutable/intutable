@@ -1,7 +1,7 @@
 import { withSessionRoute } from "auth/withSessionRoute"
 import { NextApiRequest, NextApiResponse } from "next"
 import type { User } from "types/User"
-import { getCurrentUser } from "auth/utils/getCurrentUser"
+import { getCurrentUser } from "auth"
 
 const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
     const { username, password } = await req.body
@@ -18,7 +18,12 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
             }
         )
 
-        if ((await response.text()).includes("secret") === false)
+        if (response.status !== 200)
+            throw new Error(`Netzwerkfehler, Status = ${response.status}`)
+
+        const text = await response.text()
+
+        if (text.includes("secret") === false)
             throw new Error(
                 "Kombination aus Nutzername und Passwort nicht gefunden!"
             )
@@ -32,7 +37,7 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
 
         res.json(user)
     } catch (error) {
-        res.status(500).json({ error: (error as Error).message })
+        res.status(401).json({ error: (error as Error).message })
     }
 }
 

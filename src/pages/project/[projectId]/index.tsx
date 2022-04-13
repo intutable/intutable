@@ -22,7 +22,7 @@ import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { Auth } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
-import { AUTH_COOKIE_KEY, useAuth } from "context"
+import { AUTH_COOKIE_KEY, useUser } from "context"
 import { prepareName } from "utils/validateName"
 
 import type {
@@ -172,7 +172,7 @@ type TableListProps = {
 const TableList: React.FC<TableListProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
-    const { user } = useAuth()
+    const { user } = useUser()
 
     const { tables, error, mutate } = useTables(props.project)
 

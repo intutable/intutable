@@ -13,7 +13,7 @@ import {
 import { JtDescriptor, SortOrder } from "@intutable/join-tables/dist/types"
 import { createJt } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
-import { User } from "auth"
+import { User } from "types/User"
 import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import { makeError } from "utils/makeError"
 import { PM } from "types"

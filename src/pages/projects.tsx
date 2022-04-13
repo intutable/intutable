@@ -20,7 +20,7 @@ import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { fetchWithUser } from "api"
 import { Auth } from "auth"
 import Title from "components/Head/Title"
-import { AUTH_COOKIE_KEY, useAuth } from "context"
+import { AUTH_COOKIE_KEY, useUser } from "context"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
@@ -163,7 +163,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 const ProjectList: React.FC = () => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
-    const { user } = useAuth()
+    const { user } = useUser()
 
     const {
         data: projects,

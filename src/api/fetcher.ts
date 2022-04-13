@@ -1,4 +1,4 @@
-import { User } from "auth"
+import { User } from "types/User"
 import type { Fetcher } from "swr"
 import Obj from "types/Obj"
 import { inspect } from "util"
@@ -24,7 +24,6 @@ export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
  */
 export const fetchWithUser = <T>(
     url: string,
-    user: User,
     body?: Obj,
     method: "GET" | "POST" | "PATCH" | "DELETE" = "POST"
 ): Promise<T> =>

@@ -1,18 +1,19 @@
 import { Divider, Typography } from "@mui/material"
+import { useUser } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
-import { useAuth } from "context"
 import type { NextPage } from "next"
 
 const Home: NextPage = () => {
-    const { user } = useAuth()
+    const { user } = useUser()
+
     return (
         <>
             <Title title="Startseite" />
             <Typography variant={"h4"}>Startseite</Typography>
             <Divider />
             <Typography sx={{ mt: 2 }}>
-                {user ? (
+                {user?.isLoggedIn ? (
                     <>Hallo {user.username}!</>
                 ) : (
                     <>

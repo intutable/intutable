@@ -20,7 +20,7 @@ import {
     Stack,
 } from "@mui/material"
 import { fetchWithUser } from "api"
-import { useAuth, useTableCtx } from "context"
+import { useUser, useTableCtx } from "context"
 import { useSnacki } from "hooks/useSnacki"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
@@ -41,7 +41,7 @@ type RowPreview = {
 }
 
 const RowPicker: React.FC<RowPickerProps> = props => {
-    const { user } = useAuth()
+    const { user } = useUser()
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
@@ -151,7 +151,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
 export const LinkColumnFormatter: Formatter = props => {
     const { row, column } = props
-    const { user } = useAuth()
+    const { user } = useUser()
     const { snack, snackError } = useSnacki()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)

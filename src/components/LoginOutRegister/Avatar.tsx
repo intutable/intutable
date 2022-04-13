@@ -9,7 +9,9 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import { useAuth } from "context"
+import { fetchWithUser } from "api"
+import { User } from "types/User"
+import { useUser } from "auth/useUser"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
@@ -23,13 +25,13 @@ type ContextMenuProps = {
 const ContextMenu: React.FC<ContextMenuProps> = props => {
     const theme = useTheme()
     const router = useRouter()
-    const { logout } = useAuth()
+    const { mutateUser } = useUser()
     const { enqueueSnackbar } = useSnackbar()
 
     const handleLogout = async () => {
         try {
             props.onClose()
-            await logout()
+            await mutateUser(fetchWithUser<User>("/api/auth/logout"))
             router.push("/login")
         } catch (error) {
             enqueueSnackbar("Fehler beim Abmeldevorgang!", { variant: "error" })
@@ -66,7 +68,7 @@ const ContextMenu: React.FC<ContextMenuProps> = props => {
 }
 
 export const Avatar: React.FC = props => {
-    const { user } = useAuth()
+    const { user } = useUser()
     const router = useRouter()
 
     const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
@@ -79,7 +81,7 @@ export const Avatar: React.FC = props => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    if (user == null)
+    if (!user || user?.isLoggedIn === false)
         return (
             <Button
                 sx={{
@@ -110,9 +112,6 @@ export const Avatar: React.FC = props => {
                 >
                     <PersonIcon />
                 </MUIAvatar>
-                <Typography>
-                    {user.username.substring(0, user.username.indexOf("@"))}
-                </Typography>
             </Stack>
             {anchorEL && (
                 <ContextMenu

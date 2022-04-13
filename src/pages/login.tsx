@@ -1,14 +1,14 @@
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
-import { fetcher } from "api"
-import { Auth, User } from "auth"
+import { fetchWithUser } from "api"
 import { useUser } from "auth/useUser"
 import Title from "components/Head/Title"
 import { Paper } from "components/LoginOutRegister/Paper"
 import type { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
+import { User } from "types/User"
 import { makeError } from "utils/makeError"
 
 const validateUsername = (username: string): true | Error =>
@@ -85,13 +85,7 @@ const Login: NextPage = () => {
         }
 
         try {
-            mutateUser(
-                (await fetch("/api/auth/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
-                })) as User
-            )
+            await mutateUser(fetchWithUser<User>("/api/auth/login", body))
         } catch (error) {
             enqueueSnackbar(makeError(error).message, { variant: "error" })
         }
@@ -170,15 +164,12 @@ const Login: NextPage = () => {
 export const getServerSideProps: GetServerSideProps = async context => {
     const { req } = context
 
-    const authCookie: string =
-        req.cookies[process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!]
-
-    const user = await Auth.getCurrentUser(authCookie).catch(e => {
-        console.error(e)
-        return null
-    })
-
-    if (user) return { notFound: true }
+    try {
+        const user = req.session.user
+        if (user) return { notFound: true }
+    } catch (e) {
+        //
+    }
 
     return {
         props: {},

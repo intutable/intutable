@@ -1,15 +1,14 @@
+import {
+    ColumnDescriptor,
+    JtDescriptor,
+} from "@intutable/join-tables/dist/types"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { fetchWithUser } from "api"
+import { Parser } from "api/utils"
+import { useUser } from "auth"
 import React from "react"
 import useSWR, { KeyedMutator } from "swr"
-
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import {
-    JtDescriptor,
-    ColumnDescriptor,
-} from "@intutable/join-tables/dist/types"
-import { fetchWithUser } from "api"
-import { useAuth } from "context"
-import { PM, Row, Column, TableData } from "types"
-import { Parser } from "api/utils"
+import { Column, PM, Row, TableData } from "types"
 
 export type TableContextProps = {
     project: ProjectDescriptor
@@ -57,7 +56,7 @@ export type TableCtxProviderProps = {
 }
 
 export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
-    const { user } = useAuth()
+    const { user } = useUser()
 
     const { data, error, mutate } = useSWR<TableData>(
         user ? [`/api/table/${props.table.id}`, user, undefined, "GET"] : null,
@@ -101,7 +100,6 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         // baseTable, values
         await fetchWithUser(
             "/api/row",
-            user!,
             { baseTable: data?.metadata.baseTable, values: {} },
             "POST"
         )
@@ -121,7 +119,6 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const deleteRow = async (rowIndex: number, row: Row): Promise<void> => {
         await fetchWithUser(
             "/api/row",
-            user!,
             {
                 baseTable: data?.metadata.baseTable,
                 condition: [PM.UID_KEY, getRowId(data, row)],
@@ -146,7 +143,6 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
 
         await fetchWithUser(
             "/api/row",
-            user!,
             {
                 baseTable: data?.metadata.baseTable,
                 condition: [PM.UID_KEY, rowId],
@@ -167,7 +163,6 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     ): Promise<void> => {
         await fetchWithUser(
             "/api/column",
-            user!,
             {
                 jtId: data?.metadata.descriptor.id,
                 joinId,
@@ -192,7 +187,6 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         }
         await fetchWithUser(
             `/api/column/${column.id}`,
-            user!,
             { update: updatedColumn },
             "PATCH"
         )
@@ -203,7 +197,6 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         const column = getColumnByKey(key)
         await fetchWithUser(
             `/api/column/${column.id}`,
-            user!,
             { jtId: data!.metadata.descriptor.id },
             "DELETE"
         )

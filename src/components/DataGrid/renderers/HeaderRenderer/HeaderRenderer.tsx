@@ -27,7 +27,7 @@ import { Column, Row } from "types"
 import { AddLookupModal } from "./AddLookupModal"
 import LookupIcon from "@mui/icons-material/ManageSearch"
 import { fetchWithUser } from "api/fetcher"
-import { useAuth } from "context"
+import { useUser } from "auth"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import SearchIcon from "@mui/icons-material/Search"
 import Check from "@mui/icons-material/Check"
@@ -35,7 +35,7 @@ import Check from "@mui/icons-material/Check"
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
     const router = useRouter()
-    const { user } = useAuth()
+    const { user } = useUser()
     const { snackError, snackSuccess, snackWarning } = useSnacki()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const { data, renameColumn, deleteColumn, utils, project } = useTableCtx()

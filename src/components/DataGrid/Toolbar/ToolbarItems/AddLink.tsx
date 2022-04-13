@@ -16,7 +16,7 @@ import {
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import { JtDescriptor } from "@intutable/join-tables/dist/types"
-import { useAuth, useTableCtx } from "context"
+import { useUser, useTableCtx } from "context"
 import { fetchWithUser } from "api"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import useSWR, { unstable_serialize, useSWRConfig } from "swr"
@@ -31,7 +31,7 @@ export const AddLink: React.FC = () => {
     const { mutate } = useSWRConfig()
 
     const { data: currentTable, project } = useTableCtx()
-    const { user } = useAuth()
+    const { user } = useUser()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
@@ -108,7 +108,7 @@ type AddLinkModalProps = {
 
 export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
     const theme = useTheme()
-    const { user } = useAuth()
+    const { user } = useUser()
     const { enqueueSnackbar } = useSnackbar()
 
     const { tables, error } = useTables(props.project)

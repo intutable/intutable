@@ -4,13 +4,13 @@ import {
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
 import { fetchWithUser } from "api"
-import { User } from "auth"
-import { useAuth } from "context"
+import { User } from "types/User"
+import { useUser } from "auth"
 import useSWR, { unstable_serialize } from "swr"
 import { Column, TableData } from "types"
 
 export const useTableData = (tableId: TableDescriptor["id"]) => {
-    const { user } = useAuth()
+    const { user } = useUser()
 
     const { data, error, mutate } = useSWR<TableData>(
         user ? [`/api/table/${tableId}`, user, undefined, "GET"] : null,
@@ -34,7 +34,7 @@ export const useTableData = (tableId: TableDescriptor["id"]) => {
 }
 
 export const useTableDataConfig = (tableId: TableDescriptor["id"]) => {
-    const { user } = useAuth()
+    const { user } = useUser()
 
     return {
         cacheKey: makeCacheKey(tableId, user!),
