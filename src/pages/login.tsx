@@ -1,10 +1,10 @@
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
-import { Auth } from "auth"
+import { fetcher } from "api"
+import { Auth, User } from "auth"
 import { useUser } from "auth/useUser"
 import Title from "components/Head/Title"
 import { Paper } from "components/LoginOutRegister/Paper"
-import { AUTH_COOKIE_KEY, useAuth } from "context"
 import type { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
@@ -33,7 +33,7 @@ const textFieldStyle: SxProps<Theme> = {
 const Login: NextPage = () => {
     const router = useRouter()
 
-    const errorMessage = makeError(router.query.error)
+    const error = router.query.error ? makeError(router.query.error) : null
 
     const { mutateUser } = useUser({
         redirectTo: "/profile-sg",
@@ -86,11 +86,11 @@ const Login: NextPage = () => {
 
         try {
             mutateUser(
-                await fetchJSON("/api/login", {
+                (await fetch("/api/auth/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(body),
-                })
+                })) as User
             )
         } catch (error) {
             enqueueSnackbar(makeError(error).message, { variant: "error" })
@@ -170,7 +170,8 @@ const Login: NextPage = () => {
 export const getServerSideProps: GetServerSideProps = async context => {
     const { req } = context
 
-    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
+    const authCookie: string =
+        req.cookies[process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!]
 
     const user = await Auth.getCurrentUser(authCookie).catch(e => {
         console.error(e)

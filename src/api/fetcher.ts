@@ -23,7 +23,6 @@ export const fetchWithUser = (
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Cookie: `${AUTH_COOKIE_KEY}=${user.authCookie}`,
         },
         credentials: "include",
         redirect: "manual",

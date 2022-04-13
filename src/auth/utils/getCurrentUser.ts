@@ -7,7 +7,7 @@ import { CHANNEL } from "api/constants"
  */
 export const getCurrentUser = async (
     authCookie?: string
-): Promise<User | null> => {
+): Promise<Omit<User, "isLoggedIn"> | null> => {
     try {
         const user = (await coreRequest(
             CHANNEL.USER_AUTHENTICATION,
