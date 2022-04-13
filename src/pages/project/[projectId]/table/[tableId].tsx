@@ -1,55 +1,94 @@
-import { DetailedViewModal } from "@datagrid/Detail View/DetailedViewModal"
+import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
+import React, { useState } from "react"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
+import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import { DetailedViewModal } from "@datagrid/Detail Window/DetailedViewModal"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
 import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
-import { RowRenderer } from "@datagrid/RowRenderer"
+import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { Box, Typography, useTheme } from "@mui/material"
-import { makeAPI, Routes } from "api"
+import { SWRConfig, unstable_serialize } from "swr"
+
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { JtDescriptor, JtData } from "@intutable/join-tables/dist/types"
+
 import { Auth } from "auth"
+import {
+    AUTH_COOKIE_KEY,
+    HeaderSearchFieldProvider,
+    TableCtxProvider,
+    useHeaderSearchField,
+    useTableCtx,
+} from "context"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
-import { AUTH_COOKIE_KEY, TableCtxProvider, useTableCtx } from "context"
-import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import React, { useEffect, useState } from "react"
-import DataGrid, { CalculatedColumn } from "react-data-grid"
-import { SWRConfig, unstable_serialize } from "swr"
-import type { PMTypes as PM, Row } from "types"
+import type { Row } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
+import { fetchWithUser } from "api"
 
 type TablePageProps = {
-    project: PM.Project
-    table: PM.Table
-    tableList: PM.Table[]
+    project: ProjectDescriptor
+    table: JtDescriptor
+    tableList: JtDescriptor[]
 }
 const TablePage: React.FC<TablePageProps> = props => {
     const theme = useTheme()
 
     // #################### states ####################
 
+    const { headerHeight } = useHeaderSearchField()
+
+    const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
+        () => new Set()
+    )
+
     const [detailedViewOpen, setDetailedViewOpen] = useState<{
         row: Row
         column: CalculatedColumn<Row>
     } | null>(null)
 
-    const { data: table, error, partialRowUpdate } = useTableCtx()
+    const { data, error, updateRow, utils } = useTableCtx()
+
+    const partialRowUpdate = async (
+        rows: Row[],
+        changeData: RowsChangeData<Row>
+    ): Promise<void> => {
+        const changedRow = rows[changeData.indexes[0]]
+        const key = changeData.column.key
+
+        await updateRow(key, utils.getRowId(data, changedRow), changedRow[key])
+    }
 
     return (
         <>
-            <Title title={props.project.projectName} />
-            <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
-                <Link href={`/projects`}>{props.project.projectName}</Link>{" "}
-                {"> "}
-                <Link href={`/project/${props.project.projectId}`}>
-                    {props.table.tableName}
+            <Title title={props.project.name} />
+            <Typography
+                sx={{
+                    mb: theme.spacing(4),
+                    color: theme.palette.text.secondary,
+                }}
+            >
+                Deine Tabellen in{" "}
+                <Link
+                    href={`/project/${props.project.id}`}
+                    muiLinkProps={{
+                        underline: "hover",
+                        color: theme.palette.primary.main,
+                        textDecoration: "none",
+                    }}
+                >
+                    {props.project.name}
                 </Link>
             </Typography>
 
             {error ? (
                 error.message
-            ) : table == null ? (
+            ) : data == null ? (
                 <LoadingSkeleton />
             ) : (
                 <>
@@ -68,25 +107,28 @@ const TablePage: React.FC<TablePageProps> = props => {
                     <Box>
                         <Toolbar position="top">
                             <ToolbarItem.AddCol />
+                            <ToolbarItem.AddLink />
                             <ToolbarItem.AddRow />
                             <ToolbarItem.FileDownload getData={() => []} />
                         </Toolbar>
-                        <DataGrid
-                            className={"rdg-" + theme.palette.mode}
-                            rows={table.rows}
-                            columns={table.columns}
-                            noRowsFallback={<NoRowsRenderer />}
-                            rowKeyGetter={rowKeyGetter}
-                            defaultColumnOptions={{
-                                sortable: true,
-                                resizable: true,
-                            }}
-                            onRowsChange={partialRowUpdate}
-                            onRowDoubleClick={(row, column) => {
-                                setDetailedViewOpen({ row, column })
-                            }}
-                            rowRenderer={RowRenderer}
-                        />
+                        <DndProvider backend={HTML5Backend}>
+                            <DataGrid
+                                className={"rdg-" + theme.palette.mode}
+                                rows={data.rows}
+                                columns={data.columns}
+                                noRowsFallback={<NoRowsRenderer />}
+                                rowKeyGetter={rowKeyGetter}
+                                defaultColumnOptions={{
+                                    sortable: true,
+                                    resizable: true,
+                                }}
+                                selectedRows={selectedRows}
+                                onSelectedRowsChange={setSelectedRows}
+                                onRowsChange={partialRowUpdate}
+                                rowRenderer={RowRenderer}
+                                headerRowHeight={headerHeight}
+                            />
+                        </DndProvider>
                         <Toolbar position="bottom">
                             <ToolbarItem.Connection status={"connected"} />
                         </Toolbar>
@@ -98,9 +140,9 @@ const TablePage: React.FC<TablePageProps> = props => {
 }
 
 type Page = {
-    project: PM.Project
-    table: PM.Table
-    tableList: PM.Table[]
+    project: ProjectDescriptor
+    table: JtDescriptor
+    tableList: JtDescriptor[]
     // fallback: SerializedTableData
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fallback: any // TODO: remove this any
@@ -111,11 +153,13 @@ const Page: NextPage<
     return (
         <SWRConfig value={{ fallback }}>
             <TableCtxProvider table={table} project={project}>
-                <TablePage
-                    project={project}
-                    table={table}
-                    tableList={tableList}
-                />
+                <HeaderSearchFieldProvider>
+                    <TablePage
+                        project={project}
+                        table={table}
+                        tableList={tableList}
+                    />
+                </HeaderSearchFieldProvider>
             </TableCtxProvider>
         </SWRConfig>
     )
@@ -127,8 +171,8 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
         typeof context.query,
         "tableId" | "projectId"
     >
-    const projectId: PM.Project.ID = Number.parseInt(query.projectId)
-    const tableId: PM.Table.ID = Number.parseInt(query.tableId)
+    const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
+    const tableId: JtDescriptor["id"] = Number.parseInt(query.tableId)
 
     const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
     const user = await Auth.getCurrentUser(authCookie).catch(e => {
@@ -142,26 +186,44 @@ export const getServerSideProps: GetServerSideProps<Page> = async context => {
                 destination: "/login",
             },
         }
-    const API = makeAPI(user)
 
-    const project = (await API.get.projectList()).find(
-        (proj: PM.Project) => proj.projectId === projectId
+    // workaround until PM exposes the required method
+    const projects = await fetchWithUser<ProjectDescriptor[]>(
+        `/api/projects/${user.id}`,
+        user,
+        undefined,
+        "GET"
     )
+    const project = projects.find(p => p.id === projectId)
+
     if (project == null) return { notFound: true }
-    const tableList = await API.get.tableList(project.projectId)
-    const data = await API.get.table(tableId)
+
+    const tableList = await fetchWithUser<JtDescriptor[]>(
+        `/api/tables/${projectId}`,
+        user,
+        undefined,
+        "GET"
+    )
+
+    const data = await fetchWithUser<JtData>(
+        `/api/table/${tableId}`,
+        user,
+        undefined,
+        "GET"
+    )
 
     return {
         props: {
             project,
-            table: data.table,
+            table: data.descriptor,
             tableList,
             fallback: {
                 [unstable_serialize([
-                    Routes.get.table,
+                    `/api/table/${tableId}`,
                     user,
-                    { tableId: tableId },
-                ])]: data, // TODO: where to deserialize?
+                    undefined,
+                    "GET",
+                ])]: data,
             },
         },
     }

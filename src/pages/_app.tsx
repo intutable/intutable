@@ -1,16 +1,14 @@
-import Layout from "components/Layout/Layout"
 import { CssBaseline, PaletteMode, useMediaQuery } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
-import { getDesignToken } from "theme"
+import { logger, parseTableData } from "api/middelware"
+import Layout from "components/Layout/Layout"
 import type { AppProps } from "next/app"
 import Head from "next/head"
 import { SnackbarProvider } from "notistack"
 import React, { useEffect, useMemo, useState } from "react"
-import { AuthProvider } from "context"
-import createTheme from "theme/utils"
-import { parseResponse, logger } from "api/middelware"
 import { SWRConfig } from "swr"
-import { fetchWithUser } from "api"
+import { getDesignToken } from "theme"
+import createTheme from "theme/utils"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void
@@ -71,30 +69,27 @@ const MyApp = (props: AppProps) => {
                 />
                 <meta charSet="utf-8" />
                 {/* Favicons */}
-                <link rel="icon" type="image/png" href="/favicon.ico" />
+                <link
+                    rel="shortcut icon"
+                    type="image/x-icon"
+                    href="/favicon.ico"
+                />
                 {/* Safari Tab Bar Style */}
                 <meta name="theme-color" content={theme.palette.primary.main} />
             </Head>
 
-            <AuthProvider>
-                <SWRConfig
-                    value={{
-                        fetcher: fetchWithUser, // TODO: change this
-                        use: [logger, parseResponse],
-                    }}
-                >
-                    <ThemeTogglerContext.Provider value={colorMode}>
-                        <ThemeProvider theme={theme}>
-                            <SnackbarProvider maxSnack={5}>
-                                <CssBaseline />
-                                <Layout>
-                                    <Component {...pageProps} />
-                                </Layout>
-                            </SnackbarProvider>
-                        </ThemeProvider>
-                    </ThemeTogglerContext.Provider>
-                </SWRConfig>
-            </AuthProvider>
+            <SWRConfig value={{ use: [logger, parseTableData] }}>
+                <ThemeTogglerContext.Provider value={colorMode}>
+                    <ThemeProvider theme={theme}>
+                        <SnackbarProvider maxSnack={5}>
+                            <CssBaseline />
+                            <Layout>
+                                <Component {...pageProps} />
+                            </Layout>
+                        </SnackbarProvider>
+                    </ThemeProvider>
+                </ThemeTogglerContext.Provider>
+            </SWRConfig>
         </>
     )
 }

@@ -1,19 +1,19 @@
-import type { TableData } from "types"
-import { EditorType } from "@datagrid/Editor/editor-management"
-import { Column, PM } from "types"
+import { JtData } from "@intutable/join-tables/dist/types"
+import type { Row, TableData } from "types"
+import { PM } from "types"
+import { Column as ColumnParser } from "."
 
-const renameKeys = (col: Column.DBSchema): Column.Serialized => ({
-    key: col.columnName,
-    name: col.displayName,
-    editable: Boolean(col.editable),
-    editor: col.type as EditorType,
-})
-
-export const parse = (table: TableData.DBSchema): TableData.Serialized => {
+export const parse = (joinTable: JtData): TableData.Serialized => {
     return {
-        ...table,
-        columns: table.columns
-            .map(renameKeys)
-            .filter(col => col.key !== PM.UID_KEY),
+        metadata: {
+            descriptor: joinTable.descriptor,
+            baseTable: joinTable.baseTable,
+            joins: joinTable.joins,
+            columns: joinTable.columns,
+        },
+        columns: joinTable.columns
+            .filter(col => col.name !== PM.UID_KEY)
+            .map(ColumnParser.parse),
+        rows: joinTable.rows as Row[],
     }
 }

@@ -1,8 +1,9 @@
+import React, { useEffect, useState } from "react"
 import type { Column } from "types"
 import {
-    EditorType,
-    RuntimeEditorMap,
-} from "@datagrid/Editor/editor-management/editorTypes"
+    CellContentType,
+    Runtime_CellContentType,
+} from "@datagrid/Editor_Formatter/types/CellContentType"
 import {
     Box,
     Button,
@@ -20,7 +21,7 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import sanitizeName from "utils/sanitizeName"
 
 type AddColumnModalProps = {
     open: boolean
@@ -37,12 +38,13 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         key: "",
         editable: true,
         editor: "string",
+        formatter: "string",
     })
     const [valid, setValid] = useState(false)
 
     useEffect(() => {
         if (options.name.length > 0) setValid(true)
-        setOption("key", options.name)
+        setOption("key", sanitizeName(options.name))
     }, [options.name])
 
     // DEV ONLY
@@ -86,11 +88,11 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             onChange={e =>
                                 setOption(
                                     "editor",
-                                    e.target.value as EditorType
+                                    e.target.value as CellContentType
                                 )
                             }
                         >
-                            {RuntimeEditorMap.map((type, i) => (
+                            {Runtime_CellContentType.map((type, i) => (
                                 <MenuItem key={i} value={type}>
                                     {type}
                                 </MenuItem>

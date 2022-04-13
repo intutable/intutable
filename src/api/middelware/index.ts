@@ -1,2 +1,2 @@
-export * from "./parseResponse"
+export * from "./parseTableData"
 export * from "./logger"

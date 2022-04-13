@@ -6,4 +6,4 @@ import React from "react"
  * @param row
  * @returns
  */
-export const rowKeyGetter = (row: Row): React.Key => row.__rowIndex__
+export const rowKeyGetter = (row: Row): number => row.__rowIndex__

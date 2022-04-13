@@ -40,73 +40,232 @@ CREATE TABLE columns(
     "columnName" TEXT,
     "tableId" INTEGER,
     type TEXT default 'string' NOT NULL,
-    editable INTEGER DEFAULT 1 NOT NULL,
-    "displayName" TEXT NULL,
     FOREIGN KEY("tableId") REFERENCES tables(_id)
 );
 
-CREATE TABLE tablecolumns(
+-- join-tables meta tables
+CREATE TABLE jts(
     _id SERIAL PRIMARY KEY,
-    "tableId" INTEGER,
-    "columnId" INTEGER,
-    FOREIGN KEY("tableId") REFERENCES tables(_id),
-    FOREIGN KEY("columnId") REFERENCES columns(_id)
+    name TEXT NOT NULL,
+    table_id INTEGER NOT NULL,
+    user_id INTEGER NULL,
+    row_options TEXT NOT NULL
+);
+
+CREATE TABLE jt_joins(
+    _id SERIAL PRIMARY KEY,
+    jt_id INTEGER NOT NULL,
+    foreign_jt_id INTEGER NOT NULL,
+    "on" TEXT NOT NULL
+);
+
+CREATE TABLE jt_columns(
+    _id SERIAL PRIMARY KEY,
+    jt_id INTEGER NOT NULL,
+    join_id INTEGER NULL,
+    column_id INTEGER NOT NULL,
+    -- custom metadata
+    "displayName" TEXT NULL,
+    "userPrimary" INTEGER DEFAULT 0 NOT NULL,
+    editable INTEGER DEFAULT 1 NOT NULL,
+    editor TEXT NULL,
+    formatter TEXT NULL
 );
 
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');
-insert into projects("projectName", "ownerId") values('Personal', 1);
+insert into projects("projectName", "ownerId") values('Fakultät MathInf', 1);
 insert into userprojects("userId", "projectId") values(1, 1);
+
 
 create table if not exists p1_personen(
     _id serial primary key,
-    vorname text,
     nachname text,
-    email text
+    vorname text,
+    m_w text,
+    titel text,
+    stellung text
 );
+insert into tables(_id, key, name, "ownerId") values(1, 'p1_personen', 'personen', 1);
+insert into projecttables("projectId", "tableId") values(1, 1);
+insert into columns(_id, "columnName", "tableId") values(1, '_id', 1);
+insert into columns(_id, "columnName", "tableId") values(2, 'nachname', 1);
+insert into columns(_id, "columnName", "tableId") values(3, 'vorname', 1);
+insert into columns(_id, "columnName", "tableId") values(5, 'titel', 1);
+insert into columns(_id, "columnName", "tableId") values(6, 'stellung', 1);
 
-insert into p1_personen(vorname, nachname, email) 
-values('Raphael', 'Kirchholtes', 'dk457@stud.uni-heidelberg');
-insert into p1_personen(_id, vorname, nachname, email) 
-values(1337, 'Kilian', 'Folger', 'ub437@stud.uni-heidelberg');
-insert into p1_personen(vorname, nachname, email) 
-values('Nikita-Nick', 'Funk', 'kf235@stud.uni-heidelberg');
+INSERT INTO jts(_id, name, table_id, user_id, row_options)
+  VALUES(1, 'Personen', 1, NULL,
+         '{"conditions": [], "groupColumns": [], "sortColumns": [{ "column":1, "order": "asc"}]}');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(1, 1, NULL, 1, 'ID', 'number', 'number');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", "userPrimary", editor, formatter)
+  VALUES(2, 1, NULL, 2, 'Nachname', 1, 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(3, 1, NULL, 3, 'Vorname', 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(5, 1, NULL, 5, 'Titel', 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(6, 1, NULL, 6, 'Stellung', 'string', 'string');
 
-create table if not exists p1_kommissionen(
-    _id serial primary key,
-    bezeichnung text,
-    gruendung text,
-    aufloesung text
-);
 
-insert into p1_kommissionen(bezeichnung, gruendung, aufloesung)
-values ('IT-Gruppe Dekanat', '15. September 2021', null);
-
-create table if not exists p1_einrichtungen(
+create table if not exists p1_organe(
     _id serial primary key,
     name text,
-    adresse text
+    kuerzel text,
+    typ text,
+    fk_math_inf text
 );
-
-insert into p1_einrichtungen(name, adresse)
-values ('Dekanat MathInf', 'Mathematikon Neuenheim');
-
-insert into tables(key, name, "ownerId") values('p1_personen', 'personen', 1);
-insert into tables(key, name, "ownerId") values('p1_kommissionen', 'kommissionen', 1);
-insert into tables(key, name, "ownerId") values('p1_einrichtungen', 'einrichtungen', 1);
-insert into projecttables("projectId", "tableId") values(1, 1);
+insert into tables(_id, key, name, "ownerId")
+  values(2, 'p1_organe', 'organe', 1);
 insert into projecttables("projectId", "tableId") values(1, 2);
-insert into projecttables("projectId", "tableId") values(1, 3);
+insert into columns(_id, "columnName", "tableId") values(7, '_id', 2);
+insert into columns(_id, "columnName", "tableId") values(8, 'name', 2);
+insert into columns(_id, "columnName", "tableId") values(9, 'kuerzel', 2);
+insert into columns(_id, "columnName", "tableId") values(10, 'typ', 2);
+insert into columns(_id, "columnName", "tableId") values(11, 'fk_math_inf', 2);
 
-insert into columns("columnName", "tableId", "displayName") values('_id', 1, 'ID');
-insert into columns("columnName", "tableId", "displayName") values('vorname', 1, 'Vorname');
-insert into columns("columnName", "tableId", "displayName") values('nachname', 1, 'Nachname');
-insert into columns("columnName", "tableId", "displayName") values('email', 1, 'E-Mail');
+INSERT INTO jts(_id, name, table_id, user_id, row_options)
+  VALUES(2, 'Organe', 2, NULL,
+         '{"conditions": [], "groupColumns": [], "sortColumns": [{ "column":7, "order": "asc"}]}');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(7, 2, NULL, 7, 'ID', 'number', 'number');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", "userPrimary", editor, formatter)
+  VALUES(8, 2, NULL, 8, 'Name', 1, 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(9, 2, NULL, 9, 'Kürzel', 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(10, 2, NULL, 10, 'Typ', 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+                       "displayName", editor, formatter)
+  VALUES(11, 2, NULL, 11, 'FK/Math/Inf', 'string', 'string');
 
-insert into columns("columnName", "tableId", "displayName") values('_id', 2, 'ID');
-insert into columns("columnName", "tableId", "displayName") values('bezeichnung', 2, 'Bezeichnung');
-insert into columns("columnName", "tableId", "displayName") values('gruendung', 2, 'Gründung');
-insert into columns("columnName", "tableId", "displayName") values('aufloesung', 2, 'Auflösung');
+CREATE TABLE p1_rollen (
+    _id INTEGER NOT NULL,
+    name CHARACTER VARYING(255),
+    "j#1_fk" INTEGER,
+    "j#2_fk" INTEGER,
+    rolle CHARACTER VARYING(255)
+);
+INSERT INTO tables(_id, key, name, "ownerId")
+  VALUES(4, 'p1_rollen', 'rollen', 1);
+INSERT INTO projecttables("projectId", "tableId") VALUES(1, 4);
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(13, '_id', 4, 'increments');
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(14, 'name', 4, 'string');
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(15, 'j#1_fk', 4, 'integer');
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(16, 'j#2_fk', 4, 'integer');
+INSERT INTO columns(_id, "columnName", "tableId", type)
+  VALUES(17, 'rolle', 4, 'string');
 
-insert into columns("columnName", "tableId", "displayName") values('_id', 3, 'ID');
-insert into columns("columnName", "tableId", "displayName") values('name', 3, 'Name');
-insert into columns("columnName", "tableId", "displayName") values('adresse', 3, 'Vorname');
+INSERT INTO jts(_id, name, table_id, user_id, row_options)
+  VALUES(4, 'Rollen', 4, 1, '{"conditions":[],"groupColumns":[],"sortColumns":[{"column":13,"order":"asc"}]}');
+INSERT INTO jt_joins(_id, jt_id, foreign_jt_id, "on")
+  VALUES(1, 4, 1, '[15,"=",1]');
+INSERT INTO jt_joins(_id, jt_id, foreign_jt_id, "on")
+  VALUES(2, 4, 2, '[16,"=",7]');
+
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(13, 4, NULL, 13, 'ID', 0, 1, 'number', NULL);
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(14, 4, NULL, 14, 'Name', 1, 1, 'string', NULL);
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(15, 4, 1, 2, 'Nachname', 0, 0, NULL, 'linkColumn');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(17, 4, NULL, 17, 'Rolle', 0, 1, 'string', 'string');
+INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+                       "userPrimary", editable, editor, formatter)
+  VALUES(16, 4, 2, 8, 'Organ', 0, 0, NULL, 'linkColumn');
+
+
+-- object data
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Gertz', 'Michael', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Paech', 'Barbara', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Fröning', 'Holger', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Schmidt', 'Jan-Philip', 'Dr.', 'FK-Leitung');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Strzodka', 'Robert', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Walcher', 'Johannes', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Knüpfer', 'Hannes', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Albers', 'Peter', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Johannes', 'Jan', 'Prof.Dr.', 'Professor');
+INSERT INTO p1_personen(nachname, vorname, titel, stellung)
+  VALUES('Andrzejak', 'Artur', 'Prof.Dr.', 'Professor');
+
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('Dekanat', 'Dekanat', 'Einrichtung', 'FK');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('Fakultätsvorstand', 'FK-Vorstand', 'Kommission', 'FK');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('Institut für Angewandte Mathematik', 'IAM', 'Einrichtung', 'Math');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('Institut für Informatik', 'IfI', 'Einrichtung', 'Inf');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('Institut für Technische Informatik', 'ZITI', 'Einrichtung', 'Inf');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('Mathematisches Institut', 'MI', 'Einrichtung', 'Math');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('PA BA und MA Informatik', 'PA BA+MA Inf', 'Kommission', 'Inf');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('PA Informatik Promotionen', 'PA Prom Inf', 'Kommission', 'Inf');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('PA Lehramt Informatik', 'PA LA Inf', 'Kommission', 'Inf');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('PA Math Promotionen', 'PA Prom Math', 'Kommission', 'Math');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('StuKo Informatik', 'SK Inf', 'Kommission', 'Inf');
+INSERT INTO p1_organe(name, kuerzel, typ, fk_math_inf)
+  VALUES ('StuKo Mathematik', 'SK Math', 'Kommission', 'Math');
+
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(1, NULL, 10, 2, 'Prodekan');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(3, NULL, 6, 2, 'Dekan');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(4, NULL, 3, 11, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(5, NULL, 10, 11, 'Mitglied');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(6, NULL, 7, 12, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(7, NULL, 2, 9, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(8, NULL, 4, 1, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(2, NULL, 10, 8, 'Vorsitz');
+INSERT INTO p1_rollen(_id, name, "j#1_fk", "j#2_fk", rolle)
+  VALUES(9, NULL, 6, 10, 'Vorsitz');
+
+-- stupid pkey sequences evidently don't count up when we do manual IDs
+SELECT setval('users__id_seq', (SELECT MAX(_id) FROM users)+1);
+SELECT setval('projects__id_seq', (SELECT MAX(_id) FROM projects)+1);
+SELECT setval('userprojects__id_seq', (SELECT MAX(_id) FROM userprojects)+1);
+SELECT setval('tables__id_seq', (SELECT MAX(_id) FROM tables)+1);
+SELECT setval('projecttables__id_seq', (SELECT MAX(_id) FROM projecttables)+1);
+SELECT setval('columns__id_seq', (SELECT MAX(_id) FROM columns)+1);
+SELECT setval('jts__id_seq', (SELECT MAX(_id) FROM jts)+1);
+SELECT setval('jt_joins__id_seq', (SELECT MAX(_id) FROM jt_joins)+1);
+SELECT setval('jt_columns__id_seq', (SELECT MAX(_id) FROM jt_columns)+1);
