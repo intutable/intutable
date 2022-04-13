@@ -36,7 +36,7 @@ const Login: NextPage = () => {
     const error = router.query.error ? makeError(router.query.error) : null
 
     const { mutateUser } = useUser({
-        redirectTo: "/profile-sg",
+        redirectTo: "/",
         redirectIfFound: true,
     })
 
