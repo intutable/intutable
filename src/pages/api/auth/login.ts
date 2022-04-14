@@ -6,7 +6,7 @@ import { getCurrentUser } from "auth"
 const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
     const { username, password } = await req.body
     try {
-        const response = await fetch(
+        const loginRequest = await fetch(
             process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL! + "/login",
             {
                 method: "post",
@@ -20,13 +20,13 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
             }
         )
 
-        console.dir(response)
+        console.dir(loginRequest)
 
-        if (response.status !== 200)
-            throw new Error(`Netzwerkfehler, Status = ${response.status}`)
+        if (loginRequest.ok === false || loginRequest.status !== 200)
+            throw new Error(`Netzwerkfehler, Status = ${loginRequest.status}`)
 
         // BUG: logs html ?
-        const text = await response.text()
+        const text = await loginRequest.text()
 
         console.log(text)
 
