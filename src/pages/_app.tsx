@@ -1,5 +1,6 @@
 import { CssBaseline, PaletteMode, useMediaQuery } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
+import { fetcher } from "api"
 import { logger, parseTableData } from "api/middelware"
 import Layout from "components/Layout/Layout"
 import type { AppProps } from "next/app"
@@ -78,7 +79,9 @@ const MyApp = (props: AppProps) => {
                 <meta name="theme-color" content={theme.palette.primary.main} />
             </Head>
 
-            <SWRConfig value={{ use: [logger, parseTableData] }}>
+            <SWRConfig
+                value={{ fetcher: fetcher, use: [logger, parseTableData] }}
+            >
                 <ThemeTogglerContext.Provider value={colorMode}>
                     <ThemeProvider theme={theme}>
                         <SnackbarProvider maxSnack={5}>

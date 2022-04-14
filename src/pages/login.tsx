@@ -1,6 +1,6 @@
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
-import { fetch } from "api"
+import { fetcher } from "api"
 import { useUser } from "auth/useUser"
 import Title from "components/Head/Title"
 import { Paper } from "components/LoginOutRegister/Paper"
@@ -85,7 +85,7 @@ const Login: NextPage = () => {
         }
 
         try {
-            await mutateUser(fetch<User>("/api/auth/login", body))
+            await mutateUser(await fetcher<User>("/api/auth/login", body))
         } catch (error) {
             enqueueSnackbar(makeError(error).message, { variant: "error" })
         }

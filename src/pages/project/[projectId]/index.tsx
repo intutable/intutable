@@ -30,7 +30,7 @@ import type {
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
-import { fetch } from "api"
+import { fetcher } from "api"
 import { makeCacheKey, useTables } from "hooks/useTables"
 
 type TableContextMenuProps = {
@@ -181,7 +181,7 @@ const TableList: React.FC<TableListProps> = props => {
             const namePrompt = prompt("Benenne deine neue Tabelle!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            await fetch(
+            await fetcher(
                 "/api/table",
                 user!,
                 {
@@ -224,7 +224,7 @@ const TableList: React.FC<TableListProps> = props => {
                 )
                 return
             }
-            await fetch(
+            await fetcher(
                 `/api/table/${joinTable.id}`,
                 user!,
                 {
@@ -249,7 +249,7 @@ const TableList: React.FC<TableListProps> = props => {
                 "Möchtest du deine Tabelle wirklich löschen?"
             )
             if (!confirmed) return
-            await fetch(
+            await fetcher(
                 `/api/table/${joinTable.id}`,
                 user!,
                 undefined,
@@ -353,7 +353,7 @@ export const getServerSideProps: GetServerSideProps<
 
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
 
-    const projects = await fetch<ProjectDescriptor[]>(
+    const projects = await fetcher<ProjectDescriptor[]>(
         `/api/projects/${user.id}`,
         user,
         undefined,
@@ -362,7 +362,7 @@ export const getServerSideProps: GetServerSideProps<
     const project = projects.find(p => p.id === projectId)
     if (project == null) return { notFound: true }
 
-    const tables = await fetch<JtDescriptor[]>(
+    const tables = await fetcher<JtDescriptor[]>(
         `/api/tables/${project.id}`,
         user,
         undefined,

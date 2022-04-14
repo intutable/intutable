@@ -18,10 +18,15 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
             }
         )
 
+        console.dir(response)
+
         if (response.status !== 200)
             throw new Error(`Netzwerkfehler, Status = ${response.status}`)
 
+        // BUG: logs html ?
         const text = await response.text()
+
+        console.log(text)
 
         if (text.includes("secret") === false)
             throw new Error(

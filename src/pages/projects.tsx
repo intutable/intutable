@@ -17,7 +17,7 @@ import {
 
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
-import { fetch } from "api"
+import { fetcher } from "api"
 import { Auth } from "auth"
 import Title from "components/Head/Title"
 import { AUTH_COOKIE_KEY, useUser } from "context"
@@ -171,7 +171,7 @@ const ProjectList: React.FC = () => {
         mutate,
     } = useSWR<ProjectDescriptor[]>(
         user ? [`/api/projects/${user.id}`, user, undefined, "GET"] : null,
-        fetch
+        fetcher
     )
 
     const handleCreateProject = async () => {
@@ -180,7 +180,7 @@ const ProjectList: React.FC = () => {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            await fetch<ProjectDescriptor>(
+            await fetcher<ProjectDescriptor>(
                 "/api/project",
                 user,
                 { user, name },
@@ -224,7 +224,7 @@ const ProjectList: React.FC = () => {
                 )
                 return
             }
-            await fetch<ProjectDescriptor>(
+            await fetcher<ProjectDescriptor>(
                 `/api/project/${project.id}`,
                 user,
                 { newName: name },
@@ -248,7 +248,12 @@ const ProjectList: React.FC = () => {
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            await fetch(`/api/project/${project.id}`, user, undefined, "DELETE")
+            await fetcher(
+                `/api/project/${project.id}`,
+                user,
+                undefined,
+                "DELETE"
+            )
             await mutate()
             enqueueSnackbar("Projekt wurde gelöscht.", {
                 variant: "success",
@@ -322,7 +327,7 @@ export const getServerSideProps: GetServerSideProps<
             },
         }
 
-    const list = await fetch<ProjectDescriptor[]>(
+    const list = await fetcher<ProjectDescriptor[]>(
         `/api/projects/${user.id}`, // Note: userId is tmp
         user,
         undefined,

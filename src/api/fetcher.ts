@@ -1,15 +1,13 @@
 import { User } from "types/User"
 import type { Fetcher } from "swr"
 import Obj from "types/Obj"
-import { inspect } from "util"
 import { passedLogin } from "./utils/coreRequest"
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 /**
  * Fetcher function for use with useSWR hookb
  */
-export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
-    fetch(...args).then(res => res.json())
+// export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
+//     fetch(...args).then(res => res.json())
 
 /**
  * Fetcher for use with `swr`.
@@ -22,7 +20,7 @@ export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
  *
  * Otherwise the deserialized json is returned.
  */
-export const fetch = <T>(
+export const fetcher = <T>(
     url: string,
     body?: Obj,
     method: "GET" | "POST" | "PATCH" | "DELETE" = "POST"
