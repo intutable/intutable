@@ -11,7 +11,9 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
             {
                 method: "post",
                 headers: {
+                    Accept: "application/json",
                     "Content-Type": "application/x-www-form-urlencoded",
+                    // "Content-Type": "application/json",
                 },
                 credentials: "include",
                 body: `username=${username}&password=${password}`,
