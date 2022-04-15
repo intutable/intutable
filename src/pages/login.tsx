@@ -175,12 +175,8 @@ export const getServerSideProps: GetServerSideProps = withSessionSsr(
     async context => {
         const { req } = context
 
-        try {
-            const user = req.session.user
-            if (user) return { notFound: true }
-        } catch (e) {
-            //
-        }
+        const user = req.session.user
+        if (user?.isLoggedIn) return { notFound: true }
 
         return {
             props: {},
