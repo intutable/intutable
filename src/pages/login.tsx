@@ -7,7 +7,7 @@ import { Paper } from "components/LoginOutRegister/Paper"
 import type { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
-import React, { useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { User } from "types/User"
 import { makeError } from "utils/makeError"
 
@@ -32,15 +32,16 @@ const textFieldStyle: SxProps<Theme> = {
 
 const Login: NextPage = () => {
     const router = useRouter()
-
-    const error = router.query.error ? makeError(router.query.error) : null
+    const { enqueueSnackbar } = useSnackbar()
+    const error = useMemo(
+        () => (router.query.error ? makeError(router.query.error) : null),
+        [router.query.error]
+    )
 
     const { mutateUser } = useUser({
         redirectTo: "/",
         redirectIfFound: true,
     })
-
-    const { enqueueSnackbar } = useSnackbar()
 
     const [usernameValid, setUsernameValid] = useState<Error | true | null>(
         null
@@ -75,7 +76,7 @@ const Login: NextPage = () => {
         }
     }
 
-    const handleLogin = async () => {
+    const handleLogin = useCallback(async () => {
         if (usernameValid !== true || passwordValid !== true || error != null)
             return
 
@@ -89,7 +90,15 @@ const Login: NextPage = () => {
         } catch (error) {
             enqueueSnackbar(makeError(error).message, { variant: "error" })
         }
-    }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        error,
+        form.password,
+        form.username,
+        mutateUser,
+        passwordValid,
+        usernameValid,
+    ])
 
     return (
         <>
