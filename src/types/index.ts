@@ -17,14 +17,6 @@ export const PM = {
     UID_KEY: "_id",
 } as const
 
-/**
- * Database
- * @namespace
- */
-namespace DB {
-    export type Boolean = 1 | 0
-}
-
 // #################################################################
 //       Generic
 // #################################################################
@@ -40,6 +32,9 @@ type Table<COL, ROW> = {
 // #################################################################
 
 export type Column = ReactDataGrid_Column<Row>
+
+// TODO: augment Column
+// declare
 
 export type Row = {
     readonly [PLACEHOLDER.ROW_INDEX_KEY]: number

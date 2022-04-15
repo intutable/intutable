@@ -6,9 +6,10 @@ import {
 } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "types/User"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
+import { withSessionRoute } from "auth"
+import { checkUser } from "utils/checkUser"
 
 /**
  * GET a single project @type {ProjectDescriptor}.
@@ -16,9 +17,6 @@ import { makeError } from "utils/makeError"
  * @tutorial
  * ```
  * - URL: `/api/project/[id]` e.g. `/api/project/1`
- * - Body: {
- *  user: {@type {User}}
- * }
  * ```
  */
 const GET = async (
@@ -27,13 +25,11 @@ const GET = async (
     projectId: ProjectDescriptor["id"]
 ) => {
     try {
-        const { user } = req.body as {
-            user: User
-        }
+        const user = checkUser(req.session.user)
 
         const allProjects = await coreRequest<ProjectDescriptor[]>(
             getProjects(user.id),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const project = allProjects.find(proj => proj.id === projectId)
@@ -70,11 +66,12 @@ const PATCH = async (
         const { newName } = req.body as {
             newName: ProjectDescriptor["name"]
         }
+        const user = checkUser(req.session.user)
 
         // rename project in project-management
         const updatedProject = await coreRequest<ProjectDescriptor>(
             changeProjectName(projectId, newName),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         res.status(200).json(updatedProject)
@@ -90,9 +87,6 @@ const PATCH = async (
  * @tutorial
  * ```
  * - URL: `/api/project/[id]` e.g. `/api/project/1`
- * - Body: {
- *  user: {@type {User}}
- * }
  * ```
  */
 const DELETE = async (
@@ -101,11 +95,9 @@ const DELETE = async (
     projectId: ProjectDescriptor["id"]
 ) => {
     try {
+        const user = checkUser(req.session.user)
         // delete project in project-management
-        await coreRequest(
-            removeProject(projectId),
-            req.cookies[AUTH_COOKIE_KEY]
-        )
+        await coreRequest(removeProject(projectId), user.authCookie)
 
         res.status(200).send({})
     } catch (err) {
@@ -114,25 +106,24 @@ const DELETE = async (
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { query, method } = req
-    const projectId = parseInt(query.projectId as string)
+export default withSessionRoute(
+    async (req: NextApiRequest, res: NextApiResponse) => {
+        const { query, method } = req
+        const projectId = parseInt(query.projectId as string)
 
-    switch (method) {
-        case "GET":
-            await GET(req, res, projectId)
-            break
-        case "PATCH":
-            await PATCH(req, res, projectId)
-            break
-        case "DELETE":
-            await DELETE(req, res, projectId)
-            break
-        default:
-            res.setHeader("Allow", ["GET", "PATCH", "DELETE"])
-            res.status(405).end(`Method ${method} Not Allowed`)
+        switch (method) {
+            case "GET":
+                await GET(req, res, projectId)
+                break
+            case "PATCH":
+                await PATCH(req, res, projectId)
+                break
+            case "DELETE":
+                await DELETE(req, res, projectId)
+                break
+            default:
+                res.setHeader("Allow", ["GET", "PATCH", "DELETE"])
+                res.status(405).end(`Method ${method} Not Allowed`)
+        }
     }
-}
+)

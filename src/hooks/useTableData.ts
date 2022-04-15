@@ -3,7 +3,7 @@ import {
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
 import { fetcher } from "api"
-import useSWR, { unstable_serialize } from "swr"
+import useSWR from "swr"
 import { Column, TableData } from "types"
 
 export const useTableData = (tableId: TableDescriptor["id"]) => {
@@ -27,10 +27,3 @@ export const useTableData = (tableId: TableDescriptor["id"]) => {
         mutate,
     }
 }
-
-export const useTableDataConfig = (tableId: TableDescriptor["id"]) => ({
-    cacheKey: makeCacheKey(tableId),
-})
-
-export const makeCacheKey = (tableId: TableDescriptor["id"]): string =>
-    unstable_serialize([`/api/table/${tableId}`, undefined, "GET"])

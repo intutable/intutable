@@ -11,8 +11,9 @@ import {
 } from "@intutable/join-tables/dist/types"
 import { removeTable } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
+import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
+import { checkUser } from "utils/checkUser"
 import { makeError } from "utils/makeError"
 
 /**
@@ -30,9 +31,10 @@ const GET = async (
     tableId: JtDescriptor["id"]
 ) => {
     try {
+        const user = checkUser(req.session.user)
         const tableData = await coreRequest<JtData>(
             getJtData(tableId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         res.status(200).json(tableData)
@@ -63,11 +65,12 @@ const PATCH = async (
         const { newName } = req.body as {
             newName: JtDescriptor["name"]
         }
+        const user = checkUser(req.session.user)
 
         // rename table in join-tables
         const updatedTable = await coreRequest<JtDescriptor>(
             renameJt(tableId, newName),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         res.status(200).json(updatedTable)
@@ -92,18 +95,16 @@ const DELETE = async (
     tableId: JtDescriptor["id"]
 ) => {
     try {
+        const user = checkUser(req.session.user)
         // delete table in project-management
         const options = await coreRequest<JtOptions>(
             getJtOptions(tableId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
-        await coreRequest(
-            removeTable(options.tableId),
-            req.cookies[AUTH_COOKIE_KEY]
-        )
+        await coreRequest(removeTable(options.tableId), user.authCookie)
 
         // delete table in join-tables
-        await coreRequest(deleteJt(tableId), req.cookies[AUTH_COOKIE_KEY])
+        await coreRequest(deleteJt(tableId), user.authCookie)
 
         res.status(200).send({})
     } catch (err) {
@@ -112,25 +113,24 @@ const DELETE = async (
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { query, method } = req
-    const tableId = parseInt(query.tableId as string)
+export default withSessionRoute(
+    async (req: NextApiRequest, res: NextApiResponse) => {
+        const { query, method } = req
+        const tableId = parseInt(query.tableId as string)
 
-    switch (method) {
-        case "GET":
-            await GET(req, res, tableId)
-            break
-        case "PATCH":
-            await PATCH(req, res, tableId)
-            break
-        case "DELETE":
-            await DELETE(req, res, tableId)
-            break
-        default:
-            res.setHeader("Allow", ["GET", "PATCH", "DELETE"])
-            res.status(405).end(`Method ${method} Not Allowed`)
+        switch (method) {
+            case "GET":
+                await GET(req, res, tableId)
+                break
+            case "PATCH":
+                await PATCH(req, res, tableId)
+                break
+            case "DELETE":
+                await DELETE(req, res, tableId)
+                break
+            default:
+                res.setHeader("Allow", ["GET", "PATCH", "DELETE"])
+                res.status(405).end(`Method ${method} Not Allowed`)
+        }
     }
-}
+)

@@ -14,10 +14,11 @@ import { JtDescriptor, SortOrder } from "@intutable/join-tables/dist/types"
 import { createJt } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
 import { User } from "types/User"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import { makeError } from "utils/makeError"
 import { PM } from "types"
 import sanitizeName from "utils/sanitizeName"
+import { withSessionRoute } from "auth"
+import { checkUser } from "utils/checkUser"
 
 /**
  * Create a new table with the specified name.
@@ -37,17 +38,17 @@ import sanitizeName from "utils/sanitizeName"
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { user, projectId, name } = req.body as {
-            user: User
+        const { projectId, name } = req.body as {
             projectId: ProjectDescriptor["id"]
             name: string
         }
+        const user = checkUser(req.session.user)
 
         const internalName = sanitizeName(name)
 
         const existingTables = await coreRequest<TableDescriptor[]>(
             getTablesFromProject(projectId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
         if (existingTables.some(t => t.name === internalName))
             throw Error("alreadyTaken")
@@ -57,13 +58,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             createTableInProject(user.id, projectId, internalName, [
                 { name: "name", type: ColumnType.string, options: [] },
             ]),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         // make specifiers for JT columns
         const baseColumns = await coreRequest<PM_Column[]>(
             getColumnsFromTable(table.id),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
         const columnSpecs = baseColumns.map(c => ({
             parentColumnId: c.id,
@@ -93,7 +94,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                 },
                 user.id
             ),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         res.status(200).json(jtTable)
@@ -103,18 +104,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { method } = req
-
-    switch (method) {
-        case "POST":
-            await POST(req, res)
-            break
-        default:
-            res.setHeader("Allow", ["POST"])
-            res.status(405).end(`Method ${method} Not Allowed`)
+export default withSessionRoute(
+    async (req: NextApiRequest, res: NextApiResponse) => {
+        switch (req.method) {
+            case "POST":
+                await POST(req, res)
+                break
+            default:
+                res.setHeader("Allow", ["POST"])
+                res.status(405).end(`Method ${req.method} Not Allowed`)
+        }
     }
-}
+)

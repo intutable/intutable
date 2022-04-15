@@ -1,5 +1,5 @@
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
@@ -15,7 +15,7 @@ import { SWRConfig, unstable_serialize } from "swr"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { JtDescriptor, JtData } from "@intutable/join-tables/dist/types"
 
-import { Auth } from "auth"
+import { Auth, withSessionSsr } from "auth"
 import {
     AUTH_COOKIE_KEY,
     HeaderSearchFieldProvider,
@@ -30,6 +30,9 @@ import type { Row } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { fetcher } from "api"
+import { ProtectedUserPage } from "utils/ProtectedUserPage"
+import { useProjects } from "hooks/useProjects"
+import { useTables } from "hooks/useTables"
 
 type TablePageProps = {
     project: ProjectDescriptor
@@ -139,94 +142,68 @@ const TablePage: React.FC<TablePageProps> = props => {
     )
 }
 
-type Page = {
-    project: ProjectDescriptor
-    table: JtDescriptor
-    tableList: JtDescriptor[]
-    // fallback: SerializedTableData
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallback: any // TODO: remove this any
-}
-const Page: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ project, table, tableList, fallback }) => {
-    return (
-        <SWRConfig value={{ fallback }}>
-            <TableCtxProvider table={table} project={project}>
-                <HeaderSearchFieldProvider>
-                    <TablePage
-                        project={project}
-                        table={table}
-                        tableList={tableList}
-                    />
-                </HeaderSearchFieldProvider>
-            </TableCtxProvider>
-        </SWRConfig>
-    )
+type PageProps = {
+    projectId: ProjectDescriptor["id"]
+    tableId: JtDescriptor["id"]
 }
 
-export const getServerSideProps: GetServerSideProps<Page> = async context => {
-    const { req } = context
+const Page: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ projectId, tableId }) => {
+    // workaround until PM exposes the required method
+    const { projects } = useProjects()
+    const project = useMemo(
+        () => (projects ? projects.find(p => p.id === projectId) : undefined),
+        [projectId, projects]
+    )
+
+    const { tables } = useTables(project!, [projects, projects])
+
+    return <>Hallo</>
+
+    // const data = await fetcher<JtData>(
+    //     `/api/table/${tableId}`,
+    //     user,
+    //     undefined,
+    //     "GET"
+    // )
+
+    // return (
+    //     <TableCtxProvider table={table} project={project}>
+    //         <HeaderSearchFieldProvider>
+    //             <TablePage
+    //                 project={project}
+    //                 table={table}
+    //                 tableList={tableList}
+    //             />
+    //         </HeaderSearchFieldProvider>
+    //     </TableCtxProvider>
+    // )
+}
+
+export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const query = context.query as DynamicRouteQuery<
         typeof context.query,
         "tableId" | "projectId"
     >
+
+    const user = context.req.session.user
+
+    if (!user)
+        return {
+            notFound: true,
+        }
+
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
     const tableId: JtDescriptor["id"] = Number.parseInt(query.tableId)
 
-    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-    const user = await Auth.getCurrentUser(authCookie).catch(e => {
-        console.error(e)
-        return null
-    })
-    if (!user)
-        return {
-            redirect: {
-                permanent: false,
-                destination: "/login",
-            },
-        }
-
-    // workaround until PM exposes the required method
-    const projects = await fetcher<ProjectDescriptor[]>(
-        `/api/projects/${user.id}`,
-        user,
-        undefined,
-        "GET"
-    )
-    const project = projects.find(p => p.id === projectId)
-
-    if (project == null) return { notFound: true }
-
-    const tableList = await fetcher<JtDescriptor[]>(
-        `/api/tables/${projectId}`,
-        user,
-        undefined,
-        "GET"
-    )
-
-    const data = await fetcher<JtData>(
-        `/api/table/${tableId}`,
-        user,
-        undefined,
-        "GET"
-    )
-
     return {
         props: {
-            project,
-            table: data.descriptor,
-            tableList,
-            fallback: {
-                [unstable_serialize([
-                    `/api/table/${tableId}`,
-                    user,
-                    undefined,
-                    "GET",
-                ])]: data,
-            },
+            user,
+            projectId,
+            tableId,
         },
     }
-}
+})
 
 export default Page

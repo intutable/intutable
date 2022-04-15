@@ -6,7 +6,7 @@ const logoutRoute = async (req: NextApiRequest, res: NextApiResponse<User>) => {
     const response = await fetch(
         process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL! + "/logout",
         {
-            method: "post",
+            method: "POST",
             credentials: "include",
         }
     )
@@ -15,7 +15,7 @@ const logoutRoute = async (req: NextApiRequest, res: NextApiResponse<User>) => {
         throw new Error(`Ausloggen fehlgeschlagen: ${response.status}`)
 
     req.session.destroy()
-    res.json({ isLoggedIn: false, username: "", id: -1 })
+    res.json({ isLoggedIn: false, username: "", id: -1, authCookie: "" })
 }
 
 export default withSessionRoute(logoutRoute)

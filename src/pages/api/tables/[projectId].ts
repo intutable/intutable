@@ -8,7 +8,8 @@ import { listJts } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
+import { withSessionRoute } from "auth"
+import { checkUser } from "utils/checkUser"
 
 /**
  * List tables that belong to a project. Note that these are join tables from
@@ -24,17 +25,15 @@ const GET = async (
     projectId: ProjectDescriptor["id"]
 ) => {
     try {
+        const user = checkUser(req.session.user)
         const baseTables = await coreRequest<TableDescriptor[]>(
             getTablesFromProject(projectId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const tables = await Promise.all(
             baseTables.map(t =>
-                coreRequest<JtDescriptor[]>(
-                    listJts(t.id),
-                    req.cookies[AUTH_COOKIE_KEY]
-                )
+                coreRequest<JtDescriptor[]>(listJts(t.id), user.authCookie)
             )
         ).then(tableLists => tableLists.flat())
 
@@ -44,19 +43,18 @@ const GET = async (
         res.status(500).json({ error: error.message })
     }
 }
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { query, method } = req
-    const projectId = parseInt(query.projectId as string)
+export default withSessionRoute(
+    async (req: NextApiRequest, res: NextApiResponse) => {
+        const { query, method } = req
+        const projectId = parseInt(query.projectId as string)
 
-    switch (method) {
-        case "GET":
-            await GET(req, res, projectId)
-            break
-        default:
-            res.setHeader("Allow", ["GET"])
-            res.status(405).end(`Method ${method} Not Allowed`)
+        switch (method) {
+            case "GET":
+                await GET(req, res, projectId)
+                break
+            default:
+                res.setHeader("Allow", ["GET"])
+                res.status(405).end(`Method ${method} Not Allowed`)
+        }
     }
-}
+)

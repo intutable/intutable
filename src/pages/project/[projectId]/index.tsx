@@ -31,7 +31,10 @@ import type {
     NextPage,
 } from "next"
 import { fetcher } from "api"
-import { makeCacheKey, useTables } from "hooks/useTables"
+import {
+    makeCacheKey as useTables_makeCacheKey,
+    useTables,
+} from "hooks/useTables"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -328,41 +331,34 @@ const Page: NextPage<
 )
 
 export const getServerSideProps = withSessionSsr<PageProps>(async context => {
-    const { req } = context
     const query = context.query as DynamicRouteQuery<
         typeof context.query,
         "projectId"
     >
-
-    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-
-    const user = await Auth.getCurrentUser(authCookie).catch(e => {
-        console.error(e)
-        return null
-    })
+    const user = context.req.session.user
 
     if (!user)
         return {
-            redirect: {
-                permanent: false,
-                destination: "/login",
-            },
+            notFound: true,
         }
 
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
 
     const projects = await fetcher<ProjectDescriptor[]>(
         `/api/projects/${user.id}`,
-        user,
         undefined,
         "GET"
     )
+
     const project = projects.find(p => p.id === projectId)
-    if (project == null) return { notFound: true }
+    if (project == null) {
+        if (process.env.NODE_ENV === "production")
+            throw new Error("Die Tabellen konnten nicht geladen werden.")
+        return { redirect: { permanent: true, destination: "/500" } }
+    }
 
     const tables = await fetcher<JtDescriptor[]>(
         `/api/tables/${project.id}`,
-        user,
         undefined,
         "GET"
     )
@@ -371,7 +367,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
         props: {
             project: project,
             fallback: {
-                [makeCacheKey(project, user)]: tables,
+                [useTables_makeCacheKey(project)]: tables,
             },
         },
     }

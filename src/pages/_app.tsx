@@ -80,7 +80,11 @@ const MyApp = (props: AppProps) => {
             </Head>
 
             <SWRConfig
-                value={{ fetcher: fetcher, use: [logger, parseTableData] }}
+                value={{
+                    fetcher: fetcher,
+                    use: [logger, parseTableData],
+                    onError: err => console.error(err),
+                }}
             >
                 <ThemeTogglerContext.Provider value={colorMode}>
                     <ThemeProvider theme={theme}>

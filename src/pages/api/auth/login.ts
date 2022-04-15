@@ -1,11 +1,10 @@
+import { getCurrentUser } from "auth"
 import { withSessionRoute } from "auth/withSessionRoute"
 import { NextApiRequest, NextApiResponse } from "next"
-import { Cookies } from "js-cookie"
 import type { User } from "types/User"
-import { getCurrentUser } from "auth"
 
 const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
-    const { username, password } = await req.body
+    const { username, password } = req.body
 
     try {
         const loginRequest = await fetch(
@@ -22,35 +21,37 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
             }
         )
 
-        // todo: make proper checker function
+        // TODO: make proper checker function
         if (loginRequest.status !== 302)
             throw new Error(`Netzwerkfehler, Status = ${loginRequest.status}`)
 
-        // BUG: logs html ?
         const text = await loginRequest.text()
-
-        console.log(text)
 
         if (text.includes("secret") === false)
             throw new Error(
                 "Kombination aus Nutzername und Passwort nicht gefunden!"
             )
 
-
-        console.dir(loginRequest.headers)
-
-        const authCookie = loginRequest.headers.get("set-cookie")
+        const authCookie = loginRequest.headers
+            .get("set-cookie")!
             .split(";")
             .map(c => c.split("="))
             .find(c => c[0] === "connect.sid")![1]
         console.log(authCookie)
 
         const user = await getCurrentUser(authCookie)
-        if (user == null) throw new Error("Could not get the user")
+        if (user == null)
+            throw new Error(
+                "Could not get the current user from user-authentication!"
+            )
+
+        console.log("login: got current user:", user)
 
         req.session.user = { isLoggedIn: true, ...user } as User
 
         await req.session.save()
+
+        console.log("login: saved session:", req.session.user)
 
         res.json(user)
     } catch (error) {

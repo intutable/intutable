@@ -1,7 +1,4 @@
-import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import useSWR, { SWRConfig, unstable_serialize } from "swr"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -14,18 +11,16 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-
 import { fetcher } from "api"
-import { withSessionSsr } from "auth"
+import { useUser, withSessionSsr } from "auth"
 import Title from "components/Head/Title"
-import { useUser } from "auth"
-import type {
-    GetServerSideProps,
-    InferGetServerSidePropsType,
-    NextPage,
-} from "next"
+import type { InferGetServerSidePropsType, NextPage } from "next"
+import { useRouter } from "next/router"
+import { useSnackbar } from "notistack"
+import React, { useEffect, useState } from "react"
+import useSWR, { SWRConfig, unstable_serialize } from "swr"
+import { makeError } from "utils/makeError"
+import { ProtectedUserPage } from "utils/ProtectedUserPage"
 import { prepareName } from "utils/validateName"
 
 type ProjectContextMenuProps = {
@@ -161,7 +156,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     )
 }
 
-const ProjectList: React.FC = () => {
+const Page: NextPage = () => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
     const { user } = useUser()
@@ -170,10 +165,7 @@ const ProjectList: React.FC = () => {
         data: projects,
         error,
         mutate,
-    } = useSWR<ProjectDescriptor[]>(
-        user ? [`/api/projects/${user.id}`, user, undefined, "GET"] : null,
-        fetcher
-    )
+    } = useSWR<ProjectDescriptor[]>([`/api/projects`, undefined, "GET"])
 
     const handleCreateProject = async () => {
         if (projects == null || user == null) return
@@ -259,7 +251,7 @@ const ProjectList: React.FC = () => {
         }
     }
 
-    if (error) return <>Error: {error}</>
+    if (error) return <>Error</>
     if (projects == null) return <CircularProgress />
 
     return (
@@ -290,50 +282,6 @@ const ProjectList: React.FC = () => {
     )
 }
 
-type PageProps = {
-    // fallback: ProjectDescriptor.List
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallback: any // TODO: remove this any
-}
-const Page: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ fallback }) => (
-    <SWRConfig value={{ fallback }}>
-        <ProjectList />
-    </SWRConfig>
-)
-
-export const getServerSideProps = withSessionSsr<PageProps>(async context => {
-    const user = context.req.session.user
-
-    if (!user)
-        return {
-            notFound: true,
-        }
-
-    const list = await fetcher<ProjectDescriptor[]>(
-        `/api/projects/${user.id}`, // Note: userId is tmp
-        undefined,
-        "GET"
-    )
-
-    if (list == null) {
-        if (process.env.NODE_ENV === "production")
-            throw new Error("Die Projekte konnten nicht geladen werden.")
-        return { redirect: { permanent: true, destination: "/500" } }
-    }
-
-    return {
-        props: {
-            fallback: {
-                [unstable_serialize([
-                    `/api/projects/${user.id}`,
-                    undefined,
-                    "GET",
-                ])]: list,
-            },
-        },
-    }
-})
+export const getServerSideProps = ProtectedUserPage
 
 export default Page
