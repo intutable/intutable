@@ -18,9 +18,9 @@ import {
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
 import { fetcher } from "api"
-import { Auth } from "auth"
+import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
-import { AUTH_COOKIE_KEY, useUser } from "context"
+import { useUser } from "auth"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
@@ -63,6 +63,7 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
 }
 type AddProjectCardProps = {
     handleCreate: () => Promise<void>
+    children?: React.ReactNode
 }
 
 const AddProjectCard: React.FC<AddProjectCardProps> = props => {
@@ -182,7 +183,6 @@ const ProjectList: React.FC = () => {
             const name = prepareName(namePrompt)
             await fetcher<ProjectDescriptor>(
                 "/api/project",
-                user,
                 { user, name },
                 "POST"
             )
@@ -226,7 +226,6 @@ const ProjectList: React.FC = () => {
             }
             await fetcher<ProjectDescriptor>(
                 `/api/project/${project.id}`,
-                user,
                 { newName: name },
                 "PATCH"
             )
@@ -248,12 +247,7 @@ const ProjectList: React.FC = () => {
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            await fetcher(
-                `/api/project/${project.id}`,
-                user,
-                undefined,
-                "DELETE"
-            )
+            await fetcher(`/api/project/${project.id}`, undefined, "DELETE")
             await mutate()
             enqueueSnackbar("Projekt wurde gelöscht.", {
                 variant: "success",
@@ -309,44 +303,37 @@ const Page: NextPage<
     </SWRConfig>
 )
 
-export const getServerSideProps: GetServerSideProps<
-    PageProps
-> = async context => {
-    const { req } = context
+export const getServerSideProps = withSessionSsr<PageProps>(async context => {
+    const user = context.req.session.user
 
-    const authCookie = req.cookies[AUTH_COOKIE_KEY]
-    const user = await Auth.getCurrentUser(authCookie).catch(e => {
-        console.error(e)
-        return null
-    })
     if (!user)
         return {
-            redirect: {
-                permanent: false,
-                destination: "/login",
-            },
+            notFound: true,
         }
 
     const list = await fetcher<ProjectDescriptor[]>(
         `/api/projects/${user.id}`, // Note: userId is tmp
-        user,
         undefined,
         "GET"
     )
-    if (list == null) return { notFound: true }
+
+    if (list == null) {
+        if (process.env.NODE_ENV === "production")
+            throw new Error("Die Projekte konnten nicht geladen werden.")
+        return { redirect: { permanent: true, destination: "/500" } }
+    }
 
     return {
         props: {
             fallback: {
                 [unstable_serialize([
                     `/api/projects/${user.id}`,
-                    user,
                     undefined,
                     "GET",
                 ])]: list,
             },
         },
     }
-}
+})
 
 export default Page

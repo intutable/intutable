@@ -19,7 +19,7 @@ import {
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { JtDescriptor } from "@intutable/join-tables/dist/types"
 
-import { Auth } from "auth"
+import { Auth, withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import { AUTH_COOKIE_KEY, useUser } from "context"
@@ -327,9 +327,7 @@ const Page: NextPage<
     </SWRConfig>
 )
 
-export const getServerSideProps: GetServerSideProps<
-    PageProps
-> = async context => {
+export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const { req } = context
     const query = context.query as DynamicRouteQuery<
         typeof context.query,
@@ -377,6 +375,6 @@ export const getServerSideProps: GetServerSideProps<
             },
         },
     }
-}
+})
 
 export default Page

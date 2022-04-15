@@ -9,7 +9,7 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
         const loginRequest = await fetch(
             process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL! + "/login",
             {
-                method: "post",
+                method: "POST",
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/x-www-form-urlencoded",
