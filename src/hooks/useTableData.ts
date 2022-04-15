@@ -1,19 +1,14 @@
 import {
     ColumnDescriptor,
-    ProjectDescriptor,
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
 import { fetcher } from "api"
-import { User } from "types/User"
-import { useUser } from "auth"
 import useSWR, { unstable_serialize } from "swr"
 import { Column, TableData } from "types"
 
 export const useTableData = (tableId: TableDescriptor["id"]) => {
-    const { user } = useUser()
-
     const { data, error, mutate } = useSWR<TableData>(
-        user ? [`/api/table/${tableId}`, user, undefined, "GET"] : null,
+        [`/api/table/${tableId}`, undefined, "GET"],
         fetcher
     )
 
@@ -33,16 +28,9 @@ export const useTableData = (tableId: TableDescriptor["id"]) => {
     }
 }
 
-export const useTableDataConfig = (tableId: TableDescriptor["id"]) => {
-    const { user } = useUser()
+export const useTableDataConfig = (tableId: TableDescriptor["id"]) => ({
+    cacheKey: makeCacheKey(tableId),
+})
 
-    return {
-        cacheKey: makeCacheKey(tableId, user!),
-    }
-}
-
-export const makeCacheKey = (
-    tableId: TableDescriptor["id"],
-    user: User
-): string =>
-    unstable_serialize([`/api/table/${tableId}`, user, undefined, "GET"])
+export const makeCacheKey = (tableId: TableDescriptor["id"]): string =>
+    unstable_serialize([`/api/table/${tableId}`, undefined, "GET"])

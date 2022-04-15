@@ -1,32 +1,24 @@
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { JtDescriptor } from "@intutable/join-tables/dist/types"
-import { useUser } from "auth"
-import useSWR, { unstable_serialize } from "swr"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { fetcher } from "api"
-import { User } from "types/User"
+import useSWR, { unstable_serialize } from "swr"
 
 export const useTables = (project: ProjectDescriptor) => {
-    const { user } = useUser()
-
     const {
         data: tables,
         error,
         mutate,
     } = useSWR<JtDescriptor[]>(
-        user ? [`/api/tables/${project.id}`, user, undefined, "GET"] : null,
+        [`/api/tables/${project.id}`, undefined, "GET"],
         fetcher
     )
 
     return { tables, error, mutate }
 }
 
-export const useTablesConfig = (project: ProjectDescriptor) => {
-    const { user } = useUser()
+export const useTablesConfig = (project: ProjectDescriptor) => ({
+    cacheKey: makeCacheKey(project),
+})
 
-    return {
-        cacheKey: makeCacheKey(project, user!),
-    }
-}
-
-export const makeCacheKey = (project: ProjectDescriptor, user: User): string =>
-    unstable_serialize([`/api/tables/${project.id}`, user, undefined, "GET"])
+export const makeCacheKey = (project: ProjectDescriptor): string =>
+    unstable_serialize([`/api/tables/${project.id}`, undefined, "GET"])
