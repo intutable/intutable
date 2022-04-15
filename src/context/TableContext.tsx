@@ -53,6 +53,7 @@ export const useTableCtx = () => React.useContext(TableContext)
 export type TableCtxProviderProps = {
     project: ProjectDescriptor
     table: JtDescriptor
+    children?: React.ReactNode
 }
 
 export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {

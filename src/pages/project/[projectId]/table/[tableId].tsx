@@ -1,38 +1,34 @@
-import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import React, { useMemo, useState } from "react"
-import { DndProvider } from "react-dnd"
-import { HTML5Backend } from "react-dnd-html5-backend"
-import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DetailedViewModal } from "@datagrid/Detail Window/DetailedViewModal"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
 import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { Box, Typography, useTheme } from "@mui/material"
-import { SWRConfig, unstable_serialize } from "swr"
-
+import { JtData, JtDescriptor } from "@intutable/join-tables/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { JtDescriptor, JtData } from "@intutable/join-tables/dist/types"
-
-import { Auth, withSessionSsr } from "auth"
+import { Box, Typography, useTheme } from "@mui/material"
+import { fetcher } from "api"
+import { withSessionSsr } from "auth"
+import Title from "components/Head/Title"
+import Link from "components/Link"
+import { TableNavigator } from "components/TableNavigator"
 import {
-    AUTH_COOKIE_KEY,
     HeaderSearchFieldProvider,
     TableCtxProvider,
     useHeaderSearchField,
     useTableCtx,
 } from "context"
-import Title from "components/Head/Title"
-import Link from "components/Link"
-import { TableNavigator } from "components/TableNavigator"
+import { useProjects } from "hooks/useProjects"
+import { useTableData } from "hooks/useTableData"
+import { useTables } from "hooks/useTables"
+import { InferGetServerSidePropsType, NextPage } from "next"
+import React, { useMemo, useState } from "react"
+import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
-import { fetcher } from "api"
-import { ProtectedUserPage } from "utils/ProtectedUserPage"
-import { useProjects } from "hooks/useProjects"
-import { useTables } from "hooks/useTables"
 
 type TablePageProps = {
     project: ProjectDescriptor
@@ -152,33 +148,25 @@ const Page: NextPage<
 > = ({ projectId, tableId }) => {
     // workaround until PM exposes the required method
     const { projects } = useProjects()
+    const { data } = useTableData(tableId)
     const project = useMemo(
         () => (projects ? projects.find(p => p.id === projectId) : undefined),
         [projectId, projects]
     )
+    const { tables } = useTables(project!, [projects])
 
-    const { tables } = useTables(project!, [projects, projects])
+    if (projects == null || data == null || project == null || tables == null)
+        return {
+            notFound: true,
+        }
 
-    return <>Hallo</>
-
-    // const data = await fetcher<JtData>(
-    //     `/api/table/${tableId}`,
-    //     user,
-    //     undefined,
-    //     "GET"
-    // )
-
-    // return (
-    //     <TableCtxProvider table={table} project={project}>
-    //         <HeaderSearchFieldProvider>
-    //             <TablePage
-    //                 project={project}
-    //                 table={table}
-    //                 tableList={tableList}
-    //             />
-    //         </HeaderSearchFieldProvider>
-    //     </TableCtxProvider>
-    // )
+    return (
+        <TableCtxProvider table={data} project={project}>
+            <HeaderSearchFieldProvider>
+                <TablePage project={project} table={data} tableList={tables} />
+            </HeaderSearchFieldProvider>
+        </TableCtxProvider>
+    )
 }
 
 export const getServerSideProps = withSessionSsr<PageProps>(async context => {
