@@ -9,14 +9,15 @@ import {
     CircularProgress,
 } from "@mui/material"
 import Image from "next/image"
-import BGImage from "../../public/login-bg.jpg"
-import Link, { CombinedLinkProps } from "../Link"
+import BGImage from "public/login-bg.jpg"
+import Link, { CombinedLinkProps } from "components/Link"
 
 type PaperProps = {
     mode: "login" | "register"
     handleAction: () => void
     disabled: boolean
     loading: boolean
+    children?: React.ReactNode
 }
 
 export const Paper: React.FC<PaperProps> = props => {
