@@ -1,6 +1,7 @@
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
 import { fetcher } from "api"
+import { withSessionSsr } from "auth"
 import { useUser } from "auth/useUser"
 import Title from "components/Head/Title"
 import { Paper } from "components/LoginOutRegister/Paper"
@@ -170,19 +171,21 @@ const Login: NextPage = () => {
     )
 }
 
-export const getServerSideProps: GetServerSideProps = async context => {
-    const { req } = context
+export const getServerSideProps: GetServerSideProps = withSessionSsr(
+    async context => {
+        const { req } = context
 
-    try {
-        const user = req.session.user
-        if (user) return { notFound: true }
-    } catch (e) {
-        //
-    }
+        try {
+            const user = req.session.user
+            if (user) return { notFound: true }
+        } catch (e) {
+            //
+        }
 
-    return {
-        props: {},
+        return {
+            props: {},
+        }
     }
-}
+)
 
 export default Login
