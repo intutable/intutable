@@ -1,24 +1,23 @@
-import type { NextApiRequest, NextApiResponse } from "next"
 import { ColumnType } from "@intutable/database/dist/column"
+import { createJt } from "@intutable/join-tables/dist/requests"
+import { JtDescriptor, SortOrder } from "@intutable/join-tables/dist/types"
 import {
-    ProjectDescriptor,
-    TableDescriptor,
-    ColumnDescriptor as PM_Column,
-} from "@intutable/project-management/dist/types"
-import {
-    getTablesFromProject,
     createTableInProject,
     getColumnsFromTable,
+    getTablesFromProject,
 } from "@intutable/project-management/dist/requests"
-import { JtDescriptor, SortOrder } from "@intutable/join-tables/dist/types"
-import { createJt } from "@intutable/join-tables/dist/requests"
+import {
+    ColumnDescriptor as PM_Column,
+    ProjectDescriptor,
+    TableDescriptor,
+} from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
-import { User } from "types/User"
-import { makeError } from "utils/makeError"
-import { PM } from "types"
-import sanitizeName from "utils/sanitizeName"
 import { withSessionRoute } from "auth"
-import { checkUser } from "utils/checkUser"
+import type { NextApiRequest, NextApiResponse } from "next"
+import { PM } from "types"
+import { makeError } from "utils/makeError"
+import sanitizeName from "utils/sanitizeName"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Create a new table with the specified name.
@@ -30,7 +29,6 @@ import { checkUser } from "utils/checkUser"
  * @tutorial
  * ```
  * - Body: {
- *    user: {@type {User}}
  *    projectId: {@type {number}}
  *    name: {@type {string}}
  * }
@@ -42,7 +40,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             projectId: ProjectDescriptor["id"]
             name: string
         }
-        const user = checkUser(req.session.user)
+        const user = req.session.user!
 
         const internalName = sanitizeName(name)
 
@@ -105,7 +103,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 export default withSessionRoute(
-    async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
         switch (req.method) {
             case "POST":
                 await POST(req, res)
@@ -114,5 +112,5 @@ export default withSessionRoute(
                 res.setHeader("Allow", ["POST"])
                 res.status(405).end(`Method ${req.method} Not Allowed`)
         }
-    }
+    })
 )

@@ -5,7 +5,7 @@ import { User } from "types/User"
 export const ProtectedUserPage = withSessionSsr<User>(async context => {
     const user = context.req.session.user
 
-    if (!user)
+    if (user == null || user.isLoggedIn === false)
         return {
             notFound: true,
         }

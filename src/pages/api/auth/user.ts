@@ -4,15 +4,16 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { User } from "types/User"
 
 const userRoute = async (req: NextApiRequest, res: NextApiResponse<User>) => {
-    if (req.session.user) {
+    try {
+        if (req.session.user == null) throw null
         const user = await getCurrentUser(req.session.user.authCookie)
-        if (user == null) throw new Error("The user was logged out!")
+        if (user == null) throw null
 
         res.json({
             ...req.session.user,
             isLoggedIn: true,
         })
-    } else {
+    } catch (_) {
         res.json({
             isLoggedIn: false,
             username: "",

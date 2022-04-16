@@ -12,8 +12,9 @@ import { getJtInfo } from "@intutable/join-tables/dist/requests"
 
 import { PM } from "types"
 import { coreRequest } from "api/utils"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import { makeError } from "utils/makeError"
+import { withSessionRoute } from "auth"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Link rows in linked tables, by setting the value in the linking table's
@@ -39,15 +40,15 @@ const POST = async (
             rowId: number
             value: number
         }
+        const user = req.session.user!
 
-        console.log(joinId, jtId, rowId, value)
         const jtInfo = await coreRequest<JtInfo>(
             getJtInfo(jtId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
         const baseTableInfo = await coreRequest<TableInfo>(
             getTableInfo(jtInfo.baseTable.id),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const join = jtInfo.joins.find(j => j.id === joinId)!
@@ -59,7 +60,7 @@ const POST = async (
                 condition: [PM.UID_KEY, rowId],
                 update: { [fkColumn.name]: value },
             }),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         res.status(200).json({})
@@ -70,19 +71,18 @@ const POST = async (
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { query, method } = req
-    const joinId = parseInt(query.joinId as string)
+export default withSessionRoute(
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+        const { query } = req
+        const joinId = parseInt(query.joinId as string)
 
-    switch (req.method) {
-        case "POST":
-            await POST(req, res, joinId)
-            break
-        default:
-            res.setHeader("Allow", ["POST"])
-            res.status(405).end(`Method ${req.method} Not Allowed`)
-    }
-}
+        switch (req.method) {
+            case "POST":
+                await POST(req, res, joinId)
+                break
+            default:
+                res.setHeader("Allow", ["POST"])
+                res.status(405).end(`Method ${req.method} Not Allowed`)
+        }
+    })
+)

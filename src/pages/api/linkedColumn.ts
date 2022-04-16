@@ -1,11 +1,10 @@
-import type { NextApiRequest, NextApiResponse } from "next"
-
-import { JtInfo, ColumnDescriptor } from "@intutable/join-tables/dist/types"
-import { getJtInfo, addColumnToJt } from "@intutable/join-tables/dist/requests"
-
+import { addColumnToJt, getJtInfo } from "@intutable/join-tables/dist/requests"
+import { ColumnDescriptor, JtInfo } from "@intutable/join-tables/dist/types"
 import { coreRequest } from "api/utils/coreRequest"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
+import { withSessionRoute } from "auth"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Add a new linked column to a join. Its contents will be taken from the
@@ -29,7 +28,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         const info = await coreRequest<JtInfo>(
             getJtInfo(jtId),
-            req.cookies[AUTH_COOKIE_KEY]
+            req.session.user!.authCookie
         )
 
         const parentColumn = info.columns.find(c => c.id === parentColumnId)
@@ -50,7 +49,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             }
             const newColumn = await coreRequest<ColumnDescriptor>(
                 addColumnToJt(jtId, columnSpec, joinId),
-                req.cookies[AUTH_COOKIE_KEY]
+                req.session.user!.authCookie
             )
 
             res.status(200).json(newColumn)
@@ -61,16 +60,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    switch (req.method) {
-        case "POST":
-            await POST(req, res)
-            break
-        default:
-            res.setHeader("Allow", ["POST"])
-            res.status(405).end(`Method ${req.method} Not Allowed`)
-    }
-}
+export default withSessionRoute(
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+        switch (req.method) {
+            case "POST":
+                await POST(req, res)
+                break
+            default:
+                res.setHeader("Allow", ["POST"])
+                res.status(405).end(`Method ${req.method} Not Allowed`)
+        }
+    })
+)

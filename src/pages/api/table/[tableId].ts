@@ -1,20 +1,20 @@
 import {
     deleteJt,
     getJtData,
-    renameJt,
     getJtOptions,
+    renameJt,
 } from "@intutable/join-tables/dist/requests"
 import {
-    JtDescriptor,
     JtData,
+    JtDescriptor,
     JtOptions,
 } from "@intutable/join-tables/dist/types"
 import { removeTable } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { checkUser } from "utils/checkUser"
 import { makeError } from "utils/makeError"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * GET a single (join) table's data {@type {JtData}}.
@@ -31,7 +31,7 @@ const GET = async (
     tableId: JtDescriptor["id"]
 ) => {
     try {
-        const user = checkUser(req.session.user)
+        const user = req.session.user!
         const tableData = await coreRequest<JtData>(
             getJtData(tableId),
             user.authCookie
@@ -65,7 +65,7 @@ const PATCH = async (
         const { newName } = req.body as {
             newName: JtDescriptor["name"]
         }
-        const user = checkUser(req.session.user)
+        const user = req.session.user!
 
         // rename table in join-tables
         const updatedTable = await coreRequest<JtDescriptor>(
@@ -95,7 +95,7 @@ const DELETE = async (
     tableId: JtDescriptor["id"]
 ) => {
     try {
-        const user = checkUser(req.session.user)
+        const user = req.session.user!
         // delete table in project-management
         const options = await coreRequest<JtOptions>(
             getJtOptions(tableId),
@@ -114,7 +114,7 @@ const DELETE = async (
 }
 
 export default withSessionRoute(
-    async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
         const { query, method } = req
         const tableId = parseInt(query.tableId as string)
 
@@ -132,5 +132,5 @@ export default withSessionRoute(
                 res.setHeader("Allow", ["GET", "PATCH", "DELETE"])
                 res.status(405).end(`Method ${method} Not Allowed`)
         }
-    }
+    })
 )

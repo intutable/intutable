@@ -6,7 +6,7 @@ import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { JtData, JtDescriptor } from "@intutable/join-tables/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Box, Typography, useTheme } from "@mui/material"
+import { Box, CircularProgress, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
@@ -148,22 +148,23 @@ const Page: NextPage<
 > = ({ projectId, tableId }) => {
     // workaround until PM exposes the required method
     const { projects } = useProjects()
-    const { data } = useTableData(tableId)
     const project = useMemo(
         () => (projects ? projects.find(p => p.id === projectId) : undefined),
         [projectId, projects]
     )
     const { tables } = useTables(project!, [projects])
+    const table = useMemo(
+        () => tables?.find(t => t.id === tableId),
+        [tableId, tables]
+    )
 
-    if (projects == null || data == null || project == null || tables == null)
-        return {
-            notFound: true,
-        }
+    if (projects == null || project == null || table == null || tables == null)
+        return <CircularProgress />
 
     return (
-        <TableCtxProvider table={data} project={project}>
+        <TableCtxProvider table={table} project={project}>
             <HeaderSearchFieldProvider>
-                <TablePage project={project} table={data} tableList={tables} />
+                <TablePage project={project} table={table} tableList={tables} />
             </HeaderSearchFieldProvider>
         </TableCtxProvider>
     )

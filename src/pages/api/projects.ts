@@ -1,10 +1,10 @@
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { getProjects } from "@intutable/project-management/dist/requests"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
+import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
-import { withSessionRoute } from "auth"
-import { checkUser } from "utils/checkUser"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * List projects that belong to a user.
@@ -15,7 +15,7 @@ import { checkUser } from "utils/checkUser"
  */
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const user = checkUser(req.session.user)
+        const user = req.session.user!
         const projects = await coreRequest<ProjectDescriptor[]>(
             getProjects(user.id),
             user.authCookie
@@ -29,7 +29,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 export default withSessionRoute(
-    async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
         switch (req.method) {
             case "GET":
                 await GET(req, res)
@@ -38,5 +38,5 @@ export default withSessionRoute(
                 res.setHeader("Allow", ["GET"])
                 res.status(405).end(`Method ${req.method} Not Allowed`)
         }
-    }
+    })
 )

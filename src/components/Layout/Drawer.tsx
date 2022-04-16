@@ -125,7 +125,7 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                 nonActiveIcon={<HomeIconOutlined />}
                 activeIcon={<HomeIcon />}
             />
-            {user && (
+            {user?.isLoggedIn && (
                 <DrawerListItem
                     text="Projekte"
                     href="/projects"

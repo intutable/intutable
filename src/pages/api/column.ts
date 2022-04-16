@@ -1,19 +1,20 @@
 import {
+    addColumnToJt,
+    getJtOptions,
+} from "@intutable/join-tables/dist/requests"
+import {
     ColumnDescriptor as JT_Column,
     JtDescriptor,
     JtOptions,
 } from "@intutable/join-tables/dist/types"
-import {
-    addColumnToJt,
-    getJtOptions,
-} from "@intutable/join-tables/dist/requests"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
 import { coreRequest, Parser } from "api/utils"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
+import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Column } from "types"
 import { makeError } from "utils/makeError"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Add a column to a table.
@@ -31,21 +32,22 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             jtId: JtDescriptor["id"]
             column: Column.Serialized
         }
+        const user = req.session.user!
 
         const options = await coreRequest<JtOptions>(
             getJtOptions(jtId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         // add column in project-management
         const tableColumn = await coreRequest<PM_Column>(
             createColumnInTable(options.tableId, column.key),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const jtColumn = await coreRequest<JT_Column>(
             addColumnToJt(jtId, Parser.Column.deparse(column, tableColumn.id)),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const parsedColumn = Parser.Column.parse(jtColumn)
@@ -57,16 +59,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    switch (req.method) {
-        case "POST":
-            await POST(req, res)
-            break
-        default:
-            res.setHeader("Allow", ["POST"])
-            res.status(405).end(`Method ${req.method} Not Allowed`)
-    }
-}
+export default withSessionRoute(
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+        switch (req.method) {
+            case "POST":
+                await POST(req, res)
+                break
+            default:
+                res.setHeader("Allow", ["POST"])
+                res.status(405).end(`Method ${req.method} Not Allowed`)
+        }
+    })
+)
