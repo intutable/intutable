@@ -303,6 +303,8 @@ const TableList: React.FC<TableListProps> = props => {
     )
 }
 
+export const getServerSideProps: GetServerSideProps = ProtectedPage
+
 type PageProps = {
     project: ProjectDescriptor
     // fallback: JtDescriptor[]
