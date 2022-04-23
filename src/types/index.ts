@@ -31,10 +31,17 @@ type Table<COL, ROW> = {
 //       Frontend / Deserialized
 // #################################################################
 
-export type Column = ReactDataGrid_Column<Row>
+// Note: augment Column type
+declare module "react-data-grid" {
+    interface Column<TRow, TSummaryRow = unknown> {
+        /**
+         * internal backend id
+         */
+        _id: number
+    }
+}
 
-// TODO: augment Column
-// declare
+export type Column = ReactDataGrid_Column<Row>
 
 export type Row = {
     readonly [PLACEHOLDER.ROW_INDEX_KEY]: number

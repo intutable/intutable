@@ -60,9 +60,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const { user } = useUser()
 
     const { data, error, mutate } = useSWR<TableData>(
-        user ? [{ url: `/api/table/${props.table.id}`, method: "GET" }] : null
+        user ? { url: `/api/table/${props.table.id}`, method: "GET" } : null
     )
-
     /**
      * // TODO:
      *  1. once these api methods return the updated data, inject it into mutate

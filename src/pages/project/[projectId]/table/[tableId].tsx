@@ -156,7 +156,7 @@ const Page: NextPage<
         () => (projects ? projects.find(p => p.id === projectId) : undefined),
         [projectId, projects]
     )
-    const { tables } = useTables(project!, [projects])
+    const { tables } = useTables(project)
     const table = useMemo(
         () => tables?.find(t => t.id === tableId),
         [tableId, tables]

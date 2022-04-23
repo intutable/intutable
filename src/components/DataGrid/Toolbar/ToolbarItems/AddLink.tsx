@@ -63,8 +63,6 @@ export const AddLink: React.FC = () => {
         }
     }
 
-    if (currentTable == null) return <CircularProgress />
-
     return (
         <>
             <Tooltip title="Add link to another table">
@@ -77,13 +75,15 @@ export const AddLink: React.FC = () => {
                     Add Link
                 </LoadingButton>
             </Tooltip>
-            {/* <AddLinkModal
-                table={currentTable.metadata.descriptor}
-                project={project}
-                open={anchorEL != null}
-                onClose={handleCloseModal}
-                onAddLink={handleAddLink}
-            /> */}
+            {currentTable && (
+                <AddLinkModal
+                    table={currentTable.metadata.descriptor}
+                    project={project}
+                    open={anchorEL != null}
+                    onClose={handleCloseModal}
+                    onAddLink={handleAddLink}
+                />
+            )}
         </>
     )
 }
