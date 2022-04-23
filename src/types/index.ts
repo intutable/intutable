@@ -37,7 +37,7 @@ declare module "react-data-grid" {
         /**
          * internal backend id
          */
-        _id: number
+        _id?: number
     }
 }
 

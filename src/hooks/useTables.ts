@@ -13,3 +13,10 @@ export const useTables = (project: ProjectDescriptor | null | undefined) => {
 
     return { tables, error, mutate }
 }
+
+export const useTablesConfig = {
+    cacheKey: (projectId: ProjectDescriptor["id"]) => ({
+        url: `/api/tables/${projectId}`,
+        method: "GET",
+    }),
+}

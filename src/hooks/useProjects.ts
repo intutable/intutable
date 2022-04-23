@@ -10,3 +10,7 @@ export const useProjects = () => {
 
     return { projects, error, mutate }
 }
+
+export const useProjectsConfig = {
+    cacheKey: { url: `/api/projects`, method: "GET" },
+}

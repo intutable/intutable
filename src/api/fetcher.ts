@@ -19,6 +19,7 @@ type FetcherOptions = {
      * @default POST
      */
     method?: "GET" | "POST" | "PATCH" | "DELETE"
+    headers?: HeadersInit
 }
 
 /**
@@ -38,6 +39,7 @@ export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
+            ...args.headers,
         },
         credentials: "include",
         redirect: "manual",

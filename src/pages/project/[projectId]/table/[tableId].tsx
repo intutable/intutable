@@ -4,9 +4,10 @@ import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { JtData, JtDescriptor } from "@intutable/join-tables/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Box, CircularProgress, Typography, useTheme } from "@mui/material"
+import { Box, Typography, useTheme } from "@mui/material"
+import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
@@ -17,10 +18,8 @@ import {
     useHeaderSearchField,
     useTableCtx,
 } from "context"
-import { useProjects } from "hooks/useProjects"
-import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
-import React, { useMemo, useState } from "react"
+import React, { useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
@@ -143,36 +142,23 @@ const TablePage: React.FC<TablePageProps> = props => {
 }
 
 type PageProps = {
-    projectId: ProjectDescriptor["id"]
-    tableId: JtDescriptor["id"]
+    project: ProjectDescriptor
+    table: JtDescriptor
+    tableList: JtDescriptor[]
+    // fallback: {
+    //     [cacheKey: string]: JtData
+    // }
 }
 
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ projectId, tableId }) => {
-    // workaround until PM exposes the required method
-    const { projects } = useProjects()
-    const project = useMemo(
-        () => (projects ? projects.find(p => p.id === projectId) : undefined),
-        [projectId, projects]
-    )
-    const { tables } = useTables(project)
-    const table = useMemo(
-        () => tables?.find(t => t.id === tableId),
-        [tableId, tables]
-    )
-
-    if (projects == null || project == null || table == null || tables == null)
-        return <CircularProgress />
-
-    return (
-        <TableCtxProvider table={table} project={project}>
-            <HeaderSearchFieldProvider>
-                <TablePage project={project} table={table} tableList={tables} />
-            </HeaderSearchFieldProvider>
-        </TableCtxProvider>
-    )
-}
+> = ({ project, table, tableList }) => (
+    <TableCtxProvider table={table} project={project}>
+        <HeaderSearchFieldProvider>
+            <TablePage project={project} table={table} tableList={tableList} />
+        </HeaderSearchFieldProvider>
+    </TableCtxProvider>
+)
 
 export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const query = context.query as DynamicRouteQuery<
@@ -195,10 +181,40 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
             notFound: true,
         }
 
+    // workaround until PM exposes the required method
+    const projects = await fetcher<ProjectDescriptor[]>({
+        url: `/api/projects`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+
+    const project = projects.find(p => p.id === projectId)
+
+    if (project == null) return { notFound: true }
+
+    const tableList = await fetcher<JtDescriptor[]>({
+        url: `/api/tables/${projectId}`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+
+    const data = await fetcher<JtData>({
+        url: `/api/table/${tableId}`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+
     return {
         props: {
-            projectId,
-            tableId,
+            project,
+            table: data.descriptor,
+            tableList,
+            // fallback: {
+            //     [unstable_serialize({
+            //         url: `/api/table/${tableId}`,
+            //         method: "GET",
+            //     })]: data,
+            // },
         },
     }
 })

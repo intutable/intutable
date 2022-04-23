@@ -8,7 +8,7 @@ export const sessionOptions: IronSessionOptions = {
     cookieName: process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY as string,
     // ttl: 3600,
     cookieOptions: {
-        // httpOnly: true,
+        // httpOnly: false,
         // sameSite: "lax",
         // secure: true should be used in production (HTTPS) but can't be used in development (HTTP)
         // secure: process.env.NODE_ENV === "production",

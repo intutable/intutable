@@ -16,12 +16,13 @@ import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
-import { useProjects } from "hooks/useProjects"
+import { useTablesConfig } from "hooks/useTables"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
+import { SWRConfig, unstable_serialize } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { prepareName } from "utils/validateName"
 
@@ -159,19 +160,13 @@ const TableCard: React.FC<TableCardProps> = props => {
     )
 }
 
-type PageProps = {
-    projectId: ProjectDescriptor["id"]
+type TableListProps = {
+    project: ProjectDescriptor
 }
-const Page: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = props => {
+const TableList: React.FC<TableListProps> = ({ project }) => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { projects } = useProjects()
-    const project = projects
-        ? projects.find(p => p.id === props.projectId)
-        : null
     const { tables, error, mutate } = useTables(project)
 
     const handleCreateTable = async () => {
@@ -182,7 +177,7 @@ const Page: NextPage<
             await fetcher({
                 url: "/api/table",
                 body: {
-                    projectId: props.projectId,
+                    projectId: project.id,
                     name,
                 },
             })
@@ -275,7 +270,7 @@ const Page: NextPage<
                             table={tbl}
                             handleDelete={handleDeleteTable}
                             handleRename={handleRenameTable}
-                            project={project!}
+                            project={project}
                         >
                             {tbl.name}
                         </TableCard>
@@ -290,6 +285,18 @@ const Page: NextPage<
         </>
     )
 }
+
+type PageProps = {
+    project: ProjectDescriptor
+    fallback: { [cackeKey: string]: JtDescriptor[] }
+}
+const Page: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ fallback, project }) => (
+    <SWRConfig value={{ fallback }}>
+        <TableList project={project} />
+    </SWRConfig>
+)
 
 export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const query = context.query as DynamicRouteQuery<
@@ -309,9 +316,28 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
             notFound: true,
         }
 
+    const projects = await fetcher<ProjectDescriptor[]>({
+        url: `/api/projects`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+
+    const project = projects.find(p => p.id === projectId)
+    if (project == null) return { notFound: true }
+
+    const tables = await fetcher<JtDescriptor[]>({
+        url: `/api/tables/${project.id}`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+
     return {
         props: {
-            projectId,
+            project,
+            fallback: {
+                [unstable_serialize(useTablesConfig.cacheKey(projectId))]:
+                    tables,
+            },
         },
     }
 })
