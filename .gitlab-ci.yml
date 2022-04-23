@@ -17,6 +17,7 @@ lint:
           when: never
         - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
           when: never
+        - when: on_success
 
 lint-production:
     stage: lint-production
