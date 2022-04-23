@@ -6,15 +6,14 @@ import {
     Menu,
     MenuItem,
     Stack,
-    Typography,
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
-import { User } from "types/User"
 import { useUser } from "auth/useUser"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
+import { User } from "types/User"
 
 type ContextMenuProps = {
     anchorEL: Element
@@ -31,7 +30,7 @@ const ContextMenu: React.FC<ContextMenuProps> = props => {
     const handleLogout = async () => {
         try {
             props.onClose()
-            await mutateUser(fetcher<User>("/api/auth/logout"))
+            await mutateUser(fetcher<User>({ url: "/api/auth/logout" }))
             router.push("/login")
         } catch (error) {
             enqueueSnackbar("Fehler beim Abmeldevorgang!", { variant: "error" })
@@ -67,7 +66,7 @@ const ContextMenu: React.FC<ContextMenuProps> = props => {
     )
 }
 
-export const Avatar: React.FC = props => {
+export const Avatar: React.FC = () => {
     const { user } = useUser()
     const router = useRouter()
 

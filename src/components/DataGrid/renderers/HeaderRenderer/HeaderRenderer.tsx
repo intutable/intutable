@@ -1,7 +1,11 @@
 import { ColumnDescriptor } from "@intutable/project-management/dist/types"
+import Check from "@mui/icons-material/Check"
+import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import KeyIcon from "@mui/icons-material/Key"
 import LinkIcon from "@mui/icons-material/Link"
+import LookupIcon from "@mui/icons-material/ManageSearch"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
+import SearchIcon from "@mui/icons-material/Search"
 import {
     Box,
     Divider,
@@ -17,20 +21,16 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
+import { fetcher } from "api/fetcher"
+import { useUser } from "auth"
 import { useHeaderSearchField, useTableCtx } from "context"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
 import { useRouter } from "next/router"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
-import { Column, Row } from "types"
+import { Row } from "types"
 import { AddLookupModal } from "./AddLookupModal"
-import LookupIcon from "@mui/icons-material/ManageSearch"
-import { fetcher } from "api/fetcher"
-import { useUser } from "auth"
-import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import SearchIcon from "@mui/icons-material/Search"
-import Check from "@mui/icons-material/Check"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
@@ -119,15 +119,13 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         if (!isLinkCol || !user) return
         try {
             const joinId = col.joinId!
-            await fetcher(
-                `/api/lookupField/${column.id}`,
-                user,
-                {
+            await fetcher({
+                url: `/api/lookupField/${column.id}`,
+                body: {
                     jtId: data!.metadata.descriptor.id,
                     joinId,
                 },
-                "POST"
-            )
+            })
             await utils.mutate()
         } catch (error) {
             snackError("Der Lookup konnte nicht hinzugefügt werden!")
@@ -135,7 +133,6 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     }
 
     const handleToggleHeaderSearchField = () => {
-        console.log(headerOpen)
         if (headerOpen) closeSearchField()
         else openSearchField()
     }

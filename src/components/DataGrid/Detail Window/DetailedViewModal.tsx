@@ -1,21 +1,15 @@
-import { Row } from "../../../types"
 import {
-    Modal,
-    Box,
-    Typography,
-    useTheme,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Slide,
-    TextField,
 } from "@mui/material"
+import type { TransitionProps } from "@mui/material/transitions"
 import React from "react"
 import { CalculatedColumn } from "react-data-grid"
-import type { TransitionProps } from "@mui/material/transitions"
+import { Row } from "../../../types"
 
 /* eslint-disable */
 const PopupTransition = React.forwardRef(
@@ -49,14 +43,16 @@ export const DetailedViewModal: React.FC<DetailedViewModalProps> = props => {
             onClose={props.onCloseHandler}
         >
             <DialogTitle sx={{ textTransform: "uppercase" }}>
-                Detail-Ansicht für Zeile {props.data.row.__id__}
+                <>Detail-Ansicht für Zeile {props.data.row.__id__}</>
             </DialogTitle>
 
             <DialogContent>
                 <ul>
                     {Object.entries(props.data.row).map(([key, value], i) => (
                         <li key={i}>
-                            {key}: {value}
+                            <>
+                                {key}: {value}
+                            </>
                         </li>
                     ))}
                 </ul>
