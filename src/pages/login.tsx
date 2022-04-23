@@ -1,11 +1,10 @@
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
 import { fetcher } from "api"
-import { withSessionSsr } from "auth"
 import { useUser } from "auth/useUser"
 import Title from "components/Head/Title"
 import { Paper } from "components/LoginOutRegister/Paper"
-import type { GetServerSideProps, NextPage } from "next"
+import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useCallback, useMemo, useState } from "react"
@@ -87,7 +86,9 @@ const Login: NextPage = () => {
         }
 
         try {
-            await mutateUser(await fetcher<User>("/api/auth/login", body))
+            await mutateUser(
+                await fetcher<User>({ url: "/api/auth/login", body })
+            )
         } catch (error) {
             enqueueSnackbar(makeError(error).message, { variant: "error" })
         }
@@ -170,18 +171,5 @@ const Login: NextPage = () => {
         </>
     )
 }
-
-export const getServerSideProps: GetServerSideProps = withSessionSsr(
-    async context => {
-        const { req } = context
-
-        const user = req.session.user
-        if (user?.isLoggedIn) return { notFound: true }
-
-        return {
-            props: {},
-        }
-    }
-)
 
 export default Login

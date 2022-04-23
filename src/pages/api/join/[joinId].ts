@@ -66,7 +66,6 @@ const POST = async (
         res.status(200).json({})
     } catch (err) {
         const error = makeError(err)
-        console.log(error)
         res.status(500).json({ error: error.message })
     }
 }

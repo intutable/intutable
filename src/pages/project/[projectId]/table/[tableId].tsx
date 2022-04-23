@@ -4,10 +4,9 @@ import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { JtData, JtDescriptor } from "@intutable/join-tables/dist/types"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Box, CircularProgress, Typography, useTheme } from "@mui/material"
-import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
@@ -19,10 +18,9 @@ import {
     useTableCtx,
 } from "context"
 import { useProjects } from "hooks/useProjects"
-import { useTableData } from "hooks/useTableData"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
@@ -53,6 +51,7 @@ const TablePage: React.FC<TablePageProps> = props => {
 
     const { data, error, updateRow, utils } = useTableCtx()
 
+    // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
         rows: Row[],
         changeData: RowsChangeData<Row>
@@ -86,7 +85,7 @@ const TablePage: React.FC<TablePageProps> = props => {
             </Typography>
 
             {error ? (
-                error.message
+                <> Error: {error}</>
             ) : data == null ? (
                 <LoadingSkeleton />
             ) : (
@@ -115,16 +114,21 @@ const TablePage: React.FC<TablePageProps> = props => {
                                 className={"rdg-" + theme.palette.mode}
                                 rows={data.rows}
                                 columns={data.columns}
-                                noRowsFallback={<NoRowsRenderer />}
+                                components={{
+                                    noRowsFallback: <NoRowsRenderer />,
+                                    rowRenderer: RowRenderer,
+                                    // checkboxFormatter: // TODO: adjust
+                                    // sortIcon: // TODO: adjust
+                                }}
                                 rowKeyGetter={rowKeyGetter}
                                 defaultColumnOptions={{
                                     sortable: true,
                                     resizable: true,
+                                    // formatter: // TODO: adjust
                                 }}
                                 selectedRows={selectedRows}
                                 onSelectedRowsChange={setSelectedRows}
                                 onRowsChange={partialRowUpdate}
-                                rowRenderer={RowRenderer}
                                 headerRowHeight={headerHeight}
                             />
                         </DndProvider>

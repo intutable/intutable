@@ -24,7 +24,9 @@ const UseUserDefaultOptions: UseUserOptions = {
 export const useUser = (options: UseUserOptions = UseUserDefaultOptions) => {
     const { redirectTo, redirectIfFound } = options
 
-    const { data: user, mutate: mutateUser } = useSWR<User>("/api/auth/user")
+    const { data: user, mutate: mutateUser } = useSWR<User>({
+        url: "/api/auth/user",
+    })
 
     useEffect(() => {
         // if no redirect needed, just return

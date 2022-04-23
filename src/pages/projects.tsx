@@ -12,15 +12,14 @@ import {
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
-import { useUser, withSessionSsr } from "auth"
+import { useUser } from "auth"
 import Title from "components/Head/Title"
-import type { InferGetServerSidePropsType, NextPage } from "next"
+import type { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
-import React, { useEffect, useState } from "react"
-import useSWR, { SWRConfig, unstable_serialize } from "swr"
-import { makeError } from "utils/makeError"
-import { ProtectedUserPage } from "utils/ProtectedUserPage"
+import React, { useState } from "react"
+import useSWR from "swr"
+import { ProtectedPage } from "utils/ProtectedPage"
 import { prepareName } from "utils/validateName"
 
 type ProjectContextMenuProps = {
@@ -165,7 +164,7 @@ const Page: NextPage = () => {
         data: projects,
         error,
         mutate,
-    } = useSWR<ProjectDescriptor[]>([`/api/projects`, undefined, "GET"])
+    } = useSWR<ProjectDescriptor[]>({ url: `/api/projects`, method: "GET" })
 
     const handleCreateProject = async () => {
         if (projects == null || user == null) return
@@ -173,11 +172,10 @@ const Page: NextPage = () => {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            await fetcher<ProjectDescriptor>(
-                "/api/project",
-                { user, name },
-                "POST"
-            )
+            await fetcher<ProjectDescriptor>({
+                url: "/api/project",
+                body: { user, name },
+            })
             await mutate()
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
@@ -216,11 +214,11 @@ const Page: NextPage = () => {
                 )
                 return
             }
-            await fetcher<ProjectDescriptor>(
-                `/api/project/${project.id}`,
-                { newName: name },
-                "PATCH"
-            )
+            await fetcher<ProjectDescriptor>({
+                url: `/api/project/${project.id}`,
+                body: { newName: name },
+                method: "PATCH",
+            })
             await mutate()
             enqueueSnackbar("Das Projekt wurde umbenannt.", {
                 variant: "success",
@@ -239,7 +237,10 @@ const Page: NextPage = () => {
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            await fetcher(`/api/project/${project.id}`, undefined, "DELETE")
+            await fetcher({
+                url: `/api/project/${project.id}`,
+                method: "DELETE",
+            })
             await mutate()
             enqueueSnackbar("Projekt wurde gelöscht.", {
                 variant: "success",
@@ -282,6 +283,6 @@ const Page: NextPage = () => {
     )
 }
 
-export const getServerSideProps = ProtectedUserPage
+export const getServerSideProps: GetServerSideProps = ProtectedPage
 
 export default Page

@@ -6,7 +6,7 @@ export const useProjects = () => {
         data: projects,
         error,
         mutate,
-    } = useSWR<ProjectDescriptor[]>([`/api/projects`, undefined, "GET"])
+    } = useSWR<ProjectDescriptor[]>({ url: `/api/projects`, method: "GET" })
 
     return { projects, error, mutate }
 }

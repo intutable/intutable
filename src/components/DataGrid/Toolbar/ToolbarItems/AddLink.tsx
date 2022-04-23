@@ -16,7 +16,8 @@ import {
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import { JtDescriptor } from "@intutable/join-tables/dist/types"
-import { useUser, useTableCtx } from "context"
+import { useTableCtx } from "context"
+import { useUser } from "auth"
 import { fetcher } from "api"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import useSWR, { unstable_serialize, useSWRConfig } from "swr"
@@ -46,15 +47,13 @@ export const AddLink: React.FC = () => {
     const handleAddLink = async (table: JtDescriptor) => {
         try {
             if (currentTable == null || user == null) throw new Error("A")
-            await fetcher(
-                "/api/join",
-                user,
-                {
+            await fetcher({
+                url: "/api/join",
+                body: {
                     jtId: currentTable.metadata.descriptor.id,
                     foreignJtId: table.id,
                 },
-                "POST"
-            )
+            })
             await mutate(
                 unstable_serialize([
                     `/api/table/${currentTable.metadata.descriptor.id}`,

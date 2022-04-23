@@ -1,8 +1,5 @@
-import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import { SWRConfig } from "swr"
-import { DynamicRouteQuery } from "types/DynamicRouteQuery"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -15,26 +12,18 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
-
-import { Auth, withSessionSsr } from "auth"
+import { fetcher } from "api"
+import { useUser, withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
-import { AUTH_COOKIE_KEY, useUser } from "context"
+import { useTables } from "hooks/useTables"
+import type { InferGetServerSidePropsType, NextPage } from "next"
+import { useRouter } from "next/router"
+import { useSnackbar } from "notistack"
+import React, { useState } from "react"
+import { SWRConfig, unstable_serialize } from "swr"
+import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { prepareName } from "utils/validateName"
-
-import type {
-    GetServerSideProps,
-    InferGetServerSidePropsType,
-    NextPage,
-} from "next"
-import { fetcher } from "api"
-import {
-    makeCacheKey as useTables_makeCacheKey,
-    useTables,
-} from "hooks/useTables"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -71,6 +60,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = props => {
 }
 type AddTableCardProps = {
     handleCreate: () => Promise<void>
+    children?: React.ReactNode
 }
 
 const TableProjectCard: React.FC<AddTableCardProps> = props => {
@@ -184,16 +174,15 @@ const TableList: React.FC<TableListProps> = props => {
             const namePrompt = prompt("Benenne deine neue Tabelle!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            await fetcher(
-                "/api/table",
-                user!,
-                {
+            await fetcher({
+                url: "/api/table",
+
+                body: {
                     user,
                     projectId: props.project.id,
                     name,
                 },
-                "POST"
-            )
+            })
             await mutate()
             enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
                 variant: "success",
@@ -227,14 +216,14 @@ const TableList: React.FC<TableListProps> = props => {
                 )
                 return
             }
-            await fetcher(
-                `/api/table/${joinTable.id}`,
-                user!,
-                {
+            await fetcher({
+                url: `/api/table/${joinTable.id}`,
+
+                body: {
                     newName: name,
                 },
-                "PATCH"
-            )
+                method: "PATCH",
+            })
             await mutate()
             enqueueSnackbar("Die Tabelle wurde umbenannt.", {
                 variant: "success",
@@ -252,12 +241,10 @@ const TableList: React.FC<TableListProps> = props => {
                 "Möchtest du deine Tabelle wirklich löschen?"
             )
             if (!confirmed) return
-            await fetcher(
-                `/api/table/${joinTable.id}`,
-                user!,
-                undefined,
-                "DELETE"
-            )
+            await fetcher({
+                url: `/api/table/${joinTable.id}`,
+                method: "DELETE",
+            })
             await mutate()
             enqueueSnackbar("Tabelle wurde gelöscht.", {
                 variant: "success",
@@ -344,11 +331,10 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
 
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
 
-    const projects = await fetcher<ProjectDescriptor[]>(
-        `/api/projects/${user.id}`,
-        undefined,
-        "GET"
-    )
+    const projects = await fetcher<ProjectDescriptor[]>({
+        url: `/api/projects/${user.id}`,
+        method: "GET",
+    })
 
     const project = projects.find(p => p.id === projectId)
     if (project == null) {
@@ -357,17 +343,19 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
         return { redirect: { permanent: true, destination: "/500" } }
     }
 
-    const tables = await fetcher<JtDescriptor[]>(
-        `/api/tables/${project.id}`,
-        undefined,
-        "GET"
-    )
+    const tables = await fetcher<JtDescriptor[]>({
+        url: `/api/tables/${project.id}`,
+        method: "GET",
+    })
 
     return {
         props: {
             project: project,
             fallback: {
-                [useTables_makeCacheKey(project)]: tables,
+                [unstable_serialize({
+                    url: `/api/projects/${user.id}`,
+                    method: "GET",
+                })]: tables,
             },
         },
     }
