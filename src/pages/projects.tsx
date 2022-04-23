@@ -12,11 +12,10 @@ import {
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
-import { useUser } from "auth"
 import Title from "components/Head/Title"
+import { useSnacki } from "hooks/useSnacki"
 import type { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
 import React, { useState } from "react"
 import useSWR from "swr"
 import { ProtectedPage } from "utils/ProtectedPage"
@@ -104,7 +103,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push("/project/" + props.project.id)
+        router.push(`/project/${props.project.id}`)
     }
 
     return (
@@ -157,8 +156,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 
 const Page: NextPage = () => {
     const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
-    const { user } = useUser()
+    const { snackError } = useSnacki()
 
     const {
         data: projects,
@@ -167,19 +165,16 @@ const Page: NextPage = () => {
     } = useSWR<ProjectDescriptor[]>({ url: `/api/projects`, method: "GET" })
 
     const handleCreateProject = async () => {
-        if (projects == null || user == null) return
+        if (projects == null) return
         try {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
             await fetcher<ProjectDescriptor>({
                 url: "/api/project",
-                body: { user, name },
+                body: { name },
             })
             await mutate()
-            enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-                variant: "success",
-            })
         } catch (error) {
             const errKey = (error as Record<string, string>).error
             let errMsg: string
@@ -195,12 +190,12 @@ const Page: NextPage = () => {
                 default:
                     errMsg = "Das Projekt konnte nicht erstellt werden!"
             }
-            enqueueSnackbar(errMsg, { variant: "error" })
+            snackError(errMsg)
         }
     }
 
     const handleRenameProject = async (project: ProjectDescriptor) => {
-        if (projects == null || user == null) return
+        if (projects == null) return
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
@@ -208,9 +203,8 @@ const Page: NextPage = () => {
                 .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
-                enqueueSnackbar(
-                    "Dieser Name wird bereits für eines deiner Projekte verwendet!",
-                    { variant: "error" }
+                snackError(
+                    "Dieser Name wird bereits für eines deiner Projekte verwendet!"
                 )
                 return
             }
@@ -220,18 +214,13 @@ const Page: NextPage = () => {
                 method: "PATCH",
             })
             await mutate()
-            enqueueSnackbar("Das Projekt wurde umbenannt.", {
-                variant: "success",
-            })
         } catch (error) {
-            enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", {
-                variant: "error",
-            })
+            snackError("Das Projekt konnte nicht umbenannt werden!")
         }
     }
 
     const handleDeleteProject = async (project: ProjectDescriptor) => {
-        if (projects == null || user == null) return
+        if (projects == null) return
         try {
             const confirmed = confirm(
                 "Möchtest du dein Projekt wirklich löschen?"
@@ -242,13 +231,8 @@ const Page: NextPage = () => {
                 method: "DELETE",
             })
             await mutate()
-            enqueueSnackbar("Projekt wurde gelöscht.", {
-                variant: "success",
-            })
         } catch (error) {
-            enqueueSnackbar("Projekt konnte nicht gelöscht werden!", {
-                variant: "error",
-            })
+            snackError("Projekt konnte nicht gelöscht werden!")
         }
     }
 

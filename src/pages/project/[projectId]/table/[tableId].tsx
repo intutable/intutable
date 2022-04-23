@@ -20,7 +20,7 @@ import {
 import { useProjects } from "hooks/useProjects"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useMemo, useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
@@ -182,7 +182,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
 
     const user = context.req.session.user
 
-    if (!user)
+    if (user == null || user.isLoggedIn === false)
         return {
             notFound: true,
         }
@@ -190,9 +190,13 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
     const tableId: JtDescriptor["id"] = Number.parseInt(query.tableId)
 
+    if (isNaN(projectId) || isNaN(tableId))
+        return {
+            notFound: true,
+        }
+
     return {
         props: {
-            user,
             projectId,
             tableId,
         },

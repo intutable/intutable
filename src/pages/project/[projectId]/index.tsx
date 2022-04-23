@@ -13,15 +13,15 @@ import {
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
-import { useUser, withSessionSsr } from "auth"
+import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
+import { useProjects } from "hooks/useProjects"
+import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
-import type { InferGetServerSidePropsType, NextPage } from "next"
+import { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
 import React, { useState } from "react"
-import { SWRConfig, unstable_serialize } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { prepareName } from "utils/validateName"
 
@@ -29,7 +29,7 @@ type TableContextMenuProps = {
     anchorEL: Element
     open: boolean
     onClose: () => void
-    children: Array<React.ReactNode> | React.ReactNode // overwrite implicit `children`
+    children?: React.ReactNode
 }
 const TableContextMenu: React.FC<TableContextMenuProps> = props => {
     const theme = useTheme()
@@ -159,15 +159,20 @@ const TableCard: React.FC<TableCardProps> = props => {
     )
 }
 
-type TableListProps = {
-    project: ProjectDescriptor
+type PageProps = {
+    projectId: ProjectDescriptor["id"]
 }
-const TableList: React.FC<TableListProps> = props => {
+const Page: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = props => {
     const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
-    const { user } = useUser()
+    const { snackError } = useSnacki()
 
-    const { tables, error, mutate } = useTables(props.project)
+    const { projects } = useProjects()
+    const project = projects
+        ? projects.find(p => p.id === props.projectId)
+        : null
+    const { tables, error, mutate } = useTables(project)
 
     const handleCreateTable = async () => {
         try {
@@ -176,17 +181,12 @@ const TableList: React.FC<TableListProps> = props => {
             const name = prepareName(namePrompt)
             await fetcher({
                 url: "/api/table",
-
                 body: {
-                    user,
-                    projectId: props.project.id,
+                    projectId: props.projectId,
                     name,
                 },
             })
             await mutate()
-            enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-                variant: "success",
-            })
         } catch (error) {
             const errKey = (error as Record<string, string>).error
             let errMsg: string
@@ -197,8 +197,7 @@ const TableList: React.FC<TableListProps> = props => {
                 default:
                     errMsg = "Die Tabelle konnte nicht erstellt werden!"
             }
-            console.error(error)
-            enqueueSnackbar(errMsg, { variant: "error" })
+            snackError(errMsg)
         }
     }
 
@@ -210,9 +209,8 @@ const TableList: React.FC<TableListProps> = props => {
                 .map((tbl: JtDescriptor) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
-                enqueueSnackbar(
-                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!",
-                    { variant: "error" }
+                snackError(
+                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!"
                 )
                 return
             }
@@ -225,13 +223,8 @@ const TableList: React.FC<TableListProps> = props => {
                 method: "PATCH",
             })
             await mutate()
-            enqueueSnackbar("Die Tabelle wurde umbenannt.", {
-                variant: "success",
-            })
         } catch (error) {
-            enqueueSnackbar("Die Tabelle konnte nicht umbenannt werden!", {
-                variant: "error",
-            })
+            snackError("Die Tabelle konnte nicht umbenannt werden!")
         }
     }
 
@@ -246,13 +239,8 @@ const TableList: React.FC<TableListProps> = props => {
                 method: "DELETE",
             })
             await mutate()
-            enqueueSnackbar("Tabelle wurde gelöscht.", {
-                variant: "success",
-            })
         } catch (error) {
-            enqueueSnackbar("Tabelle konnte nicht gelöscht werden!", {
-                variant: "error",
-            })
+            snackError("Tabelle konnte nicht gelöscht werden!")
         }
     }
 
@@ -287,7 +275,7 @@ const TableList: React.FC<TableListProps> = props => {
                             table={tbl}
                             handleDelete={handleDeleteTable}
                             handleRename={handleRenameTable}
-                            project={props.project}
+                            project={project!}
                         >
                             {tbl.name}
                         </TableCard>
@@ -303,22 +291,6 @@ const TableList: React.FC<TableListProps> = props => {
     )
 }
 
-export const getServerSideProps: GetServerSideProps = ProtectedPage
-
-type PageProps = {
-    project: ProjectDescriptor
-    // fallback: JtDescriptor[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallback: any // TODO: remove this any
-}
-const Page: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ fallback, project }) => (
-    <SWRConfig value={{ fallback }}>
-        <TableList project={project} />
-    </SWRConfig>
-)
-
 export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const query = context.query as DynamicRouteQuery<
         typeof context.query,
@@ -326,39 +298,20 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     >
     const user = context.req.session.user
 
-    if (!user)
+    if (user == null || user.isLoggedIn === false)
         return {
             notFound: true,
         }
 
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
-
-    const projects = await fetcher<ProjectDescriptor[]>({
-        url: `/api/projects/${user.id}`,
-        method: "GET",
-    })
-
-    const project = projects.find(p => p.id === projectId)
-    if (project == null) {
-        if (process.env.NODE_ENV === "production")
-            throw new Error("Die Tabellen konnten nicht geladen werden.")
-        return { redirect: { permanent: true, destination: "/500" } }
-    }
-
-    const tables = await fetcher<JtDescriptor[]>({
-        url: `/api/tables/${project.id}`,
-        method: "GET",
-    })
+    if (isNaN(projectId))
+        return {
+            notFound: true,
+        }
 
     return {
         props: {
-            project: project,
-            fallback: {
-                [unstable_serialize({
-                    url: `/api/projects/${user.id}`,
-                    method: "GET",
-                })]: tables,
-            },
+            projectId,
         },
     }
 })
