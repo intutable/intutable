@@ -5,7 +5,7 @@ import { User } from "types/User"
  * Check if logged into core by using the session cookie.
  */
 export const getCurrentUser = async (
-    authCookie?: string
+    authCookie: string
 ): Promise<Omit<User, "isLoggedIn"> | null> => {
     try {
         const user = (await coreRequest(
@@ -14,8 +14,7 @@ export const getCurrentUser = async (
                 method: getCurrentUser.name,
             },
             authCookie
-        )) as Omit<User, "authCookie">
-
+        )) as Omit<User, "authCookie" | "isLoggedIn">
         return Promise.resolve({
             ...user,
             authCookie,
