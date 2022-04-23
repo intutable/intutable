@@ -1,27 +1,35 @@
-image: node:16.13.0
+image: node:16.8.0
 
 stages:
     - lint
+    - lint-production
     - build
 
 before_script:
     - npm install
 
-# Lint source code with es lint
-eslint:
+lint:
     stage: lint
     script:
-        - echo "ESLint Frontend"
         - npm run lint
-        - echo "ESLint Backend"
-        - echo "TODO implement" # TODO: configure
+    rules:
+        - if: $CI_COMMIT_BRANCH == "main"
+          when: never
+        - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+          when: never
 
-# Test the App by building it
-nextBuild:
+lint-production:
+    stage: lint-production
+    script:
+        - npm run lint:prodution
+    rules:
+        - if: $CI_COMMIT_BRANCH == "main"
+        - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+
+build:
     stage: build
     script:
-        - echo "Test if the Frontend builds successfully"
-        - npm run build-next
-        - echo "Test if the Backend builds successfully"
-        - echo "TODO implement" # TODO: configure
-
+        - npm run build:next
+    rules:
+        - if: $CI_COMMIT_BRANCH == "main"
+        - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
