@@ -10,6 +10,7 @@
         "start:core": "node ./dist/start/core",
         "build:db": "cd database/ && docker-compose build --pull",
         "start:db": "npm run build:db && cd database/ && docker-compose up",
+        "reset-db": "cd database/ && docker-compose down && cd .. && docker volume rm database_db-data",
         "dev:next": "next dev",
         "build:next": "next build",
         "start:next": "next start",
