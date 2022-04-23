@@ -9,6 +9,18 @@ import { passedLogin } from "./utils/coreRequest"
 // export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
 //     fetch(...args).then(res => res.json())
 
+type FetcherOptions = {
+    url: string
+    /**
+     * Either already JSON or a plain object
+     */
+    body?: Obj | string
+    /**
+     * @default POST
+     */
+    method?: "GET" | "POST" | "PATCH" | "DELETE"
+}
+
 /**
  * Fetcher for use with `swr`.
  * Implements the native `fetcher` method and sets default values.
@@ -20,20 +32,20 @@ import { passedLogin } from "./utils/coreRequest"
  *
  * Otherwise the deserialized json is returned.
  */
-export const fetcher = <T>(
-    url: string,
-    body?: Obj,
-    method: "GET" | "POST" | "PATCH" | "DELETE" = "POST"
-): Promise<T> =>
-    fetch(process.env.NEXT_PUBLIC_API_URL! + url, {
-        method: method,
+export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
+    fetch(process.env.NEXT_PUBLIC_API_URL! + args.url, {
+        method: args.method || "POST",
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
         },
         credentials: "include",
         redirect: "manual",
-        body: body ? JSON.stringify(body) : undefined,
+        body: args.body
+            ? typeof args.body === "string"
+                ? args.body
+                : JSON.stringify(args.body)
+            : undefined,
     })
         .then(passedLogin)
         .then(catchException)
