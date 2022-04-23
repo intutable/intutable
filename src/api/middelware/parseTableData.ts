@@ -6,9 +6,16 @@ import { TableData } from "types"
 export const parseTableData: Middleware =
     (useSWRNext: SWRHook) => (key, fetcher, config) => {
         const swr = useSWRNext(key, fetcher, config)
-        const route: string = Array.isArray(key) ? key[0] : key
+
+        if (
+            key == null ||
+            Object.prototype.hasOwnProperty.call(key, "url") === false
+        )
+            return swr
+
+        const routeKey: string = (key as { url: string }).url
         const routeRegex = RegExp("/api/table/\\d*") // "/api/table/[id]"
-        if (routeRegex.test(route) === false || swr.data == null) return swr
+        if (routeRegex.test(routeKey) === false || swr.data == null) return swr
 
         const unparsedTableData = swr.data as unknown as JtData
 
