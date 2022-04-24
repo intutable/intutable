@@ -6,6 +6,11 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 module.exports = withBundleAnalyzer({
     reactStrictMode: true,
     swcMinify: true,
+    eslint: {
+        // Warning: This allows production builds to successfully complete even if
+        // the project has ESLint errors.
+        ignoreDuringBuilds: true,
+    },
     // experimental: {
     //     concurrentFeatures: true,
     // }, // breaks the app

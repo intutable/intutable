@@ -1,7 +1,4 @@
-import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import useSWR, { SWRConfig, unstable_serialize } from "swr"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -14,19 +11,21 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-
-import { fetchWithUser } from "api"
-import { Auth } from "auth"
+import { fetcher } from "api"
 import Title from "components/Head/Title"
-import { AUTH_COOKIE_KEY, useAuth } from "context"
+import { useSnacki } from "hooks/useSnacki"
 import type {
     GetServerSideProps,
     InferGetServerSidePropsType,
     NextPage,
 } from "next"
+import { useRouter } from "next/router"
+import React, { useState } from "react"
+import useSWR, { SWRConfig, unstable_serialize } from "swr"
+import { ProtectedPage } from "utils/ProtectedPage"
 import { prepareName } from "utils/validateName"
+import { useProjects, useProjectsConfig } from "hooks/useProjects"
+import { withSessionSsr } from "auth"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -63,6 +62,7 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
 }
 type AddProjectCardProps = {
     handleCreate: () => Promise<void>
+    children?: React.ReactNode
 }
 
 const AddProjectCard: React.FC<AddProjectCardProps> = props => {
@@ -109,7 +109,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push("/project/" + props.project.id)
+        router.push(`/project/${props.project.id}`)
     }
 
     return (
@@ -162,34 +162,21 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 
 const ProjectList: React.FC = () => {
     const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
-    const { user } = useAuth()
+    const { snackError } = useSnacki()
 
-    const {
-        data: projects,
-        error,
-        mutate,
-    } = useSWR<ProjectDescriptor[]>(
-        user ? [`/api/projects/${user.id}`, user, undefined, "GET"] : null,
-        fetchWithUser
-    )
+    const { projects, error, mutate } = useProjects()
 
     const handleCreateProject = async () => {
-        if (projects == null || user == null) return
+        if (projects == null) return
         try {
             const namePrompt = prompt("Benenne Dein neues Projekt!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            await fetchWithUser<ProjectDescriptor>(
-                "/api/project",
-                user,
-                { user, name },
-                "POST"
-            )
-            await mutate()
-            enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-                variant: "success",
+            await fetcher<ProjectDescriptor>({
+                url: "/api/project",
+                body: { name },
             })
+            await mutate()
         } catch (error) {
             const errKey = (error as Record<string, string>).error
             let errMsg: string
@@ -205,12 +192,12 @@ const ProjectList: React.FC = () => {
                 default:
                     errMsg = "Das Projekt konnte nicht erstellt werden!"
             }
-            enqueueSnackbar(errMsg, { variant: "error" })
+            snackError(errMsg)
         }
     }
 
     const handleRenameProject = async (project: ProjectDescriptor) => {
-        if (projects == null || user == null) return
+        if (projects == null) return
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
@@ -218,54 +205,40 @@ const ProjectList: React.FC = () => {
                 .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
-                enqueueSnackbar(
-                    "Dieser Name wird bereits für eines deiner Projekte verwendet!",
-                    { variant: "error" }
+                snackError(
+                    "Dieser Name wird bereits für eines deiner Projekte verwendet!"
                 )
                 return
             }
-            await fetchWithUser<ProjectDescriptor>(
-                `/api/project/${project.id}`,
-                user,
-                { newName: name },
-                "PATCH"
-            )
+            await fetcher<ProjectDescriptor>({
+                url: `/api/project/${project.id}`,
+                body: { newName: name },
+                method: "PATCH",
+            })
             await mutate()
-            enqueueSnackbar("Das Projekt wurde umbenannt.", {
-                variant: "success",
-            })
         } catch (error) {
-            enqueueSnackbar("Das Projekt konnte nicht umbenannt werden!", {
-                variant: "error",
-            })
+            snackError("Das Projekt konnte nicht umbenannt werden!")
         }
     }
 
     const handleDeleteProject = async (project: ProjectDescriptor) => {
-        if (projects == null || user == null) return
+        if (projects == null) return
         try {
             const confirmed = confirm(
                 "Möchtest du dein Projekt wirklich löschen?"
             )
             if (!confirmed) return
-            await fetchWithUser(
-                `/api/project/${project.id}`,
-                user,
-                undefined,
-                "DELETE"
-            )
+            await fetcher({
+                url: `/api/project/${project.id}`,
+                method: "DELETE",
+            })
             await mutate()
-            enqueueSnackbar("Projekt wurde gelöscht.", {
-                variant: "success",
-            })
         } catch (error) {
-            enqueueSnackbar("Projekt konnte nicht gelöscht werden!", {
-                variant: "error",
-            })
+            snackError("Projekt konnte nicht gelöscht werden!")
         }
     }
 
-    if (error) return <>Error: {error}</>
+    if (error) return <>Error</>
     if (projects == null) return <CircularProgress />
 
     return (
@@ -297,9 +270,7 @@ const ProjectList: React.FC = () => {
 }
 
 type PageProps = {
-    // fallback: ProjectDescriptor.List
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallback: any // TODO: remove this any
+    fallback: { [cacheKey: string]: ProjectDescriptor[] }
 }
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -309,44 +280,28 @@ const Page: NextPage<
     </SWRConfig>
 )
 
-export const getServerSideProps: GetServerSideProps<
-    PageProps
-> = async context => {
-    const { req } = context
+export const getServerSideProps = withSessionSsr<PageProps>(async context => {
+    const user = context.req.session.user
 
-    const authCookie = req.cookies[AUTH_COOKIE_KEY]
-    const user = await Auth.getCurrentUser(authCookie).catch(e => {
-        console.error(e)
-        return null
-    })
-    if (!user)
+    if (user == null || user.isLoggedIn === false)
         return {
-            redirect: {
-                permanent: false,
-                destination: "/login",
-            },
+            notFound: true,
         }
 
-    const list = await fetchWithUser<ProjectDescriptor[]>(
-        `/api/projects/${user.id}`, // Note: userId is tmp
-        user,
-        undefined,
-        "GET"
-    )
-    if (list == null) return { notFound: true }
+    const projects = await fetcher<ProjectDescriptor[]>({
+        url: `/api/projects`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+    if (projects == null) return { notFound: true }
 
     return {
         props: {
             fallback: {
-                [unstable_serialize([
-                    `/api/projects/${user.id}`,
-                    user,
-                    undefined,
-                    "GET",
-                ])]: list,
+                [unstable_serialize(useProjectsConfig.cacheKey)]: projects,
             },
         },
     }
-}
+})
 
 export default Page

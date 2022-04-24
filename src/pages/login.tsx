@@ -1,13 +1,14 @@
 import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
-import { Auth } from "auth"
+import { fetcher } from "api"
+import { useUser } from "auth/useUser"
 import Title from "components/Head/Title"
 import { Paper } from "components/LoginOutRegister/Paper"
-import { AUTH_COOKIE_KEY, useAuth } from "context"
-import type { GetServerSideProps, NextPage } from "next"
+import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
+import { User } from "types/User"
 import { makeError } from "utils/makeError"
 
 const validateUsername = (username: string): true | Error =>
@@ -31,16 +32,17 @@ const textFieldStyle: SxProps<Theme> = {
 
 const Login: NextPage = () => {
     const router = useRouter()
-    const errorMessage =
-        typeof router.query.error === "string"
-            ? new Error(router.query.error)
-            : Array.isArray(router.query.error)
-            ? new Error(router.query.error.toString())
-            : null
     const { enqueueSnackbar } = useSnackbar()
-    const { login } = useAuth()
+    const error = useMemo(
+        () => (router.query.error ? makeError(router.query.error) : null),
+        [router.query.error]
+    )
 
-    const [loading, setLoading] = useState<boolean>(false)
+    const { mutateUser } = useUser({
+        redirectTo: "/",
+        redirectIfFound: true,
+    })
+
     const [usernameValid, setUsernameValid] = useState<Error | true | null>(
         null
     )
@@ -51,8 +53,6 @@ const Login: NextPage = () => {
         username: "",
         password: "",
     })
-    // TODO: implement error handling correctly
-    const [error, setError] = useState<Error | null>(errorMessage)
 
     const handleUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value
@@ -69,10 +69,6 @@ const Login: NextPage = () => {
         setPasswordValid(isValid)
     }
 
-    useEffect(() => {
-        if (error) enqueueSnackbar(error.message, { variant: "error" })
-    }, [error, enqueueSnackbar])
-
     const handleEnter = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
             e.preventDefault()
@@ -80,21 +76,31 @@ const Login: NextPage = () => {
         }
     }
 
-    const handleLogin = async () => {
+    const handleLogin = useCallback(async () => {
         if (usernameValid !== true || passwordValid !== true || error != null)
             return
-        try {
-            setLoading(true)
-            await login(form.username, form.password)
-            router.push("/")
-        } catch (err) {
-            const _error = makeError(err)
-            setError(_error)
-            enqueueSnackbar(_error.message, { variant: "error" })
-        } finally {
-            setLoading(false)
+
+        const body = {
+            username: form.username,
+            password: form.password,
         }
-    }
+
+        try {
+            await mutateUser(
+                await fetcher<User>({ url: "/api/auth/login", body })
+            )
+        } catch (error) {
+            enqueueSnackbar(makeError(error).message, { variant: "error" })
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        error,
+        form.password,
+        form.username,
+        mutateUser,
+        passwordValid,
+        usernameValid,
+    ])
 
     return (
         <>
@@ -112,7 +118,7 @@ const Login: NextPage = () => {
                 <Paper
                     mode="login"
                     handleAction={handleLogin}
-                    loading={loading}
+                    loading={false}
                     disabled={
                         usernameValid instanceof Error ||
                         usernameValid == null ||
@@ -164,23 +170,6 @@ const Login: NextPage = () => {
             </Box>
         </>
     )
-}
-
-export const getServerSideProps: GetServerSideProps = async context => {
-    const { req } = context
-
-    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-
-    const user = await Auth.getCurrentUser(authCookie).catch(e => {
-        console.error(e)
-        return null
-    })
-
-    if (user) return { notFound: true }
-
-    return {
-        props: {},
-    }
 }
 
 export default Login

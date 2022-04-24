@@ -15,17 +15,18 @@ import {
     ListItem,
     ListItemButton,
     ListItemText,
+    Stack,
     Tooltip,
     useTheme,
-    Stack,
 } from "@mui/material"
-import { fetchWithUser } from "api"
-import { useAuth, useTableCtx } from "context"
+import { fetcher } from "api"
+import { useUser } from "auth"
+import { useTableCtx } from "context"
 import { useSnacki } from "hooks/useSnacki"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import useSWR from "swr"
-import { PM, Row, TableData } from "types"
+import { Row, TableData } from "types"
 
 type RowPickerProps = {
     rowId: number
@@ -41,7 +42,7 @@ type RowPreview = {
 }
 
 const RowPicker: React.FC<RowPickerProps> = props => {
-    const { user } = useAuth()
+    const { user } = useUser()
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
@@ -49,9 +50,8 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
     const { data: linkTableData, error } = useSWR<TableData>(
         user
-            ? [`/api/table/${props.foreignTableId}`, user, undefined, "GET"]
-            : null,
-        fetchWithUser
+            ? { url: `/api/table/${props.foreignTableId}`, method: "GET" }
+            : null
     )
 
     const [options, setOptions] = useState<RowPreview[]>([])
@@ -77,16 +77,14 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
     const handlePickRow = async () => {
         try {
-            await fetchWithUser(
-                `/api/join/${props.joinId}`,
-                user!,
-                {
+            await fetcher({
+                url: `/api/join/${props.joinId}`,
+                body: {
                     jtId: baseTableData!.metadata.descriptor.id,
                     rowId: props.rowId,
                     value: selection?.id,
                 },
-                "POST"
-            )
+            })
             await utils.mutate()
         } catch (err) {
             enqueueSnackbar("Die Zeile konnte nicht hinzugefügt werden!", {
@@ -151,7 +149,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
 export const LinkColumnFormatter: Formatter = props => {
     const { row, column } = props
-    const { user } = useAuth()
+    const { user } = useUser()
     const { snack, snackError } = useSnacki()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -185,16 +183,14 @@ export const LinkColumnFormatter: Formatter = props => {
     ) => {
         try {
             e.stopPropagation()
-            await fetchWithUser(
-                `/api/join/${joinId}`,
-                user!,
-                {
+            await fetcher({
+                url: `/api/join/${joinId}`,
+                body: {
                     jtId: data!.metadata.descriptor.id,
                     rowId: utils.getRowId(data, row),
                     value: null,
                 },
-                "POST"
-            )
+            })
             await utils.mutate()
         } catch (error) {
             console.error(error)

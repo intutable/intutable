@@ -4,7 +4,7 @@ import React from "react"
 
 type ToolbarProps = {
     position: "top" | "bottom"
-    // children: React.ReactElement | React.ReactElement[]
+    children: React.ReactNode
 }
 
 const Toolbar: React.FC<ToolbarProps> = props => {

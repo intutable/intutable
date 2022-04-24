@@ -1,37 +1,34 @@
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/AddLink"
+import LoadingButton from "@mui/lab/LoadingButton"
 import {
-    Tooltip,
     Button,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    useTheme,
-    CircularProgress,
     List,
     ListItem,
     ListItemButton,
     ListItemText,
+    Tooltip,
+    useTheme,
 } from "@mui/material"
+import { fetcher } from "api"
+import { useTableCtx } from "context"
+import { useTables } from "hooks/useTables"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
-import { useAuth, useTableCtx } from "context"
-import { fetchWithUser } from "api"
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import useSWR, { unstable_serialize, useSWRConfig } from "swr"
-import LoadingButton from "@mui/lab/LoadingButton"
-import { useTables } from "hooks/useTables"
 
 /**
  * Toolbar Item for adding rows to the data grid.
  */
 export const AddLink: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
-    const { mutate } = useSWRConfig()
 
-    const { data: currentTable, project } = useTableCtx()
-    const { user } = useAuth()
+    const { data: currentTable, project, utils } = useTableCtx()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
@@ -45,24 +42,15 @@ export const AddLink: React.FC = () => {
 
     const handleAddLink = async (table: JtDescriptor) => {
         try {
-            if (currentTable == null || user == null) throw new Error("A")
-            await fetchWithUser(
-                "/api/join",
-                user,
-                {
+            if (currentTable == null) throw new Error()
+            await fetcher({
+                url: "/api/join",
+                body: {
                     jtId: currentTable.metadata.descriptor.id,
                     foreignJtId: table.id,
                 },
-                "POST"
-            )
-            await mutate(
-                unstable_serialize([
-                    `/api/table/${currentTable.metadata.descriptor.id}`,
-                    user,
-                    undefined,
-                    "GET",
-                ])
-            )
+            })
+            await utils.mutate()
             enqueueSnackbar("Die Tabelle wurde erfolgreich verlinkt.", {
                 variant: "success",
             })
@@ -87,13 +75,15 @@ export const AddLink: React.FC = () => {
                     Add Link
                 </LoadingButton>
             </Tooltip>
-            <AddLinkModal
-                table={currentTable!.metadata.descriptor}
-                project={project}
-                open={anchorEL != null}
-                onClose={handleCloseModal}
-                onAddLink={handleAddLink}
-            />
+            {currentTable && (
+                <AddLinkModal
+                    table={currentTable.metadata.descriptor}
+                    project={project}
+                    open={anchorEL != null}
+                    onClose={handleCloseModal}
+                    onAddLink={handleAddLink}
+                />
+            )}
         </>
     )
 }
@@ -108,7 +98,6 @@ type AddLinkModalProps = {
 
 export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
     const theme = useTheme()
-    const { user } = useAuth()
     const { enqueueSnackbar } = useSnackbar()
 
     const { tables, error } = useTables(props.project)

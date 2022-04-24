@@ -1,35 +1,31 @@
-import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import React, { useState } from "react"
-import { DndProvider } from "react-dnd"
-import { HTML5Backend } from "react-dnd-html5-backend"
-import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DetailedViewModal } from "@datagrid/Detail Window/DetailedViewModal"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
 import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { Box, Typography, useTheme } from "@mui/material"
-import { SWRConfig, unstable_serialize } from "swr"
-
+import { JtData, JtDescriptor } from "@intutable/join-tables/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { JtDescriptor, JtData } from "@intutable/join-tables/dist/types"
-
-import { Auth } from "auth"
+import { Box, Typography, useTheme } from "@mui/material"
+import { fetcher } from "api"
+import { withSessionSsr } from "auth"
+import Title from "components/Head/Title"
+import Link from "components/Link"
+import { TableNavigator } from "components/TableNavigator"
 import {
-    AUTH_COOKIE_KEY,
     HeaderSearchFieldProvider,
     TableCtxProvider,
     useHeaderSearchField,
     useTableCtx,
 } from "context"
-import Title from "components/Head/Title"
-import Link from "components/Link"
-import { TableNavigator } from "components/TableNavigator"
+import { InferGetServerSidePropsType, NextPage } from "next"
+import React, { useState } from "react"
+import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
-import { fetchWithUser } from "api"
 
 type TablePageProps = {
     project: ProjectDescriptor
@@ -54,6 +50,7 @@ const TablePage: React.FC<TablePageProps> = props => {
 
     const { data, error, updateRow, utils } = useTableCtx()
 
+    // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
         rows: Row[],
         changeData: RowsChangeData<Row>
@@ -87,7 +84,7 @@ const TablePage: React.FC<TablePageProps> = props => {
             </Typography>
 
             {error ? (
-                error.message
+                <> Error: {error}</>
             ) : data == null ? (
                 <LoadingSkeleton />
             ) : (
@@ -116,16 +113,21 @@ const TablePage: React.FC<TablePageProps> = props => {
                                 className={"rdg-" + theme.palette.mode}
                                 rows={data.rows}
                                 columns={data.columns}
-                                noRowsFallback={<NoRowsRenderer />}
+                                components={{
+                                    noRowsFallback: <NoRowsRenderer />,
+                                    rowRenderer: RowRenderer,
+                                    // checkboxFormatter: // TODO: adjust
+                                    // sortIcon: // TODO: adjust
+                                }}
                                 rowKeyGetter={rowKeyGetter}
                                 defaultColumnOptions={{
                                     sortable: true,
                                     resizable: true,
+                                    // formatter: // TODO: adjust
                                 }}
                                 selectedRows={selectedRows}
                                 onSelectedRowsChange={setSelectedRows}
                                 onRowsChange={partialRowUpdate}
-                                rowRenderer={RowRenderer}
                                 headerRowHeight={headerHeight}
                             />
                         </DndProvider>
@@ -139,94 +141,82 @@ const TablePage: React.FC<TablePageProps> = props => {
     )
 }
 
-type Page = {
+type PageProps = {
     project: ProjectDescriptor
     table: JtDescriptor
     tableList: JtDescriptor[]
-    // fallback: SerializedTableData
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallback: any // TODO: remove this any
-}
-const Page: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ project, table, tableList, fallback }) => {
-    return (
-        <SWRConfig value={{ fallback }}>
-            <TableCtxProvider table={table} project={project}>
-                <HeaderSearchFieldProvider>
-                    <TablePage
-                        project={project}
-                        table={table}
-                        tableList={tableList}
-                    />
-                </HeaderSearchFieldProvider>
-            </TableCtxProvider>
-        </SWRConfig>
-    )
+    // fallback: {
+    //     [cacheKey: string]: JtData
+    // }
 }
 
-export const getServerSideProps: GetServerSideProps<Page> = async context => {
-    const { req } = context
+const Page: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ project, table, tableList }) => (
+    <TableCtxProvider table={table} project={project}>
+        <HeaderSearchFieldProvider>
+            <TablePage project={project} table={table} tableList={tableList} />
+        </HeaderSearchFieldProvider>
+    </TableCtxProvider>
+)
+
+export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const query = context.query as DynamicRouteQuery<
         typeof context.query,
         "tableId" | "projectId"
     >
+
+    const user = context.req.session.user
+
+    if (user == null || user.isLoggedIn === false)
+        return {
+            notFound: true,
+        }
+
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
     const tableId: JtDescriptor["id"] = Number.parseInt(query.tableId)
 
-    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-    const user = await Auth.getCurrentUser(authCookie).catch(e => {
-        console.error(e)
-        return null
-    })
-    if (!user)
+    if (isNaN(projectId) || isNaN(tableId))
         return {
-            redirect: {
-                permanent: false,
-                destination: "/login",
-            },
+            notFound: true,
         }
 
     // workaround until PM exposes the required method
-    const projects = await fetchWithUser<ProjectDescriptor[]>(
-        `/api/projects/${user.id}`,
-        user,
-        undefined,
-        "GET"
-    )
+    const projects = await fetcher<ProjectDescriptor[]>({
+        url: `/api/projects`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+
     const project = projects.find(p => p.id === projectId)
 
     if (project == null) return { notFound: true }
 
-    const tableList = await fetchWithUser<JtDescriptor[]>(
-        `/api/tables/${projectId}`,
-        user,
-        undefined,
-        "GET"
-    )
+    const tableList = await fetcher<JtDescriptor[]>({
+        url: `/api/tables/${projectId}`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
 
-    const data = await fetchWithUser<JtData>(
-        `/api/table/${tableId}`,
-        user,
-        undefined,
-        "GET"
-    )
+    const data = await fetcher<JtData>({
+        url: `/api/table/${tableId}`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
 
     return {
         props: {
             project,
             table: data.descriptor,
             tableList,
-            fallback: {
-                [unstable_serialize([
-                    `/api/table/${tableId}`,
-                    user,
-                    undefined,
-                    "GET",
-                ])]: data,
-            },
+            // fallback: {
+            //     [unstable_serialize({
+            //         url: `/api/table/${tableId}`,
+            //         method: "GET",
+            //     })]: data,
+            // },
         },
     }
-}
+})
 
 export default Page

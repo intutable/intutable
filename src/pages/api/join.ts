@@ -1,15 +1,15 @@
+import { ColumnType } from "@intutable/database/dist/column"
+import { addJoinToJt, getJtInfo } from "@intutable/join-tables/dist/requests"
+import { JoinDescriptor, JtInfo } from "@intutable/join-tables/dist/types"
+import { createColumnInTable } from "@intutable/project-management/dist/requests"
+import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
+import { coreRequest } from "api/utils"
+import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { PM } from "types"
-import { ColumnType } from "@intutable/database/dist/column"
-import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
-import { createColumnInTable } from "@intutable/project-management/dist/requests"
-import { JoinDescriptor, JtInfo } from "@intutable/join-tables/dist/types"
-import { getJtInfo, addJoinToJt } from "@intutable/join-tables/dist/requests"
-
-import { coreRequest } from "api/utils"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import { makeError } from "utils/makeError"
 import makeForeignKeyName from "utils/makeForeignKeyName"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Add a link from one join table to another. The target table will be
@@ -31,10 +31,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             jtId: number
             foreignJtId: number
         }
+        const user = req.session.user!
 
         const jtInfo = await coreRequest<JtInfo>(
             getJtInfo(jtId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         // create foreign key column
@@ -44,12 +45,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                 makeForeignKeyName(jtInfo),
                 ColumnType.integer
             ),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const foreignJtInfo = await coreRequest<JtInfo>(
             getJtInfo(foreignJtId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const foreignIdColumn = foreignJtInfo.columns.find(
@@ -76,7 +77,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                     },
                 ],
             }),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
         res.status(200).json(join)
     } catch (err) {
@@ -85,16 +86,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    switch (req.method) {
-        case "POST":
-            await POST(req, res)
-            break
-        default:
-            res.setHeader("Allow", ["POST"])
-            res.status(405).end(`Method ${req.method} Not Allowed`)
-    }
-}
+export default withSessionRoute(
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+        switch (req.method) {
+            case "POST":
+                await POST(req, res)
+                break
+            default:
+                res.setHeader("Allow", ["POST"])
+                res.status(405).end(`Method ${req.method} Not Allowed`)
+        }
+    })
+)

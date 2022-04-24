@@ -1,11 +1,12 @@
 import { deleteRow, insert, update } from "@intutable/database/dist/requests"
 import { TableDescriptor } from "@intutable/join-tables/dist/types"
 import { coreRequest } from "api/utils"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
+import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { PM, Row } from "types"
 import Obj from "types/Obj"
 import { makeError } from "utils/makeError"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Create a new row with some starting values. Ensuring that the types of
@@ -28,7 +29,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         // create row in database
         const rowId = await coreRequest<typeof PM.UID_KEY>(
             insert(baseTable.key, values, [PM.UID_KEY]),
-            req.cookies[AUTH_COOKIE_KEY]
+            req.session.user!.authCookie
         )
 
         res.status(200).send(rowId)
@@ -53,7 +54,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
  */
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        console.log("body; " + JSON.stringify(req.body))
         const {
             baseTable,
             condition,
@@ -69,7 +69,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
                 condition,
                 update: rowUpdate,
             }),
-            req.cookies[AUTH_COOKIE_KEY]
+            req.session.user!.authCookie
         )
 
         res.status(200).json(updatedRow)
@@ -98,7 +98,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 
         await coreRequest(
             deleteRow(baseTable.key, condition),
-            req.cookies[AUTH_COOKIE_KEY]
+            req.session.user!.authCookie
         )
 
         res.status(200).send({})
@@ -108,23 +108,22 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    switch (req.method) {
-        case "POST":
-            await POST(req, res)
-            break
-        case "PATCH":
-            await PATCH(req, res)
-            break
-        case "DELETE":
-            await DELETE(req, res)
-            break
-        default:
-            res.status(["HEAD", "GET"].includes(req.method!) ? 500 : 501).send(
-                "This method is not supported!"
-            )
-    }
-}
+export default withSessionRoute(
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+        switch (req.method) {
+            case "POST":
+                await POST(req, res)
+                break
+            case "PATCH":
+                await PATCH(req, res)
+                break
+            case "DELETE":
+                await DELETE(req, res)
+                break
+            default:
+                res.status(
+                    ["HEAD", "GET"].includes(req.method!) ? 500 : 501
+                ).send("This method is not supported!")
+        }
+    })
+)

@@ -1,23 +1,23 @@
-import type { NextApiRequest, NextApiResponse } from "next"
 import { ColumnType } from "@intutable/database/dist/column"
+import { createJt } from "@intutable/join-tables/dist/requests"
+import { JtDescriptor, SortOrder } from "@intutable/join-tables/dist/types"
 import {
-    ProjectDescriptor,
-    TableDescriptor,
-    ColumnDescriptor as PM_Column,
-} from "@intutable/project-management/dist/types"
-import {
-    getTablesFromProject,
     createTableInProject,
     getColumnsFromTable,
+    getTablesFromProject,
 } from "@intutable/project-management/dist/requests"
-import { JtDescriptor, SortOrder } from "@intutable/join-tables/dist/types"
-import { createJt } from "@intutable/join-tables/dist/requests"
+import {
+    ColumnDescriptor as PM_Column,
+    ProjectDescriptor,
+    TableDescriptor,
+} from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
-import { User } from "auth"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
-import { makeError } from "utils/makeError"
+import { withSessionRoute } from "auth"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { PM } from "types"
+import { makeError } from "utils/makeError"
 import sanitizeName from "utils/sanitizeName"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Create a new table with the specified name.
@@ -29,7 +29,6 @@ import sanitizeName from "utils/sanitizeName"
  * @tutorial
  * ```
  * - Body: {
- *    user: {@type {User}}
  *    projectId: {@type {number}}
  *    name: {@type {string}}
  * }
@@ -37,17 +36,17 @@ import sanitizeName from "utils/sanitizeName"
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { user, projectId, name } = req.body as {
-            user: User
+        const { projectId, name } = req.body as {
             projectId: ProjectDescriptor["id"]
             name: string
         }
+        const user = req.session.user!
 
         const internalName = sanitizeName(name)
 
         const existingTables = await coreRequest<TableDescriptor[]>(
             getTablesFromProject(projectId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
         if (existingTables.some(t => t.name === internalName))
             throw Error("alreadyTaken")
@@ -57,13 +56,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             createTableInProject(user.id, projectId, internalName, [
                 { name: "name", type: ColumnType.string, options: [] },
             ]),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         // make specifiers for JT columns
         const baseColumns = await coreRequest<PM_Column[]>(
             getColumnsFromTable(table.id),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
         const columnSpecs = baseColumns.map(c => ({
             parentColumnId: c.id,
@@ -93,7 +92,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                 },
                 user.id
             ),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         res.status(200).json(jtTable)
@@ -103,18 +102,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { method } = req
-
-    switch (method) {
-        case "POST":
-            await POST(req, res)
-            break
-        default:
-            res.setHeader("Allow", ["POST"])
-            res.status(405).end(`Method ${method} Not Allowed`)
-    }
-}
+export default withSessionRoute(
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+        switch (req.method) {
+            case "POST":
+                await POST(req, res)
+                break
+            default:
+                res.setHeader("Allow", ["POST"])
+                res.status(405).end(`Method ${req.method} Not Allowed`)
+        }
+    })
+)

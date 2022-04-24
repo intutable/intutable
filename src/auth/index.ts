@@ -1,11 +1,5 @@
-import { login } from "./login"
-import { logout } from "./logout"
-import { getCurrentUser } from "./utils/getCurrentUser"
-
-export * from "./types"
-
-export const Auth = {
-    login,
-    logout,
-    getCurrentUser,
-} as const
+export * from "./session"
+export * from "./getCurrentUser"
+export * from "./useUser"
+export * from "./withSessionRoute"
+export * from "./withSessionSSR"

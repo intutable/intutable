@@ -9,6 +9,7 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
+import { useUser } from "auth"
 import Link from "components/Link"
 import { Avatar } from "components/LoginOutRegister"
 import React, { useState } from "react"
@@ -19,6 +20,7 @@ const drawerWidth = 240
 
 const Header = () => {
     const theme = useTheme()
+    const { user } = useUser()
 
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 
@@ -84,15 +86,17 @@ const Header = () => {
                                     Dekanatsverwaltung
                                 </Typography>
                             </Link>
-                            <Search>
-                                <SearchIconWrapper>
-                                    <SearchIcon />
-                                </SearchIconWrapper>
-                                <StyledInputBase
-                                    placeholder="Search…"
-                                    inputProps={{ "aria-label": "search" }}
-                                />
-                            </Search>
+                            {user?.isLoggedIn && (
+                                <Search>
+                                    <SearchIconWrapper>
+                                        <SearchIcon />
+                                    </SearchIconWrapper>
+                                    <StyledInputBase
+                                        placeholder="Suche..."
+                                        inputProps={{ "aria-label": "search" }}
+                                    />
+                                </Search>
+                            )}
                         </Stack>
                     </Box>
                     <Avatar />

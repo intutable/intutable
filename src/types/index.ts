@@ -17,14 +17,6 @@ export const PM = {
     UID_KEY: "_id",
 } as const
 
-/**
- * Database
- * @namespace
- */
-namespace DB {
-    export type Boolean = 1 | 0
-}
-
 // #################################################################
 //       Generic
 // #################################################################
@@ -38,6 +30,16 @@ type Table<COL, ROW> = {
 // #################################################################
 //       Frontend / Deserialized
 // #################################################################
+
+// Note: augment Column type
+declare module "react-data-grid" {
+    interface Column<TRow, TSummaryRow = unknown> {
+        /**
+         * internal backend id
+         */
+        _id?: number
+    }
+}
 
 export type Column = ReactDataGrid_Column<Row>
 

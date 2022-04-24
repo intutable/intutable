@@ -1,15 +1,14 @@
+import {
+    ColumnDescriptor,
+    JtDescriptor,
+} from "@intutable/join-tables/dist/types"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { fetcher } from "api"
+import { Parser } from "api/utils"
+import { useUser } from "auth"
 import React from "react"
 import useSWR, { KeyedMutator } from "swr"
-
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import {
-    JtDescriptor,
-    ColumnDescriptor,
-} from "@intutable/join-tables/dist/types"
-import { fetchWithUser } from "api"
-import { useAuth } from "context"
-import { PM, Row, Column, TableData } from "types"
-import { Parser } from "api/utils"
+import { Column, PM, Row, TableData } from "types"
 
 export type TableContextProps = {
     project: ProjectDescriptor
@@ -54,16 +53,15 @@ export const useTableCtx = () => React.useContext(TableContext)
 export type TableCtxProviderProps = {
     project: ProjectDescriptor
     table: JtDescriptor
+    children?: React.ReactNode
 }
 
 export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
-    const { user } = useAuth()
+    const { user } = useUser()
 
     const { data, error, mutate } = useSWR<TableData>(
-        user ? [`/api/table/${props.table.id}`, user, undefined, "GET"] : null,
-        fetchWithUser
+        user ? { url: `/api/table/${props.table.id}`, method: "GET" } : null
     )
-
     /**
      * // TODO:
      *  1. once these api methods return the updated data, inject it into mutate
@@ -99,12 +97,10 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
 
     const createRow = async (): Promise<void> => {
         // baseTable, values
-        await fetchWithUser(
-            "/api/row",
-            user!,
-            { baseTable: data?.metadata.baseTable, values: {} },
-            "POST"
-        )
+        await fetcher({
+            url: "/api/row",
+            body: { baseTable: data?.metadata.baseTable, values: {} },
+        })
 
         await mutate()
         // const lastRowIndex = rows.length
@@ -119,15 +115,14 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     }
 
     const deleteRow = async (rowIndex: number, row: Row): Promise<void> => {
-        await fetchWithUser(
-            "/api/row",
-            user!,
-            {
+        await fetcher({
+            url: "/api/row",
+            body: {
                 baseTable: data?.metadata.baseTable,
                 condition: [PM.UID_KEY, getRowId(data, row)],
             },
-            "DELETE"
-        )
+            method: "DELETE",
+        })
 
         await mutate()
         // todo: filter row and delete by index and then shift them
@@ -144,18 +139,17 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         if (metaColumn.joinId !== null)
             throw Error("attempted to edit data of a different table")
 
-        await fetchWithUser(
-            "/api/row",
-            user!,
-            {
+        await fetcher({
+            url: "/api/row",
+            body: {
                 baseTable: data?.metadata.baseTable,
                 condition: [PM.UID_KEY, rowId],
                 update: {
                     [baseColumnKey]: value,
                 },
             },
-            "PATCH"
-        )
+            method: "PATCH",
+        })
         await mutate()
     }
 
@@ -165,16 +159,14 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         column: Column.Serialized,
         joinId?: number
     ): Promise<void> => {
-        await fetchWithUser(
-            "/api/column",
-            user!,
-            {
+        await fetcher({
+            url: "/api/column",
+            body: {
                 jtId: data?.metadata.descriptor.id,
                 joinId,
                 column,
             },
-            "POST"
-        )
+        })
         await mutate()
     }
 
@@ -190,23 +182,21 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
             ...Parser.Column.parse(column),
             name: newName,
         }
-        await fetchWithUser(
-            `/api/column/${column.id}`,
-            user!,
-            { update: updatedColumn },
-            "PATCH"
-        )
+        await fetcher({
+            url: `/api/column/${column.id}`,
+            body: { update: updatedColumn },
+            method: "PATCH",
+        })
         await mutate()
     }
 
     const deleteColumn = async (key: Column["key"]): Promise<void> => {
         const column = getColumnByKey(key)
-        await fetchWithUser(
-            `/api/column/${column.id}`,
-            user!,
-            { jtId: data!.metadata.descriptor.id },
-            "DELETE"
-        )
+        await fetcher({
+            url: `/api/column/${column.id}`,
+            body: { jtId: data!.metadata.descriptor.id },
+            method: "DELETE",
+        })
 
         await mutate()
     }

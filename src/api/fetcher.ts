@@ -1,15 +1,26 @@
-import { User } from "auth"
+import { User } from "types/User"
 import type { Fetcher } from "swr"
 import Obj from "types/Obj"
-import { inspect } from "util"
 import { passedLogin } from "./utils/coreRequest"
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
 /**
  * Fetcher function for use with useSWR hookb
  */
-export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
-    fetch(...args).then(res => res.json())
+// export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
+//     fetch(...args).then(res => res.json())
+
+type FetcherOptions = {
+    url: string
+    /**
+     * Either already JSON or a plain object
+     */
+    body?: Obj | string
+    /**
+     * @default POST
+     */
+    method?: "GET" | "POST" | "PATCH" | "DELETE"
+    headers?: HeadersInit
+}
 
 /**
  * Fetcher for use with `swr`.
@@ -22,22 +33,21 @@ export const fetcher: Fetcher = (...args: Parameters<typeof fetch>) =>
  *
  * Otherwise the deserialized json is returned.
  */
-export const fetchWithUser = <T>(
-    url: string,
-    user: User,
-    body?: Obj,
-    method: "GET" | "POST" | "PATCH" | "DELETE" = "POST"
-): Promise<T> =>
-    fetch(process.env.NEXT_PUBLIC_API_URL! + url, {
-        method: method,
+export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
+    fetch(process.env.NEXT_PUBLIC_API_URL! + args.url, {
+        method: args.method || "POST",
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Cookie: `${AUTH_COOKIE_KEY}=${user.authCookie}`,
+            ...args.headers,
         },
         credentials: "include",
         redirect: "manual",
-        body: body ? JSON.stringify(body) : undefined,
+        body: args.body
+            ? typeof args.body === "string"
+                ? args.body
+                : JSON.stringify(args.body)
+            : undefined,
     })
         .then(passedLogin)
         .then(catchException)

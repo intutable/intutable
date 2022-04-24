@@ -1,3 +1,4 @@
+import { NextApiRequest } from "next"
 import Obj from "types/Obj"
 const CORE_ENDPOINT = process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
@@ -26,19 +27,23 @@ export class CoreRequestError extends Error {
  */
 export const coreRequest = <T = unknown>(
     request: Obj,
-    authCookie?: string
+    authCookie?: NextApiRequest | string
 ): Promise<T> => {
     const channel = request.channel
     const method = request.method
     delete request.channel
     delete request.method
+    const cookie =
+        typeof authCookie === "string"
+            ? authCookie
+            : authCookie!.cookies[AUTH_COOKIE_KEY]
     return fetch(CORE_ENDPOINT + "/request/" + channel + "/" + method, {
         method: "post",
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            ...(authCookie && {
-                Cookie: AUTH_COOKIE_KEY + "=" + authCookie,
+            ...(cookie && {
+                Cookie: AUTH_COOKIE_KEY + "=" + cookie,
             }),
         },
         credentials: "include",

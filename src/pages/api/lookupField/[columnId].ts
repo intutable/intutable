@@ -6,9 +6,10 @@ import {
 } from "@intutable/join-tables/dist/types"
 import { addColumnToJt, getJtInfo } from "@intutable/join-tables/dist/requests"
 import { coreRequest } from "api/utils"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
+import { withSessionRoute } from "auth"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Add a lookup field from a linked table.
@@ -30,15 +31,16 @@ const POST = async (
             jtId: JtDescriptor["id"]
             joinId: Exclude<ColumnDescriptor["joinId"], null>
         }
+        const user = req.session.user!
 
         const jtInfo = await coreRequest<JtInfo>(
             getJtInfo(jtId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const foreignJtInfo = await coreRequest<JtInfo>(
             getJtInfo(jtInfo.joins.find(j => j.id === joinId)!.foreignJtId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         const foreignColumn = foreignJtInfo.columns.find(
@@ -59,7 +61,7 @@ const POST = async (
 
         const newColumn = await coreRequest<ColumnDescriptor>(
             addColumnToJt(jtId, columnSpec, joinId),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         res.status(200).json(newColumn)
@@ -69,19 +71,18 @@ const POST = async (
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { query, method } = req
-    const columnId = parseInt(query.columnId as string)
+export default withSessionRoute(
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+        const { query } = req
+        const columnId = parseInt(query.columnId as string)
 
-    switch (req.method) {
-        case "POST":
-            await POST(req, res, columnId)
-            break
-        default:
-            res.setHeader("Allow", ["POST"])
-            res.status(405).end(`Method ${req.method} Not Allowed`)
-    }
-}
+        switch (req.method) {
+            case "POST":
+                await POST(req, res, columnId)
+                break
+            default:
+                res.setHeader("Allow", ["POST"])
+                res.status(405).end(`Method ${req.method} Not Allowed`)
+        }
+    })
+)

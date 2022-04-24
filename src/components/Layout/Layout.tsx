@@ -1,10 +1,12 @@
-import { useTheme, Box } from "@mui/material"
-
+import { Box, useTheme } from "@mui/material"
 import React from "react"
-
 import Header from "./Header"
 
-const Layout: React.FC = props => {
+type LayoutProps = {
+    children?: React.ReactNode
+}
+
+const Layout: React.FC<LayoutProps> = props => {
     const theme = useTheme()
 
     return (

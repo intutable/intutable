@@ -21,6 +21,7 @@ export type CombinedLinkProps = {
      * these props will be forwarded to the mui Link Component
      */
     muiLinkProps?: LinkTypeMap<Obj, "a">["props"]
+    children?: React.ReactNode
 }
 
 /**

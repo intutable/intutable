@@ -1,8 +1,5 @@
-import { useRouter } from "next/router"
-import { useSnackbar } from "notistack"
-import React, { useState } from "react"
-import { SWRConfig } from "swr"
-import { DynamicRouteQuery } from "types/DynamicRouteQuery"
+import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
 import {
     Box,
@@ -15,29 +12,25 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
-
-import { Auth } from "auth"
+import { fetcher } from "api"
+import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
-import { AUTH_COOKIE_KEY, useAuth } from "context"
+import { useTablesConfig } from "hooks/useTables"
+import { useSnacki } from "hooks/useSnacki"
+import { useTables } from "hooks/useTables"
+import { InferGetServerSidePropsType, NextPage } from "next"
+import { useRouter } from "next/router"
+import React, { useState } from "react"
+import { SWRConfig, unstable_serialize } from "swr"
+import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { prepareName } from "utils/validateName"
-
-import type {
-    GetServerSideProps,
-    InferGetServerSidePropsType,
-    NextPage,
-} from "next"
-import { fetchWithUser } from "api"
-import { makeCacheKey, useTables } from "hooks/useTables"
 
 type TableContextMenuProps = {
     anchorEL: Element
     open: boolean
     onClose: () => void
-    children: Array<React.ReactNode> | React.ReactNode // overwrite implicit `children`
+    children?: React.ReactNode
 }
 const TableContextMenu: React.FC<TableContextMenuProps> = props => {
     const theme = useTheme()
@@ -68,6 +61,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = props => {
 }
 type AddTableCardProps = {
     handleCreate: () => Promise<void>
+    children?: React.ReactNode
 }
 
 const TableProjectCard: React.FC<AddTableCardProps> = props => {
@@ -169,32 +163,25 @@ const TableCard: React.FC<TableCardProps> = props => {
 type TableListProps = {
     project: ProjectDescriptor
 }
-const TableList: React.FC<TableListProps> = props => {
+const TableList: React.FC<TableListProps> = ({ project }) => {
     const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
-    const { user } = useAuth()
+    const { snackError } = useSnacki()
 
-    const { tables, error, mutate } = useTables(props.project)
+    const { tables, error, mutate } = useTables(project)
 
     const handleCreateTable = async () => {
         try {
             const namePrompt = prompt("Benenne deine neue Tabelle!")
             if (!namePrompt) return
             const name = prepareName(namePrompt)
-            await fetchWithUser(
-                "/api/table",
-                user!,
-                {
-                    user,
-                    projectId: props.project.id,
+            await fetcher({
+                url: "/api/table",
+                body: {
+                    projectId: project.id,
                     name,
                 },
-                "POST"
-            )
-            await mutate()
-            enqueueSnackbar(`Du hast erfolgreich '${name}' erstellt!`, {
-                variant: "success",
             })
+            await mutate()
         } catch (error) {
             const errKey = (error as Record<string, string>).error
             let errMsg: string
@@ -205,8 +192,7 @@ const TableList: React.FC<TableListProps> = props => {
                 default:
                     errMsg = "Die Tabelle konnte nicht erstellt werden!"
             }
-            console.error(error)
-            enqueueSnackbar(errMsg, { variant: "error" })
+            snackError(errMsg)
         }
     }
 
@@ -218,28 +204,22 @@ const TableList: React.FC<TableListProps> = props => {
                 .map((tbl: JtDescriptor) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
-                enqueueSnackbar(
-                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!",
-                    { variant: "error" }
+                snackError(
+                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!"
                 )
                 return
             }
-            await fetchWithUser(
-                `/api/table/${joinTable.id}`,
-                user!,
-                {
+            await fetcher({
+                url: `/api/table/${joinTable.id}`,
+
+                body: {
                     newName: name,
                 },
-                "PATCH"
-            )
+                method: "PATCH",
+            })
             await mutate()
-            enqueueSnackbar("Die Tabelle wurde umbenannt.", {
-                variant: "success",
-            })
         } catch (error) {
-            enqueueSnackbar("Die Tabelle konnte nicht umbenannt werden!", {
-                variant: "error",
-            })
+            snackError("Die Tabelle konnte nicht umbenannt werden!")
         }
     }
 
@@ -249,20 +229,13 @@ const TableList: React.FC<TableListProps> = props => {
                 "Möchtest du deine Tabelle wirklich löschen?"
             )
             if (!confirmed) return
-            await fetchWithUser(
-                `/api/table/${joinTable.id}`,
-                user!,
-                undefined,
-                "DELETE"
-            )
+            await fetcher({
+                url: `/api/table/${joinTable.id}`,
+                method: "DELETE",
+            })
             await mutate()
-            enqueueSnackbar("Tabelle wurde gelöscht.", {
-                variant: "success",
-            })
         } catch (error) {
-            enqueueSnackbar("Tabelle konnte nicht gelöscht werden!", {
-                variant: "error",
-            })
+            snackError("Tabelle konnte nicht gelöscht werden!")
         }
     }
 
@@ -297,7 +270,7 @@ const TableList: React.FC<TableListProps> = props => {
                             table={tbl}
                             handleDelete={handleDeleteTable}
                             handleRename={handleRenameTable}
-                            project={props.project}
+                            project={project}
                         >
                             {tbl.name}
                         </TableCard>
@@ -315,9 +288,7 @@ const TableList: React.FC<TableListProps> = props => {
 
 type PageProps = {
     project: ProjectDescriptor
-    // fallback: JtDescriptor[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallback: any // TODO: remove this any
+    fallback: { [cackeKey: string]: JtDescriptor[] }
 }
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -327,56 +298,48 @@ const Page: NextPage<
     </SWRConfig>
 )
 
-export const getServerSideProps: GetServerSideProps<
-    PageProps
-> = async context => {
-    const { req } = context
+export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const query = context.query as DynamicRouteQuery<
         typeof context.query,
         "projectId"
     >
+    const user = context.req.session.user
 
-    const authCookie: string = req.cookies[AUTH_COOKIE_KEY]
-
-    const user = await Auth.getCurrentUser(authCookie).catch(e => {
-        console.error(e)
-        return null
-    })
-
-    if (!user)
+    if (user == null || user.isLoggedIn === false)
         return {
-            redirect: {
-                permanent: false,
-                destination: "/login",
-            },
+            notFound: true,
         }
 
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
+    if (isNaN(projectId))
+        return {
+            notFound: true,
+        }
 
-    const projects = await fetchWithUser<ProjectDescriptor[]>(
-        `/api/projects/${user.id}`,
-        user,
-        undefined,
-        "GET"
-    )
+    const projects = await fetcher<ProjectDescriptor[]>({
+        url: `/api/projects`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+
     const project = projects.find(p => p.id === projectId)
     if (project == null) return { notFound: true }
 
-    const tables = await fetchWithUser<JtDescriptor[]>(
-        `/api/tables/${project.id}`,
-        user,
-        undefined,
-        "GET"
-    )
+    const tables = await fetcher<JtDescriptor[]>({
+        url: `/api/tables/${project.id}`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
 
     return {
         props: {
-            project: project,
+            project,
             fallback: {
-                [makeCacheKey(project, user)]: tables,
+                [unstable_serialize(useTablesConfig.cacheKey(projectId))]:
+                    tables,
             },
         },
     }
-}
+})
 
 export default Page

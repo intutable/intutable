@@ -1,30 +1,29 @@
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import {
-    getProjects,
     createProject,
+    getProjects,
 } from "@intutable/project-management/dist/requests"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
-import { User } from "auth"
-import { AUTH_COOKIE_KEY } from "context/AuthContext"
+import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
+import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * Create a project in PM with the specified user as owner.
  * @tutorial
  * ```
  * - Body: {
- *    user: {@type {User}}
  *    name: {@type {string}}
  * }
  * ```
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { user, name } = req.body as {
-            user: User
+        const { name } = req.body as {
             name: ProjectDescriptor["name"]
         }
+        const user = req.session.user!
 
         // check validity: alphanum + underscore
         if (!name.match(new RegExp(/^[\p{L}\p{N}_]*$/u)))
@@ -33,7 +32,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         // check if already exists
         const projects = await coreRequest<ProjectDescriptor[]>(
             getProjects(user.id),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
         if (projects.some(p => p.name === name)) {
             throw Error("alreadyTaken")
@@ -42,7 +41,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         // create project in project-management
         const project = await coreRequest<ProjectDescriptor>(
             createProject(user.id, name),
-            req.cookies[AUTH_COOKIE_KEY]
+            user.authCookie
         )
 
         res.status(200).json(project)
@@ -52,18 +51,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { method } = req
-
-    switch (method) {
-        case "POST":
-            await POST(req, res)
-            break
-        default:
-            res.setHeader("Allow", ["POST"])
-            res.status(405).end(`Method ${method} Not Allowed`)
-    }
-}
+export default withSessionRoute(
+    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+        switch (req.method) {
+            case "POST":
+                await POST(req, res)
+                break
+            default:
+                res.setHeader("Allow", ["POST"])
+                res.status(405).end(`Method ${req.method} Not Allowed`)
+        }
+    })
+)
