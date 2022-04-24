@@ -5,7 +5,7 @@ import {
     addJoinToView,
     getViewInfo,
     selectable,
-    viewId,
+    viewId as mkViewId,
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
@@ -26,21 +26,21 @@ import { withUserCheck } from "utils/withUserCheck"
  * @tutorial
  * ```
  * - Body: {
- *   viewId: {@type number} The ID of the view in which to create the link.
+ *   mkViewId: {@type number} The ID of the view in which to create the link.
  *   foreignViewId {@type number} The ID of the view to which the link points.
  * }
  * ```
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { id, foreignViewId } = req.body as {
-            id: number
+        const { viewId, foreignViewId } = req.body as {
+            viewId: number
             foreignViewId: number
         }
         const user = req.session.user!
 
         const viewInfo = await coreRequest<ViewInfo>(
-            getViewInfo(id),
+            getViewInfo(viewId),
             user.authCookie
         )
 
@@ -68,8 +68,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         const displayName = (primaryColumn.attributes.displayName ||
             primaryColumn.name) as string
         const join = await coreRequest<JoinDescriptor>(
-            addJoinToView(id, {
-                foreignSource: viewId(foreignViewId),
+            addJoinToView(viewId, {
+                foreignSource: mkViewId(foreignViewId),
                 on: [fkColumn.id, "=", foreignIdColumn.id],
                 columns: [
                     {
@@ -88,6 +88,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(join)
     } catch (err) {
         const error = makeError(err)
+        console.error(error)
         res.status(500).json({ error: error.message })
     }
 }

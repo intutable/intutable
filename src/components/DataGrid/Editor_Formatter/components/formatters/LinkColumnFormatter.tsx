@@ -2,8 +2,8 @@ import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
 import {
     JoinDescriptor,
     ViewDescriptor,
-    selectable,
-} from "@intutable/lazy-views"
+} from "@intutable/lazy-views/dist/types"
+import { getId } from "@intutable/lazy-views/dist/selectable"
 import ClearIcon from "@mui/icons-material/Clear"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -174,7 +174,7 @@ export const LinkColumnFormatter: Formatter = props => {
         const metaColumn = utils.getColumnByKey(column.key)
         const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
         setJoinId(join.id)
-        setForeignTableId(selectable.getId(join.foreignSource))
+        setForeignTableId(getId(join.foreignSource))
     }, [data, utils, column.key])
 
     const key = column.key as keyof Row

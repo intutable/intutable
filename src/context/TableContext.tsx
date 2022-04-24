@@ -1,4 +1,5 @@
-import { ColumnInfo, ViewDescriptor, asTable } from "@intutable/lazy-views"
+import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { fetcher } from "api"
 import { Parser } from "api/utils"

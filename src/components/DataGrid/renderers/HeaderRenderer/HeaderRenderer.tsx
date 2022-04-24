@@ -1,4 +1,5 @@
-import { asView, ColumnInfo } from "@intutable/lazy-views"
+import { asView } from "@intutable/lazy-views/dist/selectable"
+import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import Check from "@mui/icons-material/Check"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import KeyIcon from "@mui/icons-material/Key"
@@ -60,7 +61,8 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const foreignView = useMemo(() => {
         if (!data || !tables) return undefined
         const join = data.metadata.joins.find(j => j.id === col.joinId)
-        return tables.find(t => t.id === asView(join!.foreignSource).id)
+        if (!join) return undefined
+        return tables.find(t => t.id === asView(join.foreignSource).id)
     }, [col.joinId, tables, data])
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
