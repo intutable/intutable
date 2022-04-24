@@ -1,5 +1,9 @@
 import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
-import { JoinDescriptor, JtDescriptor } from "@intutable/join-tables/dist/types"
+import {
+    JoinDescriptor,
+    ViewDescriptor,
+    selectable,
+} from "@intutable/lazy-views"
 import ClearIcon from "@mui/icons-material/Clear"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -31,7 +35,7 @@ import { Row, TableData } from "types"
 type RowPickerProps = {
     rowId: number
     joinId: JoinDescriptor["id"]
-    foreignTableId: JtDescriptor["id"]
+    foreignTableId: ViewDescriptor["id"]
     open: boolean
     onClose: () => void
 }
@@ -80,7 +84,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
             await fetcher({
                 url: `/api/join/${props.joinId}`,
                 body: {
-                    jtId: baseTableData!.metadata.descriptor.id,
+                    viewId: baseTableData!.metadata.descriptor.id,
                     rowId: props.rowId,
                     value: selection?.id,
                 },
@@ -163,14 +167,14 @@ export const LinkColumnFormatter: Formatter = props => {
 
     const { data, utils } = useTableCtx()
 
-    const [foreignTableId, setForeignTableId] = useState<JtDescriptor["id"]>()
+    const [foreignTableId, setForeignTableId] = useState<ViewDescriptor["id"]>()
     const [joinId, setJoinId] = useState<JoinDescriptor["id"]>()
 
     useEffect(() => {
         const metaColumn = utils.getColumnByKey(column.key)
         const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
         setJoinId(join.id)
-        setForeignTableId(join.foreignJtId)
+        setForeignTableId(selectable.getId(join.foreignSource))
     }, [data, utils, column.key])
 
     const key = column.key as keyof Row
@@ -186,7 +190,7 @@ export const LinkColumnFormatter: Formatter = props => {
             await fetcher({
                 url: `/api/join/${joinId}`,
                 body: {
-                    jtId: data!.metadata.descriptor.id,
+                    viewId: data!.metadata.descriptor.id,
                     rowId: utils.getRowId(data, row),
                     value: null,
                 },

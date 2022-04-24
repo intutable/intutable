@@ -1,5 +1,4 @@
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
-import { ColumnDescriptor } from "@intutable/project-management/dist/types"
+import { ViewDescriptor, ColumnInfo } from "@intutable/lazy-views"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Button,
@@ -24,8 +23,8 @@ import { useUser } from "auth"
 type AddLookupModal = {
     open: boolean
     onClose: () => void
-    onAddLookupModal: (column: ColumnDescriptor) => unknown
-    foreignJt: JtDescriptor
+    onAddLookupModal: (column: ColumnInfo) => unknown
+    foreignView: ViewDescriptor
 }
 
 export const AddLookupModal: React.FC<AddLookupModal> = props => {
@@ -34,7 +33,7 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
 
     const { user } = useUser()
 
-    const { data, error, utils } = useTableData(props.foreignJt.id)
+    const { data, error, utils } = useTableData(props.foreignView.id)
 
     const [selection, setSelection] = useState<Column | null>(null)
     const selectedColDescriptor = useMemo(
@@ -54,8 +53,8 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>
-                Spalte aus verlinkter Tabelle <i>{props.foreignJt.name}</i> als
-                Lookup hinzufügen
+                Spalte aus verlinkter Tabelle <i>{props.foreignView.name}</i>
+                als Lookup hinzufügen
             </DialogTitle>
             <DialogContent>
                 {data == null && error == null ? (

@@ -1,10 +1,12 @@
 import {
-    JtDescriptor,
-    JtInfo,
+    ViewDescriptor,
+    ViewInfo,
     ColumnSpecifier,
-    ColumnDescriptor,
-} from "@intutable/join-tables/dist/types"
-import { addColumnToJt, getJtInfo } from "@intutable/join-tables/dist/requests"
+    ColumnInfo,
+    addColumnToView,
+    getViewInfo,
+    asView,
+} from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/makeError"
@@ -16,7 +18,7 @@ import { withUserCheck } from "utils/withUserCheck"
  * @tutorial
  * ```
  * - Body: {
- *     jtId: {@type {number}}
+ *     viewId: {@type {number}}
  *     joinId: {@type {number}}
  * }
  * ```
@@ -24,26 +26,27 @@ import { withUserCheck } from "utils/withUserCheck"
 const POST = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    columnId: ColumnDescriptor["id"]
+    columnId: ColumnInfo["id"]
 ) => {
     try {
-        const { jtId, joinId } = req.body as {
-            jtId: JtDescriptor["id"]
-            joinId: Exclude<ColumnDescriptor["joinId"], null>
+        const { viewId, joinId } = req.body as {
+            viewId: ViewDescriptor["id"]
+            joinId: Exclude<ColumnInfo["joinId"], null>
         }
         const user = req.session.user!
 
-        const jtInfo = await coreRequest<JtInfo>(
-            getJtInfo(jtId),
+        const viewInfo = await coreRequest<ViewInfo>(
+            getViewInfo(viewId),
             user.authCookie
         )
 
-        const foreignJtInfo = await coreRequest<JtInfo>(
-            getJtInfo(jtInfo.joins.find(j => j.id === joinId)!.foreignJtId),
+        const join = viewInfo.joins.find(j => j.id === joinId)!
+        const foreignViewInfo = await coreRequest<ViewInfo>(
+            getViewInfo(asView(join.foreignSource).id),
             user.authCookie
         )
 
-        const foreignColumn = foreignJtInfo.columns.find(
+        const foreignColumn = foreignViewInfo.columns.find(
             c => c.id === columnId
         )!
         const displayName =
@@ -59,8 +62,8 @@ const POST = async (
             },
         }
 
-        const newColumn = await coreRequest<ColumnDescriptor>(
-            addColumnToJt(jtId, columnSpec, joinId),
+        const newColumn = await coreRequest<ColumnInfo>(
+            addColumnToView(viewId, columnSpec, joinId),
             user.authCookie
         )
 

@@ -1,4 +1,4 @@
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import useSWR from "swr"
 
@@ -7,7 +7,7 @@ export const useTables = (project: ProjectDescriptor | null | undefined) => {
         data: tables,
         error,
         mutate,
-    } = useSWR<JtDescriptor[]>(
+    } = useSWR<ViewDescriptor[]>(
         project ? { url: `/api/tables/${project.id}`, method: "GET" } : null
     )
 

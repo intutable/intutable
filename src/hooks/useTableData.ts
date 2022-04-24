@@ -1,7 +1,7 @@
 import {
-    ColumnDescriptor,
+    ColumnInfo,
     TableDescriptor,
-} from "@intutable/project-management/dist/types"
+} from "@intutable/lazy-views"
 import useSWR from "swr"
 import { Column, TableData } from "types"
 
@@ -17,7 +17,7 @@ export const useTableData = (
             : null
     )
 
-    const getColumnByKey = (key: Column["key"]): ColumnDescriptor => {
+    const getColumnByKey = (key: Column["key"]): ColumnInfo => {
         const column = data!.metadata.columns.find(c => c.key === key)
         if (!column) throw Error(`could not find column with key ${key}`)
         return column

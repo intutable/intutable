@@ -4,11 +4,12 @@ import { update } from "@intutable/database/dist/requests"
 import { TableInfo } from "@intutable/project-management/dist/types"
 import { getTableInfo } from "@intutable/project-management/dist/requests"
 import {
-    JtDescriptor,
+    ViewDescriptor,
     JoinDescriptor,
-    JtInfo,
-} from "@intutable/join-tables/dist/types"
-import { getJtInfo } from "@intutable/join-tables/dist/requests"
+    ViewInfo,
+    getViewInfo,
+    asTable,
+} from "@intutable/lazy-views"
 
 import { PM } from "types"
 import { coreRequest } from "api/utils"
@@ -23,7 +24,7 @@ import { withUserCheck } from "utils/withUserCheck"
  * ```
  * - URL: `/api/join/[id]`, e.g. `/api/join/3`
  * - Body: {
- *    jtId: {@type {number} The ID of the JT in which to create the link.
+ *    viewId: {@type {number} The ID of the view in which to create the link.
  *    rowId: {@type {number}} Row of the linking table.
  *    value: {@type {number}} The ID of the row in the linked table.
  * }
@@ -35,28 +36,28 @@ const POST = async (
     joinId: JoinDescriptor["id"]
 ) => {
     try {
-        const { jtId, rowId, value } = req.body as {
-            jtId: JtDescriptor["id"]
+        const { viewId, rowId, value } = req.body as {
+            viewId: ViewDescriptor["id"]
             rowId: number
             value: number
         }
         const user = req.session.user!
 
-        const jtInfo = await coreRequest<JtInfo>(
-            getJtInfo(jtId),
+        const viewInfo = await coreRequest<ViewInfo>(
+            getViewInfo(viewId),
             user.authCookie
         )
         const baseTableInfo = await coreRequest<TableInfo>(
-            getTableInfo(jtInfo.baseTable.id),
+            getTableInfo(asTable(viewInfo.source).table.id),
             user.authCookie
         )
 
-        const join = jtInfo.joins.find(j => j.id === joinId)!
+        const join = viewInfo.joins.find(j => j.id === joinId)!
 
         const fkColumn = baseTableInfo.columns.find(c => c.id === join.on[0])!
 
         await coreRequest(
-            update(jtInfo.baseTable.key, {
+            update(asTable(viewInfo.source).table.key, {
                 condition: [PM.UID_KEY, rowId],
                 update: { [fkColumn.name]: value },
             }),

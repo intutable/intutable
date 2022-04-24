@@ -1,12 +1,11 @@
 import {
-    addColumnToJt,
-    getJtOptions,
-} from "@intutable/join-tables/dist/requests"
-import {
-    ColumnDescriptor as JT_Column,
-    JtDescriptor,
-    JtOptions,
-} from "@intutable/join-tables/dist/types"
+    ColumnInfo as View_Column,
+    ViewDescriptor,
+    ViewOptions,
+    addColumnToView,
+    getViewOptions,
+    asTable,
+} from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
 import { coreRequest, Parser } from "api/utils"
@@ -21,36 +20,39 @@ import { withUserCheck } from "utils/withUserCheck"
  * @tutorial
  * ```
  * - Body: {
- *    jtId: {@type {number}}
+ *    viewId: {@type {number}}
  *    column: {@type {Column.Serialized}}
  * }
  * ```
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { jtId, column } = req.body as {
-            jtId: JtDescriptor["id"]
+        const { viewId, column } = req.body as {
+            viewId: ViewDescriptor["id"]
             column: Column.Serialized
         }
         const user = req.session.user!
 
-        const options = await coreRequest<JtOptions>(
-            getJtOptions(jtId),
+        const options = await coreRequest<ViewOptions>(
+            getViewOptions(viewId),
             user.authCookie
         )
 
         // add column in project-management
         const tableColumn = await coreRequest<PM_Column>(
-            createColumnInTable(options.tableId, column.key),
+            createColumnInTable(asTable(options.source).id, column.key),
             user.authCookie
         )
 
-        const jtColumn = await coreRequest<JT_Column>(
-            addColumnToJt(jtId, Parser.Column.deparse(column, tableColumn.id)),
+        const viewColumn = await coreRequest<View_Column>(
+            addColumnToView(
+                viewId,
+                Parser.Column.deparse(column, tableColumn.id)
+            ),
             user.authCookie
         )
 
-        const parsedColumn = Parser.Column.parse(jtColumn)
+        const parsedColumn = Parser.Column.parse(viewColumn)
 
         res.status(200).json(parsedColumn)
     } catch (err) {

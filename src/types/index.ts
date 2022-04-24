@@ -1,9 +1,7 @@
-import React from "react"
 import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import type { CellContentType } from "@datagrid/Editor_Formatter/types/CellContentType"
-import { JtInfo, JtData } from "@intutable/join-tables/dist/types"
-import { TableDescriptor } from "@intutable/project-management/dist/types"
+import { ViewInfo, TableDescriptor } from "@intutable/lazy-views"
 
 // #################################################################
 //       Backend / Database
@@ -22,7 +20,8 @@ export const PM = {
 // #################################################################
 
 type Table<COL, ROW> = {
-    metadata: JtInfo
+    // Asserting that the view's source is always a table.
+    metadata: ViewInfo
     columns: COL[]
     rows: ROW[]
 }

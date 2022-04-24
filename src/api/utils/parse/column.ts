@@ -1,11 +1,8 @@
-import {
-    ColumnSpecifier,
-    ColumnDescriptor,
-} from "@intutable/join-tables/dist/types"
+import { ColumnSpecifier, ColumnInfo } from "@intutable/lazy-views"
 import { Column } from "types"
 
 /** Convert a column coming from the DB to a serialized stub of a RDG column. */
-export const parse = (column: ColumnDescriptor): Column.Serialized => ({
+export const parse = (column: ColumnInfo): Column.Serialized => ({
     key: column.key,
     name: column.attributes.displayName!,
     editable: Boolean(column.attributes.editable!),

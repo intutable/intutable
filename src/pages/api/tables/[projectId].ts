@@ -1,5 +1,4 @@
-import { listJts } from "@intutable/join-tables/dist/requests"
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ViewDescriptor, listViews, tableId } from "@intutable/lazy-views"
 import { getTablesFromProject } from "@intutable/project-management/dist/requests"
 import {
     ProjectDescriptor,
@@ -12,8 +11,8 @@ import { makeError } from "utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
- * List tables that belong to a project. Note that these are join tables from
- * the corresponding plugin.
+ * List tables that belong to a project. These are actually views from teh
+ * `lazy-views` plugin.
  * @tutorial
  * ```
  * URL: `/api/tables/[projectId]`
@@ -33,7 +32,10 @@ const GET = async (
 
         const tables = await Promise.all(
             baseTables.map(t =>
-                coreRequest<JtDescriptor[]>(listJts(t.id), user.authCookie)
+                coreRequest<ViewDescriptor[]>(
+                    listViews(tableId(t.id)),
+                    user.authCookie
+                )
             )
         ).then(tableLists => tableLists.flat())
 

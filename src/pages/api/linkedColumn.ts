@@ -1,5 +1,9 @@
-import { addColumnToJt, getJtInfo } from "@intutable/join-tables/dist/requests"
-import { ColumnDescriptor, JtInfo } from "@intutable/join-tables/dist/types"
+import {
+    ColumnInfo,
+    ViewInfo,
+    addColumnToView,
+    getViewInfo,
+} from "@intutable/lazy-views"
 import { coreRequest } from "api/utils/coreRequest"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -12,7 +16,7 @@ import { withUserCheck } from "utils/withUserCheck"
  * @tutorial
  * ```
  * - Body: {
- *    jtId: {@type {number}},
+ *    viewId: {@type {number}},
  *    parentColumnId: {@type {number}},
  *    joinId: {@type {number}}
  * }
@@ -20,21 +24,25 @@ import { withUserCheck } from "utils/withUserCheck"
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { jtId, parentColumnId, joinId } = req.body as {
-            jtId: number
+        const { viewId, parentColumnId, joinId } = req.body as {
+            viewId: number
             parentColumnId: number
             joinId: number
         }
 
-        const info = await coreRequest<JtInfo>(
-            getJtInfo(jtId),
+        const info = await coreRequest<ViewInfo>(
+            getViewInfo(viewId),
             req.session.user!.authCookie
         )
 
-        const parentColumn = info.columns.find(c => c.id === parentColumnId)
+        const parentColumn = info.columns.find(
+            (c: ColumnInfo) => c.id === parentColumnId
+        )
 
         if (!parentColumn) {
-            throw Error(`join table #${jtId} has no columnd #${parentColumnId}`)
+            throw Error(
+                `view #${viewId} has no column` + ` named #${parentColumnId}`
+            )
         } else if (parentColumn.joinId !== joinId) {
             throw Error(
                 `column #${parentColumnId} does not belong to join` +
@@ -47,8 +55,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                     displayName: parentColumn.attributes.displayName!,
                 },
             }
-            const newColumn = await coreRequest<ColumnDescriptor>(
-                addColumnToJt(jtId, columnSpec, joinId),
+            const newColumn = await coreRequest<ColumnInfo>(
+                addColumnToView(viewId, columnSpec, joinId),
                 req.session.user!.authCookie
             )
 

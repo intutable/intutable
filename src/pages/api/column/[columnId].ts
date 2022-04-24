@@ -1,15 +1,13 @@
 import {
-    JtDescriptor,
-    JtInfo,
-    ColumnDescriptor,
-} from "@intutable/join-tables/dist/types"
-import {
+    ViewDescriptor,
+    ViewInfo,
+    ColumnInfo,
     changeColumnAttributes,
     getColumnInfo,
-    getJtInfo,
-    removeColumnFromJt,
-    removeJoinFromJt,
-} from "@intutable/join-tables/dist/requests"
+    getViewInfo,
+    removeColumnFromView,
+    removeJoinFromView,
+} from "@intutable/lazy-views"
 import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest, Parser } from "api/utils"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -35,7 +33,7 @@ import { withUserCheck } from "utils/withUserCheck"
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    columnId: ColumnDescriptor["id"]
+    columnId: ColumnInfo["id"]
 ) => {
     try {
         const { update } = req.body as {
@@ -45,8 +43,8 @@ const PATCH = async (
 
         const deparsedUpdate = Parser.Column.deparse(update, columnId)
 
-        // change property in join-tables, underlying table column is never used
-        const updatedColumn = await coreRequest<ColumnDescriptor>(
+        // change property in view column, underlying table column is never used
+        const updatedColumn = await coreRequest<ColumnInfo>(
             changeColumnAttributes(columnId, deparsedUpdate.attributes),
             user.authCookie
         )
@@ -64,20 +62,20 @@ const PATCH = async (
  * ```
  * URL : `/api/column/[id]`, e.g. `/api/column/32`
  * - Body: {
- *    jtId: {@type {number}}
+ *    viewId: {@type {number}}
  * }
  * ```
  */
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    columnId: ColumnDescriptor["id"]
+    columnId: ColumnInfo["id"]
 ) => {
     try {
-        const { jtId } = req.body as { jtId: JtDescriptor["id"] }
+        const { viewId } = req.body as { viewId: ViewDescriptor["id"] }
         const user = req.session.user!
 
-        const column = await coreRequest<ColumnDescriptor>(
+        const column = await coreRequest<ColumnInfo>(
             getColumnInfo(columnId),
             user.authCookie
         )
@@ -86,7 +84,7 @@ const DELETE = async (
             // cannot delete the primary column
             throw Error("deleteUserPrimary")
 
-        await coreRequest(removeColumnFromJt(columnId), user.authCookie)
+        await coreRequest(removeColumnFromView(columnId), user.authCookie)
         if (column.joinId === null)
             // if column belongs to base table, delete underlying table column
             await coreRequest(
@@ -95,15 +93,18 @@ const DELETE = async (
             )
         else if (column.attributes.formatter === "linkColumn") {
             // if column is a link column, we need to do some more work:
-            const info = await coreRequest<JtInfo>(
-                getJtInfo(jtId),
+            const info = await coreRequest<ViewInfo>(
+                getViewInfo(viewId),
                 user.authCookie
             )
             // delete foreign key column
             const join = info.joins.find(j => j.id === column.joinId)!
             const fkColumnId = join.on[0]
             await coreRequest(removeColumn(fkColumnId), user.authCookie)
-            await coreRequest(removeJoinFromJt(column.joinId), user.authCookie)
+            await coreRequest(
+                removeJoinFromView(column.joinId),
+                user.authCookie
+            )
         }
 
         res.status(200).send({})
