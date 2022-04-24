@@ -14,10 +14,7 @@ import {
 import { fetcher } from "api"
 import Title from "components/Head/Title"
 import { useSnacki } from "hooks/useSnacki"
-import type {
-    InferGetServerSidePropsType,
-    NextPage,
-} from "next"
+import type { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
