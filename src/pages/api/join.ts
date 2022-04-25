@@ -88,7 +88,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(join)
     } catch (err) {
         const error = makeError(err)
-        console.error(error)
         res.status(500).json({ error: error.message })
     }
 }

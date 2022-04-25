@@ -197,7 +197,6 @@ export const LinkColumnFormatter: Formatter = props => {
             })
             await utils.mutate()
         } catch (error) {
-            console.error(error)
             snackError("Der Inhalt konnte nicht gelöscht werden")
         }
     }
