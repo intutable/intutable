@@ -37,7 +37,6 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
             .split(";")
             .map(c => c.split("="))
             .find(c => c[0] === "connect.sid")![1]
-        console.log(authCookie)
 
         const user = await getCurrentUser(authCookie)
         if (user == null)
@@ -45,13 +44,9 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
                 "Could not get the current user from user-authentication!"
             )
 
-        console.log("login: got current user:", user)
-
         req.session.user = { isLoggedIn: true, ...user } as User
 
         await req.session.save()
-
-        console.log("login: saved session:", req.session.user)
 
         res.json(user)
     } catch (error) {

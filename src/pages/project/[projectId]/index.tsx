@@ -1,4 +1,4 @@
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
 import {
@@ -90,9 +90,9 @@ const TableProjectCard: React.FC<AddTableCardProps> = props => {
 
 type TableCardProps = {
     project: ProjectDescriptor
-    table: JtDescriptor
-    handleRename: (joinTable: JtDescriptor) => Promise<void>
-    handleDelete: (joinTable: JtDescriptor) => Promise<void>
+    table: ViewDescriptor
+    handleRename: (tableView: ViewDescriptor) => Promise<void>
+    handleDelete: (tableView: ViewDescriptor) => Promise<void>
     children: string
 }
 const TableCard: React.FC<TableCardProps> = props => {
@@ -196,12 +196,12 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
         }
     }
 
-    const handleRenameTable = async (joinTable: JtDescriptor) => {
+    const handleRenameTable = async (tableView: ViewDescriptor) => {
         try {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
             const nameIsTaken = tables!
-                .map((tbl: JtDescriptor) => tbl.name.toLowerCase())
+                .map((tbl: ViewDescriptor) => tbl.name.toLowerCase())
                 .includes(name.toLowerCase())
             if (nameIsTaken) {
                 snackError(
@@ -210,7 +210,7 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
                 return
             }
             await fetcher({
-                url: `/api/table/${joinTable.id}`,
+                url: `/api/table/${tableView.id}`,
 
                 body: {
                     newName: name,
@@ -223,7 +223,7 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
         }
     }
 
-    const handleDeleteTable = async (joinTable: JtDescriptor) => {
+    const handleDeleteTable = async (joinTable: ViewDescriptor) => {
         try {
             const confirmed = confirm(
                 "Möchtest du deine Tabelle wirklich löschen?"
@@ -264,7 +264,7 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
                 </Link>
             </Typography>
             <Grid container spacing={2}>
-                {tables.map((tbl: JtDescriptor, i: number) => (
+                {tables.map((tbl: ViewDescriptor, i: number) => (
                     <Grid item key={i}>
                         <TableCard
                             table={tbl}
@@ -288,7 +288,7 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
 
 type PageProps = {
     project: ProjectDescriptor
-    fallback: { [cackeKey: string]: JtDescriptor[] }
+    fallback: { [cackeKey: string]: ViewDescriptor[] }
 }
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -325,7 +325,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const project = projects.find(p => p.id === projectId)
     if (project == null) return { notFound: true }
 
-    const tables = await fetcher<JtDescriptor[]>({
+    const tables = await fetcher<ViewDescriptor[]>({
         url: `/api/tables/${project.id}`,
         method: "GET",
         headers: context.req.headers as HeadersInit,

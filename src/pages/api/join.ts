@@ -1,6 +1,12 @@
 import { ColumnType } from "@intutable/database/dist/column"
-import { addJoinToJt, getJtInfo } from "@intutable/join-tables/dist/requests"
-import { JoinDescriptor, JtInfo } from "@intutable/join-tables/dist/types"
+import {
+    JoinDescriptor,
+    ViewInfo,
+    addJoinToView,
+    getViewInfo,
+    selectable,
+    viewId as mkViewId,
+} from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
@@ -12,7 +18,7 @@ import makeForeignKeyName from "utils/makeForeignKeyName"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
- * Add a link from one join table to another. The target table will be
+ * Add a link from one table view to another. The target table will be
  * represented by its user primary column, and the latter also provides
  * an "add more linked columns" feature in its context menu.
  * This requires creating an extra FK column in the underlying table. The join
@@ -20,50 +26,50 @@ import { withUserCheck } from "utils/withUserCheck"
  * @tutorial
  * ```
  * - Body: {
- *   jtId: {@type number} The ID of the JT in which to create the link.
- *   foreignJtId {@type number} The ID of the JT to which the link points.
+ *   mkViewId: {@type number} The ID of the view in which to create the link.
+ *   foreignViewId {@type number} The ID of the view to which the link points.
  * }
  * ```
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { jtId, foreignJtId } = req.body as {
-            jtId: number
-            foreignJtId: number
+        const { viewId, foreignViewId } = req.body as {
+            viewId: number
+            foreignViewId: number
         }
         const user = req.session.user!
 
-        const jtInfo = await coreRequest<JtInfo>(
-            getJtInfo(jtId),
+        const viewInfo = await coreRequest<ViewInfo>(
+            getViewInfo(viewId),
             user.authCookie
         )
 
         // create foreign key column
         const fkColumn = await coreRequest<PM_Column>(
             createColumnInTable(
-                jtInfo.baseTable.id,
-                makeForeignKeyName(jtInfo),
+                selectable.getId(viewInfo.source),
+                makeForeignKeyName(viewInfo),
                 ColumnType.integer
             ),
             user.authCookie
         )
 
-        const foreignJtInfo = await coreRequest<JtInfo>(
-            getJtInfo(foreignJtId),
+        const foreignViewInfo = await coreRequest<ViewInfo>(
+            getViewInfo(foreignViewId),
             user.authCookie
         )
 
-        const foreignIdColumn = foreignJtInfo.columns.find(
+        const foreignIdColumn = foreignViewInfo.columns.find(
             c => c.name === PM.UID_KEY
         )!
-        const primaryColumn = foreignJtInfo.columns.find(
+        const primaryColumn = foreignViewInfo.columns.find(
             c => c.attributes.userPrimary! === 1
         )!
         const displayName = (primaryColumn.attributes.displayName ||
             primaryColumn.name) as string
         const join = await coreRequest<JoinDescriptor>(
-            addJoinToJt(jtId, {
-                foreignJtId,
+            addJoinToView(viewId, {
+                foreignSource: mkViewId(foreignViewId),
                 on: [fkColumn.id, "=", foreignIdColumn.id],
                 columns: [
                     {

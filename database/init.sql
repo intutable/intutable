@@ -44,24 +44,26 @@ CREATE TABLE columns(
 );
 
 -- join-tables meta tables
-CREATE TABLE jts(
+CREATE TABLE views(
     _id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    table_id INTEGER NOT NULL,
+    base_id INTEGER NOT NULL,
+    base_type INTEGER NOT NULL,
     user_id INTEGER NULL,
     row_options TEXT NOT NULL
 );
 
-CREATE TABLE jt_joins(
+CREATE TABLE view_joins(
     _id SERIAL PRIMARY KEY,
-    jt_id INTEGER NOT NULL,
-    foreign_jt_id INTEGER NOT NULL,
+    view_id INTEGER NOT NULL,
+    base_id INTEGER NOT NULL,
+    base_type INTEGER NOT NULL,
     "on" TEXT NOT NULL
 );
 
-CREATE TABLE jt_columns(
+CREATE TABLE view_columns(
     _id SERIAL PRIMARY KEY,
-    jt_id INTEGER NOT NULL,
+    view_id INTEGER NOT NULL,
     join_id INTEGER NULL,
     column_id INTEGER NOT NULL,
     -- custom metadata
@@ -93,22 +95,22 @@ insert into columns(_id, "columnName", "tableId") values(3, 'vorname', 1);
 insert into columns(_id, "columnName", "tableId") values(5, 'titel', 1);
 insert into columns(_id, "columnName", "tableId") values(6, 'stellung', 1);
 
-INSERT INTO jts(_id, name, table_id, user_id, row_options)
-  VALUES(1, 'Personen', 1, NULL,
+INSERT INTO views(_id, name, base_id, base_type, user_id, row_options)
+  VALUES(1, 'Personen', 1, 0, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": [{ "column":1, "order": "asc"}]}');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(1, 1, NULL, 1, 'ID', 'number', 'number');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", "userPrimary", editor, formatter)
   VALUES(2, 1, NULL, 2, 'Nachname', 1, 'string', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(3, 1, NULL, 3, 'Vorname', 'string', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(5, 1, NULL, 5, 'Titel', 'string', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(6, 1, NULL, 6, 'Stellung', 'string', 'string');
 
@@ -129,22 +131,22 @@ insert into columns(_id, "columnName", "tableId") values(9, 'kuerzel', 2);
 insert into columns(_id, "columnName", "tableId") values(10, 'typ', 2);
 insert into columns(_id, "columnName", "tableId") values(11, 'fk_math_inf', 2);
 
-INSERT INTO jts(_id, name, table_id, user_id, row_options)
-  VALUES(2, 'Organe', 2, NULL,
+INSERT INTO views(_id, name, base_id, base_type, user_id, row_options)
+  VALUES(2, 'Organe', 2, 0, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": [{ "column":7, "order": "asc"}]}');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(7, 2, NULL, 7, 'ID', 'number', 'number');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", "userPrimary", editor, formatter)
   VALUES(8, 2, NULL, 8, 'Name', 1, 'string', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(9, 2, NULL, 9, 'Kürzel', 'string', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(10, 2, NULL, 10, 'Typ', 'string', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id,
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
                        "displayName", editor, formatter)
   VALUES(11, 2, NULL, 11, 'FK/Math/Inf', 'string', 'string');
 
@@ -169,26 +171,26 @@ INSERT INTO columns(_id, "columnName", "tableId", type)
 INSERT INTO columns(_id, "columnName", "tableId", type)
   VALUES(17, 'rolle', 4, 'string');
 
-INSERT INTO jts(_id, name, table_id, user_id, row_options)
-  VALUES(4, 'Rollen', 4, 1, '{"conditions":[],"groupColumns":[],"sortColumns":[{"column":13,"order":"asc"}]}');
-INSERT INTO jt_joins(_id, jt_id, foreign_jt_id, "on")
-  VALUES(1, 4, 1, '[15,"=",1]');
-INSERT INTO jt_joins(_id, jt_id, foreign_jt_id, "on")
-  VALUES(2, 4, 2, '[16,"=",7]');
+INSERT INTO views(_id, name, base_id, base_type, user_id, row_options)
+  VALUES(4, 'Rollen', 4, 0, 1, '{"conditions":[],"groupColumns":[],"sortColumns":[{"column":13,"order":"asc"}]}');
+INSERT INTO view_joins(_id, view_id, base_id, base_type, "on")
+  VALUES(1, 4, 1, 1, '[15,"=",1]');
+INSERT INTO view_joins(_id, view_id, base_id, base_type, "on")
+  VALUES(2, 4, 2, 1, '[16,"=",7]');
 
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
                        "userPrimary", editable, editor, formatter)
   VALUES(13, 4, NULL, 13, 'ID', 0, 1, 'number', NULL);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
                        "userPrimary", editable, editor, formatter)
   VALUES(14, 4, NULL, 14, 'Name', 1, 1, 'string', NULL);
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
                        "userPrimary", editable, editor, formatter)
   VALUES(15, 4, 1, 2, 'Nachname', 0, 0, NULL, 'linkColumn');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
                        "userPrimary", editable, editor, formatter)
   VALUES(17, 4, NULL, 17, 'Rolle', 0, 1, 'string', 'string');
-INSERT INTO jt_columns(_id, jt_id, join_id, column_id, "displayName",
+INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
                        "userPrimary", editable, editor, formatter)
   VALUES(16, 4, 2, 8, 'Organ', 0, 0, NULL, 'linkColumn');
 
@@ -266,6 +268,6 @@ SELECT setval('userprojects__id_seq', (SELECT MAX(_id) FROM userprojects)+1);
 SELECT setval('tables__id_seq', (SELECT MAX(_id) FROM tables)+1);
 SELECT setval('projecttables__id_seq', (SELECT MAX(_id) FROM projecttables)+1);
 SELECT setval('columns__id_seq', (SELECT MAX(_id) FROM columns)+1);
-SELECT setval('jts__id_seq', (SELECT MAX(_id) FROM jts)+1);
-SELECT setval('jt_joins__id_seq', (SELECT MAX(_id) FROM jt_joins)+1);
-SELECT setval('jt_columns__id_seq', (SELECT MAX(_id) FROM jt_columns)+1);
+SELECT setval('views__id_seq', (SELECT MAX(_id) FROM views)+1);
+SELECT setval('view_joins__id_seq', (SELECT MAX(_id) FROM view_joins)+1);
+SELECT setval('view_columns__id_seq', (SELECT MAX(_id) FROM view_columns)+1);

@@ -1,6 +1,11 @@
 import { ColumnType } from "@intutable/database/dist/column"
-import { createJt } from "@intutable/join-tables/dist/requests"
-import { JtDescriptor, SortOrder } from "@intutable/join-tables/dist/types"
+
+import {
+    ViewDescriptor,
+    SortOrder,
+    createView,
+    tableId,
+} from "@intutable/lazy-views"
 import {
     createTableInProject,
     getColumnsFromTable,
@@ -59,7 +64,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             user.authCookie
         )
 
-        // make specifiers for JT columns
+        // make specifiers for view columns
         const baseColumns = await coreRequest<PM_Column[]>(
             getColumnsFromTable(table.id),
             user.authCookie
@@ -74,10 +79,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         const baseIdColumn = baseColumns.find(c => c.name === PM.UID_KEY)!
 
-        // create table in join-tables
-        const jtTable = await coreRequest<JtDescriptor>(
-            createJt(
-                table.id,
+        // create view
+        const tableView = await coreRequest<ViewDescriptor>(
+            createView(
+                tableId(table.id),
                 name,
                 { columns: columnSpecs, joins: [] },
                 {
@@ -95,7 +100,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             user.authCookie
         )
 
-        res.status(200).json(jtTable)
+        res.status(200).json(tableView)
     } catch (err) {
         const error = makeError(err)
         res.status(500).json({ error: error.message })

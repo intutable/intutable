@@ -4,7 +4,7 @@ import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { JtData, JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ViewData, ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Box, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
@@ -29,8 +29,8 @@ import { rowKeyGetter } from "utils/rowKeyGetter"
 
 type TablePageProps = {
     project: ProjectDescriptor
-    table: JtDescriptor
-    tableList: JtDescriptor[]
+    table: ViewDescriptor
+    tableList: ViewDescriptor[]
 }
 const TablePage: React.FC<TablePageProps> = props => {
     const theme = useTheme()
@@ -143,10 +143,10 @@ const TablePage: React.FC<TablePageProps> = props => {
 
 type PageProps = {
     project: ProjectDescriptor
-    table: JtDescriptor
-    tableList: JtDescriptor[]
+    table: ViewDescriptor
+    tableList: ViewDescriptor[]
     // fallback: {
-    //     [cacheKey: string]: JtData
+    //     [cacheKey: string]: ViewData
     // }
 }
 
@@ -174,7 +174,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
         }
 
     const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
-    const tableId: JtDescriptor["id"] = Number.parseInt(query.tableId)
+    const tableId: ViewDescriptor["id"] = Number.parseInt(query.tableId)
 
     if (isNaN(projectId) || isNaN(tableId))
         return {
@@ -192,13 +192,13 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
 
     if (project == null) return { notFound: true }
 
-    const tableList = await fetcher<JtDescriptor[]>({
+    const tableList = await fetcher<ViewDescriptor[]>({
         url: `/api/tables/${projectId}`,
         method: "GET",
         headers: context.req.headers as HeadersInit,
     })
 
-    const data = await fetcher<JtData>({
+    const data = await fetcher<ViewData>({
         url: `/api/table/${tableId}`,
         method: "GET",
         headers: context.req.headers as HeadersInit,

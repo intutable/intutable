@@ -1,5 +1,5 @@
 import { deleteRow, insert, update } from "@intutable/database/dist/requests"
-import { TableDescriptor } from "@intutable/join-tables/dist/types"
+import { TableDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -14,27 +14,26 @@ import { withUserCheck } from "utils/withUserCheck"
  * @tutorial
  * ```
  * Body: {
- *    baseTable: {@type {TableDescriptor}}
+ *    table: {@type {TableDescriptor}}
  *    values: {@type {Record<string, unknown>}}
  * }
  * ```
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { baseTable, values } = req.body as {
-            baseTable: TableDescriptor
+        const { table, values } = req.body as {
+            table: TableDescriptor
             values: Obj
         }
 
         // create row in database
         const rowId = await coreRequest<typeof PM.UID_KEY>(
-            insert(baseTable.key, values, [PM.UID_KEY]),
+            insert(table.key, values, [PM.UID_KEY]),
             req.session.user!.authCookie
         )
 
         res.status(200).send(rowId)
     } catch (err) {
-        console.error(err)
         const error = makeError(err)
         res.status(500).json({ error: error.message })
     }
@@ -46,7 +45,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
  * @tutorial
  * ```
  * Body: {
- *    baseTable: {@type {TableDescriptor}}
+ *    table: {@type {TableDescriptor}}
  *    condition: {@type {Array<unknown>}}
  *    values: {@type {Record<string, unknown>}}
  * }
@@ -55,17 +54,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         const {
-            baseTable,
+            table,
             condition,
             update: rowUpdate,
         } = req.body as {
-            baseTable: TableDescriptor
+            table: TableDescriptor
             condition: unknown[]
             update: { [index: string]: unknown }
         }
 
         const updatedRow = await coreRequest<Row>(
-            update(baseTable.key, {
+            update(table.key, {
                 condition,
                 update: rowUpdate,
             }),
@@ -74,7 +73,6 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
         res.status(200).json(updatedRow)
     } catch (err) {
-        console.error(err)
         const error = makeError(err)
         res.status(500).json({ error: error.message })
     }
@@ -84,20 +82,20 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
  * @tutorial
  * ```
  * Body: {
- *    baseTable: {@type {TableDescriptor}}
+ *    table: {@type {TableDescriptor}}
  *    condition: {@type {Array<unknown>}}
  * }
  * ```
  */
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { baseTable, condition } = req.body as {
-            baseTable: TableDescriptor
+        const { table, condition } = req.body as {
+            table: TableDescriptor
             condition: unknown[]
         }
 
         await coreRequest(
-            deleteRow(baseTable.key, condition),
+            deleteRow(table.key, condition),
             req.session.user!.authCookie
         )
 

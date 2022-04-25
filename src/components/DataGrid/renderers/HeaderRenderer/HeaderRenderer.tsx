@@ -1,4 +1,5 @@
-import { ColumnDescriptor } from "@intutable/project-management/dist/types"
+import { asView } from "@intutable/lazy-views/dist/selectable"
+import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import Check from "@mui/icons-material/Check"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import KeyIcon from "@mui/icons-material/Key"
@@ -57,10 +58,11 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const isUserPrimary = col.attributes.userPrimary === 1
     const { tables } = useTables(project)
 
-    const foreignJt = useMemo(() => {
+    const foreignView = useMemo(() => {
         if (!data || !tables) return undefined
         const join = data.metadata.joins.find(j => j.id === col.joinId)
-        return tables.find(t => t.id === join?.foreignJtId)
+        if (!join) return undefined
+        return tables.find(t => t.id === asView(join.foreignSource).id)
     }, [col.joinId, tables, data])
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -86,8 +88,8 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         }
     }
 
-    const navigateToJT = () =>
-        router.push(`/project/${project.id}/table/${foreignJt?.id}`)
+    const navigateToView = () =>
+        router.push(`/project/${project.id}/table/${foreignView?.id}`)
 
     const handleRenameColumn = async () => {
         try {
@@ -115,14 +117,14 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     }
     const handleCloseLookupModal = () => setAnchorEL_LookupModal(null)
 
-    const handleAddLookup = async (column: ColumnDescriptor) => {
+    const handleAddLookup = async (column: ColumnInfo) => {
         if (!isLinkCol || !user) return
         try {
             const joinId = col.joinId!
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
-                    jtId: data!.metadata.descriptor.id,
+                    viewId: data!.metadata.descriptor.id,
                     joinId,
                 },
             })
@@ -158,14 +160,14 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 {isLinkCol && (
                     <Tooltip
                         title={`(Verlinkte Spalte) Ursprung: Primärspalte aus Tabelle '${
-                            foreignJt ? foreignJt.name : "Lädt..."
+                            foreignView ? foreignView.name : "Lädt..."
                         }'.`}
                     >
                         <span>
                             <IconButton
-                                onClick={navigateToJT}
+                                onClick={navigateToView}
                                 size="small"
-                                disabled={foreignJt == null}
+                                disabled={foreignView == null}
                             >
                                 <LinkIcon />
                             </IconButton>
@@ -261,12 +263,12 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     >
                         <ListItemText>Löschen</ListItemText>
                     </MenuItem>
-                    {foreignJt && (
+                    {foreignView && (
                         <AddLookupModal
                             open={anchorEL_LookupModal != null}
                             onClose={handleCloseLookupModal}
                             onAddLookupModal={handleAddLookup}
-                            foreignJt={foreignJt}
+                            foreignView={foreignView}
                         />
                     )}
                 </Menu>

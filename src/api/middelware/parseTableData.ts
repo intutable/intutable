@@ -1,4 +1,4 @@
-import { JtData } from "@intutable/join-tables/dist/types"
+import { ViewData } from "@intutable/lazy-views"
 import { DeSerialize, Parser } from "api/utils"
 import { Middleware, SWRHook } from "swr"
 import { TableData } from "types"
@@ -17,7 +17,7 @@ export const parseTableData: Middleware =
         const routeRegex = RegExp("/api/table/\\d*") // "/api/table/[id]"
         if (routeRegex.test(routeKey) === false || swr.data == null) return swr
 
-        const unparsedTableData = swr.data as unknown as JtData
+        const unparsedTableData = swr.data as unknown as ViewData
 
         // parse // TODO: parsing should be moved to the next api
         const parsedTableData: TableData.Serialized =

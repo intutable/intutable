@@ -1,19 +1,19 @@
-import { JtData } from "@intutable/join-tables/dist/types"
+import { ViewData } from "@intutable/lazy-views"
 import type { Row, TableData } from "types"
 import { PM } from "types"
 import { Column as ColumnParser } from "."
 
-export const parse = (joinTable: JtData): TableData.Serialized => {
+export const parse = (view: ViewData): TableData.Serialized => {
     return {
         metadata: {
-            descriptor: joinTable.descriptor,
-            baseTable: joinTable.baseTable,
-            joins: joinTable.joins,
-            columns: joinTable.columns,
+            descriptor: view.descriptor,
+            source: view.source,
+            joins: view.joins,
+            columns: view.columns,
         },
-        columns: joinTable.columns
+        columns: view.columns
             .filter(col => col.name !== PM.UID_KEY)
             .map(ColumnParser.parse),
-        rows: joinTable.rows as Row[],
+        rows: view.rows as Row[],
     }
 }

@@ -1,7 +1,5 @@
-import {
-    ColumnDescriptor,
-    JtDescriptor,
-} from "@intutable/join-tables/dist/types"
+import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { fetcher } from "api"
 import { Parser } from "api/utils"
@@ -22,11 +20,11 @@ export type TableContextProps = {
         rowId: number,
         value: unknown
     ) => Promise<void>
-    createColumn: (col: Column.Serialized, joinId?: number) => Promise<void>
+    createColumn: (col: Column.Serialized) => Promise<void>
     renameColumn: (key: Column["key"], newName: Column["name"]) => Promise<void>
     deleteColumn: (key: Column["key"]) => Promise<void>
     utils: {
-        getColumnByKey: (key: Column["key"]) => ColumnDescriptor
+        getColumnByKey: (key: Column["key"]) => ColumnInfo
         getRowId: (data: TableData | undefined, row: Row) => number
         mutate: KeyedMutator<TableData>
     }
@@ -52,7 +50,7 @@ export const useTableCtx = () => React.useContext(TableContext)
 
 export type TableCtxProviderProps = {
     project: ProjectDescriptor
-    table: JtDescriptor
+    table: ViewDescriptor
     children?: React.ReactNode
 }
 
@@ -70,7 +68,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
 
     // #################### utils ####################
 
-    const getColumnByKey = (key: Column["key"]): ColumnDescriptor => {
+    const getColumnByKey = (key: Column["key"]): ColumnInfo => {
         const column = data!.metadata.columns.find(c => c.key === key)
         if (!column) throw Error(`could not find column with key ${key}`)
         return column
@@ -96,10 +94,9 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     }
 
     const createRow = async (): Promise<void> => {
-        // baseTable, values
         await fetcher({
             url: "/api/row",
-            body: { baseTable: data?.metadata.baseTable, values: {} },
+            body: { table: asTable(data!.metadata.source).table, values: {} },
         })
 
         await mutate()
@@ -118,7 +115,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         await fetcher({
             url: "/api/row",
             body: {
-                baseTable: data?.metadata.baseTable,
+                table: asTable(data!.metadata.source).table,
                 condition: [PM.UID_KEY, getRowId(data, row)],
             },
             method: "DELETE",
@@ -142,7 +139,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         await fetcher({
             url: "/api/row",
             body: {
-                baseTable: data?.metadata.baseTable,
+                table: asTable(data!.metadata.source).table,
                 condition: [PM.UID_KEY, rowId],
                 update: {
                     [baseColumnKey]: value,
@@ -155,15 +152,11 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
 
     // #################### column ####################
 
-    const createColumn = async (
-        column: Column.Serialized,
-        joinId?: number
-    ): Promise<void> => {
+    const createColumn = async (column: Column.Serialized): Promise<void> => {
         await fetcher({
             url: "/api/column",
             body: {
-                jtId: data?.metadata.descriptor.id,
-                joinId,
+                viewId: data?.metadata.descriptor.id,
                 column,
             },
         })
@@ -194,7 +187,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         const column = getColumnByKey(key)
         await fetcher({
             url: `/api/column/${column.id}`,
-            body: { jtId: data!.metadata.descriptor.id },
+            body: { viewId: data!.metadata.descriptor.id },
             method: "DELETE",
         })
 

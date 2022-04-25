@@ -1,14 +1,13 @@
 import {
-    deleteJt,
-    getJtData,
-    getJtOptions,
-    renameJt,
-} from "@intutable/join-tables/dist/requests"
-import {
-    JtData,
-    JtDescriptor,
-    JtOptions,
-} from "@intutable/join-tables/dist/types"
+    ViewOptions,
+    ViewDescriptor,
+    ViewData,
+    deleteView,
+    getViewData,
+    getViewOptions,
+    renameView,
+    asTable,
+} from "@intutable/lazy-views"
 import { removeTable } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
@@ -17,7 +16,7 @@ import { makeError } from "utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
- * GET a single (join) table's data {@type {JtData}}.
+ * GET a single table view's data {@type {ViewData}}.
  *
  * @tutorial
  * ```
@@ -28,12 +27,12 @@ import { withUserCheck } from "utils/withUserCheck"
 const GET = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    tableId: JtDescriptor["id"]
+    tableId: ViewDescriptor["id"]
 ) => {
     try {
         const user = req.session.user!
-        const tableData = await coreRequest<JtData>(
-            getJtData(tableId),
+        const tableData = await coreRequest<ViewData>(
+            getViewData(tableId),
             user.authCookie
         )
 
@@ -46,7 +45,7 @@ const GET = async (
 
 /**
  * PATCH/update the name of a single table.
- * Returns the updated join table {@type {JtDescriptor}}.
+ * Returns the updated table view {@type {ViewDescriptor}}.
 
  * @tutorial
  * ```
@@ -59,17 +58,17 @@ const GET = async (
 const PATCH = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    tableId: JtDescriptor["id"]
+    tableId: ViewDescriptor["id"]
 ) => {
     try {
         const { newName } = req.body as {
-            newName: JtDescriptor["name"]
+            newName: ViewDescriptor["name"]
         }
         const user = req.session.user!
 
-        // rename table in join-tables
-        const updatedTable = await coreRequest<JtDescriptor>(
-            renameJt(tableId, newName),
+        // rename only view, underlying table's name does not matter.
+        const updatedTable = await coreRequest<ViewDescriptor>(
+            renameView(tableId, newName),
             user.authCookie
         )
 
@@ -92,19 +91,22 @@ const PATCH = async (
 const DELETE = async (
     req: NextApiRequest,
     res: NextApiResponse,
-    tableId: JtDescriptor["id"]
+    tableId: ViewDescriptor["id"]
 ) => {
     try {
         const user = req.session.user!
         // delete table in project-management
-        const options = await coreRequest<JtOptions>(
-            getJtOptions(tableId),
+        const options = await coreRequest<ViewOptions>(
+            getViewOptions(tableId),
             user.authCookie
         )
-        await coreRequest(removeTable(options.tableId), user.authCookie)
+        await coreRequest(
+            removeTable(asTable(options.source).id),
+            user.authCookie
+        )
 
-        // delete table in join-tables
-        await coreRequest(deleteJt(tableId), user.authCookie)
+        // delete table in lazy-views
+        await coreRequest(deleteView(tableId), user.authCookie)
 
         res.status(200).send({})
     } catch (err) {

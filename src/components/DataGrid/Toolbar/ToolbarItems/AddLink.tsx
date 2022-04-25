@@ -1,4 +1,4 @@
-import { JtDescriptor } from "@intutable/join-tables/dist/types"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/AddLink"
 import LoadingButton from "@mui/lab/LoadingButton"
@@ -40,14 +40,14 @@ export const AddLink: React.FC = () => {
 
     const handleCloseModal = () => setAnchorEL(null)
 
-    const handleAddLink = async (table: JtDescriptor) => {
+    const handleAddLink = async (table: ViewDescriptor) => {
         try {
             if (currentTable == null) throw new Error()
             await fetcher({
                 url: "/api/join",
                 body: {
-                    jtId: currentTable.metadata.descriptor.id,
-                    foreignJtId: table.id,
+                    viewId: currentTable.metadata.descriptor.id,
+                    foreignViewId: table.id,
                 },
             })
             await utils.mutate()
@@ -90,10 +90,10 @@ export const AddLink: React.FC = () => {
 
 type AddLinkModalProps = {
     project: ProjectDescriptor
-    table: JtDescriptor
+    table: ViewDescriptor
     open: boolean
     onClose: () => void
-    onAddLink: (table: JtDescriptor) => unknown
+    onAddLink: (table: ViewDescriptor) => unknown
 }
 
 export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
@@ -102,7 +102,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
 
     const { tables, error } = useTables(props.project)
 
-    const [selection, setSelection] = useState<JtDescriptor | null>(null)
+    const [selection, setSelection] = useState<ViewDescriptor | null>(null)
 
     useEffect(() => {
         if (error) {
@@ -113,7 +113,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    const onClickHandler = (table: JtDescriptor) => setSelection(table)
+    const onClickHandler = (table: ViewDescriptor) => setSelection(table)
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>

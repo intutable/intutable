@@ -14,15 +14,10 @@ import {
 import { fetcher } from "api"
 import Title from "components/Head/Title"
 import { useSnacki } from "hooks/useSnacki"
-import type {
-    GetServerSideProps,
-    InferGetServerSidePropsType,
-    NextPage,
-} from "next"
+import type { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
-import useSWR, { SWRConfig, unstable_serialize } from "swr"
-import { ProtectedPage } from "utils/ProtectedPage"
+import { SWRConfig, unstable_serialize } from "swr"
 import { prepareName } from "utils/validateName"
 import { useProjects, useProjectsConfig } from "hooks/useProjects"
 import { withSessionSsr } from "auth"
