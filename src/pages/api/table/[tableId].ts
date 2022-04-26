@@ -10,13 +10,15 @@ import {
 } from "@intutable/lazy-views"
 import { removeTable } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
+import { Table } from "api/utils/parse"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
+import { inspect } from "util"
 import { makeError } from "utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
- * GET a single table view's data {@type {ViewData}}.
+ * GET a single table view's data {@type {TableData.Serialized}}.
  *
  * @tutorial
  * ```
@@ -36,7 +38,12 @@ const GET = async (
             user.authCookie
         )
 
-        res.status(200).json(tableData)
+        // parse it
+        const parsedTableData = Table.parse(tableData)
+
+        inspect(parsedTableData, { depth: null })
+
+        res.status(200).json(parsedTableData)
     } catch (err) {
         const error = makeError(err)
         res.status(500).json({ error: error.message })
