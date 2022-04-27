@@ -1,6 +1,6 @@
-import { replaceUndefined } from "utils/replaceUndefined"
+import { replaceUndefined } from "../utils/replaceUndefined"
 
-describe("'replaceUndefined' Utility", () => {
+describe("'replaceUndefined' utility", () => {
     it("should recursivley replace 'undefined' by 'null'", () => {
         const sample = {
             key1: "hello",
@@ -18,11 +18,7 @@ describe("'replaceUndefined' Utility", () => {
                 key7_6: undefined,
             },
         }
-        const result = replaceUndefined(sample)
-
-        console.dir(result)
-
-        expect(result).toEqual({
+        const expectation = {
             key1: "hello",
             key2: 1,
             key3: true,
@@ -37,6 +33,10 @@ describe("'replaceUndefined' Utility", () => {
                 key7_5: null,
                 key7_6: null,
             },
-        })
+        }
+
+        const result = replaceUndefined(sample)
+
+        expect(result).toEqual(expectation)
     })
 })
