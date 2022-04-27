@@ -4,7 +4,7 @@ import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { ViewData, ViewDescriptor } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Box, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
@@ -23,7 +23,7 @@ import React, { useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import type { Row } from "types"
+import type { Row, TableData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 
@@ -198,7 +198,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
         headers: context.req.headers as HeadersInit,
     })
 
-    const data = await fetcher<ViewData>({
+    const data = await fetcher<TableData.Serialized>({
         url: `/api/table/${tableId}`,
         method: "GET",
         headers: context.req.headers as HeadersInit,
@@ -207,7 +207,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     return {
         props: {
             project,
-            table: data.descriptor,
+            table: data.metadata.descriptor,
             tableList,
             // fallback: {
             //     [unstable_serialize({

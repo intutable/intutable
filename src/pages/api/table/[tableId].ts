@@ -1,21 +1,19 @@
 import {
-    ViewOptions,
-    ViewDescriptor,
-    ViewData,
+    asTable,
     deleteView,
     getViewData,
     getViewOptions,
     renameView,
-    asTable,
+    ViewData,
+    ViewDescriptor,
+    ViewOptions,
 } from "@intutable/lazy-views"
 import { removeTable } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { Table } from "api/utils/parse"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { inspect } from "util"
 import { makeError } from "utils/makeError"
-import { replaceUndefined } from "utils/replaceUndefined"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
@@ -41,9 +39,6 @@ const GET = async (
 
         // parse it
         const parsedTableData = Table.parse(tableData)
-        // const replacedUndefineds = replaceUndefined(parsedTableData)
-
-        console.log(replaceUndefined)
 
         res.status(200).json(parsedTableData)
     } catch (err) {
