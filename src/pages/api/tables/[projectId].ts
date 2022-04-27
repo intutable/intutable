@@ -30,8 +30,6 @@ const GET = async (
             user.authCookie
         )
 
-        console.log(1, baseTables)
-
         const tables = await Promise.all(
             baseTables.map(t =>
                 coreRequest<ViewDescriptor[]>(
@@ -40,8 +38,6 @@ const GET = async (
                 )
             )
         ).then(tableLists => tableLists.flat())
-
-        console.log(2, tables)
 
         res.status(200).json(tables)
     } catch (err) {
