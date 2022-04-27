@@ -20,5 +20,11 @@
         }
     },
     "include": ["src", "next-env.d.ts"],
-    "exclude": ["node_modules", "backend", "src/backend", "database"]
+    "exclude": [
+        "node_modules",
+        "backend",
+        "src/backend",
+        "database",
+        "**/__tests/**/*.test.ts"
+    ]
 }
