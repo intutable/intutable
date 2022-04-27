@@ -1,29 +1,29 @@
 import Obj from "types/Obj"
-
-type ReplaceUndefined<O extends Obj> = {
-    [K in keyof O]: O[K] extends Obj
-        ? ReplaceUndefined<O[K]>
-        : O[K] extends undefined
-        ? null
-        : O[K]
-}
+import { Convert } from "types/Convert"
 
 /**
  * Utility that recursivley replaces 'undefined' by 'null' in a plain object.
  * @param {Obj} obj
- * @returns {ReplaceUndefined<typeof obj>}
+ * @returns {Convert<typeof obj>}
  */
-export const replaceUndefined = (obj: Obj): ReplaceUndefined<typeof obj> => {
+export const replaceUndefined = (
+    obj: Obj
+): Convert<undefined, null, typeof obj> => {
     for (const key in obj) {
         if (Object.prototype.hasOwnProperty.call(obj, key)) {
             const value = obj[key]
 
-            // TODO: check correctly if value is a plain object
-            if (typeof value === "object" && value != null)
+            // when it's an object itself
+            if (
+                typeof value === "object" &&
+                value != null &&
+                Array.isArray(value) === false
+            )
                 replaceUndefined(value as Obj)
 
+            // when the value is undefined
             if (value === undefined) obj[key] = null
         }
     }
-    return obj as ReplaceUndefined<typeof obj>
+    return obj
 }
