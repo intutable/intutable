@@ -15,6 +15,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { inspect } from "util"
 import { makeError } from "utils/makeError"
+import { replaceUndefined } from "utils/replaceUndefined"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
@@ -40,8 +41,9 @@ const GET = async (
 
         // parse it
         const parsedTableData = Table.parse(tableData)
+        // const replacedUndefineds = replaceUndefined(parsedTableData)
 
-        inspect(parsedTableData, { depth: null })
+        console.log(replaceUndefined)
 
         res.status(200).json(parsedTableData)
     } catch (err) {

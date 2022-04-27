@@ -1,8 +1,7 @@
 import { User } from "types/User"
 import type { Fetcher } from "swr"
 import Obj from "types/Obj"
-import { passedLogin } from "./utils/coreRequest"
-
+import { AuthenticationError } from "api/utils/AuthenticationError"
 /**
  * Fetcher function for use with useSWR hookb
  */
@@ -49,7 +48,7 @@ export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
                 : JSON.stringify(args.body)
             : undefined,
     })
-        .then(passedLogin)
+        .then(catchAuthError)
         .then(catchException)
         .then(r => r.json())
 
@@ -59,15 +58,21 @@ export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
  */
 const catchException = async (res: Response): Promise<Response> => {
     if (res.status >= 400 && res.status < 600) {
-        console.error(res)
         console.error(`Fetcher Received Exception (${res.status}): ${res}`)
-        const body = await res.text()
-        try {
-            return Promise.reject(JSON.parse(body))
-        } catch (e) {
-            return Promise.reject(body)
-        }
+        throw res
     }
+    return res
+}
 
-    return Promise.resolve(res)
+// Set of error checking functions that are intended to operate by
+// fall-through principle
+const catchAuthError = async (res: Response): Promise<Response> => {
+    if (res.type === "opaqueredirect" || [301, 302].includes(res.status))
+        throw new AuthenticationError(
+            "core call blocked by authentication middleware",
+            302,
+            res
+        )
+
+    return res
 }

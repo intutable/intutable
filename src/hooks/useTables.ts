@@ -1,5 +1,6 @@
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { useEffect } from "react"
 import useSWR from "swr"
 
 export const useTables = (project: ProjectDescriptor | null | undefined) => {
