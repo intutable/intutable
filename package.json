@@ -65,6 +65,7 @@
     "eslint-plugin-react": "^7.28.0",
     "jest": "^28.0.1",
     "prettier": "^2.5.1",
-    "rimraf": "3.0.2"
+    "rimraf": "3.0.2",
+    "ts-jest": "^27.1.4"
   }
 }
