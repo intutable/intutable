@@ -23,6 +23,7 @@ export type TableContextProps = {
     createColumn: (col: Column.Serialized) => Promise<void>
     renameColumn: (key: Column["key"], newName: Column["name"]) => Promise<void>
     deleteColumn: (key: Column["key"]) => Promise<void>
+    // TODO: put the utils in a subcontext
     utils: {
         getColumnByKey: (key: Column["key"]) => ColumnInfo
         getRowId: (data: TableData | undefined, row: Row) => number
@@ -60,20 +61,17 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     const { data, error, mutate } = useSWR<TableData>(
         user ? { url: `/api/table/${props.table.id}`, method: "GET" } : null
     )
-    /**
-     * // TODO:
-     *  1. once these api methods return the updated data, inject it into mutate
-     *  2. separate rows to a distinct state (required for performance by rdg)
-     */
 
     // #################### utils ####################
 
+    // TODO: `Column` was recently augmented, this should not be necessary any more
     const getColumnByKey = (key: Column["key"]): ColumnInfo => {
         const column = data!.metadata.columns.find(c => c.key === key)
         if (!column) throw Error(`could not find column with key ${key}`)
         return column
     }
 
+    // TODO: independent from ctx, should be thrown out as its own utility
     const getRowId = (data: TableData | undefined, row: Row) => {
         const uidColumn = data!.metadata.columns.find(
             c => c.name === PM.UID_KEY
@@ -83,6 +81,7 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
 
     // #################### row ####################
 
+    // TODO: ???
     const onRowReorder = (fromIndex: number, toIndex: number) => {
         if (data) {
             const newRows = [...data.rows]
@@ -93,6 +92,9 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         }
     }
 
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
+    // TODO: put `asTable` into the corresponding api route
     const createRow = async (): Promise<void> => {
         await fetcher({
             url: "/api/row",
@@ -111,6 +113,11 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         // })
     }
 
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
+    // TODO: filter row and delete by index and then shift them
+    // TODO: put `asTable` into the corresponding api route
+    // TODO: get rid of getRowId
     const deleteRow = async (rowIndex: number, row: Row): Promise<void> => {
         await fetcher({
             url: "/api/row",
@@ -122,9 +129,13 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         })
 
         await mutate()
-        // todo: filter row and delete by index and then shift them
     }
 
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
+    // TODO: do not use the col key, use its id
+    // TODO: `value` needs a (better) type
+    // TODO: put `asTable` into the corresponding api route
     const updateRow = async (
         columnKey: string,
         rowId: number,
@@ -152,6 +163,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
 
     // #################### column ####################
 
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
     const createColumn = async (column: Column.Serialized): Promise<void> => {
         await fetcher({
             url: "/api/column",
@@ -163,6 +176,10 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         await mutate()
     }
 
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
+    // TODO: handle the 'alreadyTaken'-Error differently, e.g. create a dedicated error class
+    // TODO: get rid of `getColumnByKey`
     const renameColumn = async (
         key: Column["key"],
         newName: Column["name"]
@@ -183,6 +200,9 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
         await mutate()
     }
 
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
+    // TODO: get rid of `getColumnByKey`
     const deleteColumn = async (key: Column["key"]): Promise<void> => {
         const column = getColumnByKey(key)
         await fetcher({
@@ -197,8 +217,8 @@ export const TableCtxProvider: React.FC<TableCtxProviderProps> = props => {
     return (
         <TableContext.Provider
             value={{
-                project: props.project,
                 // states
+                project: props.project,
                 data,
                 error,
                 // row
