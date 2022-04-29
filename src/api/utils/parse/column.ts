@@ -3,6 +3,7 @@ import { Column } from "types"
 
 /** Convert a column coming from the DB to a serialized stub of a RDG column. */
 export const parse = (column: ColumnInfo): Column.Serialized => ({
+    _id: column.id,
     key: column.key,
     name: column.attributes.displayName!,
     editable: Boolean(column.attributes.editable!),

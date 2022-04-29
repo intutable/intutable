@@ -1,7 +1,7 @@
 import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import type { CellContentType } from "@datagrid/Editor_Formatter/types/CellContentType"
-import { ViewInfo, TableDescriptor } from "@intutable/lazy-views"
+import { ViewInfo } from "@intutable/lazy-views"
 
 // #################################################################
 //       Backend / Database
@@ -14,6 +14,17 @@ import { ViewInfo, TableDescriptor } from "@intutable/lazy-views"
 export const PM = {
     UID_KEY: "_id",
 } as const
+
+/**
+ * ### Project Management
+ * Type Annotation
+ */
+type PM = {
+    /**
+     * internal backend unique id
+     */
+    readonly _id: number
+}
 
 // #################################################################
 //       Generic
@@ -32,19 +43,15 @@ type Table<COL, ROW> = {
 
 // Note: augment Column type
 declare module "react-data-grid" {
-    interface Column<TRow, TSummaryRow = unknown> {
-        /**
-         * internal backend id
-         */
-        _id?: number
-    }
+    /* eslint-disable @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars */
+    interface Column<TRow, TSummaryRow = unknown> extends Partial<PM> {}
+    /* eslint-enable @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars */
 }
 
 export type Column = ReactDataGrid_Column<Row>
 
-export type Row = {
+export type Row = PM & {
     readonly [PLACEHOLDER.ROW_INDEX_KEY]: number
-    readonly [PM.UID_KEY]: number
     [key: string]: unknown
 }
 
@@ -59,8 +66,7 @@ export type TableData = Table<Column, Row>
 //       Frontend / Serialized
 // #################################################################
 
-type SerializedRow = {
-    readonly [PM.UID_KEY]: number
+type SerializedRow = PM & {
     [key: string]: unknown
 }
 
@@ -75,7 +81,7 @@ type SerializedTableData = Table<SerializedColumn, SerializedRow>
  * Those properties that are not listed compared to the original type are not used.
  * Additional comments will – only if provided! – explain how the property is modified compared to the original property.
  */
-type SerializedColumn = {
+type SerializedColumn = PM & {
     name: string
     key: string
     /**
