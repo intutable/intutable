@@ -13,6 +13,7 @@ import Title from "components/Head/Title"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
 import {
+    APIContextProvider,
     HeaderSearchFieldProvider,
     TableCtxProvider,
     useHeaderSearchField,
@@ -153,11 +154,17 @@ type PageProps = {
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ project, table, tableList }) => (
-    <TableCtxProvider table={table} project={project}>
-        <HeaderSearchFieldProvider>
-            <TablePage project={project} table={table} tableList={tableList} />
-        </HeaderSearchFieldProvider>
-    </TableCtxProvider>
+    <APIContextProvider table={table}>
+        <TableCtxProvider table={table} project={project}>
+            <HeaderSearchFieldProvider>
+                <TablePage
+                    project={project}
+                    table={table}
+                    tableList={tableList}
+                />
+            </HeaderSearchFieldProvider>
+        </TableCtxProvider>
+    </APIContextProvider>
 )
 
 export const getServerSideProps = withSessionSsr<PageProps>(async context => {

@@ -1,12 +1,18 @@
-import { ColumnInfo, TableDescriptor } from "@intutable/lazy-views"
-import useSWR from "swr"
-import { Column, TableData } from "types"
+import { TableDescriptor } from "@intutable/lazy-views"
+import { useAPI } from "context"
+import useSWR, { unstable_serialize } from "swr"
+import { TableData } from "types"
 
-export const useTable = (tableId: TableDescriptor["id"] | null | undefined) => {
+/**
+ * useTable Hook
+ */
+export const useTable = () => {
+    const { table } = useAPI()
+
     const { data, error, mutate } = useSWR<TableData>(
-        tableId
+        table
             ? {
-                  url: `/api/table/${tableId}`,
+                  url: `/api/table/${table.id}`,
                   method: "GET",
               }
             : null
@@ -15,7 +21,23 @@ export const useTable = (tableId: TableDescriptor["id"] | null | undefined) => {
     return {
         data,
         error,
-        utils: error,
         mutate,
     }
+}
+
+/**
+ * Config for `useTable` hook.
+ */
+export const useTableConfig = {
+    /**
+     * Returns the swr cache key for `useTable`.
+     * Can be used to ssr data.
+     *
+     * Note: the key does **not** neet to be serialized.
+     */
+    cacheKey: (tableId: TableDescriptor["id"]) =>
+        unstable_serialize({
+            url: `/api/table/${tableId}`,
+            method: "GET",
+        }),
 }
