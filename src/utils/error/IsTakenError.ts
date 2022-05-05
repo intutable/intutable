@@ -1,9 +1,11 @@
+import { SerializableError } from "./SerializableError"
+
 /**
  *
  */
-export class IsTakenError extends Error {
-    constructor(message: string, cause: Error | Response) {
-        super(message, { cause: cause instanceof Error ? cause : undefined })
+export class IsTakenError extends SerializableError {
+    constructor(message?: string, options?: ErrorOptions) {
+        super(message, options)
         this.name = this.constructor.name
     }
 }

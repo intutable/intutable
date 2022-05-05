@@ -1,45 +1,9 @@
 import { inspect } from "util"
-
-type ObjectWithError<T = unknown> = {
-    error: T
-}
-
-const isObjectWithError = (value: unknown): value is ObjectWithError => {
-    if (typeof value !== "object" || value == null) return false
-
-    const obj = value
-    if ("error" in obj) return true
-
-    return false
-}
-
-const getLastErrorFromChain = (error: ObjectWithError): unknown => {
-    let returnValue: unknown = error.error
-    while (isObjectWithError(returnValue)) {
-        returnValue = returnValue.error
-    }
-    return returnValue
-}
-
-// const replacer = (key: string, value: unknown) => {
-//     if (value instanceof Error) {
-//         const error = {}
-
-//         Object.getOwnPropertyNames(value).forEach(function (propName) {
-//             error[propName] = value[propName]
-//         })
-
-//         return error
-//     }
-
-//     return value
-// }
-
-// const stringifyError = (err: Error): string => JSON.stringify(err, replacer)
-
-// const parseError = (value: string): Error | false => {
-//     return false
-// }
+import {
+    ObjectWithError,
+    isObjectWithError,
+    getLastErrorFromChain,
+} from "./getLastErrorFromChain"
 
 export const makeError = (err: unknown): Error => {
     let value = err
