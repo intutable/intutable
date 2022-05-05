@@ -38,6 +38,7 @@ export const useColumn = () => {
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: handle the 'alreadyTaken'-Error differently, e.g. create a dedicated error class
+    // TODO: check for naming conflicts in the api route
     // TODO: get rid of `getColumnByKey`
     const renameColumn = async (
         column: Column,
