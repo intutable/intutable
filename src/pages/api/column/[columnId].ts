@@ -12,9 +12,10 @@ import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest, Parser } from "api/utils"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Column } from "types"
-import { makeError } from "utils/makeError"
+import { makeError } from "utils/error/makeError"
 import { withSessionRoute } from "auth"
 import { withUserCheck } from "utils/withUserCheck"
+import { IsTakenError } from "utils/error/IsTakenError"
 
 /**
  * Update the metadata of a column. Only its `attributes` can be changed, all
@@ -42,6 +43,18 @@ const PATCH = async (
         const user = req.session.user!
 
         const deparsedUpdate = Parser.Column.deparse(update, columnId)
+
+        // check for naming conflicts
+        if ("name" in deparsedUpdate.attributes) {
+            const nameUpdate = (deparsedUpdate.attributes as { name: string })
+                .name
+
+            // TODO: check if the name is taken
+            throw new Error("NOT IMPLEMENTED")
+
+            const isTakenError = new IsTakenError()
+            res.status(500).send(isTakenError.serialize())
+        }
 
         // change property in view column, underlying table column is never used
         const updatedColumn = await coreRequest<ColumnInfo>(
