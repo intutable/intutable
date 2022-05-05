@@ -12,7 +12,7 @@ import { coreRequest, Parser } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Column } from "types"
-import { makeError } from "utils/makeError"
+import { makeError } from "utils/error/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**

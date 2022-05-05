@@ -9,7 +9,7 @@ import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useCallback, useMemo, useState } from "react"
 import { User } from "types/User"
-import { makeError } from "utils/makeError"
+import { makeError } from "utils/error/makeError"
 
 const validateUsername = (username: string): true | Error =>
     username.length > 7

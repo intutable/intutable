@@ -13,7 +13,7 @@ import { coreRequest } from "api/utils"
 import { Table } from "api/utils/parse"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/makeError"
+import { makeError } from "utils/error/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
