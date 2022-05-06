@@ -20,15 +20,7 @@ export class SerializableError extends Error {
         this.name = this.constructor.name
     }
 
-    public toString(): string {
-        return this.serialize()
-    }
-
-    get [Symbol.toStringTag](): string {
-        return this.name
-    }
-
-    [Symbol.toPrimitive](): string {
+    public toJSON() {
         return this.serialize()
     }
 
@@ -57,3 +49,21 @@ export class SerializableError extends Error {
         return new this() // TODO: implement
     }
 }
+
+type ErrorLike = {
+    name: string
+    stack: string
+    message: string
+    [key: string]: unknown
+}
+
+export const isErrorLike = (value: unknown): value is ErrorLike => {
+
+    const isObject = typeof value === "object" &&
+    Array.isArray(value) === false &&
+        typeof "value" !== "function" &&
+    
+    const hasNameProp 
+}
+    "name" in value &&
+    typeof value.name === "string"
