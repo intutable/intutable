@@ -1,3 +1,5 @@
+import Obj from "types/Obj"
+
 const replacer = (key: string, value: unknown) => {
     if (value instanceof Error) {
         const error: Record<string, unknown> = {}
@@ -57,13 +59,22 @@ type ErrorLike = {
     [key: string]: unknown
 }
 
+/**
+ * Type Guard for @type {ErrorLike}
+ */
 export const isErrorLike = (value: unknown): value is ErrorLike => {
+    const isObject =
+        typeof value === "object" &&
+        Array.isArray(value) === false &&
+        typeof "value" !== "function"
 
-    const isObject = typeof value === "object" &&
-    Array.isArray(value) === false &&
-        typeof "value" !== "function" &&
-    
-    const hasNameProp 
+    if (isObject === false) return false
+
+    const obj = value as Obj
+
+    const hasNameProp = "name" in obj && typeof obj.name === "string"
+    const hasStackProp = "stack" in obj && typeof obj.stack === "string"
+    const hasMessageProp = "message" in obj && typeof obj.message === "string"
+
+    return hasNameProp && hasStackProp && hasMessageProp
 }
-    "name" in value &&
-    typeof value.name === "string"
