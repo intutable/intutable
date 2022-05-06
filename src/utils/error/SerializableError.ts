@@ -1,19 +1,5 @@
 import Obj from "types/Obj"
 
-const replacer = (key: string, value: unknown) => {
-    if (value instanceof Error) {
-        const error: Record<string, unknown> = {}
-
-        Object.getOwnPropertyNames(value).forEach(propName => {
-            error[propName] = value[propName as keyof typeof value]
-        })
-
-        return error
-    }
-
-    return value
-}
-
 type Ctor<T> = { new (): T }
 
 export class SerializableError extends Error {
@@ -41,7 +27,25 @@ export class SerializableError extends Error {
      * Serialize the error
      */
     public serialize(): string {
-        return JSON.stringify(this, replacer)
+        return SerializableError.serialize(this)
+    }
+
+    static serialize(error: Error) {
+        const replacer = (key: string, value: unknown) => {
+            if (value instanceof Error) {
+                const error: Record<string, unknown> = {}
+
+                Object.getOwnPropertyNames(value).forEach(propName => {
+                    error[propName] = value[propName as keyof typeof value]
+                })
+
+                return error
+            }
+
+            return value
+        }
+
+        return JSON.stringify(error, replacer)
     }
 
     /**
