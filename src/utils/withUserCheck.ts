@@ -1,6 +1,6 @@
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next"
 import { User } from "types/User"
-import { makeError } from "./error/makeError"
+import { makeError } from "./error-handling/utils/makeError"
 
 /**
  * Checks if the user is logged in, otherwise throws

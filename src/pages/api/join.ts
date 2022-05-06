@@ -13,7 +13,7 @@ import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { PM } from "types"
-import { makeError } from "utils/error/makeError"
+import { makeError } from "utils/error-handling/utils/makeError"
 import makeForeignKeyName from "utils/makeForeignKeyName"
 import { withUserCheck } from "utils/withUserCheck"
 

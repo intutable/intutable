@@ -12,10 +12,10 @@ import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest, Parser } from "api/utils"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Column } from "types"
-import { makeError } from "utils/error/makeError"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { withSessionRoute } from "auth"
 import { withUserCheck } from "utils/withUserCheck"
-import { IsTakenError } from "utils/error/IsTakenError"
+import { IsTakenError } from "utils/error-handling/custom/IsTakenError"
 
 /**
  * Update the metadata of a column. Only its `attributes` can be changed, all

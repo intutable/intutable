@@ -13,7 +13,7 @@ import {
 
 import { PM } from "types"
 import { coreRequest } from "api/utils"
-import { makeError } from "utils/error/makeError"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { withSessionRoute } from "auth"
 import { withUserCheck } from "utils/withUserCheck"
 

@@ -1,4 +1,4 @@
-import { SerializableError } from "./SerializableError"
+import { SerializableError } from "../SerializableError"
 
 /**
  *
