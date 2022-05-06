@@ -1,10 +1,13 @@
 import { SerializableError } from "../utils/error-handling/SerializableError"
-import { replaceUndefined } from "../utils/replaceUndefined"
 
-describe("'SerializableError' class", () => {
-    it("should properly serialize", () => {
+describe("SerializableError", () => {
+    it("should properly serialize to json and back", () => {
         const error = new SerializableError("hello")
-        console.log(error.serialize())
+
+        const json = SerializableError.toJSON(error)
+
+        const parsed = SerializableError.fromJSON(json)
+        console.log(parsed)
 
         expect(true).toBeTruthy()
     })
