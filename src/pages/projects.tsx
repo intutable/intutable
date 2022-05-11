@@ -21,6 +21,8 @@ import { SWRConfig, unstable_serialize } from "swr"
 import { prepareName } from "utils/validateName"
 import { useProjects, useProjectsConfig } from "hooks/useProjects"
 import { withSessionSsr } from "auth"
+import { makeError } from "utils/error-handling/utils/makeError"
+import { isErrorObject } from "utils/error-handling/utils/ErrorObject"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -194,16 +196,6 @@ const ProjectList: React.FC = () => {
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
-            // TODO: move this into the corresponding api route
-            const nameIsTaken = projects!
-                .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
-                .includes(name.toLowerCase())
-            if (nameIsTaken) {
-                snackError(
-                    "Dieser Name wird bereits für eines deiner Projekte verwendet!"
-                )
-                return
-            }
             await fetcher<ProjectDescriptor>({
                 url: `/api/project/${project.id}`,
                 body: { newName: name },
@@ -211,7 +203,10 @@ const ProjectList: React.FC = () => {
             })
             await mutate()
         } catch (error) {
-            snackError("Das Projekt konnte nicht umbenannt werden!")
+            const err = makeError(error)
+            if (err.message === "alreadyTaken")
+                snackError("Zwei Projekte können nicht denselben Namen haben!")
+            else snackError("Das Projekt konnte nicht umbenannt werden!")
         }
     }
 

@@ -2,6 +2,7 @@ import { User } from "types/User"
 import type { Fetcher } from "swr"
 import Obj from "types/Obj"
 import { AuthenticationError } from "api/utils/AuthenticationError"
+import { isErrorObject } from "utils/error-handling/utils/ErrorObject"
 /**
  * Fetcher function for use with useSWR hookb
  */
@@ -59,6 +60,13 @@ export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
 const catchException = async (res: Response): Promise<Response> => {
     if (res.status >= 400 && res.status < 600) {
         console.error(`Fetcher Received Exception (${res.status}): ${res}`)
+
+        const body = await res.json()
+
+        if (isErrorObject(body)) {
+            throw body
+        }
+
         throw res
     }
     return res
