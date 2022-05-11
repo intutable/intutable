@@ -46,7 +46,7 @@ const GET = async (
  * PATCH/update the name of a single project.
  * Returns the updated project {@type {ProjectDescriptor}}.
  *
- * // TODO: In a future version this api point will be able to adjust more than the name.
+ * // TODO: In a future version this api route will be able to adjust more than the name.
  *
  * @tutorial
  * ```

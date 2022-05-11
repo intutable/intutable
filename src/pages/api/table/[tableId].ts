@@ -4,17 +4,25 @@ import {
     getViewData,
     getViewOptions,
     renameView,
+    TableDescriptor,
     ViewData,
     ViewDescriptor,
     ViewOptions,
+    listViews,
+    tableId as makeTableId,
 } from "@intutable/lazy-views"
-import { removeTable } from "@intutable/project-management/dist/requests"
+import {
+    getProjects,
+    removeTable,
+} from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { Table } from "api/utils/parse"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
+import { getTablesFromProject } from "@intutable/project-management/dist/requests"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
 /**
  * GET a single table view's data {@type {TableData.Serialized}}.
@@ -50,13 +58,15 @@ const GET = async (
 /**
  * PATCH/update the name of a single table.
  * Returns the updated table view {@type {ViewDescriptor}}.
+ * 
+ * // TODO: In a future version this api route will be able to adjust more than the name.
 
  * @tutorial
  * ```
  * - URL: `/api/project/[id]` e.g. `/api/project/1`
  * - Body: {
- *    newName: {@type {string}}
- * }
+ *     newName: {@type {string}}
+ *   }
  * ```
  */
 const PATCH = async (
@@ -65,8 +75,9 @@ const PATCH = async (
     tableId: ViewDescriptor["id"]
 ) => {
     try {
-        const { newName } = req.body as {
+        const { newName, project } = req.body as {
             newName: ViewDescriptor["name"]
+            project: ProjectDescriptor
         }
         const user = req.session.user!
 
@@ -75,6 +86,24 @@ const PATCH = async (
             renameView(tableId, newName),
             user.authCookie
         )
+
+        // check if name is taken
+        const baseTables = await coreRequest<TableDescriptor[]>(
+            getTablesFromProject(project.id),
+            user.authCookie
+        )
+        const tables = await Promise.all(
+            baseTables.map(tbl =>
+                coreRequest<ViewDescriptor[]>(
+                    listViews(makeTableId(tbl.id)),
+                    user.authCookie
+                )
+            )
+        ).then(tableLists => tableLists.flat())
+        const isTaken = tables
+            .map(tbl => tbl.name.toLowerCase())
+            .includes(newName.toLowerCase())
+        if (isTaken) throw new Error("alreadyTaken")
 
         res.status(200).json(updatedTable)
     } catch (err) {
