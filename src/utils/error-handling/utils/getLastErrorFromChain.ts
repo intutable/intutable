@@ -1,19 +1,12 @@
-export type ObjectWithError<T = unknown> = {
-    error: T
-}
+import { ErrorObject, isErrorObject } from "./ErrorObject"
 
-export const isObjectWithError = (value: unknown): value is ObjectWithError => {
-    if (typeof value !== "object" || value == null) return false
-
-    const obj = value
-    if ("error" in obj) return true
-
-    return false
-}
-
-export const getLastErrorFromChain = (error: ObjectWithError): unknown => {
-    let returnValue: unknown = error.error
-    while (isObjectWithError(returnValue)) {
+/**
+ * Sometime @type {ErrorObject}'s are chained like `{error: {error: {error: "this a error message"}}}`.
+ * This utilily will return the last @type {ErrorObject} from the chain
+ */
+export const getLastErrorFromChain = (error: ErrorObject): ErrorObject => {
+    let returnValue: ErrorObject = error
+    while (isErrorObject(returnValue.error)) {
         returnValue = returnValue.error
     }
     return returnValue
