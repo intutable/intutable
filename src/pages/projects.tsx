@@ -103,9 +103,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    const handleOnClick = () => {
-        router.push(`/project/${props.project.id}`)
-    }
+    const handleOnClick = () => router.push(`/project/${props.project.id}`)
 
     return (
         <>
@@ -196,6 +194,7 @@ const ProjectList: React.FC = () => {
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
+            // TODO: move this into the corresponding api route
             const nameIsTaken = projects!
                 .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
                 .includes(name.toLowerCase())
