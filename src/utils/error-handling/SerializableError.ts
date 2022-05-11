@@ -45,6 +45,12 @@ export class SerializableError extends Error {
             throw new RangeError(
                 `Could not instantiate from serialized error of type '${err.name}' to '${this.name}'`
             )
+        // const instance = Object.create(
+        //     this.prototype,
+        //     Object.getOwnPropertyDescriptors(parsed)
+        // )
+
+        // return instance as T
         // TODO
         return new this()
     }
