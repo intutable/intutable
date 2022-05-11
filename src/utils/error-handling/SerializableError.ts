@@ -22,8 +22,9 @@ const replacer = (key: string, value: unknown) => {
     return value
 }
 
-type Ctor<T> = { new (...args: unknown[]): T }
-// type Ctor<T> = { new (): T }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Ctor<T> = new (...args: any[]) => T
+type _Ctor<T, P = unknown> = new () => T
 type ErrorObject = ErrorLike
 
 /**
@@ -35,12 +36,17 @@ export class SerializableError extends Error {
         this.name = SerializableError.name
     }
 
-    static fromJSON<T>(this: Ctor<T>, error: string): T | null {
-        const parsed = JSON.parse(error)
-
-        if (isErrorLike(parsed) === false) return null
-
-        return new this(parsed)
+    static fromJSON<T>(this: Ctor<T>, value: string): T {
+        const parsed = JSON.parse(value) as Obj
+        if (isErrorLike(parsed) === false)
+            throw new RangeError(`Could not instantiate from argument 'value'!`)
+        const err = parsed as ErrorLike
+        if (this.name !== err.name)
+            throw new RangeError(
+                `Could not instantiate from serialized error of type '${err.name}' to '${this.name}'`
+            )
+        // TODO
+        return new this()
     }
 
     /**
@@ -72,15 +78,16 @@ export class SerializableError extends Error {
     /**
      * Serialize this error.
      */
-    // public serialize(): ErrorObject {
-    //     return SerializableError.serialize(this)
-    // }
+    public serialize() {
+        // return SerializableError.serialize(this)
+        return
+    }
 
     /**
      * Serialize an error object.
      */
-    // static serialize<T extends Error>(error: T): ErrorObject & keyof T {
-
+    // static serialize<T extends Error>(error: T): ErrorObject {
+    //     return
     // }
 
     /**
@@ -88,5 +95,44 @@ export class SerializableError extends Error {
      */
     static deserialize<T>(this: Ctor<T>, error: ErrorObject): T {
         return new this() // TODO: implement
+    }
+}
+
+// ### Middleware ###
+type ErrorCtor<T> = new (...args: unknown[]) => T
+type SerializableErrorCtor = typeof SerializableError
+
+export class DeserializationMiddleware {
+    private knownConstructors: Map<string, ErrorCtor<SerializableErrorCtor>>
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(classes?: Array<ErrorCtor<any>>) {
+        this.knownConstructors = new Map()
+        // classes?.forEach()
+    }
+
+    public addClass<T extends SerializableErrorCtor>(ctor: ErrorCtor<T>): this {
+        this.knownConstructors.set(ctor.name, ctor)
+        return this
+    }
+
+    public removeClass<T extends SerializableErrorCtor>(
+        ctor: ErrorCtor<T>
+    ): this {
+        this.knownConstructors.delete(ctor.name)
+        return this
+    }
+
+    public async middleware(res: Response): Promise<Response> {
+        const data = (await res.json()) as unknown
+
+        if (isErrorLike(data)) {
+            const err = data as ErrorLike
+            const ctor = this.knownConstructors.get(err.name)
+            if (ctor == null) return res
+            // TODO:
+        }
+
+        return res
     }
 }
