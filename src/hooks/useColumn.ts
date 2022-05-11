@@ -19,6 +19,14 @@ const getColumnInfo = (
     return columnInfo
 }
 
+/**
+ * ### useColumn hook.
+ *
+ * Provides methods for manipulating columns of a table.
+ *
+ * It uses the {@link APIContextProvider}
+ * to determine the current selected table.
+ */
 export const useColumn = () => {
     const { data: table, error, mutate } = useTable()
 

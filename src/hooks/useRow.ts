@@ -10,6 +10,14 @@ const getRowId = (data: TableData | undefined, row: Row) => {
     return row[uidColumn.key] as number
 }
 
+/**
+ * ### useRow hook.
+ *
+ * Provides methods for manipulating rows of a table.
+ *
+ * It uses the {@link APIContextProvider}
+ * to determine the current selected table.
+ */
 export const useRow = () => {
     const { data: table, error, mutate } = useTable()
     const { getColumnInfo } = useColumn()

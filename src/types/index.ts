@@ -19,7 +19,7 @@ export const PM = {
  * ### Project Management
  * Type Annotation
  */
-type PM = {
+export type PM = {
     /**
      * internal backend unique id
      */
@@ -35,17 +35,6 @@ type Table<COL, ROW> = {
     metadata: ViewInfo
     columns: COL[]
     rows: ROW[]
-}
-
-// #################################################################
-//       Frontend / Deserialized
-// #################################################################
-
-// Note: augment Column type
-declare module "react-data-grid" {
-    /* eslint-disable @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars */
-    interface Column<TRow, TSummaryRow = unknown> extends Partial<PM> {}
-    /* eslint-enable @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars */
 }
 
 export type Column = ReactDataGrid_Column<Row>

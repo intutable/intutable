@@ -1,10 +1,16 @@
 import { TableDescriptor } from "@intutable/lazy-views"
-import { useAPI } from "context"
+import { useAPI, APIContextProvider } from "context"
 import useSWR, { unstable_serialize } from "swr"
 import { TableData } from "types"
+import { ViewDescriptor } from "@intutable/lazy-views"
 
 /**
- * useTable Hook
+ * ### useTable hook.
+ *
+ * Returns the data of a table.
+ *
+ * It uses the {@link APIContextProvider}
+ * to determine the current selected table.
  */
 export const useTable = () => {
     const { table } = useAPI()
