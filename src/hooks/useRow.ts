@@ -23,7 +23,10 @@ export const getRowId = (data: TableData | undefined, row: Row) => {
 export const useRow = () => {
     const { data: table, error, mutate } = useTable()
 
-    // TODO: ???
+    /**
+     * Used for row reordering / drag n drop
+     * // TODO: implement
+     */
     const onRowReorder = (fromIndex: number, toIndex: number) => {
         if (table) {
             const newRows = [...table.rows]
@@ -86,6 +89,7 @@ export const useRow = () => {
         const metaColumn = getColumnInfo(table!.metadata.columns, column)
         const baseColumnKey = metaColumn.name
 
+        // TODO: put this in the api route
         if (metaColumn.joinId !== null)
             throw Error("attempted to edit data of a different table")
 
