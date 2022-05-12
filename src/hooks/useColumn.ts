@@ -2,12 +2,14 @@ import { ColumnInfo } from "@intutable/lazy-views"
 import { fetcher } from "api"
 import { Parser } from "api/utils"
 import { useTable } from "hooks/useTable"
-import { Column } from "types"
+import { Column, TableData } from "types"
 
 /**
  * Get the Column Info {@type {ColumnInfo}} for a specific column
  * @param {Column} forColumn
  * @returns {ColumnInfo}
+ *
+ * @deprecated
  */
 const getColumnInfo = (
     columns: ColumnInfo[],
@@ -17,6 +19,18 @@ const getColumnInfo = (
     if (!columnInfo)
         throw Error(`Could not find Column Info for column: ${forColumn}`)
     return columnInfo
+}
+
+/**
+ * @deprecated
+ */
+const getColumnByKey = (
+    columns: ColumnInfo[],
+    key: Column["key"]
+): ColumnInfo => {
+    const column = columns.find(c => c.key === key)
+    if (!column) throw Error(`could not find column with key ${key}`)
+    return column
 }
 
 /**
@@ -91,5 +105,6 @@ export const useColumn = () => {
         renameColumn,
         deleteColumn,
         getColumnInfo: getColumnInfo.bind(null, table!.metadata.columns),
+        getColumnByKey: getColumnByKey.bind(null, table!.metadata.columns),
     }
 }

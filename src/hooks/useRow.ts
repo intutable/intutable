@@ -4,7 +4,9 @@ import { useTable } from "hooks/useTable"
 import { Column, PM, Row, TableData } from "types"
 import { useColumn } from "./useColumn"
 
-// useless?
+/**
+ * @deprecated
+ */
 const getRowId = (data: TableData | undefined, row: Row) => {
     const uidColumn = data!.metadata.columns.find(c => c.name === PM.UID_KEY)!
     return row[uidColumn.key] as number
@@ -102,5 +104,13 @@ export const useRow = () => {
         await mutate()
     }
 
-    return { error, mutate, createRow, deleteRow, updateRow }
+    return {
+        error,
+        mutate,
+        onRowReorder,
+        createRow,
+        deleteRow,
+        updateRow,
+        getRowId,
+    }
 }

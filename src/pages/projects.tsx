@@ -12,17 +12,16 @@ import {
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
+import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
+import { useProjects, useProjectsConfig } from "hooks/useProjects"
 import { useSnacki } from "hooks/useSnacki"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
-import { prepareName } from "utils/validateName"
-import { useProjects, useProjectsConfig } from "hooks/useProjects"
-import { withSessionSsr } from "auth"
 import { makeError } from "utils/error-handling/utils/makeError"
-import { isErrorObject } from "utils/error-handling/utils/ErrorObject"
+import { prepareName } from "utils/validateName"
 
 type ProjectContextMenuProps = {
     anchorEL: Element

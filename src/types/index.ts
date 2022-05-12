@@ -23,7 +23,7 @@ export type PM = {
     /**
      * internal backend unique id
      */
-    readonly _id: number
+    readonly _id?: number
 }
 
 // #################################################################

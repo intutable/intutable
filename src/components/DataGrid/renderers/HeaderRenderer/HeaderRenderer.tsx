@@ -24,8 +24,10 @@ import {
 } from "@mui/material"
 import { fetcher } from "api/fetcher"
 import { useUser } from "auth"
-import { useHeaderSearchField, useTableCtx } from "context"
+import { useAPI, useHeaderSearchField } from "context"
+import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
+import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
 import { useRouter } from "next/router"
 import React, { useMemo, useState } from "react"
@@ -39,14 +41,18 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { user } = useUser()
     const { snackError, snackSuccess, snackWarning } = useSnacki()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const { data, renameColumn, deleteColumn, utils, project } = useTableCtx()
+
+    const { data, mutate } = useTable()
+    const { renameColumn, deleteColumn, getColumnByKey } = useColumn()
+    const { project } = useAPI()
+
     const {
         open: headerOpen,
         openSearchField,
         closeSearchField,
     } = useHeaderSearchField()
 
-    const col = utils.getColumnByKey(props.column.key)
+    const col = getColumnByKey(props.column.key)
     // column that represents a link to another table
     const isLinkCol =
         col.joinId !== null && col.attributes.formatter === "linkColumn"
@@ -77,7 +83,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 "Möchtest du diese Spalte wirklich löschen?"
             )
             if (!confirmed) return
-            await deleteColumn(props.column.key)
+            await deleteColumn(props.column)
             snackSuccess("Spalte wurde gelöscht.")
         } catch (error) {
             const errMsg =
@@ -89,14 +95,14 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     }
 
     const navigateToView = () =>
-        router.push(`/project/${project.id}/table/${foreignView?.id}`)
+        router.push(`/project/${project!.id}/table/${foreignView?.id}`)
 
     const handleRenameColumn = async () => {
         try {
             const name = prompt("Gib einen neuen Namen für diese Spalte ein:")
             if (!name) return
             // TODO: check if the column name is already taken
-            await renameColumn(props.column.key, name)
+            await renameColumn(props.column, name)
             snackSuccess("Die Spalte wurde umbenannt.")
         } catch (error) {
             const errMsg =
@@ -128,7 +134,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     joinId,
                 },
             })
-            await utils.mutate()
+            await mutate()
         } catch (error) {
             snackError("Der Lookup konnte nicht hinzugefügt werden!")
         }

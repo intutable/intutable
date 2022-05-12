@@ -1,29 +1,28 @@
-import React, { useEffect, useState } from "react"
-import {
-    Box,
-    MenuItem,
-    Dialog,
-    DialogTitle,
-    DialogContentText,
-    DialogContent,
-    DialogActions,
-    Button,
-    Divider,
-    FormControl,
-    InputLabel,
-    Select,
-    Typography,
-} from "@mui/material"
-import {
-    CellContentType,
-    isCellContentType,
-    Runtime_CellContentType,
-    CellInputData,
-} from "@datagrid/Editor_Formatter/types/CellContentType"
 import {
     isConvertable,
     IsConvertableResponse,
 } from "@datagrid/Editor_Formatter/type-management"
+import {
+    CellContentType,
+    isCellContentType,
+    Runtime_CellContentType,
+} from "@datagrid/Editor_Formatter/types/CellContentType"
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Divider,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    Typography,
+} from "@mui/material"
+import React, { useEffect, useState } from "react"
 
 type ChangeCellTypeDialogProps = {
     currentType: CellContentType

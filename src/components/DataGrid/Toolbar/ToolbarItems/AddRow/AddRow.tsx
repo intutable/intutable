@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/TableRows"
 import { Button } from "@mui/material"
-import { useTableCtx } from "context"
+import { useRow } from "hooks/useRow"
 import { useSnackbar } from "notistack"
 import React from "react"
 
@@ -10,7 +10,7 @@ import React from "react"
 export const AddRow: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
 
-    const { createRow } = useTableCtx()
+    const { createRow } = useRow()
 
     const handleCreateRow = async () => {
         try {

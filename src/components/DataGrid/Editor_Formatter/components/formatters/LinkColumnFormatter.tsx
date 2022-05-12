@@ -1,9 +1,9 @@
 import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
+import { getId } from "@intutable/lazy-views/dist/selectable"
 import {
     JoinDescriptor,
     ViewDescriptor,
 } from "@intutable/lazy-views/dist/types"
-import { getId } from "@intutable/lazy-views/dist/selectable"
 import ClearIcon from "@mui/icons-material/Clear"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -25,8 +25,10 @@ import {
 } from "@mui/material"
 import { fetcher } from "api"
 import { useUser } from "auth"
-import { useTableCtx } from "context"
+import { useColumn } from "hooks/useColumn"
+import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
+import { useTable } from "hooks/useTable"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
 import useSWR from "swr"
@@ -50,7 +52,8 @@ const RowPicker: React.FC<RowPickerProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data: baseTableData, utils } = useTableCtx()
+    const { data: baseTableData, mutate } = useTable()
+    const { getRowId } = useRow()
 
     const { data: linkTableData, error } = useSWR<TableData>(
         user
@@ -72,12 +75,12 @@ const RowPicker: React.FC<RowPickerProps> = props => {
             )!
             setOptions(
                 linkTableData!.rows.map(r => ({
-                    id: utils.getRowId(linkTableData, r),
+                    id: getRowId(linkTableData, r),
                     text: r[primaryColumn.key] as string,
                 }))
             )
         }
-    }, [linkTableData, utils])
+    }, [getRowId, linkTableData])
 
     const handlePickRow = async () => {
         try {
@@ -89,7 +92,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
                     value: selection?.id,
                 },
             })
-            await utils.mutate()
+            await mutate()
         } catch (err) {
             enqueueSnackbar("Die Zeile konnte nicht hinzugefügt werden!", {
                 variant: "error",
@@ -153,8 +156,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
 
 export const LinkColumnFormatter: Formatter = props => {
     const { row, column } = props
-    const { user } = useUser()
-    const { snack, snackError } = useSnacki()
+    const { snackError } = useSnacki()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
@@ -165,17 +167,19 @@ export const LinkColumnFormatter: Formatter = props => {
     }
     const handleCloseModal = () => setAnchorEL(null)
 
-    const { data, utils } = useTableCtx()
+    const { data, mutate } = useTable()
+    const { getColumnByKey } = useColumn()
+    const { getRowId } = useRow()
 
     const [foreignTableId, setForeignTableId] = useState<ViewDescriptor["id"]>()
     const [joinId, setJoinId] = useState<JoinDescriptor["id"]>()
 
     useEffect(() => {
-        const metaColumn = utils.getColumnByKey(column.key)
+        const metaColumn = getColumnByKey(column.key)
         const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
         setJoinId(join.id)
         setForeignTableId(getId(join.foreignSource))
-    }, [data, utils, column.key])
+    }, [data, column.key, getColumnByKey])
 
     const key = column.key as keyof Row
     const content = row[key] as string | null | undefined
@@ -191,11 +195,11 @@ export const LinkColumnFormatter: Formatter = props => {
                 url: `/api/join/${joinId}`,
                 body: {
                     viewId: data!.metadata.descriptor.id,
-                    rowId: utils.getRowId(data, row),
+                    rowId: getRowId(data, row),
                     value: null,
                 },
             })
-            await utils.mutate()
+            await mutate()
         } catch (error) {
             snackError("Der Inhalt konnte nicht gelöscht werden")
         }
@@ -235,7 +239,7 @@ export const LinkColumnFormatter: Formatter = props => {
             </Tooltip>
             {foreignTableId && joinId && (
                 <RowPicker
-                    rowId={utils.getRowId(data, row)}
+                    rowId={getRowId(data, row)}
                     joinId={joinId}
                     foreignTableId={foreignTableId}
                     open={anchorEL != null}

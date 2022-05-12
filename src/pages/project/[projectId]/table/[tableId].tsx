@@ -15,10 +15,10 @@ import { TableNavigator } from "components/TableNavigator"
 import {
     APIContextProvider,
     HeaderSearchFieldProvider,
-    TableCtxProvider,
     useHeaderSearchField,
-    useTableCtx,
 } from "context"
+import { useRow } from "hooks/useRow"
+import { useTable } from "hooks/useTable"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import React, { useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
@@ -49,7 +49,8 @@ const TablePage: React.FC<TablePageProps> = props => {
         column: CalculatedColumn<Row>
     } | null>(null)
 
-    const { data, error, updateRow, utils } = useTableCtx()
+    const { data, error } = useTable()
+    const { updateRow, getRowId } = useRow()
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
@@ -57,9 +58,9 @@ const TablePage: React.FC<TablePageProps> = props => {
         changeData: RowsChangeData<Row>
     ): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
-        const key = changeData.column.key
+        const col = changeData.column
 
-        await updateRow(key, utils.getRowId(data, changedRow), changedRow[key])
+        await updateRow(col, getRowId(data, changedRow), changedRow[col.key])
     }
 
     return (
@@ -154,16 +155,10 @@ type PageProps = {
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ project, table, tableList }) => (
-    <APIContextProvider table={table}>
-        <TableCtxProvider table={table} project={project}>
-            <HeaderSearchFieldProvider>
-                <TablePage
-                    project={project}
-                    table={table}
-                    tableList={tableList}
-                />
-            </HeaderSearchFieldProvider>
-        </TableCtxProvider>
+    <APIContextProvider project={project} table={table}>
+        <HeaderSearchFieldProvider>
+            <TablePage project={project} table={table} tableList={tableList} />
+        </HeaderSearchFieldProvider>
     </APIContextProvider>
 )
 

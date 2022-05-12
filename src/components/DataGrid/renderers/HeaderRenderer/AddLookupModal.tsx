@@ -14,6 +14,7 @@ import {
     useTheme,
 } from "@mui/material"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
+import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import React, { useEffect, useMemo, useState } from "react"
@@ -30,12 +31,13 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { data, error, utils } = useTable()
+    const { data, error } = useTable()
+    const { getColumnInfo } = useColumn()
 
     const [selection, setSelection] = useState<Column | null>(null)
     const selectedColDescriptor = useMemo(
-        () => (selection ? utils.getColumnInfo(selection) : undefined),
-        [selection, utils]
+        () => (selection ? getColumnInfo(selection) : undefined),
+        [getColumnInfo, selection]
     )
 
     useEffect(() => {
