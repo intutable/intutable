@@ -17,7 +17,7 @@ import {
     HeaderSearchFieldProvider,
     useHeaderSearchField,
 } from "context"
-import { useRow } from "hooks/useRow"
+import { useRow, getRowId } from "hooks/useRow"
 import { useTable } from "hooks/useTable"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import React, { useState } from "react"
@@ -50,7 +50,7 @@ const TablePage: React.FC<TablePageProps> = props => {
     } | null>(null)
 
     const { data, error } = useTable()
-    const { updateRow, getRowId } = useRow()
+    const { updateRow } = useRow()
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (

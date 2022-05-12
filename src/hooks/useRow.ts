@@ -2,7 +2,7 @@ import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { fetcher } from "api"
 import { useTable } from "hooks/useTable"
 import { Column, PM, Row, TableData } from "types"
-import { useColumn, getColumnInfo } from "./useColumn"
+import { getColumnInfo } from "./useColumn"
 
 /**
  * @deprecated

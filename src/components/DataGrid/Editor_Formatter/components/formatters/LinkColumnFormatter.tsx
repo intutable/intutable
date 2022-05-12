@@ -25,8 +25,8 @@ import {
 } from "@mui/material"
 import { fetcher } from "api"
 import { useUser } from "auth"
-import { useColumn } from "hooks/useColumn"
-import { useRow } from "hooks/useRow"
+import { getColumnInfo } from "hooks/useColumn"
+import { getRowId } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useSnackbar } from "notistack"
@@ -53,7 +53,6 @@ const RowPicker: React.FC<RowPickerProps> = props => {
     const { enqueueSnackbar } = useSnackbar()
 
     const { data: baseTableData, mutate } = useTable()
-    const { getRowId } = useRow()
 
     const { data: linkTableData, error } = useSWR<TableData>(
         user
@@ -69,8 +68,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
         if (!linkTableData) {
             setOptions([])
         } else {
-            const tableInfo = linkTableData!.metadata
-            const primaryColumn = tableInfo.columns.find(
+            const primaryColumn = linkTableData!.metadata.columns.find(
                 c => c.attributes.userPrimary! === 1
             )!
             setOptions(
@@ -80,7 +78,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
                 }))
             )
         }
-    }, [getRowId, linkTableData])
+    }, [linkTableData])
 
     const handlePickRow = async () => {
         try {
@@ -168,24 +166,24 @@ export const LinkColumnFormatter: Formatter = props => {
     const handleCloseModal = () => setAnchorEL(null)
 
     const { data, mutate } = useTable()
-    const { getColumnByKey } = useColumn()
-    const { getRowId } = useRow()
 
     const [foreignTableId, setForeignTableId] = useState<ViewDescriptor["id"]>()
     const [joinId, setJoinId] = useState<JoinDescriptor["id"]>()
 
     useEffect(() => {
-        const metaColumn = getColumnByKey(column.key)
+        if (data == null) return
+        const metaColumn = getColumnInfo(data.metadata.columns, column)
         const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
         setJoinId(join.id)
         setForeignTableId(getId(join.foreignSource))
-    }, [data, column.key, getColumnByKey])
+    }, [data, column])
 
     const key = column.key as keyof Row
     const content = row[key] as string | null | undefined
     const hasContent = content && content.length > 0
 
     const [deleteIconVisible, setDeleteIconVisible] = useState<boolean>(false)
+
     const handleDeleteContent = async (
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ) => {
