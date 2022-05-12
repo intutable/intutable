@@ -25,7 +25,7 @@ import {
 import { fetcher } from "api/fetcher"
 import { useUser } from "auth"
 import { useAPI, useHeaderSearchField } from "context"
-import { useColumn } from "hooks/useColumn"
+import { useColumn, getColumnInfo } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
@@ -43,7 +43,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
     const { data, mutate } = useTable()
-    const { renameColumn, deleteColumn, getColumnByKey } = useColumn()
+    const { renameColumn, deleteColumn } = useColumn()
     const { project } = useAPI()
 
     const {
@@ -52,24 +52,44 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         closeSearchField,
     } = useHeaderSearchField()
 
-    const col = getColumnByKey(props.column.key)
+    const col = useMemo(
+        () =>
+            data ? getColumnInfo(data.metadata.columns, props.column) : null,
+        [data, props.column]
+    )
     // column that represents a link to another table
-    const isLinkCol =
-        col.joinId !== null && col.attributes.formatter === "linkColumn"
-    const isLookupCol =
-        col.joinId !== null && col.attributes.formatter !== "linkColumn"
+    const isLinkCol = useMemo(
+        () =>
+            col
+                ? col.joinId !== null &&
+                  col.attributes.formatter === "linkColumn"
+                : null,
+        [col]
+    )
+    const isLookupCol = useMemo(
+        () =>
+            col
+                ? col.joinId !== null &&
+                  col.attributes.formatter !== "linkColumn"
+                : null,
+        [col]
+    )
 
     // const t = props.column.editorOptions?.renderFormatter
     // a user-facing primary column distinct from the table's real PK
-    const isUserPrimary = col.attributes.userPrimary === 1
+    const isUserPrimary = useMemo(
+        () => (col ? col.attributes.userPrimary === 1 : null),
+        [col]
+    )
     const { tables } = useTables(project)
 
     const foreignView = useMemo(() => {
+        if (col == null) return null
         if (!data || !tables) return undefined
         const join = data.metadata.joins.find(j => j.id === col.joinId)
         if (!join) return undefined
         return tables.find(t => t.id === asView(join.foreignSource).id)
-    }, [col.joinId, tables, data])
+    }, [col, tables, data])
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -126,7 +146,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const handleAddLookup = async (column: ColumnInfo) => {
         if (!isLinkCol || !user) return
         try {
-            const joinId = col.joinId!
+            const joinId = col!.joinId!
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {

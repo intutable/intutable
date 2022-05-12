@@ -2,12 +2,12 @@ import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { fetcher } from "api"
 import { useTable } from "hooks/useTable"
 import { Column, PM, Row, TableData } from "types"
-import { useColumn } from "./useColumn"
+import { useColumn, getColumnInfo } from "./useColumn"
 
 /**
  * @deprecated
  */
-const getRowId = (data: TableData | undefined, row: Row) => {
+export const getRowId = (data: TableData | undefined, row: Row) => {
     const uidColumn = data!.metadata.columns.find(c => c.name === PM.UID_KEY)!
     return row[uidColumn.key] as number
 }
@@ -22,7 +22,6 @@ const getRowId = (data: TableData | undefined, row: Row) => {
  */
 export const useRow = () => {
     const { data: table, error, mutate } = useTable()
-    const { getColumnInfo } = useColumn()
 
     // TODO: ???
     const onRowReorder = (fromIndex: number, toIndex: number) => {
@@ -84,7 +83,7 @@ export const useRow = () => {
         rowId: Row["_id"],
         value: unknown
     ): Promise<void> => {
-        const metaColumn = getColumnInfo(column)
+        const metaColumn = getColumnInfo(table!.metadata.columns, column)
         const baseColumnKey = metaColumn.name
 
         if (metaColumn.joinId !== null)
@@ -111,6 +110,5 @@ export const useRow = () => {
         createRow,
         deleteRow,
         updateRow,
-        getRowId,
     }
 }
