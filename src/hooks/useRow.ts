@@ -1,4 +1,4 @@
-import { asTable } from "@intutable/lazy-views"
+import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { fetcher } from "api"
 import { useTable } from "hooks/useTable"
 import { Column, PM, Row, TableData } from "types"
