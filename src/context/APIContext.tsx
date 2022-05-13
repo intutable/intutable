@@ -1,6 +1,6 @@
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 export type APIContextProps = {
     project: ProjectDescriptor | null
@@ -37,6 +37,13 @@ export const APIContextProvider: React.FC<APIContextProviderProps> = props => {
     const [table, setTable] = useState<ViewDescriptor | null>(
         props.table || null
     )
+
+    // BUG: the props change, but the state does not change
+    // TODO: use a better solution
+    useEffect(() => {
+        setProject(props.project || null)
+        setTable(props.table || null)
+    }, [props.project, props.table])
 
     return (
         <APIContext.Provider value={{ table, setTable, project, setProject }}>
