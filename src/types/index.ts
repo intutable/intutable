@@ -57,7 +57,7 @@ export type Column = ReactDataGrid_Column<Row> // alias
  * Those properties that are not listed compared to the original type are not used.
  * Additional comments will – only if provided! – explain how the property is modified compared to the original property.
  */
-type SerializedColumn = project_management.UID & {
+type SerializedColumn = Partial<project_management.UID> & {
     name: string
     key: string
     /**
