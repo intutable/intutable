@@ -17,7 +17,8 @@ import {
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
-import { useTableCtx } from "context"
+import { useAPI } from "context"
+import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
@@ -28,7 +29,8 @@ import React, { useEffect, useState } from "react"
 export const AddLink: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data: currentTable, project, utils } = useTableCtx()
+    const { data: currentTable, mutate } = useTable()
+    const { project } = useAPI()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
@@ -50,7 +52,7 @@ export const AddLink: React.FC = () => {
                     foreignViewId: table.id,
                 },
             })
-            await utils.mutate()
+            await mutate()
             enqueueSnackbar("Die Tabelle wurde erfolgreich verlinkt.", {
                 variant: "success",
             })
@@ -78,7 +80,7 @@ export const AddLink: React.FC = () => {
             {currentTable && (
                 <AddLinkModal
                     table={currentTable.metadata.descriptor}
-                    project={project}
+                    project={project!}
                     open={anchorEL != null}
                     onClose={handleCloseModal}
                     onAddLink={handleAddLink}

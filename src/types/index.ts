@@ -1,22 +1,11 @@
 import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import type { CellContentType } from "@datagrid/Editor_Formatter/types/CellContentType"
-import { ViewInfo, TableDescriptor } from "@intutable/lazy-views"
+import { ViewInfo } from "@intutable/lazy-views"
+import { project_management } from "./type-annotations/project-management"
 
 // #################################################################
-//       Backend / Database
-// #################################################################
-
-/**
- * Project Management Package
- * @constant
- */
-export const PM = {
-    UID_KEY: "_id",
-} as const
-
-// #################################################################
-//       Generic
+//       Table
 // #################################################################
 
 type Table<COL, ROW> = {
@@ -26,45 +15,38 @@ type Table<COL, ROW> = {
     rows: ROW[]
 }
 
-// #################################################################
-//       Frontend / Deserialized
-// #################################################################
-
-// Note: augment Column type
-declare module "react-data-grid" {
-    interface Column<TRow, TSummaryRow = unknown> {
-        /**
-         * internal backend id
-         */
-        _id?: number
-    }
-}
-
-export type Column = ReactDataGrid_Column<Row>
-
-export type Row = {
-    readonly [PLACEHOLDER.ROW_INDEX_KEY]: number
-    readonly [PM.UID_KEY]: number
-    [key: string]: unknown
-}
-
-type SummaryRow = {
-    selectedCount: number
-    totalCount: number
-}
-
 export type TableData = Table<Column, Row>
 
+type SerializedTableData = Table<SerializedColumn, SerializedRow>
+
+export namespace TableData {
+    export type Serialized = SerializedTableData
+    export type Deserialized = TableData
+}
+
 // #################################################################
-//       Frontend / Serialized
+//       Row
 // #################################################################
 
-type SerializedRow = {
-    readonly [PM.UID_KEY]: number
+export type Row = project_management.UID & {
+    readonly [PLACEHOLDER.ROW_INDEX_KEY]: number
     [key: string]: unknown
 }
 
-type SerializedTableData = Table<SerializedColumn, SerializedRow>
+type SerializedRow = project_management.UID & {
+    [key: string]: unknown
+}
+
+export namespace Row {
+    export type Serialized = SerializedRow
+    export type Deserialized = Row
+}
+
+// #################################################################
+//       Column
+// #################################################################
+
+export type Column = ReactDataGrid_Column<Row> // alias
 
 /**
  * Copied from react-data-grid's type 'Column' and modified to save an object
@@ -75,7 +57,7 @@ type SerializedTableData = Table<SerializedColumn, SerializedRow>
  * Those properties that are not listed compared to the original type are not used.
  * Additional comments will – only if provided! – explain how the property is modified compared to the original property.
  */
-type SerializedColumn = {
+type SerializedColumn = Partial<project_management.UID> & {
     name: string
     key: string
     /**
@@ -96,20 +78,7 @@ type SerializedColumn = {
     formatter: CellContentType | "linkColumn"
 }
 
-// #################################################################
-//       export
-// #################################################################
-
-export namespace Row {
-    export type Serialized = SerializedRow
-    export type Summary = SummaryRow
-    export type Deserialized = Row
-}
 export namespace Column {
     export type Serialized = SerializedColumn
     export type Deserialized = Column
-}
-export namespace TableData {
-    export type Serialized = SerializedTableData
-    export type Deserialized = TableData
 }

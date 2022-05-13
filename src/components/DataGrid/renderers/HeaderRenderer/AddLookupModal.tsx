@@ -1,4 +1,4 @@
-import { ViewDescriptor, ColumnInfo } from "@intutable/lazy-views"
+import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Button,
@@ -14,11 +14,11 @@ import {
     useTheme,
 } from "@mui/material"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
+import { getColumnInfo } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
-import { useTableData } from "hooks/useTableData"
+import { useTable } from "hooks/useTable"
 import React, { useEffect, useMemo, useState } from "react"
 import { Column } from "types"
-import { useUser } from "auth"
 
 type AddLookupModal = {
     open: boolean
@@ -31,14 +31,15 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { user } = useUser()
-
-    const { data, error, utils } = useTableData(props.foreignView.id)
+    const { data, error } = useTable()
 
     const [selection, setSelection] = useState<Column | null>(null)
     const selectedColDescriptor = useMemo(
-        () => (selection ? utils.getColumnByKey(selection.key) : undefined),
-        [selection, utils]
+        () =>
+            selection && data
+                ? getColumnInfo(data.metadata.columns, selection)
+                : null,
+        [data, selection]
     )
 
     useEffect(() => {

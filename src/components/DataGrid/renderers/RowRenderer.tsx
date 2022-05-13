@@ -1,19 +1,12 @@
-import { useTableCtx } from "context"
-import { Row } from "types"
-import {
-    Menu,
-    MenuItem,
-    useTheme,
-    Box,
-    Theme,
-    PaletteMode,
-} from "@mui/material"
+import { css } from "@emotion/css"
+import { Menu, MenuItem, PaletteMode, useTheme } from "@mui/material"
+import clsx from "clsx"
+import { useRow } from "hooks/useRow"
 import { useSnackbar } from "notistack"
 import React, { useCallback, useState } from "react"
-import { RowRendererProps, Row as GridRow } from "react-data-grid"
+import { Row as GridRow, RowRendererProps } from "react-data-grid"
 import { useDrag, useDrop } from "react-dnd"
-import { css } from "@emotion/css"
-import clsx from "clsx"
+import { Row } from "types"
 
 /**
  * // TODO: This component needs to be highly performant and memoized...
@@ -34,7 +27,7 @@ const rowOverClassname = (themeMode: PaletteMode) => css`
 const _RowRenderer = (props: RowRendererProps<Row>) => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
-    const { deleteRow, onRowReorder } = useTableCtx()
+    const { deleteRow, onRowReorder } = useRow()
 
     // draggable
 
@@ -76,7 +69,7 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
         async (index: number, row: Row) => {
             try {
                 handleCloseContextMenu()
-                await deleteRow(index, row)
+                await deleteRow(row)
             } catch (error) {
                 enqueueSnackbar("Die Zeile konnte nicht gelöscht werden.")
             }

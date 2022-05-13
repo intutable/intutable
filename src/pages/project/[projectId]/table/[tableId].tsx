@@ -4,7 +4,7 @@ import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { ViewData, ViewDescriptor } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Box, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
@@ -13,42 +13,44 @@ import Title from "components/Head/Title"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
 import {
+    APIContextProvider,
     HeaderSearchFieldProvider,
-    TableCtxProvider,
+    useAPI,
     useHeaderSearchField,
-    useTableCtx,
 } from "context"
+import { getRowId, useRow } from "hooks/useRow"
+import { useTable } from "hooks/useTable"
+import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import React, { useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import type { Row } from "types"
+import type { Row, TableData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 
-type TablePageProps = {
-    project: ProjectDescriptor
-    table: ViewDescriptor
-    tableList: ViewDescriptor[]
-}
-const TablePage: React.FC<TablePageProps> = props => {
+const TablePage: React.FC = () => {
     const theme = useTheme()
 
     // #################### states ####################
 
     const { headerHeight } = useHeaderSearchField()
+    const { project, table } = useAPI()
+    const { data, error } = useTable()
+    const { tables: tableList } = useTables(project)
+    const { updateRow } = useRow()
 
+    // Column Selector
     const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
         () => new Set()
     )
 
+    // Detailed View
     const [detailedViewOpen, setDetailedViewOpen] = useState<{
         row: Row
         column: CalculatedColumn<Row>
     } | null>(null)
-
-    const { data, error, updateRow, utils } = useTableCtx()
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
@@ -56,14 +58,17 @@ const TablePage: React.FC<TablePageProps> = props => {
         changeData: RowsChangeData<Row>
     ): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
-        const key = changeData.column.key
+        const col = changeData.column
 
-        await updateRow(key, utils.getRowId(data, changedRow), changedRow[key])
+        await updateRow(col, getRowId(data, changedRow), changedRow[col.key])
     }
+
+    if (project == null || table == null || tableList == null)
+        return <LoadingSkeleton />
 
     return (
         <>
-            <Title title={props.project.name} />
+            <Title title={project.name} />
             <Typography
                 sx={{
                     mb: theme.spacing(4),
@@ -72,20 +77,18 @@ const TablePage: React.FC<TablePageProps> = props => {
             >
                 Deine Tabellen in{" "}
                 <Link
-                    href={`/project/${props.project.id}`}
+                    href={`/project/${project.id}`}
                     muiLinkProps={{
                         underline: "hover",
                         color: theme.palette.primary.main,
                         textDecoration: "none",
                     }}
                 >
-                    {props.project.name}
+                    {project.name}
                 </Link>
             </Typography>
 
-            {error ? (
-                <> Error: {error}</>
-            ) : data == null ? (
+            {data == null ? (
                 <LoadingSkeleton />
             ) : (
                 <>
@@ -97,44 +100,49 @@ const TablePage: React.FC<TablePageProps> = props => {
                         />
                     )}
                     <TableNavigator
-                        project={props.project}
-                        currentTable={props.table}
-                        tableList={props.tableList}
+                        project={project}
+                        currentTable={table}
+                        tableList={tableList}
                     />
-                    <Box>
-                        <Toolbar position="top">
-                            <ToolbarItem.AddCol />
-                            <ToolbarItem.AddLink />
-                            <ToolbarItem.AddRow />
-                            <ToolbarItem.FileDownload getData={() => []} />
-                        </Toolbar>
-                        <DndProvider backend={HTML5Backend}>
-                            <DataGrid
-                                className={"rdg-" + theme.palette.mode}
-                                rows={data.rows}
-                                columns={data.columns}
-                                components={{
-                                    noRowsFallback: <NoRowsRenderer />,
-                                    rowRenderer: RowRenderer,
-                                    // checkboxFormatter: // TODO: adjust
-                                    // sortIcon: // TODO: adjust
-                                }}
-                                rowKeyGetter={rowKeyGetter}
-                                defaultColumnOptions={{
-                                    sortable: true,
-                                    resizable: true,
-                                    // formatter: // TODO: adjust
-                                }}
-                                selectedRows={selectedRows}
-                                onSelectedRowsChange={setSelectedRows}
-                                onRowsChange={partialRowUpdate}
-                                headerRowHeight={headerHeight}
-                            />
-                        </DndProvider>
-                        <Toolbar position="bottom">
-                            <ToolbarItem.Connection status={"connected"} />
-                        </Toolbar>
-                    </Box>
+                    {error ? (
+                        <>Error</>
+                    ) : (
+                        <Box>
+                            <Toolbar position="top">
+                                <ToolbarItem.AddCol />
+                                <ToolbarItem.AddLink />
+                                <ToolbarItem.AddRow />
+                                <ToolbarItem.FileDownload getData={() => []} />
+                            </Toolbar>
+
+                            <DndProvider backend={HTML5Backend}>
+                                <DataGrid
+                                    className={"rdg-" + theme.palette.mode}
+                                    rows={data.rows}
+                                    columns={data.columns}
+                                    components={{
+                                        noRowsFallback: <NoRowsRenderer />,
+                                        rowRenderer: RowRenderer,
+                                        // checkboxFormatter: // TODO: adjust
+                                        // sortIcon: // TODO: adjust
+                                    }}
+                                    rowKeyGetter={rowKeyGetter}
+                                    defaultColumnOptions={{
+                                        sortable: true,
+                                        resizable: true,
+                                        // formatter: // TODO: adjust
+                                    }}
+                                    selectedRows={selectedRows}
+                                    onSelectedRowsChange={setSelectedRows}
+                                    onRowsChange={partialRowUpdate}
+                                    headerRowHeight={headerHeight}
+                                />
+                            </DndProvider>
+                            <Toolbar position="bottom">
+                                <ToolbarItem.Connection status={"connected"} />
+                            </Toolbar>
+                        </Box>
+                    )}
                 </>
             )}
         </>
@@ -152,13 +160,15 @@ type PageProps = {
 
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ project, table, tableList }) => (
-    <TableCtxProvider table={table} project={project}>
-        <HeaderSearchFieldProvider>
-            <TablePage project={project} table={table} tableList={tableList} />
-        </HeaderSearchFieldProvider>
-    </TableCtxProvider>
-)
+> = ({ project, table }) => {
+    return (
+        <APIContextProvider project={project} table={table}>
+            <HeaderSearchFieldProvider>
+                <TablePage />
+            </HeaderSearchFieldProvider>
+        </APIContextProvider>
+    )
+}
 
 export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     const query = context.query as DynamicRouteQuery<
@@ -198,7 +208,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
         headers: context.req.headers as HeadersInit,
     })
 
-    const data = await fetcher<ViewData>({
+    const data = await fetcher<TableData.Serialized>({
         url: `/api/table/${tableId}`,
         method: "GET",
         headers: context.req.headers as HeadersInit,
@@ -207,7 +217,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     return {
         props: {
             project,
-            table: data.descriptor,
+            table: data.metadata.descriptor,
             tableList,
             // fallback: {
             //     [unstable_serialize({

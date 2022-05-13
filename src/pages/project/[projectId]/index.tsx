@@ -25,6 +25,7 @@ import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { prepareName } from "utils/validateName"
+import { makeError } from "utils/error-handling/utils/makeError"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -200,26 +201,22 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
         try {
             const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
             if (!name) return
-            const nameIsTaken = tables!
-                .map((tbl: ViewDescriptor) => tbl.name.toLowerCase())
-                .includes(name.toLowerCase())
-            if (nameIsTaken) {
-                snackError(
-                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!"
-                )
-                return
-            }
             await fetcher({
                 url: `/api/table/${tableView.id}`,
-
                 body: {
                     newName: name,
+                    project,
                 },
                 method: "PATCH",
             })
             await mutate()
         } catch (error) {
-            snackError("Die Tabelle konnte nicht umbenannt werden!")
+            const err = makeError(error)
+            if (err.message === "alreadyTaken")
+                snackError(
+                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!"
+                )
+            else snackError("Die Tabelle konnte nicht umbenannt werden!")
         }
     }
 

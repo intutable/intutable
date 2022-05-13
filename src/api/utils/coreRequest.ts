@@ -55,32 +55,6 @@ export const coreRequest = <T = unknown>(
         .then(res => res.json())
 }
 
-export async function coreNotification(
-    notification: Obj,
-    authCookie?: string
-): Promise<void> {
-    const channel = notification.channel
-    const method = notification.method
-    delete notification.channel
-    delete notification.method
-    return fetch(CORE_ENDPOINT + "/notification/" + channel + "/" + method, {
-        method: "post",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            ...(authCookie && {
-                Cookie: AUTH_COOKIE_KEY + "=" + authCookie,
-            }),
-        },
-        credentials: "include",
-        redirect: "manual",
-        body: JSON.stringify(notification),
-    })
-        .then(passedLogin)
-        .then(checkError)
-        .then(() => Promise.resolve())
-}
-
 // Set of error checking functions that are intended to operate by
 // fall-through principle
 export function passedLogin(res: Response): Promise<Response> {

@@ -24,13 +24,17 @@ import {
 } from "@mui/material"
 import { fetcher } from "api/fetcher"
 import { useUser } from "auth"
-import { useHeaderSearchField, useTableCtx } from "context"
+import { useAPI, useHeaderSearchField } from "context"
+import { useColumn, getColumnInfo } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
+import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
 import { useRouter } from "next/router"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
+import { makeError } from "utils/error-handling/utils/makeError"
+import { prepareName } from "utils/validateName"
 import { AddLookupModal } from "./AddLookupModal"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
@@ -39,31 +43,55 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { user } = useUser()
     const { snackError, snackSuccess, snackWarning } = useSnacki()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const { data, renameColumn, deleteColumn, utils, project } = useTableCtx()
+
+    const { data, mutate } = useTable()
+    const { renameColumn, deleteColumn } = useColumn()
+    const { project } = useAPI()
+
     const {
         open: headerOpen,
         openSearchField,
         closeSearchField,
     } = useHeaderSearchField()
 
-    const col = utils.getColumnByKey(props.column.key)
+    const col = useMemo(
+        () =>
+            data ? getColumnInfo(data.metadata.columns, props.column) : null,
+        [data, props.column]
+    )
     // column that represents a link to another table
-    const isLinkCol =
-        col.joinId !== null && col.attributes.formatter === "linkColumn"
-    const isLookupCol =
-        col.joinId !== null && col.attributes.formatter !== "linkColumn"
+    const isLinkCol = useMemo(
+        () =>
+            col
+                ? col.joinId !== null &&
+                  col.attributes.formatter === "linkColumn"
+                : null,
+        [col]
+    )
+    const isLookupCol = useMemo(
+        () =>
+            col
+                ? col.joinId !== null &&
+                  col.attributes.formatter !== "linkColumn"
+                : null,
+        [col]
+    )
 
     // const t = props.column.editorOptions?.renderFormatter
     // a user-facing primary column distinct from the table's real PK
-    const isUserPrimary = col.attributes.userPrimary === 1
+    const isUserPrimary = useMemo(
+        () => (col ? col.attributes.userPrimary === 1 : null),
+        [col]
+    )
     const { tables } = useTables(project)
 
     const foreignView = useMemo(() => {
+        if (col == null) return null
         if (!data || !tables) return undefined
         const join = data.metadata.joins.find(j => j.id === col.joinId)
         if (!join) return undefined
         return tables.find(t => t.id === asView(join.foreignSource).id)
-    }, [col.joinId, tables, data])
+    }, [col, tables, data])
 
     const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -77,7 +105,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 "Möchtest du diese Spalte wirklich löschen?"
             )
             if (!confirmed) return
-            await deleteColumn(props.column.key)
+            await deleteColumn(props.column)
             snackSuccess("Spalte wurde gelöscht.")
         } catch (error) {
             const errMsg =
@@ -89,21 +117,21 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     }
 
     const navigateToView = () =>
-        router.push(`/project/${project.id}/table/${foreignView?.id}`)
+        router.push(`/project/${project!.id}/table/${foreignView?.id}`)
 
     const handleRenameColumn = async () => {
         try {
             const name = prompt("Gib einen neuen Namen für diese Spalte ein:")
             if (!name) return
-            // TODO: check if the column name is already taken
-            await renameColumn(props.column.key, name)
-            snackSuccess("Die Spalte wurde umbenannt.")
+            await renameColumn(props.column, prepareName(name))
         } catch (error) {
-            const errMsg =
-                error === "alreadyTaken"
-                    ? `Der Name ${name} ist bereits vergeben.`
-                    : "Die Spalte konnte nicht umbenannt werden!"
-            snackError(errMsg)
+            const err = makeError(error)
+            if (err.message === "alreadyTaken")
+                snackError(
+                    err.message === "alreadyTaken"
+                        ? "Dieser Name ist bereits vergeben."
+                        : "Die Spalte konnte nicht umbenannt werden!"
+                )
         }
     }
 
@@ -120,7 +148,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const handleAddLookup = async (column: ColumnInfo) => {
         if (!isLinkCol || !user) return
         try {
-            const joinId = col.joinId!
+            const joinId = col!.joinId!
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
@@ -128,7 +156,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     joinId,
                 },
             })
-            await utils.mutate()
+            await mutate()
         } catch (error) {
             snackError("Der Lookup konnte nicht hinzugefügt werden!")
         }

@@ -3,9 +3,10 @@ import { TableDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PM, Row } from "types"
+import { Row } from "types"
+import { project_management_constants } from "types/type-annotations/project-management"
 import Obj from "types/Obj"
-import { makeError } from "utils/makeError"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
@@ -27,8 +28,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         // create row in database
-        const rowId = await coreRequest<typeof PM.UID_KEY>(
-            insert(table.key, values, [PM.UID_KEY]),
+        const rowId = await coreRequest<
+            typeof project_management_constants.UID_KEY
+        >(
+            insert(table.key, values, [project_management_constants.UID_KEY]),
             req.session.user!.authCookie
         )
 

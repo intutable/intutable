@@ -9,7 +9,7 @@ import {
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/makeError"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { withSessionRoute } from "auth"
 import { withUserCheck } from "utils/withUserCheck"
 

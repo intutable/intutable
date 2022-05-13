@@ -6,7 +6,7 @@ import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/makeError"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**

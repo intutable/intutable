@@ -1,20 +1,18 @@
-import type { NextApiRequest, NextApiResponse } from "next"
-
 import { update } from "@intutable/database/dist/requests"
-import { TableInfo } from "@intutable/project-management/dist/types"
-import { getTableInfo } from "@intutable/project-management/dist/requests"
 import {
-    ViewDescriptor,
-    JoinDescriptor,
-    ViewInfo,
-    getViewInfo,
     asTable,
+    getViewInfo,
+    JoinDescriptor,
+    ViewDescriptor,
+    ViewInfo,
 } from "@intutable/lazy-views"
-
-import { PM } from "types"
+import { getTableInfo } from "@intutable/project-management/dist/requests"
+import { TableInfo } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
-import { makeError } from "utils/makeError"
 import { withSessionRoute } from "auth"
+import type { NextApiRequest, NextApiResponse } from "next"
+import { project_management_constants } from "types/type-annotations/project-management"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
@@ -58,7 +56,7 @@ const POST = async (
 
         await coreRequest(
             update(asTable(viewInfo.source).table.key, {
-                condition: [PM.UID_KEY, rowId],
+                condition: [project_management_constants.UID_KEY, rowId],
                 update: { [fkColumn.name]: value },
             }),
             user.authCookie

@@ -1,7 +1,13 @@
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import useSWR from "swr"
+import { useEffect } from "react"
+import useSWR, { unstable_serialize } from "swr"
 
+/**
+ * ### useTables hook.
+ *
+ * Returns a list of tables of a project.
+ */
 export const useTables = (project: ProjectDescriptor | null | undefined) => {
     const {
         data: tables,
@@ -14,9 +20,19 @@ export const useTables = (project: ProjectDescriptor | null | undefined) => {
     return { tables, error, mutate }
 }
 
+/**
+ * Config for `useTables` hook.
+ */
 export const useTablesConfig = {
-    cacheKey: (projectId: ProjectDescriptor["id"]) => ({
-        url: `/api/tables/${projectId}`,
-        method: "GET",
-    }),
+    /**
+     * Returns the swr cache key for `useTablesConfig`.
+     * Can be used to ssr data.
+     *
+     * Note: the key does **not** neet to be serialized.
+     */
+    cacheKey: (projectId: ProjectDescriptor["id"]) =>
+        unstable_serialize({
+            url: `/api/tables/${projectId}`,
+            method: "GET",
+        }),
 }

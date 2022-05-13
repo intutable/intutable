@@ -12,15 +12,16 @@ import {
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
+import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
+import { useProjects, useProjectsConfig } from "hooks/useProjects"
 import { useSnacki } from "hooks/useSnacki"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
-import { useProjects, useProjectsConfig } from "hooks/useProjects"
-import { withSessionSsr } from "auth"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -103,9 +104,7 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    const handleOnClick = () => {
-        router.push(`/project/${props.project.id}`)
-    }
+    const handleOnClick = () => router.push(`/project/${props.project.id}`)
 
     return (
         <>
@@ -196,15 +195,6 @@ const ProjectList: React.FC = () => {
         try {
             const name = prompt("Gib einen neuen Namen für dein Projekt ein:")
             if (!name) return
-            const nameIsTaken = projects!
-                .map((proj: ProjectDescriptor) => proj.name.toLowerCase())
-                .includes(name.toLowerCase())
-            if (nameIsTaken) {
-                snackError(
-                    "Dieser Name wird bereits für eines deiner Projekte verwendet!"
-                )
-                return
-            }
             await fetcher<ProjectDescriptor>({
                 url: `/api/project/${project.id}`,
                 body: { newName: name },
@@ -212,7 +202,10 @@ const ProjectList: React.FC = () => {
             })
             await mutate()
         } catch (error) {
-            snackError("Das Projekt konnte nicht umbenannt werden!")
+            const err = makeError(error)
+            if (err.message === "alreadyTaken")
+                snackError("Zwei Projekte können nicht denselben Namen haben!")
+            else snackError("Das Projekt konnte nicht umbenannt werden!")
         }
     }
 

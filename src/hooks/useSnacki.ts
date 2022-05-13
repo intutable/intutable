@@ -1,5 +1,8 @@
 import { OptionsObject, useSnackbar } from "notistack"
 
+/**
+ * Simplifies the {@link useSnackbar} hook.
+ */
 export const useSnacki = () => {
     const { enqueueSnackbar } = useSnackbar()
 

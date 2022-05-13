@@ -7,7 +7,7 @@ import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/makeError"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
@@ -46,14 +46,14 @@ const GET = async (
  * PATCH/update the name of a single project.
  * Returns the updated project {@type {ProjectDescriptor}}.
  *
- * // TODO: In a future version this api point will be able to adjust more than the name.
+ * // TODO: In a future version this api route will be able to adjust more than the name.
  *
  * @tutorial
  * ```
  * - URL: `/api/project/[id]` e.g. `/api/project/1`
  * - Body: {
- *  newName: {@type {ProjectDescriptor["name"}}
- * }
+ *     newName: {@type {ProjectDescriptor["name"]}}
+ *   }
  * ```
  */
 const PATCH = async (
@@ -66,6 +66,16 @@ const PATCH = async (
             newName: ProjectDescriptor["name"]
         }
         const user = req.session.user!
+
+        // check if name is taken
+        const projects = await coreRequest<ProjectDescriptor[]>(
+            getProjects(user.id),
+            user.authCookie
+        )
+        const isTaken = projects
+            .map(proj => proj.name.toLowerCase())
+            .includes(newName.toLowerCase())
+        if (isTaken) throw new Error("alreadyTaken")
 
         // rename project in project-management
         const updatedProject = await coreRequest<ProjectDescriptor>(

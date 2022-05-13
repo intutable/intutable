@@ -17,15 +17,11 @@ export const parseTableData: Middleware =
         const routeRegex = RegExp("/api/table/\\d*") // "/api/table/[id]"
         if (routeRegex.test(routeKey) === false || swr.data == null) return swr
 
-        const unparsedTableData = swr.data as unknown as ViewData
-
-        // parse // TODO: parsing should be moved to the next api
-        const parsedTableData: TableData.Serialized =
-            Parser.Table.parse(unparsedTableData)
+        const tableData = swr.data as unknown as TableData.Serialized
 
         // deserialize
         const deserializedTableData: TableData.Deserialized =
-            DeSerialize.Table.deserialize(parsedTableData)
+            DeSerialize.Table.deserialize(tableData)
 
         return Object.assign({}, swr, {
             data: deserializedTableData,

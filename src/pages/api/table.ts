@@ -1,10 +1,9 @@
 import { ColumnType } from "@intutable/database/dist/column"
-
 import {
-    ViewDescriptor,
-    SortOrder,
     createView,
+    SortOrder,
     tableId,
+    ViewDescriptor,
 } from "@intutable/lazy-views"
 import {
     createTableInProject,
@@ -19,8 +18,8 @@ import {
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PM } from "types"
-import { makeError } from "utils/makeError"
+import { project_management_constants } from "types/type-annotations/project-management"
+import { makeError } from "utils/error-handling/utils/makeError"
 import sanitizeName from "utils/sanitizeName"
 import { withUserCheck } from "utils/withUserCheck"
 
@@ -77,7 +76,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                     : { displayName: "ID", editor: "number" },
         }))
 
-        const baseIdColumn = baseColumns.find(c => c.name === PM.UID_KEY)!
+        const baseIdColumn = baseColumns.find(
+            c => c.name === project_management_constants.UID_KEY
+        )!
 
         // create view
         const tableView = await coreRequest<ViewDescriptor>(
