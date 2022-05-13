@@ -1,18 +1,18 @@
 import { ColumnType } from "@intutable/database/dist/column"
 import {
-    JoinDescriptor,
-    ViewInfo,
     addJoinToView,
     getViewInfo,
+    JoinDescriptor,
     selectable,
     viewId as mkViewId,
+    ViewInfo,
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PM } from "types"
+import { project_management_constants } from "types/type-annotations/project-management"
 import { makeError } from "utils/error-handling/utils/makeError"
 import makeForeignKeyName from "utils/makeForeignKeyName"
 import { withUserCheck } from "utils/withUserCheck"
@@ -60,7 +60,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         )
 
         const foreignIdColumn = foreignViewInfo.columns.find(
-            c => c.name === PM.UID_KEY
+            c => c.name === project_management_constants.UID_KEY
         )!
         const primaryColumn = foreignViewInfo.columns.find(
             c => c.attributes.userPrimary! === 1

@@ -1,14 +1,17 @@
 import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { fetcher } from "api"
 import { useTable } from "hooks/useTable"
-import { Column, PM, Row, TableData } from "types"
+import { Column, Row, TableData } from "types"
+import { project_management_constants } from "types/type-annotations/project-management"
 import { getColumnInfo } from "./useColumn"
 
 /**
  * @deprecated
  */
 export const getRowId = (data: TableData | undefined, row: Row) => {
-    const uidColumn = data!.metadata.columns.find(c => c.name === PM.UID_KEY)!
+    const uidColumn = data!.metadata.columns.find(
+        c => c.name === project_management_constants.UID_KEY
+    )!
     return row[uidColumn.key] as number
 }
 
@@ -68,7 +71,10 @@ export const useRow = () => {
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: [PM.UID_KEY, getRowId(table, row)], // just use row._id ?
+                condition: [
+                    project_management_constants.UID_KEY,
+                    getRowId(table, row),
+                ], // just use row._id ?
             },
             method: "DELETE",
         })
@@ -97,7 +103,7 @@ export const useRow = () => {
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: [PM.UID_KEY, rowId],
+                condition: [project_management_constants.UID_KEY, rowId],
                 update: {
                     [baseColumnKey]: value,
                 },
