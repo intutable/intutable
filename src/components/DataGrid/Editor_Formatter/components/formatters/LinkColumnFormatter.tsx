@@ -152,7 +152,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
     )
 }
 
-export const LinkColumnFormatter: Formatter = props => {
+const _LinkColumnFormatter: Formatter = props => {
     const { row, column } = props
     const { snackError } = useSnacki()
 
@@ -263,3 +263,5 @@ export const LinkColumnFormatter: Formatter = props => {
         </>
     )
 }
+
+export const LinkColumnFormatter = React.memo(_LinkColumnFormatter)
