@@ -44,17 +44,14 @@ const PATCH = async (
 
         const deparsedUpdate = Parser.Column.deparse(update, columnId)
 
+        // TODO: check if the name is already taken
         // check for naming conflicts
-        if ("name" in deparsedUpdate.attributes) {
-            const nameUpdate = (deparsedUpdate.attributes as { name: string })
-                .name
+        // if ("name" in deparsedUpdate.attributes) {
+        //     const nameUpdate = (deparsedUpdate.attributes as { name: string })
+        //         .name
 
-            // TODO: check if the name is taken
-            throw new Error("NOT IMPLEMENTED")
-
-            const isTakenError = new IsTakenError()
-            res.status(500).send(isTakenError.serialize())
-        }
+        //     throw new Error("alreadyTaken")
+        // }
 
         // change property in view column, underlying table column is never used
         const updatedColumn = await coreRequest<ColumnInfo>(

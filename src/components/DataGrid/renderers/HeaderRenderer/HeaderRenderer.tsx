@@ -33,6 +33,8 @@ import { useRouter } from "next/router"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
+import { makeError } from "utils/error-handling/utils/makeError"
+import { prepareName } from "utils/validateName"
 import { AddLookupModal } from "./AddLookupModal"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
@@ -121,15 +123,15 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         try {
             const name = prompt("Gib einen neuen Namen für diese Spalte ein:")
             if (!name) return
-            // TODO: check if the column name is already taken
-            await renameColumn(props.column, name)
-            snackSuccess("Die Spalte wurde umbenannt.")
+            await renameColumn(props.column, prepareName(name))
         } catch (error) {
-            const errMsg =
-                error === "alreadyTaken"
-                    ? `Der Name ${name} ist bereits vergeben.`
-                    : "Die Spalte konnte nicht umbenannt werden!"
-            snackError(errMsg)
+            const err = makeError(error)
+            if (err.message === "alreadyTaken")
+                snackError(
+                    err.message === "alreadyTaken"
+                        ? "Dieser Name ist bereits vergeben."
+                        : "Die Spalte konnte nicht umbenannt werden!"
+                )
         }
     }
 
