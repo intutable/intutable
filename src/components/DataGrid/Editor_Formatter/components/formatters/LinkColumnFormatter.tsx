@@ -170,13 +170,29 @@ export const LinkColumnFormatter: Formatter = props => {
     const [foreignTableId, setForeignTableId] = useState<ViewDescriptor["id"]>()
     const [joinId, setJoinId] = useState<JoinDescriptor["id"]>()
 
+    /**
+     * // BUG This component renders 1. too often and 2. and every hover etc.
+     * It needs to be fast, performant and memoized in order to work properly.
+     *
+     * It could be related with the issue of not re-rendering the page
+     *
+     * possible approach:
+     *
+     * first simplify the core/plugin type structure,
+     * those calculations then may be obsolete and can be
+     * set statically
+     *
+     * further more clean up and memoize e.g.
+     *
+     *
+     */
     useEffect(() => {
         if (data == null) return
         const metaColumn = getColumnInfo(data.metadata.columns, column)
         const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
         setJoinId(join.id)
         setForeignTableId(getId(join.foreignSource))
-    }, [data, column])
+    }, [column, data])
 
     const key = column.key as keyof Row
     const content = row[key] as string | null | undefined
