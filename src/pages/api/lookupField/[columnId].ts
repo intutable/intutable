@@ -59,6 +59,7 @@ const POST = async (
                 editable: 0,
                 editor: "string",
                 formatter: "string",
+                kind: "lookup",
             },
         }
 

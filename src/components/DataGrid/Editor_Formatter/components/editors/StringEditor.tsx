@@ -1,13 +1,13 @@
 import { Row } from "types"
 import React, { useState } from "react"
-import { Editor } from "../../types/Editor"
+import { EditorComponent } from "../../types/EditorComponent"
 import { Input } from "./Input"
 
 /**
  * {@link https://github.com/adazzle/react-data-grid/blob/main/src/editors/TextEditor.tsx}
  */
 
-export const StringEditor: Editor = props => {
+export const StringEditor: EditorComponent = props => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         props.onRowChange({
             ...row,

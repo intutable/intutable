@@ -1,0 +1,4 @@
+/**
+ *
+ */
+export type Formatter = "standard"

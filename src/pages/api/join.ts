@@ -76,9 +76,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                         parentColumnId: primaryColumn.id,
                         attributes: {
                             displayName,
-                            editable: 0,
-                            editor: null,
-                            formatter: "linkColumn",
+                            editable: 1,
+                            editor: "string",
+                            formatter: null,
+                            kind: "link",
                         },
                     },
                 ],

@@ -1,2 +1,2 @@
-import { Editor } from "../../types/Editor"
-export const AvatarEditor: Editor = props => null
+import { EditorComponent } from "../../types/EditorComponent"
+export const AvatarEditor: EditorComponent = props => null

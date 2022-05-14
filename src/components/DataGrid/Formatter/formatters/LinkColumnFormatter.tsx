@@ -1,4 +1,4 @@
-import { Formatter } from "@datagrid/Editor_Formatter/types/Formatter"
+import { FormatterComponent } from "@datagrid/Formatter/types/FormatterComponent"
 import { getId } from "@intutable/lazy-views/dist/selectable"
 import {
     JoinDescriptor,
@@ -152,7 +152,7 @@ const RowPicker: React.FC<RowPickerProps> = props => {
     )
 }
 
-const _LinkColumnFormatter: Formatter = props => {
+const _LinkColumnFormatter: FormatterComponent = props => {
     const { row, column } = props
     const { snackError } = useSnacki()
 

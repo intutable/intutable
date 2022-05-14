@@ -2,10 +2,12 @@ import { headerRenderer } from "@datagrid/renderers"
 import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
 import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
 import { CellContentTypeComponents } from "@datagrid/Editor_Formatter"
-import { LinkColumnFormatter } from "@datagrid/Editor_Formatter/components/formatters"
+import { LinkColumnFormatter } from "@datagrid/Formatter/formatters"
 import type { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
-import { inferFormatterType } from "@datagrid/Editor_Formatter/inferFormatterType"
+import { inferFormatterType } from "@datagrid/Formatter/inferFormatterType"
+import { FormatterComponentMap } from "@datagrid/Formatter/formatters/map"
+import React from "react"
 
 /**
  *
@@ -18,6 +20,8 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
     editable: col.editable as boolean,
     editor: inferEditorType(col.editor!),
     formatter: inferFormatterType(col.formatter!),
+    _kind: col._kind!,
+    _id: col._id!,
 })
 
 /**
@@ -34,23 +38,19 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
  * @returns {Column}
  */
 export const deserialize = (col: Column.Serialized): Column => {
-    const isLinkedCol = col.editable === false && col.formatter === "linkColumn"
+    const FormatterComponent = FormatterComponentMap[col.formatter]
+
+    const T = React.createElement(FormatterComponent)
+    T.type
 
     return {
         name: col.name,
         key: col.key,
         editable: col.editable,
-        editor:
-            isLinkedCol === false &&
-            col.editable &&
-            isCellContentType(col.editor)
-                ? CellContentTypeComponents[col.editor].editor
-                : undefined,
-        formatter: isLinkedCol
-            ? LinkColumnFormatter
-            : isCellContentType(col.editor)
-            ? CellContentTypeComponents[col.editor].formatter
+        editor: isCellContentType(col.editor)
+            ? CellContentTypeComponents[col.editor]
             : undefined,
+        formatter: FormatterComponentMap[col.formatter],
         editorOptions: {
             editOnClick: col.editable,
             commitOnOutsideClick: col.editable,

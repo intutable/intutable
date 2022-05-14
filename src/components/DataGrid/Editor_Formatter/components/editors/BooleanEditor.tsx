@@ -1,8 +1,8 @@
 import { Checkbox } from "@mui/material"
 import { useState } from "react"
-import { Editor } from "../../types/Editor"
+import { EditorComponent } from "../../types/EditorComponent"
 
-export const BooleanEditor: Editor = props => {
+export const BooleanEditor: EditorComponent = props => {
     const [checked, setChecked] = useState(false)
 
     return <Checkbox checked onChange={e => setChecked(e.target.checked)} />

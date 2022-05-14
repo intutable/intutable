@@ -1,4 +1,5 @@
 import { CellContentType } from "./types/CellContentType"
-import { Editor } from "./types/Editor"
+import { EditorComponent } from "./types/EditorComponent"
 
-export const inferEditorType = (component: Editor): CellContentType => "string" // TODO: infer somehow
+export const inferEditorType = (component: EditorComponent): CellContentType =>
+    "string" // TODO: infer somehow

@@ -66,12 +66,13 @@ CREATE TABLE view_columns(
     view_id INTEGER NOT NULL,
     join_id INTEGER NULL,
     column_id INTEGER NOT NULL,
-    -- custom metadata
+    -- custom metadata, see types/rdg.ts for explanations on them
     "displayName" TEXT NULL,
     "userPrimary" INTEGER DEFAULT 0 NOT NULL,
     editable INTEGER DEFAULT 1 NOT NULL,
     editor TEXT NULL,
-    formatter TEXT NULL
+    formatter TEXT NULL,
+    kind TEXT NULL,
 );
 
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');
