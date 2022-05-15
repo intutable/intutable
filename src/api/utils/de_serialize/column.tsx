@@ -1,13 +1,10 @@
-import { headerRenderer } from "@datagrid/renderers"
-import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
-import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
 import { CellContentTypeComponents } from "@datagrid/Editor_Formatter"
-import { LinkColumnFormatter } from "@datagrid/Formatter/formatters"
-import type { HeaderRendererProps } from "react-data-grid"
-import { Column, Row } from "types"
-import { inferFormatterType } from "@datagrid/Formatter/inferFormatterType"
+import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
+import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
 import { FormatterComponentMap } from "@datagrid/Formatter/formatters/map"
-import React from "react"
+import { inferFormatterType } from "@datagrid/Formatter/utils/inferFormatterType"
+import { headerRenderer } from "@datagrid/renderers"
+import { Column } from "types"
 
 /**
  *
@@ -19,7 +16,7 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
     key: col.key,
     editable: col.editable as boolean,
     editor: inferEditorType(col.editor!),
-    formatter: inferFormatterType(col.formatter!),
+    formatter: "standard",
     _kind: col._kind!,
     _id: col._id!,
 })
@@ -40,9 +37,6 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
 export const deserialize = (col: Column.Serialized): Column => {
     const FormatterComponent = FormatterComponentMap[col.formatter]
 
-    const T = React.createElement(FormatterComponent)
-    T.type
-
     return {
         name: col.name,
         key: col.key,
@@ -50,11 +44,13 @@ export const deserialize = (col: Column.Serialized): Column => {
         editor: isCellContentType(col.editor)
             ? CellContentTypeComponents[col.editor]
             : undefined,
-        formatter: FormatterComponentMap[col.formatter],
+        formatter: FormatterComponent,
         editorOptions: {
             editOnClick: col.editable,
             commitOnOutsideClick: col.editable,
         },
         headerRenderer: headerRenderer,
+        _id: col._id,
+        _kind: col._kind,
     }
 }
