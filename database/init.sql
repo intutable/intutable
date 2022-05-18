@@ -62,17 +62,36 @@ CREATE TABLE view_joins(
 );
 
 CREATE TABLE view_columns(
-    _id SERIAL PRIMARY KEY,
     view_id INTEGER NOT NULL,
     join_id INTEGER NULL,
     column_id INTEGER NOT NULL,
-    -- custom metadata, see types/rdg.ts for explanations on them
-    "displayName" TEXT NULL,
     "userPrimary" INTEGER DEFAULT 0 NOT NULL,
-    editable INTEGER DEFAULT 1 NOT NULL,
-    editor TEXT NULL,
-    formatter TEXT NULL,
+    -- custom metadata, see types/rdg.ts for explanations on them
+    _id SERIAL PRIMARY KEY,
     kind TEXT NULL,
+    "displayName" TEXT NULL,
+    editable INTEGER DEFAULT 1,
+    editor TEXT,
+    formatter TEXT,
+    width VARCHAR(32) NULL,
+    minWidth VARCHAR(32) NULL,
+    maxWidth VARCHAR(32) NULL,
+    cellClass VARCHAR(255) NULL,
+    headerCellClass VARCHAR(255) NULL,
+    summaryCellClass VARCHAR(255) NULL,
+    summaryFormatter VARCHAR(255) NULL,
+    groupFormatter VARCHAR(255) NULL,
+    colSpan VARCHAR(255) NULL,
+    frozen INTEGER NULL,
+    resizable INTEGER NULL,
+    sortable INTEGER NULL,
+    sortDescendingFirst INTEGER NULL,
+    renderFormatter INTEGER DEFAULT 0,
+    editOnClick INTEGER DEFAULT 0,
+    commitOnOutsideClick INTEGER DEFAULT 0,
+    onCellKeyDown VARCHAR(255) NULL,
+    onNavigation VARCHAR(255) NULL,
+    headerRenderer VARCHAR(255) NULL,
 );
 
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');
