@@ -2,7 +2,7 @@ import {
     Currency,
     Percentage,
     Avatar,
-} from "@datagrid/Editor_Formatter/type-management/utility-classes"
+} from "@datagrid/Editor/type-management/utility-classes"
 
 /**
  * Different types of editors.

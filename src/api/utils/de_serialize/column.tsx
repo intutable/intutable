@@ -1,13 +1,15 @@
-import { CellContentTypeComponents } from "@datagrid/Editor_Formatter"
-import { inferEditorType } from "@datagrid/Editor_Formatter/inferEditorType"
-import { isCellContentType } from "@datagrid/Editor_Formatter/type-management"
+import { CellContentTypeComponents } from "@datagrid/Editor"
+import { inferEditorType } from "@datagrid/Editor/inferEditorType"
+import { isCellContentType } from "@datagrid/Editor/type-management"
 import { FormatterComponentMap } from "@datagrid/Formatter/formatters/map"
 import { inferFormatterType } from "@datagrid/Formatter/utils/inferFormatterType"
 import { headerRenderer } from "@datagrid/renderers"
+import React from "react"
 import { Column } from "types"
+import { isNumber } from "utils/isNumber"
 
 /**
- *
+ * // TODO: serialize correctly
  * @param col
  * @returns
  */
@@ -34,23 +36,25 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
  * @param {SerializedColumn} col
  * @returns {Column}
  */
-export const deserialize = (col: Column.Serialized): Column => {
+export const deserialize = (col: Column.Serialized): Column.Deserialized => {
     const FormatterComponent = FormatterComponentMap[col.formatter]
 
+    // TODO: find a way to bind children to the function of the formatter
+    // use a hoc https://reactjs.org/docs/higher-order-components.html
+
     return {
-        name: col.name,
-        key: col.key,
-        editable: col.editable,
+        ...col,
         editor: isCellContentType(col.editor)
             ? CellContentTypeComponents[col.editor]
             : undefined,
         formatter: FormatterComponent,
+        summaryFormatter: undefined, // currently not supported
+        groupFormatter: undefined, // currently not supported
+        colSpan: undefined, // currently not supported
         editorOptions: {
-            editOnClick: col.editable,
-            commitOnOutsideClick: col.editable,
+            onCellKeyDown: undefined, // currently not supported
+            onNavigation: undefined, // currently not supported
         },
         headerRenderer: headerRenderer,
-        _id: col._id,
-        _kind: col._kind,
     }
 }
