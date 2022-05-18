@@ -9,6 +9,8 @@ import { project_management } from "./type-annotations/project-management"
 import { deserialize } from "api/utils/de_serialize/column"
 import { Formatter } from "@datagrid/Formatter/types/Formatter"
 import Obj from "./Obj"
+import { FormatterComponent } from "@datagrid/Formatter/types/FormatterComponent"
+import { FormatterComponentMap } from "@datagrid/Formatter/formatters"
 
 // #################################################################
 //       Table
@@ -82,9 +84,15 @@ export type MetaColumnProps = {
      */
     readonly _id: number
     /**
-     * Kind / meta type of the column
+     * @property {("standard" | "link" | "lookup")} _kind meta type of a column
      *
-     * __Note__: when `_kind` is __not__ 'standard'
+     * ---
+     *
+     * #### Options
+     * - `standard`: ignore this, only use whatever is defined in {@link FormatterComponentMap} in `standard` derived from {@link Formatter}.
+     * - `link`: use {@link LinkColumnFormatter}
+     * - `lookup`: use {@link LookupColumnFormatter}
+     *
      */
     _kind: "standard" | "link" | "lookup"
 }
@@ -100,7 +108,7 @@ export type MetaColumnProps = {
  */
 type SerializedColumn = MetaColumnProps & {
     /**
-     * @param {string} name The name of the column. By default it will be displayed in the header cell.
+     * @property {string} name The name of the column. By default it will be displayed in the header cell.
      *
      * See the orignal type here: {@link Column}.
      *
@@ -114,49 +122,49 @@ type SerializedColumn = MetaColumnProps & {
      */
     name: string
     /**
-     * @param {string} key A unique key to distinguish each column.
+     * @property {string} key A unique key to distinguish each column.
      *
      * See the orignal type here: {@link Column}.
      */
     key: string
     /**
-     * @param {(number | string | undefined | null)} [width] Column width. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
+     * @property {(number | string | undefined | null)} [width] Column width. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
      *
      * See the orignal type here: {@link Column}.
      */
     width?: number | string | null
     /**
-     * @param {(number | undefined | null)} [minWidth] Minimum column width in px.
+     * @property {(number | undefined | null)} [minWidth] Minimum column width in px.
      *
      * See the orignal type here: {@link Column}.
      */
     minWidth?: number | null
     /**
-     * @param {(number | undefined | null)} [maxWidth] Maximum column width in px.
+     * @property {(number | undefined | null)} [maxWidth] Maximum column width in px.
      *
      * See the orignal type here: {@link Column}.
      */
     maxWidth?: number | null
     /**
-     * @param {(string | undefined | null)} [cellClass]
+     * @property {(string | undefined | null)} [cellClass]
      *
      * See the orignal type here: {@link Column}.
      */
     cellClass?: string | null
     /**
-     * @param {(string | undefined | null)} [headerCellClass]
+     * @property {(string | undefined | null)} [headerCellClass]
      *
      * See the orignal type here: {@link Column}.
      */
     headerCellClass?: string | null
     /**
-     * @param {(undefined | null)} [summaryCellClass]
+     * @property {(undefined | null)} [summaryCellClass]
      *
      * See the orignal type here: {@link Column}.
      */
     summaryCellClass?: string | null
     /**
-     * @param {(Formatter)} formatter Formatter to be used to render the cell content ({@default standard}).
+     * @property {(Formatter)} formatter Formatter to be used to render the cell content ({@default standard}).
      *
      * See the orignal type here: {@link Column}.
      *
@@ -169,11 +177,11 @@ type SerializedColumn = MetaColumnProps & {
      * {@type {Formatter}} during deserialization in {@link deserialize}.
      *
      * __Note__: The formatter component is a HOC ({@link https://reactjs.org/docs/higher-order-components.html})
-     * that can be extended by a component defined by `_kind` in {@link MetaColumnProps}.
+     * that can be extended by a component defined by {@link MetaColumnProps._kind}.
      */
     formatter: Formatter
     /**
-     * @param {(undefined | null)} [summaryFormatter]
+     * @property {(undefined | null)} [summaryFormatter]
      *
      * See the orignal type here: {@link Column}.
      *
@@ -190,7 +198,7 @@ type SerializedColumn = MetaColumnProps & {
      */
     summaryFormatter?: string | null
     /**
-     * @param {(undefined | null)} [groupFormatter]
+     * @property {(undefined | null)} [groupFormatter]
      *
      * See the orignal type here: {@link Column}.
      *
@@ -207,7 +215,7 @@ type SerializedColumn = MetaColumnProps & {
      */
     groupFormatter?: string | null
     /**
-     * @param {(boolean | undefined | null)} [editable=true] Enables cell editing ({@default true}). If set and no editor property specified, then a textinput will be used as the cell editor
+     * @property {(boolean | undefined | null)} [editable=true] Enables cell editing ({@default true}). If set and no editor property specified, then a textinput will be used as the cell editor
      *
      * See the orignal type here: {@link Column}.
      *
@@ -225,7 +233,7 @@ type SerializedColumn = MetaColumnProps & {
      */
     editable?: boolean | null /* | string */
     /**
-     * @param {(string | undefined | null)} [colSpan]
+     * @property {(string | undefined | null)} [colSpan]
      *
      * See the orignal type here: {@link Column}.
      *
@@ -235,31 +243,31 @@ type SerializedColumn = MetaColumnProps & {
      */
     colSpan?: string | null
     /**
-     * @param {(boolean | undefined | null)} [frozen] Determines whether column is frozen or not.
+     * @property {(boolean | undefined | null)} [frozen] Determines whether column is frozen or not.
      *
      * See the orignal type here: {@link Column}.
      */
     frozen?: boolean | null
     /**
-     * @param {(boolean | undefined | null)} [resizable] Enable resizing of a column.
+     * @property {(boolean | undefined | null)} [resizable] Enable resizing of a column.
      *
      * See the orignal type here: {@link Column}.
      */
     resizable?: boolean | null
     /**
-     * @param {(boolean | undefined | null)} [sortable] Enable sorting of a column.
+     * @property {(boolean | undefined | null)} [sortable] Enable sorting of a column.
      *
      * See the orignal type here: {@link Column}.
      */
     sortable?: boolean | null
     /**
-     * @param {(boolean | undefined | null)} [sortDescendingFirst] Sets the column sort order to be descending instead of ascending the first time the column is sorted.
+     * @property {(boolean | undefined | null)} [sortDescendingFirst] Sets the column sort order to be descending instead of ascending the first time the column is sorted.
      *
      * See the orignal type here: {@link Column}.
      */
     sortDescendingFirst?: boolean | null
     /**
-     * @param {(CellContentType)} editor Editor to be rendered when cell of column is being edited. If set, then the column is automatically set to be editable.
+     * @property {(CellContentType)} editor Editor to be rendered when cell of column is being edited. If set, then the column is automatically set to be editable.
      *
      * See the orignal type here: {@link Column}.
      *
@@ -274,25 +282,25 @@ type SerializedColumn = MetaColumnProps & {
     editor: CellContentType
     editorOptions?: {
         /**
-         * @param {(boolean | undefined | null)} [renderFormatter=false] ({@default false}).
+         * @property {(boolean | undefined | null)} [renderFormatter=false] ({@default false}).
          *
          * See the orignal type here: {@link Column}.
          */
         renderFormatter?: boolean | null
         /**
-         * @param {(boolean | undefined | null)} [editOnClick=false] ({@default false}).
+         * @property {(boolean | undefined | null)} [editOnClick=false] ({@default false}).
          *
          * See the orignal type here: {@link Column}.
          */
         editOnClick?: boolean | null
         /**
-         * @param {(boolean | undefined | null)} [commitOnOutsideClick=true] ({@default true}).
+         * @property {(boolean | undefined | null)} [commitOnOutsideClick=true] ({@default true}).
          *
          * See the orignal type here: {@link Column}.
          */
         commitOnOutsideClick?: boolean | null
         /**
-         * @param {(string | undefined | null)} [onCellKeyDown] Prevent default to cancel editing.
+         * @property {(string | undefined | null)} [onCellKeyDown] Prevent default to cancel editing.
          *
          * See the orignal type here: {@link Column}.
          *
@@ -309,7 +317,7 @@ type SerializedColumn = MetaColumnProps & {
          */
         onCellKeyDown?: string | null
         /**
-         * @param {(string | undefined | null)} [onNavigation] Control the default cell navigation behavior while the editor is open.
+         * @property {(string | undefined | null)} [onNavigation] Control the default cell navigation behavior while the editor is open.
          *
          * See the orignal type here: {@link Column}.
          *
@@ -327,7 +335,7 @@ type SerializedColumn = MetaColumnProps & {
         onNavigation?: string | null
     }
     /**
-     * @param {(string | undefined | null)} [headerRenderer] Header renderer for each header cell.
+     * @property {(string | undefined | null)} [headerRenderer] Header renderer for each header cell.
      *
      * See the orignal type here: {@link Column}.
      *

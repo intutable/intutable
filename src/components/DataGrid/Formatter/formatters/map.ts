@@ -1,12 +1,21 @@
+import { MetaColumnProps } from "types"
 import { Formatter } from "../types/Formatter"
-import {
-    FormatterComponent,
-    ExtandableFormatterComponent,
-} from "../types/FormatterComponent"
-import { DefaultFormatter } from "./DefaultFormatter"
+import { FormatterComponent } from "../types/FormatterComponent"
+import { LinkColumnFormatter } from "./LinkColumnFormatter"
+import { StandardFormatter } from "./StandardFormatter"
+import { LookupColumnFormatter } from "./LookupColumnFormatter"
+
+/**
+ * __Note__: `standard` is declared twice. Once in {@link Formatter} and once in {@link MetaColumnProps._kind}.
+ * This can be ignored because `standard` in {@link MetaColumnProps._kind} means: ignore {@link MetaColumnProps._kind}
+ * or `null` and instead only use {@link Formatter}. Also described in {@link MetaColumnProps._kind}.
+ */
+type formatters = Formatter | MetaColumnProps["_kind"]
 
 export const FormatterComponentMap: {
-    [key in Formatter]: FormatterComponent | ExtandableFormatterComponent
+    [key in formatters]: FormatterComponent
 } = {
-    standard: DefaultFormatter,
+    standard: StandardFormatter,
+    link: LinkColumnFormatter,
+    lookup: LookupColumnFormatter,
 }

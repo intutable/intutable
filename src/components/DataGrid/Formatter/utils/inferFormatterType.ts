@@ -1,6 +1,6 @@
 import { Column } from "types"
-import { CellContentType } from "../../Editor_Formatter/types/CellContentType"
-import { EditorComponent } from "../../Editor_Formatter/types/EditorComponent"
+import { CellContentType } from "../../Editor/types/CellContentType"
+import { EditorComponent } from "../../Editor/types/EditorComponent"
 import { FormatterComponent } from "../types/FormatterComponent"
 
 export const inferFormatterType = (

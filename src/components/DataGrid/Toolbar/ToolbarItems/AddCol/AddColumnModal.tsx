@@ -3,7 +3,7 @@ import type { Column } from "types"
 import {
     CellContentType,
     Runtime_CellContentType,
-} from "@datagrid/Editor_Formatter/types/CellContentType"
+} from "@datagrid/Editor/types/CellContentType"
 import {
     Box,
     Button,
@@ -34,13 +34,13 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
 
     const [moreOptionsActive, setMoreOptionsActive] = useState(false)
     const [options, setOptions] = useState<Column.Serialized>({
-        name: "",
-        key: "",
+        _id: undefined!,
+        _kind: "standard",
+        key: undefined!,
+        name: undefined!,
         editable: true,
         editor: "string",
-        formatter: "string",
-        _kind: "standard",
-        _id: undefined!,
+        formatter: "standard",
     })
     const [valid, setValid] = useState(false)
 
@@ -106,7 +106,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={options.editable}
+                                        checked={options.editable ?? true}
                                         onChange={e =>
                                             setOption(
                                                 "editable",
