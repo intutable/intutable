@@ -13,6 +13,6 @@
         "baseUrl": ".",
         "allowJs": true,
         "checkJs": true,
-        "outDir": "../../dist"
+        "outDir": "./dist"
     }
 }
