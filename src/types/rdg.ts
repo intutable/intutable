@@ -6,11 +6,12 @@ import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import type { CellContentType } from "@datagrid/Editor/types/CellContentType"
 import type { ViewInfo } from "@intutable/lazy-views"
 import { project_management } from "./type-annotations/project-management"
-import { deserialize } from "api/utils/de_serialize/column"
 import { Formatter } from "@datagrid/Formatter/types/Formatter"
+import { deserialize } from "api/utils/de_serialize/column"
 import Obj from "./Obj"
 import { FormatterComponent } from "@datagrid/Formatter/types/FormatterComponent"
 import { FormatterComponentMap } from "@datagrid/Formatter/formatters"
+import { headerRenderer } from "@datagrid/renderers/HeaderRenderer/HeaderRenderer"
 
 // #################################################################
 //       Table
@@ -84,9 +85,12 @@ export type MetaColumnProps = {
      */
     readonly _id: number
     /**
-     * @property {("standard" | "link" | "lookup")} _kind meta type of a column
+     * @property {(standard | link | lookup)} _kind meta type of a column.
      *
      * ---
+     *
+     * __Note__: this is kind of redundant and could easly be merged with {@link SerializedColumn.formatter}.
+     * We decided not to in favor of keeping the type clean and preserve the meaning of {@link Column.formatter}.
      *
      * #### Options
      * - `standard`: ignore this, only use whatever is defined in {@link FormatterComponentMap} in `standard` derived from {@link Formatter}.
@@ -110,7 +114,7 @@ type SerializedColumn = MetaColumnProps & {
     /**
      * @property {string} name The name of the column. By default it will be displayed in the header cell.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.name}.
      *
      * ---
      *
@@ -124,49 +128,58 @@ type SerializedColumn = MetaColumnProps & {
     /**
      * @property {string} key A unique key to distinguish each column.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.key}.
      */
     key: string
     /**
      * @property {(number | string | undefined | null)} [width] Column width. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.width}.
      */
     width?: number | string | null
     /**
      * @property {(number | undefined | null)} [minWidth] Minimum column width in px.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.minWidth}.
      */
     minWidth?: number | null
     /**
      * @property {(number | undefined | null)} [maxWidth] Maximum column width in px.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.maxWidth}.
      */
     maxWidth?: number | null
     /**
      * @property {(string | undefined | null)} [cellClass]
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.cellClass}.
+     *
+     * ---
+     *
+     * __Warning__: This type is customized for serialization (see below).
+     *
+     * __Note__: the orignal type allows besides a boolean value
+     * a function that determines the value `cellClass` based on a
+     * given row that is received as a argument by the function.
+     * This function would need to be serialized like other props.
      */
     cellClass?: string | null
     /**
      * @property {(string | undefined | null)} [headerCellClass]
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.headerCellClass}.
      */
     headerCellClass?: string | null
     /**
      * @property {(undefined | null)} [summaryCellClass]
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.summaryCellClass}.
      */
     summaryCellClass?: string | null
     /**
      * @property {(Formatter)} formatter Formatter to be used to render the cell content ({@default standard}).
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.formatter}.
      *
      * ---
      *
@@ -183,7 +196,7 @@ type SerializedColumn = MetaColumnProps & {
     /**
      * @property {(undefined | null)} [summaryFormatter]
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.summaryFormatter}.
      *
      * ---
      *
@@ -200,7 +213,7 @@ type SerializedColumn = MetaColumnProps & {
     /**
      * @property {(undefined | null)} [groupFormatter]
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.groupFormatter}.
      *
      * ---
      *
@@ -217,7 +230,7 @@ type SerializedColumn = MetaColumnProps & {
     /**
      * @property {(boolean | undefined | null)} [editable=true] Enables cell editing ({@default true}). If set and no editor property specified, then a textinput will be used as the cell editor
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.editable}.
      *
      * ---
      *
@@ -229,47 +242,53 @@ type SerializedColumn = MetaColumnProps & {
      * This function would need to be serialized like other props,
      * therefore – in this serialized version of {@link Column} – the
      * type `string` can be used (currently commented out).
-     *
      */
     editable?: boolean | null /* | string */
     /**
      * @property {(string | undefined | null)} [colSpan]
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.colSpan}.
      *
      * ---
      *
+     * __Warning__: This type is customized for serialization (see below).
+     *
+     * __Note__: the orignal type requires a function.
+     * That function would be deserialized based
+     * on a type in {@link deserialize}.
+     *
      * __Note__: This feature is not supported yet.
+     * No deserialization takes place.
      */
     colSpan?: string | null
     /**
      * @property {(boolean | undefined | null)} [frozen] Determines whether column is frozen or not.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.frozen}.
      */
     frozen?: boolean | null
     /**
      * @property {(boolean | undefined | null)} [resizable] Enable resizing of a column.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.resizable}.
      */
     resizable?: boolean | null
     /**
      * @property {(boolean | undefined | null)} [sortable] Enable sorting of a column.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.sortable}.
      */
     sortable?: boolean | null
     /**
      * @property {(boolean | undefined | null)} [sortDescendingFirst] Sets the column sort order to be descending instead of ascending the first time the column is sorted.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.sortDescendingFirst}.
      */
     sortDescendingFirst?: boolean | null
     /**
      * @property {(CellContentType)} editor Editor to be rendered when cell of column is being edited. If set, then the column is automatically set to be editable.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.editor}.
      *
      * ---
      *
@@ -280,29 +299,29 @@ type SerializedColumn = MetaColumnProps & {
      * {@type {CellContentType}} during deserialization in {@link deserialize}.
      */
     editor: CellContentType
-    editorOptions?: {
+    editorOptions?: null | {
         /**
          * @property {(boolean | undefined | null)} [renderFormatter=false] ({@default false}).
          *
-         * See the orignal type here: {@link Column}.
+         * See the orignal type here: {@link Column.editorOptions}.
          */
         renderFormatter?: boolean | null
         /**
          * @property {(boolean | undefined | null)} [editOnClick=false] ({@default false}).
          *
-         * See the orignal type here: {@link Column}.
+         * See the orignal type here: {@link Column.editorOptions}.
          */
         editOnClick?: boolean | null
         /**
          * @property {(boolean | undefined | null)} [commitOnOutsideClick=true] ({@default true}).
          *
-         * See the orignal type here: {@link Column}.
+         * See the orignal type here: {@link Column.editorOptions}.
          */
         commitOnOutsideClick?: boolean | null
         /**
          * @property {(string | undefined | null)} [onCellKeyDown] Prevent default to cancel editing.
          *
-         * See the orignal type here: {@link Column}.
+         * See the orignal type here: {@link Column.editorOptions}.
          *
          * ---
          *
@@ -319,7 +338,7 @@ type SerializedColumn = MetaColumnProps & {
         /**
          * @property {(string | undefined | null)} [onNavigation] Control the default cell navigation behavior while the editor is open.
          *
-         * See the orignal type here: {@link Column}.
+         * See the orignal type here: {@link Column.editorOptions}.
          *
          * ---
          *
@@ -337,18 +356,15 @@ type SerializedColumn = MetaColumnProps & {
     /**
      * @property {(string | undefined | null)} [headerRenderer] Header renderer for each header cell.
      *
-     * See the orignal type here: {@link Column}.
+     * See the orignal type here: {@link Column.headerRenderer}.
      *
      * ---
      *
      * __Warning__: This type is customized for serialization (see below).
      *
      * __Note__: the orignal type requires a component.
-     * That component would be deserialized based
-     * on a type in {@link deserialize}.
-     *
-     * __Note__: This feature is not supported yet.
-     * No deserialization takes place.
+     * At the moment we use a default component {@link headerRenderer}, it gets
+     * inserted in {@link deserialize}.
      */
     headerRenderer?: string | null
 }
