@@ -20,26 +20,27 @@ let adminId: number
 export async function init(plugins: PluginLoader){
     core = plugins
 
-    // config
-    // If the admin user is already present, assume no further set-up is needed.
-    const maybeAdminId = await getAdminId()
-    if (maybeAdminId === null){
-        adminId = await createAdmin()
-        console.log("set up admin user")
-    } else {
-        adminId = maybeAdminId
-        console.log("admin user already present")
-    }
-
     // in init.sql until db supports default values
     // await configureColumnAttributes()
 
-    // testing data
-    if (maybeAdminId === null) {
-        console.log("creating and populating example schema")
-        await createExampleSchema(core, adminId)
-        await insertExampleData(core)
-    } else console.log("skipped creating example schema")
+    // for dev mode, create some custom data
+    if(process.env["npm_lifecycle_event"] === "dev"){
+        const maybeAdminId = await getAdminId()
+        if (maybeAdminId === null){
+            adminId = await createAdmin()
+            console.log("set up admin user")
+        } else {
+            adminId = maybeAdminId
+            console.log("admin user already present")
+        }
+
+        // testing data
+        if (maybeAdminId === null) {
+            console.log("creating and populating example schema")
+            await createExampleSchema(core, adminId)
+            await insertExampleData(core)
+        } else console.log("skipped creating example schema")
+    }
 }
 
 async function getAdminId(): Promise<number | null> {
