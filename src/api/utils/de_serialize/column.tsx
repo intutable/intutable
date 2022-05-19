@@ -9,18 +9,29 @@ import { Column, MetaColumnProps } from "types"
 import { isNumber } from "utils/isNumber"
 
 /**
- * // TODO: serialize correctly
- * @param col
- * @returns
+ * Serializes a single Column.
+ * @param {Column} col
+ * @returns {SerializedColumn}
  */
 export const serialize = (col: Column.Deserialized): Column.Serialized => ({
-    name: col.name as string,
-    key: col.key,
-    editable: col.editable as boolean,
-    editor: inferEditorType(col.editor!),
-    formatter: "standard",
-    _kind: col._kind!,
+    ...col,
     _id: col._id!,
+    _kind: col._kind!,
+    name: col.name as string,
+    editor: "string", // TODO: must be inferred somehow, but atm it only can have this default value
+    formatter: "standard", // TODO: must be inferred somehow, but atm it only can have this default value
+    summaryFormatter: undefined, // currently not supported
+    groupFormatter: undefined, // currently not supported
+    editable: col.editable as boolean | undefined | null,
+    cellClass: undefined, // currently not supported
+    summaryCellClass: undefined, // currently not supported
+    colSpan: undefined, // currently not supported
+    editorOptions: {
+        ...col.editorOptions,
+        onCellKeyDown: undefined, // currently not supported
+        onNavigation: undefined, /// currently not supported
+    },
+    headerRenderer: undefined, // supported but gets a default value in the deserializer
 })
 
 /**
