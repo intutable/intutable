@@ -1,6 +1,6 @@
 import { MetaColumnProps } from "types"
-import { Formatter } from "../types/Formatter"
-import { FormatterComponent } from "../types/FormatterComponent"
+import { Formatter } from "../formatters"
+import { FormatterComponent } from ".."
 import { LinkColumnFormatter } from "./LinkColumnFormatter"
 import { StandardFormatter } from "./StandardFormatter"
 import { LookupColumnFormatter } from "./LookupColumnFormatter"
