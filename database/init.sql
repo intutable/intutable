@@ -62,13 +62,13 @@ CREATE TABLE view_joins(
 );
 
 CREATE TABLE view_columns(
+    _id SERIAL PRIMARY KEY,
     view_id INTEGER NOT NULL,
     join_id INTEGER NULL,
     column_id INTEGER NOT NULL,
     "userPrimary" INTEGER DEFAULT 0 NOT NULL,
-    -- custom metadata, see types/rdg.ts for explanations on them
-    _id SERIAL PRIMARY KEY,
     kind TEXT NULL,
+    -- custom metadata, see types/rdg.ts for explanations on them
     "displayName" TEXT NULL,
     editable INTEGER DEFAULT 1,
     editor TEXT,
@@ -91,7 +91,7 @@ CREATE TABLE view_columns(
     commitOnOutsideClick INTEGER DEFAULT 0,
     onCellKeyDown VARCHAR(255) NULL,
     onNavigation VARCHAR(255) NULL,
-    headerRenderer VARCHAR(255) NULL,
+    headerRenderer VARCHAR(255) NULL
 );
 
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');
