@@ -53,6 +53,7 @@ export class Currency {
     }
 
     // TODO: add round func
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     toFormattedString(decimalPlaces = 0): string {
         return `${this._value} ${CurrencyFormatSymbolMap[this._format]}`
     }

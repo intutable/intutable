@@ -41,6 +41,7 @@ export class Percentage {
     }
 
     // TODO: add round func
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     toFormattedString(decimalPlaces = 0): string {
         switch (this._format) {
             case "percent":

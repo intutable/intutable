@@ -120,8 +120,11 @@ export type IsConvertableResponse = {
 }
 
 const review = <FROM extends CellContentType>(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     from: CellContentType,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     to: CellContentType,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     data: CellInputData<FROM>
 ): boolean => {
     // TODO: implement

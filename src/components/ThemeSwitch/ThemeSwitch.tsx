@@ -50,7 +50,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     },
 }))
 
-const ThemeSwitch: React.FC = props => {
+const ThemeSwitch: React.FC = () => {
     const { toggleColorMode, getTheme } = useThemeToggler()
 
     const handleSwitch = (e: React.ChangeEvent<HTMLInputElement>) => {

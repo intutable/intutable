@@ -1,6 +1,6 @@
+import { InputUnstyled, UseInputProps } from "@mui/base"
+import { styled } from "@mui/material"
 import React from "react"
-import { useTheme, styled } from "@mui/material"
-import { InputUnstyled, useInput, UseInputProps } from "@mui/base"
 
 const StyledInputElement = styled("input")`
     width: 100%;
@@ -17,6 +17,7 @@ const StyledInputElement = styled("input")`
     }
 `
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type InputProps = {
     props: UseInputProps
     ref: React.Ref<HTMLInputElement> | undefined

@@ -1,5 +1,5 @@
+import React from "react"
 import { Row } from "types"
-import React, { useState } from "react"
 import { EditorComponent } from "../../types/EditorComponent"
 import { Input } from "./Input"
 

@@ -77,6 +77,7 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
         [deleteRow, enqueueSnackbar]
     )
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleCreateRow = useCallback((atIndex: number) => {
         // try {
         //     handleCloseContextMenu()

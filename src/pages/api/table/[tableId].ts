@@ -3,26 +3,25 @@ import {
     deleteView,
     getViewData,
     getViewOptions,
+    listViews,
     renameView,
     TableDescriptor,
+    tableId as makeTableId,
     ViewData,
     ViewDescriptor,
     ViewOptions,
-    listViews,
-    tableId as makeTableId,
 } from "@intutable/lazy-views"
 import {
-    getProjects,
+    getTablesFromProject,
     removeTable,
 } from "@intutable/project-management/dist/requests"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { Table } from "api/utils/parse"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
-import { getTablesFromProject } from "@intutable/project-management/dist/requests"
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
 /**
  * GET a single table view's data {@type {TableData.Serialized}}.

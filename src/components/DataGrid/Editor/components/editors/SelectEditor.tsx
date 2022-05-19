@@ -1,2 +1,2 @@
 import { EditorComponent } from "../../types/EditorComponent"
-export const SelectEditor: EditorComponent = props => null
+export const SelectEditor: EditorComponent = () => null
