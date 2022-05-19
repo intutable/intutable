@@ -13,6 +13,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import React, { useEffect, useState } from "react"
 import { Row } from "types"
+import { DeleteButton } from "../components/DeleteButton"
 import { RowPicker } from "../components/RowPicker"
 
 const _LinkColumnFormatter: FormatterComponent = props => {
@@ -64,10 +65,10 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const [deleteIconVisible, setDeleteIconVisible] = useState<boolean>(false)
 
     const handleDeleteContent = async (
-        e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ) => {
         try {
-            e.stopPropagation()
+            event.stopPropagation()
             await fetcher({
                 url: `/api/join/${joinId}`,
                 body: {
@@ -102,14 +103,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                     <Stack direction="row">
                         <Box flexGrow="1">{content}</Box>
                         {deleteIconVisible && hasContent && (
-                            <Box>
-                                <IconButton
-                                    size="small"
-                                    onClick={handleDeleteContent}
-                                >
-                                    <ClearIcon fontSize="inherit" />
-                                </IconButton>
-                            </Box>
+                            <DeleteButton onDelete={handleDeleteContent} />
                         )}
                     </Stack>
                 </Box>

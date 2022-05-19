@@ -41,7 +41,8 @@ export const deserialize = (col: Column.Serialized): Column.Deserialized => {
     /**
      * To understand this condition see {@link MetaColumnProps._kind}
      */
-    const formatter = col._kind === "standard" ? col.formatter : col._kind
+    // const formatter = col._kind === "standard" ? col.formatter : col._kind
+    const formatter = "standard"
 
     return {
         ...col,
