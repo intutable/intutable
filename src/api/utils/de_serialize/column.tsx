@@ -1,15 +1,12 @@
 import { CellContentTypeComponents } from "@datagrid/Editor"
-import { inferEditorType } from "@datagrid/Editor/inferEditorType"
 import { isCellContentType } from "@datagrid/Editor/type-management"
 import { FormatterComponentMap } from "@datagrid/Formatter/formatters/map"
-import { inferFormatterType } from "@datagrid/Formatter/utils/inferFormatterType"
 import { headerRenderer } from "@datagrid/renderers"
-import React from "react"
-import { Column, MetaColumnProps } from "types"
-import { isNumber } from "utils/isNumber"
+import { Column } from "types"
 
 /**
  * Serializes a single Column.
+ *
  * @param {Column} col
  * @returns {SerializedColumn}
  */
@@ -36,13 +33,6 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
 
 /**
  * Deserializes a single Column.
- * In detail this function does the following:
- *
- * ```
- * 1. replace all placeholders that got inserted when serialized by actual components.
- *    - `editor` property: when serialized, it has a value of {@type {EditorType}} which gets replaces by the actual component {@link getEditor}.
- * 2. not all properties from a serialized column are transfered to a deserialized one, some get removed.
- * ```
  *
  * @param {SerializedColumn} col
  * @returns {Column}
