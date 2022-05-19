@@ -37,9 +37,17 @@ const PATCH = async (
 ) => {
     try {
         const { update } = req.body as {
-            update: Column.Serialized
+            update: Column.Serialized // TODO: require a object with optional properties of Column.Serialized, not the whole column, only updated properties
         }
         const user = req.session.user!
+
+        /**
+         * // TODO: find a way to handle updates to the column
+         *
+         * e.g. use a class that handles updates to the column
+         * it could prevent changing a prop that is not allowed to be changed
+         * in the current state of the column
+         */
 
         const deparsedUpdate = Parser.Column.deparse(update, columnId)
 
