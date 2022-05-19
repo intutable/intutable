@@ -34,10 +34,10 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
 
     const [moreOptionsActive, setMoreOptionsActive] = useState(false)
     const [options, setOptions] = useState<Column.Serialized>({
-        _id: undefined!,
+        _id: -1,
         _kind: "standard",
-        key: undefined!,
-        name: undefined!,
+        key: Symbol("key").toString(),
+        name: Symbol("name").toString(),
         editable: true,
         editor: "string",
         formatter: "standard",
