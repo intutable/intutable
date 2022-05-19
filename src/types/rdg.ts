@@ -10,7 +10,7 @@ import { Formatter } from "@datagrid/Formatter/types/Formatter"
 import { deserialize } from "api/utils/de_serialize/column"
 import Obj from "./Obj"
 import { FormatterComponent } from "@datagrid/Formatter/types/FormatterComponent"
-import { FormatterComponentMap } from "@datagrid/Formatter/formatters"
+import { FormatterComponentMap } from "@datagrid/Formatter"
 import { headerRenderer } from "@datagrid/renderers/HeaderRenderer/HeaderRenderer"
 
 // #################################################################
