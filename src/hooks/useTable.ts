@@ -3,6 +3,7 @@ import { useAPI, APIContextProvider } from "context"
 import useSWR, { unstable_serialize } from "swr"
 import { TableData } from "types"
 import { ViewDescriptor } from "@intutable/lazy-views"
+import { useMemo } from "react"
 
 /**
  * ### useTable hook.
@@ -11,14 +12,23 @@ import { ViewDescriptor } from "@intutable/lazy-views"
  *
  * It uses the {@link APIContextProvider}
  * to determine the current selected table.
+ *
+ * __Note__: If you want to fetch a diffrent table than specified in the api context,
+ * you can use the optional {@param {TableDescriptor} [options.table]} prop.
  */
-export const useTable = () => {
-    const { table } = useAPI()
+export const useTable = (options?: { table?: ViewDescriptor }) => {
+    const { table: api_table } = useAPI()
+
+    // if the table param is specified, use that over the api context
+    const tableToFetch = useMemo(
+        () => (options?.table ? options.table : api_table),
+        [api_table, options?.table]
+    )
 
     const { data, error, mutate } = useSWR<TableData>(
-        table
+        tableToFetch
             ? {
-                  url: `/api/table/${table.id}`,
+                  url: `/api/table/${tableToFetch.id}`,
                   method: "GET",
               }
             : null

@@ -1,3 +1,4 @@
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { fetcher } from "api"
 import { useTable } from "hooks/useTable"
@@ -22,9 +23,16 @@ export const getRowId = (data: TableData | undefined, row: Row) => {
  *
  * It uses the {@link APIContextProvider}
  * to determine the current selected table.
+ *
+ * __Note__: If you want to use a different table than specified in the api context,
+ * you can use the optional {@param {TableDescriptor} [options.table]} prop.
  */
-export const useRow = () => {
-    const { data: table, error, mutate } = useTable()
+export const useRow = (options?: { table?: ViewDescriptor }) => {
+    const {
+        data: table,
+        error,
+        mutate,
+    } = useTable(options?.table ? { table: options.table } : undefined)
 
     /**
      * Used for row reordering / drag n drop

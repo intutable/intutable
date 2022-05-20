@@ -1,4 +1,4 @@
-import { ColumnInfo } from "@intutable/lazy-views"
+import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views"
 import { fetcher } from "api"
 import { Parser } from "api/utils"
 import { useTable } from "hooks/useTable"
@@ -28,9 +28,16 @@ export const getColumnInfo = (
  *
  * It uses the {@link APIContextProvider}
  * to determine the current selected table.
+ *
+ *  * __Note__: If you want to use a different table than specified in the api context,
+ * you can use the optional {@param {TableDescriptor} [options.table]} prop.
  */
-export const useColumn = () => {
-    const { data: table, error, mutate } = useTable()
+export const useColumn = (options?: { table?: ViewDescriptor }) => {
+    const {
+        data: table,
+        error,
+        mutate,
+    } = useTable(options?.table ? { table: options.table } : undefined)
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
