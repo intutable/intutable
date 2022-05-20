@@ -5,7 +5,6 @@ import { TableData } from "types"
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
-import { SWRDefaultConfigProps } from "api/SWRDefaultConfigProps"
 
 export type TableHookOptions = {
     table?: ViewDescriptor
@@ -43,7 +42,7 @@ export const useTable = (options?: TableHookOptions) => {
                   method: "GET",
               }
             : null,
-        options?.swrOptions || SWRDefaultConfigProps
+        options?.swrOptions
     )
 
     return {
