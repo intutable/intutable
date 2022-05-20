@@ -14,7 +14,7 @@ import { useTable } from "hooks/useTable"
 import React, { useEffect, useState } from "react"
 import { Row } from "types"
 import { DeleteButton } from "../components/DeleteButton"
-import { RowPicker } from "../components/RowPicker"
+import { RowSelector } from "../components/RowSelector"
 
 const _LinkColumnFormatter: FormatterComponent = props => {
     const { row, column } = props
@@ -109,7 +109,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                 </Box>
             </Tooltip>
             {foreignTableId && joinId && (
-                <RowPicker
+                <RowSelector
                     rowId={getRowId(data, row)}
                     joinId={joinId}
                     foreignTableId={foreignTableId}

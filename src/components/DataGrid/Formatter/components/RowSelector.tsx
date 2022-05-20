@@ -22,7 +22,12 @@ import React, { useEffect, useState } from "react"
 import useSWR from "swr"
 import { TableData } from "types"
 
-export type RowPickerProps = {
+export type RowPreview = {
+    id: number
+    text: string
+}
+
+export type RowSelectorProps = {
     rowId: number
     joinId: JoinDescriptor["id"]
     foreignTableId: ViewDescriptor["id"]
@@ -30,12 +35,7 @@ export type RowPickerProps = {
     onClose: () => void
 }
 
-export type RowPreview = {
-    id: number
-    text: string
-}
-
-export const RowPicker: React.FC<RowPickerProps> = props => {
+export const RowSelector: React.FC<RowSelectorProps> = props => {
     const { user } = useUser()
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
