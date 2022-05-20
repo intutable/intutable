@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from "@mui/material"
 import WarningIcon from "@mui/icons-material/Warning"
 
-const NoRowsRenderer = () => {
+const NoRowsFallback = () => {
     const theme = useTheme()
     return (
         <Box
@@ -30,4 +30,4 @@ const NoRowsRenderer = () => {
     )
 }
 
-export default NoRowsRenderer
+export default NoRowsFallback

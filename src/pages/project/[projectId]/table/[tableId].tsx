@@ -1,6 +1,6 @@
 import { DetailedViewModal } from "@datagrid/Detail Window/DetailedViewModal"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
-import NoRowsRenderer from "@datagrid/NoRowsOverlay/NoRowsRenderer"
+import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
@@ -121,7 +121,7 @@ const TablePage: React.FC = () => {
                                     rows={data.rows}
                                     columns={data.columns}
                                     components={{
-                                        noRowsFallback: <NoRowsRenderer />,
+                                        noRowsFallback: <NoRowsFallback />,
                                         rowRenderer: RowRenderer,
                                         // checkboxFormatter: // TODO: adjust
                                         // sortIcon: // TODO: adjust
