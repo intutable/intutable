@@ -4,6 +4,16 @@ import useSWR, { unstable_serialize } from "swr"
 import { TableData } from "types"
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { useMemo } from "react"
+import { BareFetcher, PublicConfiguration } from "swr/dist/types"
+import { SWRDefaultConfigProps } from "api/SWRDefaultConfigProps"
+
+export type TableHookOptions = {
+    table?: ViewDescriptor
+    swrOptions?: Partial<
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PublicConfiguration<TableData, any, BareFetcher<TableData>>
+    >
+}
 
 /**
  * ### useTable hook.
@@ -13,10 +23,11 @@ import { useMemo } from "react"
  * It uses the {@link APIContextProvider}
  * to determine the current selected table.
  *
- * __Note__: If you want to fetch a diffrent table than specified in the api context,
- * you can use the optional {@param {TableDescriptor} [options.table]} prop.
+ * @param {Partial<PublicConfiguration<TableData, any, BareFetcher<TableData>>>} [options.swrOptions] Options for the underlying {@link useSWR} hook.
+ *
+ * @param {ViewDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
  */
-export const useTable = (options?: { table?: ViewDescriptor }) => {
+export const useTable = (options?: TableHookOptions) => {
     const { table: api_table } = useAPI()
 
     // if the table param is specified, use that over the api context
@@ -25,19 +36,21 @@ export const useTable = (options?: { table?: ViewDescriptor }) => {
         [api_table, options?.table]
     )
 
-    const { data, error, mutate } = useSWR<TableData>(
+    const { data, error, mutate, isValidating } = useSWR<TableData>(
         tableToFetch
             ? {
                   url: `/api/table/${tableToFetch.id}`,
                   method: "GET",
               }
-            : null
+            : null,
+        options?.swrOptions || SWRDefaultConfigProps
     )
 
     return {
         data,
         error,
         mutate,
+        loading: (error == null && data == null) || isValidating,
     }
 }
 
