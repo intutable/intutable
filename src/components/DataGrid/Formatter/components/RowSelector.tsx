@@ -29,33 +29,29 @@ export type RowPreview = {
 
 export type RowSelectorProps = {
     rowId: number
-    joinId: JoinDescriptor["id"]
-    foreignTableId: ViewDescriptor["id"]
+    join: JoinDescriptor
+    foreignTable: ViewDescriptor
     open: boolean
     onClose: () => void
 }
 
 export const RowSelector: React.FC<RowSelectorProps> = props => {
-    const { user } = useUser()
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
     const { data: baseTableData, mutate } = useTable()
 
-    const { data: linkTableData, error } = useSWR<TableData>(
-        user
-            ? { url: `/api/table/${props.foreignTableId}`, method: "GET" }
-            : null
-    )
+    const { data: linkTableData, error } = useTable({
+        table: props.foreignTable,
+    })
 
     const [options, setOptions] = useState<RowPreview[]>([])
     const [selection, setSelection] = useState<RowPreview | null>(null)
 
-    // get data from target table and generate previews for rows
+    // get data from target table and generate previews of rows
     useEffect(() => {
-        if (!linkTableData) {
-            setOptions([])
-        } else {
+        if (linkTableData == null) setOptions([])
+        else {
             const primaryColumn = linkTableData!.metadata.columns.find(
                 c => c.attributes.userPrimary! === 1
             )!
@@ -71,7 +67,7 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
     const handlePickRow = async () => {
         try {
             await fetcher({
-                url: `/api/join/${props.joinId}`,
+                url: `/api/join/${props.join.id}`,
                 body: {
                     viewId: baseTableData!.metadata.descriptor.id,
                     rowId: props.rowId,

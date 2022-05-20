@@ -31,8 +31,8 @@ const _LinkColumnFormatter: FormatterComponent = props => {
 
     const { data, mutate } = useTable()
 
-    const [foreignTableId, setForeignTableId] = useState<ViewDescriptor["id"]>()
-    const [joinId, setJoinId] = useState<JoinDescriptor["id"]>()
+    const [foreignTable, setForeignTable] = useState<ViewDescriptor>()
+    const [join, setJoin] = useState<JoinDescriptor>()
 
     /**
      * // BUG This component renders 1. too often and 2. and every hover etc.
@@ -54,8 +54,8 @@ const _LinkColumnFormatter: FormatterComponent = props => {
         if (data == null) return
         const metaColumn = getColumnInfo(data.metadata.columns, column)
         const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
-        setJoinId(join.id)
-        setForeignTableId(getId(join.foreignSource))
+        setJoin(join)
+        setForeignTable(getId(join.foreignSource)) // TODO: use the whole foreigntable, not only the id
     }, [column, data])
 
     const key = column.key as keyof Row
@@ -70,14 +70,14 @@ const _LinkColumnFormatter: FormatterComponent = props => {
         try {
             event.stopPropagation()
             await fetcher({
-                url: `/api/join/${joinId}`,
+                url: `/api/join/${join}`,
                 body: {
                     viewId: data!.metadata.descriptor.id,
                     rowId: getRowId(data, row),
                     value: null,
                 },
             })
-            await mutate()
+            await mutate() // TODO: handle mutation differently
         } catch (error) {
             snackError("Der Inhalt konnte nicht gelöscht werden")
         }
@@ -108,11 +108,11 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                     </Stack>
                 </Box>
             </Tooltip>
-            {foreignTableId && joinId && (
+            {foreignTable && join && (
                 <RowSelector
                     rowId={getRowId(data, row)}
-                    joinId={joinId}
-                    foreignTableId={foreignTableId}
+                    join={join}
+                    foreignTable={foreignTable}
                     open={anchorEL != null}
                     onClose={handleCloseModal}
                 />
