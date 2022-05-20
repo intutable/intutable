@@ -1,9 +1,8 @@
-import { ViewData } from "@intutable/lazy-views"
-import { DeSerialize, Parser } from "api/utils"
+import { DeSerialize } from "api/utils"
 import { Middleware, SWRHook } from "swr"
 import { TableData } from "types"
 
-export const parseTableData: Middleware =
+export const deserializeTable: Middleware =
     (useSWRNext: SWRHook) => (key, fetcher, config) => {
         const swr = useSWRNext(key, fetcher, config)
 

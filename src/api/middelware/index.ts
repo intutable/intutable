@@ -1,2 +1,2 @@
-export * from "./parseTableData"
+export * from "./deserializeTable"
 export * from "./logger"
