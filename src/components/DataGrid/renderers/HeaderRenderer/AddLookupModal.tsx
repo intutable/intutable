@@ -39,7 +39,7 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const selectedColDescriptor = useMemo(
         () =>
             selection && data
-            ? getColumnInfo(data.metadata.columns, selection)
+                ? getColumnInfo(data.metadata.columns, selection)
                 : null,
         [data, selection]
     )
