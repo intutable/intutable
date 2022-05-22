@@ -4,13 +4,14 @@ import {
     JoinDescriptor,
     ViewDescriptor,
 } from "@intutable/lazy-views/dist/types"
-import ClearIcon from "@mui/icons-material/Clear"
-import { Box, IconButton, Stack, Tooltip } from "@mui/material"
+import { Box, Stack, Tooltip } from "@mui/material"
 import { fetcher } from "api"
+import { useAPI } from "context"
 import { getColumnInfo } from "hooks/useColumn"
 import { getRowId } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
+import { useTables } from "hooks/useTables"
 import React, { useEffect, useState } from "react"
 import { Row } from "types"
 import { DeleteButton } from "../components/DeleteButton"
@@ -30,6 +31,8 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const handleCloseModal = () => setAnchorEL(null)
 
     const { data, mutate } = useTable()
+    const { project } = useAPI()
+    const { tables } = useTables(project)
 
     const [foreignTable, setForeignTable] = useState<ViewDescriptor>()
     const [join, setJoin] = useState<JoinDescriptor>()
@@ -51,12 +54,15 @@ const _LinkColumnFormatter: FormatterComponent = props => {
      *
      */
     useEffect(() => {
-        if (data == null) return
+        if (data == null || tables == null) return
         const metaColumn = getColumnInfo(data.metadata.columns, column)
         const join = data!.metadata.joins.find(j => j.id === metaColumn.joinId)!
         setJoin(join)
-        setForeignTable(getId(join.foreignSource)) // TODO: use the whole foreigntable, not only the id
-    }, [column, data])
+        const _foreignTable = tables.find(
+            tbl => tbl.id === getId(join.foreignSource)
+        )!
+        setForeignTable(_foreignTable)
+    }, [column, data, tables])
 
     const key = column.key as keyof Row
     const content = row[key] as string | null | undefined
