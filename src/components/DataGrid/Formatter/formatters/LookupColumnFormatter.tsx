@@ -8,5 +8,5 @@ export const LookupColumnFormatter: FormatterComponent = props => {
     const key = column.key as keyof Row
     const content = row[key] as string | null | undefined
 
-    return <Box>{content}1</Box>
+    return <Box>{content}</Box>
 }

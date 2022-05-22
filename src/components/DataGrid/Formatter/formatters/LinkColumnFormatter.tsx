@@ -60,7 +60,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
             try {
                 event.stopPropagation()
                 await fetcher({
-                    url: `/api/join/${join.id}`,
+                    url: `/api/join/${join!.id}`,
                     body: {
                         viewId: data!.metadata.descriptor.id,
                         rowId: getRowId(data, row),

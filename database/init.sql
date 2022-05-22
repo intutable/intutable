@@ -204,20 +204,25 @@ INSERT INTO view_joins(_id, view_id, base_id, base_type, "on")
 INSERT INTO view_joins(_id, view_id, base_id, base_type, "on")
   VALUES(2, 4, 2, 1, '[16,"=",7]');
 
-INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       _kind, "userPrimary", editable, editor, formatter)
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
+                       _kind, "displayName", "userPrimary",
+                       editable, editor, formatter)
   VALUES(13, 4, NULL, 13, 'standard', 'ID', 0, 1, 'number', NULL);
-INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       _kind, "userPrimary", editable, editor, formatter)
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
+                       _kind, "displayName", "userPrimary",
+                       editable, editor, formatter)
   VALUES(14, 4, NULL, 14, 'standard', 'Name', 1, 1, 'string', NULL);
-INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       _kind, "userPrimary", editable, editor, formatter)
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
+                       _kind, "displayName", "userPrimary",
+                       editable, editor, formatter)
   VALUES(15, 4, 1, 2, 'link', 'Nachname', 0, 0, NULL, 'linkColumn');
-INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       _kind, "userPrimary", editable, editor, formatter)
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
+                       _kind, "displayName", "userPrimary",
+                       editable, editor, formatter)
   VALUES(17, 4, NULL, 17, 'standard', 'Rolle', 0, 1, 'string', 'string');
-INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       _kind, "userPrimary", editable, editor, formatter)
+INSERT INTO view_columns(_id, view_id, join_id, column_id,
+                       _kind, "displayName", "userPrimary",
+                       editable, editor, formatter)
   VALUES(16, 4, 2, 8, 'link', 'Organ', 0, 0, NULL, 'linkColumn');
 
 
