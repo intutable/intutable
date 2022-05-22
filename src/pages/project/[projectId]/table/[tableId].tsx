@@ -6,12 +6,13 @@ import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Box, Typography, useTheme } from "@mui/material"
+import { Grid, Box, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
+import { ViewNavigator } from "components/ViewNavigator"
 import {
     APIContextProvider,
     HeaderSearchFieldProvider,
@@ -40,6 +41,9 @@ const TablePage: React.FC = () => {
     const { data, error } = useTable()
     const { tables: tableList } = useTables(project)
     const { updateRow } = useRow()
+
+    // views side panel
+    const [viewsOpen, setViewsOpen] = useState<boolean>(true)
 
     // Column Selector
     const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
@@ -109,11 +113,18 @@ const TablePage: React.FC = () => {
                     ) : (
                         <Box>
                             <Toolbar position="top">
+                                <ToolbarItem.Views
+                                    handleClick={
+                                    (_) => setViewsOpen(!viewsOpen)
+                                    }/>
                                 <ToolbarItem.AddCol />
                                 <ToolbarItem.AddLink />
                                 <ToolbarItem.AddRow />
                                 <ToolbarItem.FileDownload getData={() => []} />
                             </Toolbar>
+
+                            { viewsOpen && (
+                                <ViewNavigator sx={{maxWidth: "12%"}} /> )}
 
                             <DndProvider backend={HTML5Backend}>
                                 <DataGrid
@@ -138,6 +149,7 @@ const TablePage: React.FC = () => {
                                     headerRowHeight={headerHeight}
                                 />
                             </DndProvider>
+
                             <Toolbar position="bottom">
                                 <ToolbarItem.Connection status={"connected"} />
                             </Toolbar>
