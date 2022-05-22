@@ -65,7 +65,7 @@ export const useColumn = (options?: TableHookOptions) => {
 
         await fetcher({
             url: `/api/column/${column._id!}`,
-            body: { name: newName },
+            body: { update: { displayName: newName }},
             method: "PATCH",
         })
         await mutate()
