@@ -65,33 +65,39 @@ CREATE TABLE view_columns(
     _id SERIAL PRIMARY KEY,
     view_id INTEGER NOT NULL,
     join_id INTEGER NULL,
+    -- parent column whose data this column inherits
     column_id INTEGER NOT NULL,
-    "userPrimary" INTEGER DEFAULT 0 NOT NULL,
-    kind TEXT NULL,
     -- custom metadata, see types/rdg.ts for explanations on them
+
+    -- userPrimary: a designated column that is shown to the user as a sort of primary key,
+    -- for example to create short previews of records.
+    "userPrimary" INTEGER DEFAULT 0 NOT NULL,
+    -- kinds of columns: plain data (text, date, ...), link to other table, lookup field, ...
+    _kind TEXT NULL,
     "displayName" TEXT NULL,
+    -- various RDG props
     editable INTEGER DEFAULT 1,
     editor TEXT,
     formatter TEXT,
     width VARCHAR(32) NULL,
-    minWidth VARCHAR(32) NULL,
-    maxWidth VARCHAR(32) NULL,
-    cellClass VARCHAR(255) NULL,
-    headerCellClass VARCHAR(255) NULL,
-    summaryCellClass VARCHAR(255) NULL,
-    summaryFormatter VARCHAR(255) NULL,
-    groupFormatter VARCHAR(255) NULL,
-    colSpan VARCHAR(255) NULL,
+    "minWidth" VARCHAR(32) NULL,
+    "maxWidth" VARCHAR(32) NULL,
+    "cellClass" VARCHAR(255) NULL,
+    "headerCellClass" VARCHAR(255) NULL,
+    "summaryCellClass" VARCHAR(255) NULL,
+    "summaryFormatter" VARCHAR(255) NULL,
+    "groupFormatter" VARCHAR(255) NULL,
+    "colSpan" VARCHAR(255) NULL,
     frozen INTEGER NULL,
     resizable INTEGER NULL,
     sortable INTEGER NULL,
-    sortDescendingFirst INTEGER NULL,
-    renderFormatter INTEGER DEFAULT 0,
-    editOnClick INTEGER DEFAULT 0,
-    commitOnOutsideClick INTEGER DEFAULT 0,
-    onCellKeyDown VARCHAR(255) NULL,
-    onNavigation VARCHAR(255) NULL,
-    headerRenderer VARCHAR(255) NULL
+    "sortDescendingFirst" INTEGER NULL,
+    "renderFormatter" INTEGER DEFAULT 0,
+    "editOnClick" INTEGER DEFAULT 0,
+    "commitOnOutsideClick" INTEGER DEFAULT 0,
+    "onCellKeyDown" VARCHAR(255) NULL,
+    "onNavigation" VARCHAR(255) NULL,
+    "headerRenderer" VARCHAR(255) NULL
 );
 
 insert into users(email, password) values('admin@dekanat.de', '$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM');
@@ -119,20 +125,20 @@ INSERT INTO views(_id, name, base_id, base_type, user_id, row_options)
   VALUES(1, 'Personen', 1, 0, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": [{ "column":1, "order": "asc"}]}');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(1, 1, NULL, 1, 'ID', 'number', 'number');
+                       _kind, "displayName", editor, formatter)
+  VALUES(1, 1, NULL, 1, 'standard', 'ID', 'number', 'number');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", "userPrimary", editor, formatter)
-  VALUES(2, 1, NULL, 2, 'Nachname', 1, 'string', 'string');
+                       _kind, "displayName", "userPrimary", editor, formatter)
+  VALUES(2, 1, NULL, 2, 'standard', 'Nachname', 1, 'string', 'string');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(3, 1, NULL, 3, 'Vorname', 'string', 'string');
+                       _kind, "displayName", editor, formatter)
+  VALUES(3, 1, NULL, 3, 'standard', 'Vorname', 'string', 'string');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(5, 1, NULL, 5, 'Titel', 'string', 'string');
+                       _kind, "displayName", editor, formatter)
+  VALUES(5, 1, NULL, 5, 'standard', 'Titel', 'string', 'string');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(6, 1, NULL, 6, 'Stellung', 'string', 'string');
+                       _kind, "displayName", editor, formatter)
+  VALUES(6, 1, NULL, 6, 'standard', 'Stellung', 'string', 'string');
 
 
 create table if not exists p1_organe(
@@ -155,20 +161,20 @@ INSERT INTO views(_id, name, base_id, base_type, user_id, row_options)
   VALUES(2, 'Organe', 2, 0, NULL,
          '{"conditions": [], "groupColumns": [], "sortColumns": [{ "column":7, "order": "asc"}]}');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(7, 2, NULL, 7, 'ID', 'number', 'number');
+                       _kind, "displayName", editor, formatter)
+  VALUES(7, 2, NULL, 7, 'standard', 'ID', 'number', 'number');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", "userPrimary", editor, formatter)
-  VALUES(8, 2, NULL, 8, 'Name', 1, 'string', 'string');
+                       _kind, "displayName", "userPrimary", editor, formatter)
+  VALUES(8, 2, NULL, 8, 'standard', 'Name', 1, 'string', 'string');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(9, 2, NULL, 9, 'Kürzel', 'string', 'string');
+                       _kind, "displayName", editor, formatter)
+  VALUES(9, 2, NULL, 9, 'standard', 'Kürzel', 'string', 'string');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(10, 2, NULL, 10, 'Typ', 'string', 'string');
+                       _kind, "displayName", editor, formatter)
+  VALUES(10, 2, NULL, 10, 'standard', 'Typ', 'string', 'string');
 INSERT INTO view_columns(_id, view_id, join_id, column_id,
-                       "displayName", editor, formatter)
-  VALUES(11, 2, NULL, 11, 'FK/Math/Inf', 'string', 'string');
+                       _kind, "displayName", editor, formatter)
+  VALUES(11, 2, NULL, 11, 'standard', 'FK/Math/Inf', 'string', 'string');
 
 CREATE TABLE p1_rollen (
     _id INTEGER NOT NULL,
@@ -199,20 +205,20 @@ INSERT INTO view_joins(_id, view_id, base_id, base_type, "on")
   VALUES(2, 4, 2, 1, '[16,"=",7]');
 
 INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       "userPrimary", editable, editor, formatter)
-  VALUES(13, 4, NULL, 13, 'ID', 0, 1, 'number', NULL);
+                       _kind, "userPrimary", editable, editor, formatter)
+  VALUES(13, 4, NULL, 13, 'standard', 'ID', 0, 1, 'number', NULL);
 INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       "userPrimary", editable, editor, formatter)
-  VALUES(14, 4, NULL, 14, 'Name', 1, 1, 'string', NULL);
+                       _kind, "userPrimary", editable, editor, formatter)
+  VALUES(14, 4, NULL, 14, 'standard', 'Name', 1, 1, 'string', NULL);
 INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       "userPrimary", editable, editor, formatter)
-  VALUES(15, 4, 1, 2, 'Nachname', 0, 0, NULL, 'linkColumn');
+                       _kind, "userPrimary", editable, editor, formatter)
+  VALUES(15, 4, 1, 2, 'link', 'Nachname', 0, 0, NULL, 'linkColumn');
 INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       "userPrimary", editable, editor, formatter)
-  VALUES(17, 4, NULL, 17, 'Rolle', 0, 1, 'string', 'string');
+                       _kind, "userPrimary", editable, editor, formatter)
+  VALUES(17, 4, NULL, 17, 'standard', 'Rolle', 0, 1, 'string', 'string');
 INSERT INTO view_columns(_id, view_id, join_id, column_id, "displayName",
-                       "userPrimary", editable, editor, formatter)
-  VALUES(16, 4, 2, 8, 'Organ', 0, 0, NULL, 'linkColumn');
+                       _kind, "userPrimary", editable, editor, formatter)
+  VALUES(16, 4, 2, 8, 'link', 'Organ', 0, 0, NULL, 'linkColumn');
 
 
 -- object data
