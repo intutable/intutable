@@ -14,13 +14,10 @@ import {
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
-import { useUser } from "auth"
 import { getRowId } from "hooks/useRow"
 import { useTable } from "hooks/useTable"
 import { useSnackbar } from "notistack"
-import React, { useEffect, useState } from "react"
-import useSWR from "swr"
-import { TableData } from "types"
+import React, { useEffect, useMemo, useState } from "react"
 
 export type RowPreview = {
     id: number
@@ -45,24 +42,23 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
         table: props.foreignTable,
     })
 
-    const [options, setOptions] = useState<RowPreview[]>([])
     const [selection, setSelection] = useState<RowPreview | null>(null)
 
-    // get data from target table and generate previews of rows
-    useEffect(() => {
-        if (linkTableData == null) setOptions([])
-        else {
-            const primaryColumn = linkTableData!.metadata.columns.find(
-                c => c.attributes.userPrimary! === 1
-            )!
-            setOptions(
-                linkTableData!.rows.map(r => ({
-                    id: getRowId(linkTableData, r),
-                    text: r[primaryColumn.key] as string,
-                }))
-            )
-        }
+    const primaryColumn = useMemo(() => {
+        if (linkTableData == null) return null
+        return linkTableData.metadata.columns.find(
+            c => c.attributes.userPrimary! === 1
+        )!
     }, [linkTableData])
+
+    // get data from target table and generate previews of rows
+    const options = useMemo(() => {
+        if (primaryColumn == null) return null
+        return linkTableData!.rows.map(r => ({
+            id: getRowId(linkTableData, r),
+            text: r[primaryColumn.key] as string,
+        }))
+    }, [linkTableData, primaryColumn])
 
     const handlePickRow = async () => {
         try {
@@ -88,14 +84,14 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>Wähle eine Zeile</DialogTitle>
             <DialogContent>
-                {linkTableData == null && error == null ? (
+                {options == null && error == null ? (
                     <CircularProgress />
                 ) : error ? (
                     <>Error: {error}</>
                 ) : (
                     <>
                         <List>
-                            {options
+                            {options!
                                 .filter(row => row.text != null)
                                 .map(row => (
                                     <ListItem
