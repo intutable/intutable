@@ -4,7 +4,6 @@
         "module": "commonjs",
         "lib": ["es2020", "DOM"],
         "target": "es2019",
-        "importsNotUsedAsValues": "error",
         "isolatedModules": true,
         "resolveJsonModule": true,
         "esModuleInterop": true,
@@ -13,6 +12,6 @@
         "baseUrl": ".",
         "allowJs": true,
         "checkJs": true,
-        "outDir": "../../dist"
+        "outDir": "./dist"
     }
 }

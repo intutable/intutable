@@ -1,6 +1,6 @@
 .next/
 node_modules
-dist/
+src/backend/dist/
 data.db
 todo
 .DS_Store
