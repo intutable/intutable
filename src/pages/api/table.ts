@@ -1,7 +1,6 @@
 import { ColumnType } from "@intutable/database/dist/column"
 import {
     createView,
-    SortOrder,
     tableId,
     ViewDescriptor,
 } from "@intutable/lazy-views"
@@ -18,9 +17,9 @@ import {
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { project_management_constants } from "types/type-annotations/project-management"
 import { makeError } from "utils/error-handling/utils/makeError"
 import sanitizeName from "utils/sanitizeName"
+import defaultRowOptions from "utils/defaultRowOptions"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
@@ -76,26 +75,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                     : { displayName: "ID", editor: "number" },
         }))
 
-        const baseIdColumn = baseColumns.find(
-            c => c.name === project_management_constants.UID_KEY
-        )!
-
         // create view
         const tableView = await coreRequest<ViewDescriptor>(
             createView(
                 tableId(table.id),
                 name,
                 { columns: columnSpecs, joins: [] },
-                {
-                    conditions: [],
-                    groupColumns: [],
-                    sortColumns: [
-                        {
-                            column: baseIdColumn.id,
-                            order: SortOrder.Ascending,
-                        },
-                    ],
-                },
+                defaultRowOptions(baseColumns),
                 user.id
             ),
             user.authCookie
