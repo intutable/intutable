@@ -36,20 +36,10 @@ const PATCH = async (
     columnId: ColumnInfo["id"]
 ) => {
     try {
-        const { update } = req.body as {
-            update: Column.Serialized // TODO: require a object with optional properties of Column.Serialized, not the whole column, only updated properties
+        const { name } = req.body as {
+            name: string
         }
         const user = req.session.user!
-
-        /**
-         * // TODO: find a way to handle updates to the column
-         *
-         * e.g. use a class that handles updates to the column
-         * it could prevent changing a prop that is not allowed to be changed
-         * in the current state of the column
-         */
-
-        const deparsedUpdate = Parser.Column.deparse(update, columnId)
 
         // TODO: check if the name is already taken
         // check for naming conflicts
@@ -62,7 +52,7 @@ const PATCH = async (
 
         // change property in view column, underlying table column is never used
         const updatedColumn = await coreRequest<ColumnInfo>(
-            changeColumnAttributes(columnId, deparsedUpdate.attributes),
+            changeColumnAttributes(columnId, { displayName: name }),
             user.authCookie
         )
 

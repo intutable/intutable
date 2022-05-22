@@ -369,7 +369,36 @@ type SerializedColumn = MetaColumnProps & {
     headerRenderer?: string | null
 }
 
+type DatabaseColumnAttributes = {
+    _kind: string
+    userPrimary: 0 | 1
+    displayName: string
+    editable?: 1 | 0 | null
+    editor: string
+    formatter: string
+    width?: string | null
+    minWidth?: string | null
+    maxWidth?: string | null
+    cellClass?: string | null
+    headerCellClass?: string | null
+    summaryCellClass?: string | null
+    summaryFormatter?: string | null
+    groupFormatter?: string | null
+    colSpan?: string | null
+    frozen?: 1 | 0 | null
+    resizable?: 1 | 0 | null
+    sortable?: 1 | 0 | null
+    sortDescendingFirst?: 1 | 0 | null
+    renderFormatter?: 1 | 0 | null
+    editOnClick?: 1 | 0 | null
+    commitOnOutsideClick?: 1 | 0 | null
+    onCellKeyDown?: string | null
+    onNavigation?: string | null
+    headerRenderer?: string | null
+}
+
 export namespace Column {
+    export type SQL = DatabaseColumnAttributes
     export type Serialized = SerializedColumn
     export type Deserialized = Column
 }

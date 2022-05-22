@@ -63,15 +63,9 @@ export const useColumn = (options?: TableHookOptions) => {
         )
             return Promise.reject("alreadyTaken") // instanceof IsTakenError
 
-        const updatedColumn = {
-            ...Parser.Column.parse(
-                getColumnInfo(table!.metadata.columns, column)
-            ),
-            name: newName,
-        }
         await fetcher({
             url: `/api/column/${column._id!}`,
-            body: { update: updatedColumn },
+            body: { name: newName },
             method: "PATCH",
         })
         await mutate()

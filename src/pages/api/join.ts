@@ -78,8 +78,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                             displayName,
                             editable: 1,
                             editor: "string",
-                            formatter: null,
-                            kind: "link",
+                            formatter: "standard",
+                            _kind: "link",
                         },
                     },
                 ],
@@ -92,7 +92,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(500).json({ error: error.message })
     }
 }
-
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
         switch (req.method) {

@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import Router from "next/router"
 import useSWR from "swr"
 import type { User } from "types/User"
+import { AuthenticationError } from "api/utils/AuthenticationError"
 
 type UseUserOptions = {
     /**
@@ -24,7 +25,11 @@ const UseUserDefaultOptions: UseUserOptions = {
 export const useUser = (options: UseUserOptions = UseUserDefaultOptions) => {
     const { redirectTo, redirectIfFound } = options
 
-    const { data: user, mutate: mutateUser } = useSWR<User>({
+    const {
+        data: user,
+        mutate: mutateUser,
+        error,
+    } = useSWR<User>({
         url: "/api/auth/user",
     })
 
@@ -42,6 +47,14 @@ export const useUser = (options: UseUserOptions = UseUserDefaultOptions) => {
             Router.push(redirectTo)
         }
     }, [user, redirectIfFound, redirectTo])
+
+    useEffect(() => {
+        console.error("auth error:", error)
+        if (error instanceof AuthenticationError) {
+            console.error("AuthenticationError")
+            Router.push("/login")
+        }
+    }, [error])
 
     return { user, mutateUser }
 }
