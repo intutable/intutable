@@ -1,9 +1,5 @@
 import { ColumnType } from "@intutable/database/dist/column"
-import {
-    createView,
-    tableId,
-    ViewDescriptor,
-} from "@intutable/lazy-views"
+import { createView, tableId, ViewDescriptor } from "@intutable/lazy-views"
 import {
     createTableInProject,
     getColumnsFromTable,

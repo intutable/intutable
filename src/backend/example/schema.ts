@@ -4,30 +4,30 @@
 import {
     Column,
     ColumnType,
-    ColumnOption
+    ColumnOption,
 } from "@intutable/database/dist/column"
 import {
     TableDescriptor,
-    ViewDescriptor
+    ViewDescriptor,
 } from "@intutable/lazy-views/dist/types"
 
 export const PK_COLUMN = "_id"
 
 export type JoinSpec = {
-    table: string,
-    fkColumn: Column,
-    pkColumn: string,
-    linkColumns: { name: string, attributes: Record<string, any> }[]
+    table: string
+    fkColumn: Column
+    pkColumn: string
+    linkColumns: { name: string; attributes: Record<string, any> }[]
 }
 export type TableSpec = {
-    name: string,
-    columns: { baseColumn: Column, attributes: Record<string, any> }[]
+    name: string
+    columns: { baseColumn: Column; attributes: Record<string, any> }[]
     joins: JoinSpec[]
 }
 export type Table = {
-    baseTable: TableDescriptor,
-    tableView: ViewDescriptor,
-    filterView: ViewDescriptor,
+    baseTable: TableDescriptor
+    tableView: ViewDescriptor
+    filterView: ViewDescriptor
 }
 
 export const PERSONEN: TableSpec = {
@@ -43,7 +43,7 @@ export const PERSONEN: TableSpec = {
                 displayName: "ID",
                 editor: "number",
                 formatter: "number",
-            }
+            },
         },
         {
             baseColumn: {
@@ -55,7 +55,7 @@ export const PERSONEN: TableSpec = {
                 userPrimary: 1,
                 editor: "string",
                 formatter: "string",
-            }
+            },
         },
         {
             baseColumn: {
@@ -89,9 +89,9 @@ export const PERSONEN: TableSpec = {
                 editor: "string",
                 formatter: "string",
             },
-        }
+        },
     ],
-    joins: []
+    joins: [],
 }
 
 export const PERSONEN_DATA = [
@@ -99,61 +99,61 @@ export const PERSONEN_DATA = [
         nachname: "Gertz",
         vorname: "Michael",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
     {
         nachname: "Paech",
         vorname: "Barbara",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
     {
         nachname: "Fröning",
         vorname: "Holger",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
     {
         nachname: "Schmidt",
         vorname: "Jan-Philip",
         titel: "Dr.",
-        stellung: "FK-Leitung"
+        stellung: "FK-Leitung",
     },
     {
         nachname: "Strzodka",
         vorname: "Robert",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
     {
         nachname: "Walcher",
         vorname: "Johannes",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
     {
         nachname: "Knüpfer",
         vorname: "Hans",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
     {
         nachname: "Albers",
         vorname: "Peter",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
     {
         nachname: "Johannes",
         vorname: "Jan",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
     {
         nachname: "Andrzejak",
         vorname: "Artur",
         titel: "Prof. Dr.",
-        stellung: "Professor"
+        stellung: "Professor",
     },
 ]
 
@@ -170,7 +170,7 @@ export const ORGANE: TableSpec = {
                 displayName: "ID",
                 editor: "number",
                 formatter: "number",
-            }
+            },
         },
         {
             baseColumn: {
@@ -218,7 +218,7 @@ export const ORGANE: TableSpec = {
             },
         },
     ],
-    joins: []
+    joins: [],
 }
 
 export const ORGANE_DATA = [
@@ -226,7 +226,7 @@ export const ORGANE_DATA = [
         name: "Dekanat",
         kuerzel: "Dekanat",
         typ: "Einrichtung",
-        fk_math_inf: "FK"
+        fk_math_inf: "FK",
     },
     {
         name: "Fakultätsvorstand",
@@ -303,7 +303,7 @@ export const ROLLEN = {
             baseColumn: {
                 name: "_id",
                 type: ColumnType.increments,
-                options: [ColumnOption.primary]
+                options: [ColumnOption.primary],
             },
             attributes: {
                 displayName: "ID",
@@ -316,7 +316,7 @@ export const ROLLEN = {
             baseColumn: {
                 name: "rolle",
                 type: ColumnType.string,
-                options: [ColumnOption.nullable]
+                options: [ColumnOption.nullable],
             },
             attributes: {
                 displayName: "Rolle",
@@ -332,37 +332,41 @@ export const ROLLEN = {
             table: "Personen",
             fkColumn: {
                 name: "j#1_fk",
-                type: ColumnType.integer
+                type: ColumnType.integer,
             },
             pkColumn: "_id",
-            linkColumns: [{
-                name: "nachname",
-                attributes: {
-                    displayName: "Nachname",
-                    editable: 0,
-                    editor: null,
-                    formatter: "linkColumn",
-                }
-            }]
+            linkColumns: [
+                {
+                    name: "nachname",
+                    attributes: {
+                        displayName: "Nachname",
+                        editable: 0,
+                        editor: null,
+                        formatter: "linkColumn",
+                    },
+                },
+            ],
         },
         {
             table: "Organe",
             fkColumn: {
                 name: "j#2_fk",
-                type: ColumnType.integer
+                type: ColumnType.integer,
             },
             pkColumn: "_id",
-            linkColumns: [{
-                name: "name",
-                attributes: {
-                    displayName: "Organ",
-                    editable: 0,
-                    editor: null,
-                    formatter: "linkColumn"
-                }
-            }]
+            linkColumns: [
+                {
+                    name: "name",
+                    attributes: {
+                        displayName: "Organ",
+                        editable: 0,
+                        editor: null,
+                        formatter: "linkColumn",
+                    },
+                },
+            ],
         },
-    ]
+    ],
 }
 
 export const ROLLEN_DATA = [

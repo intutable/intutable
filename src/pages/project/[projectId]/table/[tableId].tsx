@@ -114,17 +114,17 @@ const TablePage: React.FC = () => {
                         <Box>
                             <Toolbar position="top">
                                 <ToolbarItem.Views
-                                    handleClick={
-                                    (_) => setViewsOpen(!viewsOpen)
-                                    }/>
+                                    handleClick={_ => setViewsOpen(!viewsOpen)}
+                                />
                                 <ToolbarItem.AddCol />
                                 <ToolbarItem.AddLink />
                                 <ToolbarItem.AddRow />
                                 <ToolbarItem.FileDownload getData={() => []} />
                             </Toolbar>
 
-                            { viewsOpen && (
-                                <ViewNavigator sx={{maxWidth: "12%"}} /> )}
+                            {viewsOpen && (
+                                <ViewNavigator sx={{ maxWidth: "12%" }} />
+                            )}
 
                             <DndProvider backend={HTML5Backend}>
                                 <DataGrid

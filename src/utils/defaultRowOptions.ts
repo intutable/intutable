@@ -2,10 +2,9 @@
 import {
     ParentColumnDescriptor,
     RowOptions,
-    SortOrder
+    SortOrder,
 } from "@intutable/lazy-views"
 import { project_management_constants } from "types/type-annotations/project-management"
-
 
 /**
  * Default row options: obviously no filtering or grouping. Only order by
@@ -26,7 +25,7 @@ export default function defaultRowOptions(
         sortColumns: [
             {
                 column: { parentColumnId: idColumn.id, joinId: null },
-                order: SortOrder.Ascending
+                order: SortOrder.Ascending,
             },
         ],
     }
