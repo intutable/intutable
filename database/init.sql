@@ -65,12 +65,38 @@ CREATE TABLE view_columns(
     _id SERIAL PRIMARY KEY,
     view_id INTEGER NOT NULL,
     join_id INTEGER NULL,
+    -- parent column whose data this column inherits
     column_id INTEGER NOT NULL,
     function TEXT NULL,
-    -- custom metadata
-    "displayName" TEXT NULL,
+    -- custom metadata, see types/rdg.ts for explanations on them
+
+    -- userPrimary: a designated column that is shown to the user as a sort of primary key,
+    -- for example to create short previews of records.
     "userPrimary" INTEGER DEFAULT 0 NOT NULL,
-    editable INTEGER DEFAULT 1 NOT NULL,
-    editor TEXT NULL,
-    formatter TEXT NULL
+    -- kinds of columns: plain data (text, date, ...), link to other table, lookup field, ...
+    _kind TEXT NOT NULL DEFAULT 'standard',
+    "displayName" TEXT NULL,
+    -- various RDG props
+    editable INTEGER DEFAULT 1,
+    editor TEXT,
+    formatter TEXT,
+    width VARCHAR(32) NULL,
+    "minWidth" VARCHAR(32) NULL,
+    "maxWidth" VARCHAR(32) NULL,
+    "cellClass" VARCHAR(255) NULL,
+    "headerCellClass" VARCHAR(255) NULL,
+    "summaryCellClass" VARCHAR(255) NULL,
+    "summaryFormatter" VARCHAR(255) NULL,
+    "groupFormatter" VARCHAR(255) NULL,
+    "colSpan" VARCHAR(255) NULL,
+    frozen INTEGER NULL,
+    resizable INTEGER NULL,
+    sortable INTEGER NULL,
+    "sortDescendingFirst" INTEGER NULL,
+    "renderFormatter" INTEGER DEFAULT 0,
+    "editOnClick" INTEGER DEFAULT 0,
+    "commitOnOutsideClick" INTEGER DEFAULT 0,
+    "onCellKeyDown" VARCHAR(255) NULL,
+    "onNavigation" VARCHAR(255) NULL,
+    "headerRenderer" VARCHAR(255) NULL
 );

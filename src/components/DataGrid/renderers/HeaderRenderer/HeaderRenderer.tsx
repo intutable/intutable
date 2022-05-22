@@ -60,22 +60,8 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         [data, props.column]
     )
     // column that represents a link to another table
-    const isLinkCol = useMemo(
-        () =>
-            col
-                ? col.joinId !== null &&
-                  col.attributes.formatter === "linkColumn"
-                : null,
-        [col]
-    )
-    const isLookupCol = useMemo(
-        () =>
-            col
-                ? col.joinId !== null &&
-                  col.attributes.formatter !== "linkColumn"
-                : null,
-        [col]
-    )
+    const isLinkCol = props.column._kind! === "link"
+    const isLookupCol = props.column._kind! === "lookup"
 
     // const t = props.column.editorOptions?.renderFormatter
     // a user-facing primary column distinct from the table's real PK

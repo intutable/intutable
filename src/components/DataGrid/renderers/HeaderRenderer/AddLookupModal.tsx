@@ -31,13 +31,15 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { data, error } = useTable()
+    const { data, error } = useTable({
+        table: props.foreignView,
+    })
 
     const [selection, setSelection] = useState<Column | null>(null)
     const selectedColDescriptor = useMemo(
         () =>
             selection && data
-                ? getColumnInfo(data.metadata.columns, selection)
+            ? getColumnInfo(data.metadata.columns, selection)
                 : null,
         [data, selection]
     )

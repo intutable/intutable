@@ -3,26 +3,25 @@ import {
     deleteView,
     getViewData,
     getViewOptions,
+    listViews,
     renameView,
     TableDescriptor,
+    tableId as makeTableId,
     ViewData,
     ViewDescriptor,
     ViewOptions,
-    listViews,
-    tableId as makeTableId,
 } from "@intutable/lazy-views"
 import {
-    getProjects,
+    getTablesFromProject,
     removeTable,
 } from "@intutable/project-management/dist/requests"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { Table } from "api/utils/parse"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
-import { getTablesFromProject } from "@intutable/project-management/dist/requests"
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
 /**
  * GET a single table view's data {@type {TableData.Serialized}}.
@@ -81,12 +80,6 @@ const PATCH = async (
         }
         const user = req.session.user!
 
-        // rename only view, underlying table's name does not matter.
-        const updatedTable = await coreRequest<ViewDescriptor>(
-            renameView(tableId, newName),
-            user.authCookie
-        )
-
         // check if name is taken
         const baseTables = await coreRequest<TableDescriptor[]>(
             getTablesFromProject(project.id),
@@ -103,6 +96,15 @@ const PATCH = async (
         const isTaken = tables
             .map(tbl => tbl.name.toLowerCase())
             .includes(newName.toLowerCase())
+
+        // rename only view, underlying table's name does not matter.
+        const updatedTable = await coreRequest<ViewDescriptor>(
+            renameView(tableId, newName),
+            user.authCookie
+        )
+
+        console.log("table patch endpoint called...")
+
         if (isTaken) throw new Error("alreadyTaken")
 
         res.status(200).json(updatedTable)
