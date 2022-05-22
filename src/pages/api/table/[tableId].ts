@@ -80,12 +80,6 @@ const PATCH = async (
         }
         const user = req.session.user!
 
-        // rename only view, underlying table's name does not matter.
-        const updatedTable = await coreRequest<ViewDescriptor>(
-            renameView(tableId, newName),
-            user.authCookie
-        )
-
         // check if name is taken
         const baseTables = await coreRequest<TableDescriptor[]>(
             getTablesFromProject(project.id),
@@ -102,6 +96,15 @@ const PATCH = async (
         const isTaken = tables
             .map(tbl => tbl.name.toLowerCase())
             .includes(newName.toLowerCase())
+
+        // rename only view, underlying table's name does not matter.
+        const updatedTable = await coreRequest<ViewDescriptor>(
+            renameView(tableId, newName),
+            user.authCookie
+        )
+
+        console.log("table patch endpoint called...")
+
         if (isTaken) throw new Error("alreadyTaken")
 
         res.status(200).json(updatedTable)
