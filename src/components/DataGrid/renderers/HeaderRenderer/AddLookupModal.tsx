@@ -56,8 +56,8 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>
-                Spalte aus verlinkter Tabelle <i>
-                {props.foreignView.name}</i> als Lookup hinzufügen
+                Spalte aus verlinkter Tabelle <i>{props.foreignView.name}</i>{" "}
+                als Lookup hinzufügen
             </DialogTitle>
             <DialogContent>
                 {data == null && error == null ? (
