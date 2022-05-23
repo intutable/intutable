@@ -69,7 +69,6 @@ CREATE TABLE view_columns(
     column_id INTEGER NOT NULL,
     function TEXT NULL,
     -- custom metadata, see types/rdg.ts for explanations on them
-
     -- userPrimary: a designated column that is shown to the user as a sort of primary key,
     -- for example to create short previews of records.
     "userPrimary" INTEGER DEFAULT 0 NOT NULL,
