@@ -1,6 +1,8 @@
 /**
  * ### Project Management
  * Type Annotation
+ *
+ * @deprecated
  */
 export namespace project_management {
     /**

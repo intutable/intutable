@@ -76,9 +76,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
                         parentColumnId: primaryColumn.id,
                         attributes: {
                             displayName,
-                            editable: 0,
-                            editor: null,
-                            formatter: "linkColumn",
+                            editable: 1,
+                            editor: "string",
+                            formatter: "standard",
+                            _kind: "link",
                         },
                     },
                 ],
@@ -91,7 +92,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(500).json({ error: error.message })
     }
 }
-
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
         switch (req.method) {

@@ -55,8 +55,9 @@ const POST = async (
         const columnSpec: ColumnSpecifier = {
             parentColumnId: columnId,
             attributes: {
+                _kind: "lookup",
                 displayName,
-                editable: 0,
+                editable: 1,
                 editor: "string",
                 formatter: "string",
             },

@@ -32,6 +32,7 @@ class MyDocument extends Document {
         // 3. app.render
         // 4. page.render
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const originalRenderPage = ctx.renderPage
 
         // TODO: implement emotion cache

@@ -1,21 +1,20 @@
 import {
-    ViewDescriptor,
-    ViewInfo,
-    ColumnInfo,
     changeColumnAttributes,
+    ColumnInfo,
     getColumnInfo,
     getViewInfo,
     removeColumnFromView,
     removeJoinFromView,
+    ViewDescriptor,
+    ViewInfo,
 } from "@intutable/lazy-views"
 import { removeColumn } from "@intutable/project-management/dist/requests"
-import { coreRequest, Parser } from "api/utils"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { Column } from "types"
-import { makeError } from "utils/error-handling/utils/makeError"
+import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
+import type { NextApiRequest, NextApiResponse } from "next"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
-import { IsTakenError } from "utils/error-handling/custom/IsTakenError"
+import objToSql from "utils/objToSql"
 
 /**
  * Update the metadata of a column. Only its `attributes` can be changed, all
@@ -38,30 +37,23 @@ const PATCH = async (
 ) => {
     try {
         const { update } = req.body as {
-            update: Column.Serialized
+            update: Record<string, unknown>
         }
         const user = req.session.user!
 
-        const deparsedUpdate = Parser.Column.deparse(update, columnId)
-
+        console.log("Well? " + JSON.stringify(update))
         // TODO: check if the name is already taken
-        // check for naming conflicts
-        // if ("name" in deparsedUpdate.attributes) {
-        //     const nameUpdate = (deparsedUpdate.attributes as { name: string })
-        //         .name
-
-        //     throw new Error("alreadyTaken")
-        // }
 
         // change property in view column, underlying table column is never used
         const updatedColumn = await coreRequest<ColumnInfo>(
-            changeColumnAttributes(columnId, deparsedUpdate.attributes),
+            changeColumnAttributes(columnId, objToSql(update)),
             user.authCookie
         )
 
         res.status(200).json(updatedColumn)
     } catch (err) {
         const error = makeError(err)
+        console.log(error.toString())
         res.status(500).json({ error: error.message })
     }
 }

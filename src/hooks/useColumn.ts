@@ -1,7 +1,7 @@
-import { ColumnInfo } from "@intutable/lazy-views"
+import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views"
 import { fetcher } from "api"
 import { Parser } from "api/utils"
-import { useTable } from "hooks/useTable"
+import { TableHookOptions, useTable } from "hooks/useTable"
 import { Column, TableData } from "types"
 
 /**
@@ -28,9 +28,13 @@ export const getColumnInfo = (
  *
  * It uses the {@link APIContextProvider}
  * to determine the current selected table.
+ *
+ * @param {Partial<PublicConfiguration<TableData, any, BareFetcher<TableData>>>} [options.swrOptions] Options for the underlying {@link useSWR} hook.
+ *
+ * @param {ViewDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
  */
-export const useColumn = () => {
-    const { data: table, error, mutate } = useTable()
+export const useColumn = (options?: TableHookOptions) => {
+    const { data: table, error, mutate } = useTable(options)
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
@@ -59,15 +63,9 @@ export const useColumn = () => {
         )
             return Promise.reject("alreadyTaken") // instanceof IsTakenError
 
-        const updatedColumn = {
-            ...Parser.Column.parse(
-                getColumnInfo(table!.metadata.columns, column)
-            ),
-            name: newName,
-        }
         await fetcher({
             url: `/api/column/${column._id!}`,
-            body: { update: updatedColumn },
+            body: { update: { displayName: newName }},
             method: "PATCH",
         })
         await mutate()

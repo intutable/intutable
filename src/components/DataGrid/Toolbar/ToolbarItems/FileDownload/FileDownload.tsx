@@ -41,6 +41,7 @@ const FileDownloadContextMenu: React.FC<
     )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const triggerDownload = (content: unknown, filename: string) => {}
 
 export type FileDownloadProps = {
@@ -50,9 +51,7 @@ export type FileDownloadProps = {
 /**
  * Button w/ options for exporting the data to several file formats
  */
-const FileDownload: React.FC<FileDownloadProps> = props => {
-    const theme = useTheme()
-
+const FileDownload: React.FC<FileDownloadProps> = () => {
     const { enqueueSnackbar } = useSnackbar()
 
     const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
@@ -66,6 +65,7 @@ const FileDownload: React.FC<FileDownloadProps> = props => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleExport = async (fileFormat: FileFormat) => {
         // await exportTo(fileFormat, props.getData())
         enqueueSnackbar("This feature in not implemented yet!", {

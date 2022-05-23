@@ -1,7 +1,7 @@
 import { CssBaseline, PaletteMode, useMediaQuery } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
 import { fetcher } from "api"
-import { logger, parseTableData } from "api/middelware"
+import { logger, deserializeTable } from "api/middelware"
 import Layout from "components/Layout/Layout"
 import type { AppProps } from "next/app"
 import Head from "next/head"
@@ -82,7 +82,7 @@ const MyApp = (props: AppProps) => {
             <SWRConfig
                 value={{
                     fetcher: fetcher,
-                    use: [logger, parseTableData],
+                    use: [logger, deserializeTable],
                     onError: err => console.error(err),
                 }}
             >
