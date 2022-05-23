@@ -1,4 +1,5 @@
 import process from "process"
+import path from "path"
 import { ChildProcess, spawn } from "child_process"
 
 // =============================================================================
@@ -22,7 +23,7 @@ interface AppComponent {
 // =============================================================================
 // CONSTANTS
 const APP_NAME = "dekanat-app"
-const CORE_SCRIPT = "./dist/start/core"
+const CORE_SCRIPT = path.join(__dirname, "/core")
 const FRONTEND_SCRIPT = "./node_modules/next/dist/bin/next"
 
 // =============================================================================
