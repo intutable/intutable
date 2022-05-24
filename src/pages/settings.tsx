@@ -15,6 +15,7 @@ import {
 import type { NextPage } from "next"
 import ThemeSwitch from "components/ThemeSwitch/ThemeSwitch"
 import { useThemeToggler } from "pages/_app"
+import { ErrorBoundary } from "components/ErrorBoundary"
 
 const Settings: NextPage = () => {
     const { getTheme } = useThemeToggler()
@@ -25,59 +26,65 @@ const Settings: NextPage = () => {
             <Divider />
 
             {/* Theme */}
-            <List
-                sx={{
-                    width: "100%",
-                    maxWidth: 360,
-                    mt: 10,
-                }}
-                subheader={<ListSubheader>Theme</ListSubheader>}
+            <ErrorBoundary
+                fallback={
+                    <span>Die Einstellungen konnten nicht geladen werden.</span>
+                }
             >
-                <ListItem>
-                    <ListItemIcon>
-                        {getTheme() === "dark" ? (
-                            <FlashlightOffIcon />
-                        ) : (
-                            <FlashlightOnIcon />
-                        )}
-                    </ListItemIcon>
-                    <ListItemText
-                        id="setting-theme-mode"
-                        primary="Dunkles Desgin"
-                    />
-                    <ThemeSwitch />
-                </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <MiscellaneousServicesIcon />
-                    </ListItemIcon>
-                    <ListItemText
-                        id="setting-placeholder"
-                        primary="Sonstiges"
-                    />
-                    <Switch />
-                </ListItem>
-            </List>
+                <List
+                    sx={{
+                        width: "100%",
+                        maxWidth: 360,
+                        mt: 10,
+                    }}
+                    subheader={<ListSubheader>Theme</ListSubheader>}
+                >
+                    <ListItem>
+                        <ListItemIcon>
+                            {getTheme() === "dark" ? (
+                                <FlashlightOffIcon />
+                            ) : (
+                                <FlashlightOnIcon />
+                            )}
+                        </ListItemIcon>
+                        <ListItemText
+                            id="setting-theme-mode"
+                            primary="Dunkles Desgin"
+                        />
+                        <ThemeSwitch />
+                    </ListItem>
+                    <ListItem>
+                        <ListItemIcon>
+                            <MiscellaneousServicesIcon />
+                        </ListItemIcon>
+                        <ListItemText
+                            id="setting-placeholder"
+                            primary="Sonstiges"
+                        />
+                        <Switch />
+                    </ListItem>
+                </List>
 
-            <List
-                sx={{
-                    width: "100%",
-                    maxWidth: 360,
-                    mt: 5,
-                }}
-                subheader={<ListSubheader>Benutzerkonto</ListSubheader>}
-            >
-                <ListItem>
-                    <ListItemIcon>
-                        <MiscellaneousServicesIcon />
-                    </ListItemIcon>
-                    <ListItemText
-                        id="setting-placeholder"
-                        primary="Sonstiges"
-                    />
-                    <Switch />
-                </ListItem>
-            </List>
+                <List
+                    sx={{
+                        width: "100%",
+                        maxWidth: 360,
+                        mt: 5,
+                    }}
+                    subheader={<ListSubheader>Benutzerkonto</ListSubheader>}
+                >
+                    <ListItem>
+                        <ListItemIcon>
+                            <MiscellaneousServicesIcon />
+                        </ListItemIcon>
+                        <ListItemText
+                            id="setting-placeholder"
+                            primary="Sonstiges"
+                        />
+                        <Switch />
+                    </ListItem>
+                </List>
+            </ErrorBoundary>
         </>
     )
 }

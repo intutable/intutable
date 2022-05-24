@@ -26,6 +26,7 @@ import { SWRConfig, unstable_serialize } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { prepareName } from "utils/validateName"
 import { makeError } from "utils/error-handling/utils/makeError"
+import { ErrorBoundary } from "components/ErrorBoundary"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -115,48 +116,60 @@ const TableCard: React.FC<TableCardProps> = props => {
 
     return (
         <>
-            <Card
-                onClick={handleOnClick}
-                onContextMenu={handleOpenContextMenu}
-                sx={{
-                    minWidth: 150,
-                    minHeight: 150,
-                    cursor: "pointer",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    "&:hover": {
-                        bgcolor: theme.palette.action.hover,
-                    },
-                }}
+            <ErrorBoundary
+                fallback={
+                    <span>Die Tabellen konnten nicht geladen werden.</span>
+                }
             >
-                <CardContent>{props.children}</CardContent>
-            </Card>
-            {anchorEL && (
-                <TableContextMenu
-                    anchorEL={anchorEL}
-                    open={anchorEL != null}
-                    onClose={handleCloseContextMenu}
+                <Card
+                    onClick={handleOnClick}
+                    onContextMenu={handleOpenContextMenu}
+                    sx={{
+                        minWidth: 150,
+                        minHeight: 150,
+                        cursor: "pointer",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        "&:hover": {
+                            bgcolor: theme.palette.action.hover,
+                        },
+                    }}
                 >
-                    <Box
-                        onClick={async () => {
-                            handleCloseContextMenu()
-                            await props.handleRename(props.table)
-                        }}
+                    <CardContent>{props.children}</CardContent>
+                </Card>
+            </ErrorBoundary>
+            <ErrorBoundary
+                fallback={
+                    <span>Die Aktion konnte nicht ausgeführt werden.</span>
+                }
+            >
+                {anchorEL && (
+                    <TableContextMenu
+                        anchorEL={anchorEL}
+                        open={anchorEL != null}
+                        onClose={handleCloseContextMenu}
                     >
-                        Umbenennen
-                    </Box>
-                    <Box
-                        onClick={async () => {
-                            handleCloseContextMenu()
-                            await props.handleDelete(props.table)
-                        }}
-                        sx={{ color: theme.palette.warning.main }}
-                    >
-                        Löschen
-                    </Box>
-                </TableContextMenu>
-            )}
+                        <Box
+                            onClick={async () => {
+                                handleCloseContextMenu()
+                                await props.handleRename(props.table)
+                            }}
+                        >
+                            Umbenennen
+                        </Box>
+                        <Box
+                            onClick={async () => {
+                                handleCloseContextMenu()
+                                await props.handleDelete(props.table)
+                            }}
+                            sx={{ color: theme.palette.warning.main }}
+                        >
+                            Löschen
+                        </Box>
+                    </TableContextMenu>
+                )}
+            </ErrorBoundary>
         </>
     )
 }

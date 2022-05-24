@@ -13,6 +13,7 @@ import {
 } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
+import { ErrorBoundary } from "components/ErrorBoundary"
 import Title from "components/Head/Title"
 import { useProjects, useProjectsConfig } from "hooks/useProjects"
 import { useSnacki } from "hooks/useSnacki"
@@ -108,48 +109,60 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 
     return (
         <>
-            <Card
-                onClick={handleOnClick}
-                onContextMenu={handleOpenContextMenu}
-                sx={{
-                    minWidth: 150,
-                    minHeight: 150,
-                    cursor: "pointer",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    "&:hover": {
-                        bgcolor: theme.palette.action.hover,
-                    },
-                }}
+            <ErrorBoundary
+                fallback={
+                    <span>Die Projekte konnten nicht geladen werden.</span>
+                }
             >
-                <CardContent>{props.children}</CardContent>
-            </Card>
-            {anchorEL && (
-                <ProjectContextMenu
-                    anchorEL={anchorEL}
-                    open={anchorEL != null}
-                    onClose={handleCloseContextMenu}
+                <Card
+                    onClick={handleOnClick}
+                    onContextMenu={handleOpenContextMenu}
+                    sx={{
+                        minWidth: 150,
+                        minHeight: 150,
+                        cursor: "pointer",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        "&:hover": {
+                            bgcolor: theme.palette.action.hover,
+                        },
+                    }}
                 >
-                    <Box
-                        onClick={async () => {
-                            handleCloseContextMenu()
-                            await props.handleRename(props.project)
-                        }}
+                    <CardContent>{props.children}</CardContent>
+                </Card>
+            </ErrorBoundary>
+            <ErrorBoundary
+                fallback={
+                    <span>Die Aktion konnte nicht ausgeführt werden.</span>
+                }
+            >
+                {anchorEL && (
+                    <ProjectContextMenu
+                        anchorEL={anchorEL}
+                        open={anchorEL != null}
+                        onClose={handleCloseContextMenu}
                     >
-                        Umbenennen
-                    </Box>
-                    <Box
-                        onClick={async () => {
-                            handleCloseContextMenu()
-                            await props.handleDelete(props.project)
-                        }}
-                        sx={{ color: theme.palette.warning.main }}
-                    >
-                        Löschen
-                    </Box>
-                </ProjectContextMenu>
-            )}
+                        <Box
+                            onClick={async () => {
+                                handleCloseContextMenu()
+                                await props.handleRename(props.project)
+                            }}
+                        >
+                            Umbenennen
+                        </Box>
+                        <Box
+                            onClick={async () => {
+                                handleCloseContextMenu()
+                                await props.handleDelete(props.project)
+                            }}
+                            sx={{ color: theme.palette.warning.main }}
+                        >
+                            Löschen
+                        </Box>
+                    </ProjectContextMenu>
+                )}
+            </ErrorBoundary>
         </>
     )
 }
