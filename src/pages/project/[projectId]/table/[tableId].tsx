@@ -68,7 +68,7 @@ const TablePage: React.FC = () => {
         await updateRow(col, getRowId(data, changedRow), changedRow[col.key])
     }
 
-    if (project == null || table == null || tableList == null)
+    if (project == null || table == null || tableList == null || data == null)
         return <LoadingSkeleton />
 
     return (
@@ -93,95 +93,80 @@ const TablePage: React.FC = () => {
                 </Link>
             </Typography>
 
-            {data == null ? (
-                <LoadingSkeleton />
-            ) : (
-                <>
-                    {detailedViewOpen && (
-                        <DetailedViewModal
-                            open={detailedViewOpen != null}
-                            data={detailedViewOpen}
-                            onCloseHandler={() => setDetailedViewOpen(null)}
-                        />
-                    )}
+            {detailedViewOpen && (
+                <DetailedViewModal
+                    open={detailedViewOpen != null}
+                    data={detailedViewOpen}
+                    onCloseHandler={() => setDetailedViewOpen(null)}
+                />
+            )}
 
-                    <ErrorBoundary fallback={null}>
-                        <TableNavigator />
+            <ErrorBoundary fallback={null}>
+                <TableNavigator />
+            </ErrorBoundary>
+
+            {error ? (
+                <span>Die Tabelle konnte nicht geladen Werden</span>
+            ) : (
+                <ErrorBoundary
+                    fallback={
+                        <span>Die Tabelle konnte nicht geladen werden.</span>
+                    }
+                >
+                    <ErrorBoundary
+                        fallback={
+                            <span>
+                                Die Views konnten nicht angezeigt werden.
+                            </span>
+                        }
+                    >
+                        {viewsOpen && (
+                            <ViewNavigator
+                                sx={{ maxWidth: "12%", height: "100%" }}
+                            />
+                        )}
                     </ErrorBoundary>
 
-                    {error ? (
-                        <>Error</>
-                    ) : (
-                        <Box>
-                            <ErrorBoundary
-                                fallback={
-                                    <span>
-                                        Die Tabelle konnte nicht geladen werden.
-                                    </span>
-                                }
-                            >
-                                <Toolbar position="top">
-                                    <ToolbarItem.Views
-                                        handleClick={_ =>
-                                            setViewsOpen(!viewsOpen)
-                                        }
-                                    />
-                                    <ToolbarItem.AddCol />
-                                    <ToolbarItem.AddLink />
-                                    <ToolbarItem.AddRow />
-                                    <ToolbarItem.FileDownload
-                                        getData={() => []}
-                                    />
-                                </Toolbar>
+                    <Box>
+                        <Toolbar position="top">
+                            <ToolbarItem.Views
+                                handleClick={_ => setViewsOpen(!viewsOpen)}
+                            />
+                            <ToolbarItem.AddCol />
+                            <ToolbarItem.AddLink />
+                            <ToolbarItem.AddRow />
+                            <ToolbarItem.FileDownload getData={() => []} />
+                        </Toolbar>
 
-                                <ErrorBoundary
-                                    fallback={
-                                        <span>
-                                            Die Views konnten nicht angezeigt
-                                            werden.
-                                        </span>
-                                    }
-                                >
-                                    {viewsOpen && (
-                                        <ViewNavigator
-                                            sx={{ maxWidth: "12%" }}
-                                        />
-                                    )}
-                                </ErrorBoundary>
+                        <DndProvider backend={HTML5Backend}>
+                            <DataGrid
+                                className={"rdg-" + theme.palette.mode}
+                                rows={data.rows}
+                                columns={data.columns}
+                                components={{
+                                    noRowsFallback: <NoRowsFallback />,
+                                    rowRenderer: RowRenderer,
+                                    // checkboxFormatter: // TODO: adjust
+                                    // sortIcon: // TODO: adjust
+                                }}
+                                rowKeyGetter={rowKeyGetter}
+                                defaultColumnOptions={{
+                                    sortable: true,
+                                    resizable: true,
+                                    // formatter: // TODO: adjust
+                                }}
+                                selectedRows={selectedRows}
+                                onSelectedRowsChange={setSelectedRows}
+                                onRowsChange={partialRowUpdate}
+                                headerRowHeight={headerHeight}
+                            />
+                        </DndProvider>
 
-                                <DndProvider backend={HTML5Backend}>
-                                    <DataGrid
-                                        className={"rdg-" + theme.palette.mode}
-                                        rows={data.rows}
-                                        columns={data.columns}
-                                        components={{
-                                            noRowsFallback: <NoRowsFallback />,
-                                            rowRenderer: RowRenderer,
-                                            // checkboxFormatter: // TODO: adjust
-                                            // sortIcon: // TODO: adjust
-                                        }}
-                                        rowKeyGetter={rowKeyGetter}
-                                        defaultColumnOptions={{
-                                            sortable: true,
-                                            resizable: true,
-                                            // formatter: // TODO: adjust
-                                        }}
-                                        selectedRows={selectedRows}
-                                        onSelectedRowsChange={setSelectedRows}
-                                        onRowsChange={partialRowUpdate}
-                                        headerRowHeight={headerHeight}
-                                    />
-                                </DndProvider>
-
-                                <Toolbar position="bottom">
-                                    <ToolbarItem.Connection
-                                        status={"connected"}
-                                    />
-                                </Toolbar>
-                            </ErrorBoundary>
-                        </Box>
-                    )}
-                </>
+                        <Toolbar position="bottom">
+                            <ToolbarItem.Connection status={"connected"} />
+                        </Toolbar>
+                    </Box>
+                </ErrorBoundary>
             )}
         </>
     )
