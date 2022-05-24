@@ -84,6 +84,8 @@ const MyApp = (props: AppProps) => {
                     fetcher: fetcher,
                     use: [logger, deserializeTable],
                     onError: err => console.error(err),
+                    // suspense: true, // not supported for ssr as of now
+                    revalidateOnFocus: false,
                 }}
             >
                 <ThemeTogglerContext.Provider value={colorMode}>
