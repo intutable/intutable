@@ -1,23 +1,22 @@
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { ViewDescriptor } from "@intutable/lazy-views"
 import { ToggleButton, ToggleButtonGroup, useTheme } from "@mui/material"
+import { useAPI } from "context"
+import { useTables } from "hooks/useTables"
 import { useRouter } from "next/router"
 import React from "react"
 
-type TableNavigatorProps = {
-    project: ProjectDescriptor
-    currentTable: ViewDescriptor
-    tableList: ViewDescriptor[]
-}
-
-export const TableNavigator: React.FC<TableNavigatorProps> = props => {
+export const TableNavigator: React.FC = () => {
     const theme = useTheme()
     const router = useRouter()
+
+    const { project, table: currentTable } = useAPI()
+    const { tables: tableList } = useTables(project)
+
+    if (tableList == null) return null
 
     return (
         <>
             <ToggleButtonGroup
-                value={props.currentTable.id}
+                value={currentTable!.id}
                 exclusive
                 onChange={(
                     event: React.MouseEvent<HTMLElement, MouseEvent>,
@@ -26,7 +25,7 @@ export const TableNavigator: React.FC<TableNavigatorProps> = props => {
                     if (value == null || value === "null") return
 
                     router.push(
-                        "/project/" + props.project.id + "/table/" + value,
+                        "/project/" + project!.id + "/table/" + value,
                         undefined,
                         { shallow: false }
                     )
@@ -34,7 +33,7 @@ export const TableNavigator: React.FC<TableNavigatorProps> = props => {
                 color="primary"
                 sx={{ display: "block", mb: theme.spacing(5) }}
             >
-                {props.tableList.map((table, index) => (
+                {tableList.map((table, index) => (
                     <ToggleButton key={index} value={table.id}>
                         {table.name}
                     </ToggleButton>

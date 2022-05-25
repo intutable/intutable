@@ -6,7 +6,7 @@ import { PluginLoader } from "@intutable/core"
 import {
     Column,
     ColumnType,
-    ColumnOption
+    ColumnOption,
 } from "@intutable/database/dist/column"
 import { insert, select } from "@intutable/database/dist/requests"
 import { requests as v_req } from "@intutable/lazy-views/"
@@ -17,16 +17,16 @@ let core: PluginLoader
 const ADMIN_NAME = "admin@dekanat.de"
 let adminId: number
 
-export async function init(plugins: PluginLoader){
+export async function init(plugins: PluginLoader) {
     core = plugins
 
     // in init.sql until db supports default values
     // await configureColumnAttributes()
 
     // for dev mode, create some custom data
-    if(process.env["npm_lifecycle_event"] === "dev"){
+    if (process.env["npm_lifecycle_event"] === "dev") {
         const maybeAdminId = await getAdminId()
-        if (maybeAdminId === null){
+        if (maybeAdminId === null) {
             adminId = await createAdmin()
             console.log("set up admin user")
         } else {
@@ -46,24 +46,25 @@ export async function init(plugins: PluginLoader){
 async function getAdminId(): Promise<number | null> {
     const userRows = await core.events.request(
         select("users", {
-            columns: [ "_id" ],
-            condition: [ "email", ADMIN_NAME ]
+            columns: ["_id"],
+            condition: ["email", ADMIN_NAME],
         })
     )
     if (userRows.length > 1)
         return Promise.reject("fatal: multiple users with same name exist")
-    else if (userRows.length === 1)
-        return userRows[0]["_id"]
-    else
-        return null
+    else if (userRows.length === 1) return userRows[0]["_id"]
+    else return null
 }
 
 /** Create admin user */
 async function createAdmin(): Promise<number> {
-    await core.events.request(insert("users", {
-        email: ADMIN_NAME,
-        password: "$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM",
-    }))
+    await core.events.request(
+        insert("users", {
+            email: ADMIN_NAME,
+            password:
+                "$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM",
+        })
+    )
     return getAdminId().then(definitelyNumber => definitelyNumber!)
 }
 
@@ -96,7 +97,7 @@ async function configureColumnAttributes(): Promise<void> {
             options: [ColumnOption.nullable],
         },
     ]
-    await Promise.all(customColumns.map(
-        c => core.events.request(v_req.addColumnAttribute(c))
-    ))
+    await Promise.all(
+        customColumns.map(c => core.events.request(v_req.addColumnAttribute(c)))
+    )
 }

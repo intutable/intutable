@@ -3,8 +3,10 @@ import net from "net"
 import path from "path"
 import process from "process"
 
-const PLUGIN_PATHS = [path.join(process.cwd(), "node_modules/@intutable/*"),
-                      path.join(__dirname, "../..")]
+const PLUGIN_PATHS = [
+    path.join(process.cwd(), "node_modules/@intutable/*"),
+    path.join(__dirname, "../.."),
+]
 const PG_PORT = 5432
 const RETRIES = Math.pow(2, 30)
 
