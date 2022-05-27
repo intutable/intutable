@@ -1,4 +1,5 @@
-import { createTheme, PaletteMode } from "@mui/material"
+/* eslint-disable @typescript-eslint/no-empty-interface */
+import { createTheme } from "@mui/material"
 import { COLOR_SCHEME } from "./theme"
 
 interface _Theme {
