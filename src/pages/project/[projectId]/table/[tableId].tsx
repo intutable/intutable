@@ -151,6 +151,7 @@ const TablePage: React.FC = () => {
                                         handleClick={_ =>
                                             setViewNavOpen(!viewNavOpen)
                                         }
+                                        open={viewNavOpen}
                                     />
                                     <ToolbarItem.AddCol />
                                     <ToolbarItem.AddLink />
