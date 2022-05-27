@@ -122,6 +122,9 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
                     <Box
                         sx={{
                             cursor: "pointer",
+                            "&:hover": {
+                                textDecoration: "underline",
+                            },
                         }}
                     >
                         Add View
