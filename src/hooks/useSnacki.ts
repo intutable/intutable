@@ -4,7 +4,7 @@ import { OptionsObject, useSnackbar } from "notistack"
  * Simplifies the {@link useSnackbar} hook.
  */
 export const useSnacki = () => {
-    const { enqueueSnackbar } = useSnackbar()
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
     const snackError = (
         message: string,
@@ -29,5 +29,12 @@ export const useSnacki = () => {
     const snack = (message: string, options?: Omit<OptionsObject, "variant">) =>
         enqueueSnackbar(message, { variant: "default", ...options })
 
-    return { snackError, snackWarning, snackSuccess, snackInfo, snack }
+    return {
+        snackError,
+        snackWarning,
+        snackSuccess,
+        snackInfo,
+        snack,
+        closeSnackbar,
+    }
 }

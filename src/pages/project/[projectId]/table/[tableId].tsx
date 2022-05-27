@@ -6,7 +6,7 @@ import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Grid, Box, Typography, useTheme } from "@mui/material"
+import { Grid, Box, Typography, useTheme, Button } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import { ErrorBoundary } from "components/ErrorBoundary"
@@ -20,11 +20,13 @@ import {
     useAPI,
     useHeaderSearchField,
 } from "context"
+import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { getRowId, useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
@@ -34,6 +36,29 @@ import { rowKeyGetter } from "utils/rowKeyGetter"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
+    const { snackWarning, closeSnackbar } = useSnacki()
+    const { isChrome } = useBrowserInfo()
+    // warn if browser is not chrome
+    useEffect(() => {
+        if (isChrome === false)
+            snackWarning(
+                "Zzt. wird für Tabellen nur Google Chrome (für Browser) unterstützt!",
+                {
+                    persist: true,
+                    action: key => (
+                        <Button
+                            onClick={() => closeSnackbar(key)}
+                            sx={{ color: "white" }}
+                        >
+                            Ich verstehe
+                        </Button>
+                    ),
+                    preventDuplicate: true,
+                }
+            )
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isChrome])
 
     // #################### states ####################
 
