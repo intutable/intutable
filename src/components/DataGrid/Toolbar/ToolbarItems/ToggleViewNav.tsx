@@ -1,7 +1,7 @@
-import React from "react"
 import VisibilityIcon from "@mui/icons-material/Visibility"
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff"
-import { Button } from "@mui/material"
+import { IconButton, Tooltip } from "@mui/material"
+import React from "react"
 
 export type ViewsProps = {
     handleClick: (event: React.MouseEvent<HTMLButtonElement>) => void
@@ -10,11 +10,10 @@ export type ViewsProps = {
 
 export const Views: React.FC<ViewsProps> = props => {
     return (
-        <Button
-            startIcon={props.open ? <VisibilityIcon /> : <VisibilityOffIcon />}
-            onClick={props.handleClick}
-        >
-            Views
-        </Button>
+        <Tooltip arrow title="Views" enterDelay={1000}>
+            <IconButton onClick={props.handleClick}>
+                {props.open ? <VisibilityIcon /> : <VisibilityOffIcon />}
+            </IconButton>
+        </Tooltip>
     )
 }

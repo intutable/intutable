@@ -33,9 +33,11 @@ import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
+import { useThemeToggler } from "pages/_app"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
+    const { getTheme } = useThemeToggler()
     const { snackWarning, closeSnackbar } = useSnacki()
     const { isChrome } = useBrowserInfo()
     // warn if browser is not chrome
@@ -77,10 +79,7 @@ const TablePage: React.FC = () => {
     )
 
     // Detailed View
-    const [detailedViewOpen, setDetailedViewOpen] = useState<{
-        row: Row
-        column: CalculatedColumn<Row>
-    } | null>(null)
+    const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(true)
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
@@ -92,6 +91,10 @@ const TablePage: React.FC = () => {
 
         await updateRow(col, getRowId(data, changedRow), changedRow[col.key])
     }
+
+    useEffect(() => {
+        console.log(theme.colorScheme)
+    }, [theme])
 
     if (project == null || table == null || tableList == null || data == null)
         return <LoadingSkeleton />
@@ -148,8 +151,8 @@ const TablePage: React.FC = () => {
                             <Box>
                                 <Toolbar position="top">
                                     <ToolbarItem.Views
-                                        handleClick={_ =>
-                                            setViewNavOpen(!viewNavOpen)
+                                        handleClick={() =>
+                                            setViewNavOpen(prev => !prev)
                                         }
                                         open={viewNavOpen}
                                     />
@@ -159,11 +162,17 @@ const TablePage: React.FC = () => {
                                     <ToolbarItem.FileDownload
                                         getData={() => []}
                                     />
+                                    <ToolbarItem.DetailView
+                                        handleClick={() =>
+                                            setDetailedViewOpen(prev => !prev)
+                                        }
+                                        open={detailedViewOpen != null}
+                                    />
                                 </Toolbar>
 
                                 <DndProvider backend={HTML5Backend}>
                                     <DataGrid
-                                        className={"rdg-" + theme.palette.mode}
+                                        className={"rdg-" + getTheme()}
                                         rows={data.rows}
                                         columns={data.columns}
                                         components={{
@@ -193,15 +202,16 @@ const TablePage: React.FC = () => {
                             </Box>
                         </Grid>
 
-                        <Grid item xs={2}>
+                        <Grid item xs={detailedViewOpen ? 2 : 0}>
                             {detailedViewOpen && (
-                                <DetailedViewModal
-                                    open={detailedViewOpen != null}
-                                    data={detailedViewOpen}
-                                    onCloseHandler={() =>
-                                        setDetailedViewOpen(null)
-                                    }
-                                />
+                                // <DetailedViewModal
+                                //     open={detailedViewOpen != null}
+                                //     data={detailedViewOpen}
+                                //     onCloseHandler={() =>
+                                //         setDetailedViewOpen(null)
+                                //     }
+                                // />
+                                <span>Hallo</span>
                             )}
                         </Grid>
                     </Grid>

@@ -85,7 +85,6 @@ export const useColumn = (options?: TableHookOptions) => {
     }
 
     return {
-        error,
         mutate,
         createColumn,
         renameColumn,
