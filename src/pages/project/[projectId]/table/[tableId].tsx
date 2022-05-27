@@ -69,7 +69,7 @@ const TablePage: React.FC = () => {
     const { updateRow } = useRow()
 
     // views side panel
-    const [viewsOpen, setViewsOpen] = useState<boolean>(true)
+    const [viewNavOpen, setViewNavOpen] = useState<boolean>(true)
 
     // Column Selector
     const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
@@ -118,14 +118,6 @@ const TablePage: React.FC = () => {
                 </Link>
             </Typography>
 
-            {detailedViewOpen && (
-                <DetailedViewModal
-                    open={detailedViewOpen != null}
-                    data={detailedViewOpen}
-                    onCloseHandler={() => setDetailedViewOpen(null)}
-                />
-            )}
-
             <ErrorBoundary fallback={null}>
                 <TableNavigator />
             </ErrorBoundary>
@@ -138,59 +130,80 @@ const TablePage: React.FC = () => {
                         <span>Die Tabelle konnte nicht geladen werden.</span>
                     }
                 >
-                    <ErrorBoundary
-                        fallback={
-                            <span>
-                                Die Views konnten nicht angezeigt werden.
-                            </span>
-                        }
-                    >
-                        {viewsOpen && (
-                            <ViewNavigator
-                                sx={{ maxWidth: "12%", height: "100%" }}
-                            />
-                        )}
-                    </ErrorBoundary>
+                    <Grid container spacing={2}>
+                        <Grid item xs={viewNavOpen ? 2 : 0}>
+                            <ErrorBoundary
+                                fallback={
+                                    <span>
+                                        Die Views konnten nicht angezeigt
+                                        werden.
+                                    </span>
+                                }
+                            >
+                                <ViewNavigator open={viewNavOpen} />
+                            </ErrorBoundary>
+                        </Grid>
 
-                    <Box>
-                        <Toolbar position="top">
-                            <ToolbarItem.Views
-                                handleClick={_ => setViewsOpen(!viewsOpen)}
-                            />
-                            <ToolbarItem.AddCol />
-                            <ToolbarItem.AddLink />
-                            <ToolbarItem.AddRow />
-                            <ToolbarItem.FileDownload getData={() => []} />
-                        </Toolbar>
+                        <Grid item xs={8}>
+                            <Box>
+                                <Toolbar position="top">
+                                    <ToolbarItem.Views
+                                        handleClick={_ =>
+                                            setViewNavOpen(!viewNavOpen)
+                                        }
+                                    />
+                                    <ToolbarItem.AddCol />
+                                    <ToolbarItem.AddLink />
+                                    <ToolbarItem.AddRow />
+                                    <ToolbarItem.FileDownload
+                                        getData={() => []}
+                                    />
+                                </Toolbar>
 
-                        <DndProvider backend={HTML5Backend}>
-                            <DataGrid
-                                className={"rdg-" + theme.palette.mode}
-                                rows={data.rows}
-                                columns={data.columns}
-                                components={{
-                                    noRowsFallback: <NoRowsFallback />,
-                                    rowRenderer: RowRenderer,
-                                    // checkboxFormatter: // TODO: adjust
-                                    // sortIcon: // TODO: adjust
-                                }}
-                                rowKeyGetter={rowKeyGetter}
-                                defaultColumnOptions={{
-                                    sortable: true,
-                                    resizable: true,
-                                    // formatter: // TODO: adjust
-                                }}
-                                selectedRows={selectedRows}
-                                onSelectedRowsChange={setSelectedRows}
-                                onRowsChange={partialRowUpdate}
-                                headerRowHeight={headerHeight}
-                            />
-                        </DndProvider>
+                                <DndProvider backend={HTML5Backend}>
+                                    <DataGrid
+                                        className={"rdg-" + theme.palette.mode}
+                                        rows={data.rows}
+                                        columns={data.columns}
+                                        components={{
+                                            noRowsFallback: <NoRowsFallback />,
+                                            rowRenderer: RowRenderer,
+                                            // checkboxFormatter: // TODO: adjust
+                                            // sortIcon: // TODO: adjust
+                                        }}
+                                        rowKeyGetter={rowKeyGetter}
+                                        defaultColumnOptions={{
+                                            sortable: true,
+                                            resizable: true,
+                                            // formatter: // TODO: adjust
+                                        }}
+                                        selectedRows={selectedRows}
+                                        onSelectedRowsChange={setSelectedRows}
+                                        onRowsChange={partialRowUpdate}
+                                        headerRowHeight={headerHeight}
+                                    />
+                                </DndProvider>
 
-                        <Toolbar position="bottom">
-                            <ToolbarItem.Connection status={"connected"} />
-                        </Toolbar>
-                    </Box>
+                                <Toolbar position="bottom">
+                                    <ToolbarItem.Connection
+                                        status={"connected"}
+                                    />
+                                </Toolbar>
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={2}>
+                            {detailedViewOpen && (
+                                <DetailedViewModal
+                                    open={detailedViewOpen != null}
+                                    data={detailedViewOpen}
+                                    onCloseHandler={() =>
+                                        setDetailedViewOpen(null)
+                                    }
+                                />
+                            )}
+                        </Grid>
+                    </Grid>
                 </ErrorBoundary>
             )}
         </>
