@@ -49,7 +49,7 @@ export const useColumn = (
             c => c.id === viewColumn?.parentColumnId
         )
         if (!tableColumn)
-            throw Error(`Could not find Column Info fo column ${column}`)
+            throw Error(`Could not find Column Info for column ${column}`)
         return tableColumn
     }
 
