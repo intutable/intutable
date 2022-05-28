@@ -10,9 +10,8 @@ a REST API.
 1. Clone the repo
 2. `cd dekanat-app`
 3. `npm install`
-4. `npm run db:setup`
 5.  - For dev mode:
-        - `npm run build-core`
+        - `npm run reset-db`
         - `npm run dev`
     - To build and start production build:
         - `npm run build`
@@ -23,7 +22,7 @@ a REST API.
 Source is too unstable and rapidly changing for that to make sense. You'll have
 to find out the hard way.
 
-# Conventions & Commit Guidlines
+# Conventions & Commit Guidelines
 
 -   We have decided to use types over interfaces. There is no reason for this and since we are not developing an api this choice is totally valid.
 -   Use arrow functions and closures over conventional js functions.
