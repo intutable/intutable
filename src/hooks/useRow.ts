@@ -123,7 +123,6 @@ export const useRow = (options?: TableHookOptions) => {
     }
 
     return {
-        error,
         mutate,
         onRowReorder,
         createRow,

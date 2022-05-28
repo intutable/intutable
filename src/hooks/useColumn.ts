@@ -102,7 +102,6 @@ export const useColumn = (
     }
 
     return {
-        error,
         mutate,
         getTableColumn,
         createColumn,
