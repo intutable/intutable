@@ -63,7 +63,6 @@ async function createTable(
     const tableInfo = (await core.events.request(
         getTableInfo(baseTable.id)
     )) as TableInfo
-    const idColumn = tableInfo.columns.find(c => c.name === PK_COLUMN)
     const viewColumns: v_types.ColumnSpecifier[] = table.columns.map(c => {
         const baseColumn = tableInfo.columns.find(
             parent => parent.name === c.baseColumn.name
@@ -81,6 +80,14 @@ async function createTable(
             EMPTY_ROW_OPTIONS
         )
     )) as v_types.ViewDescriptor
+    // add joins
+    await Promise.all(table.joins.map(j =>
+        addJoin(core, baseTable, tableView, j)))
+
+    const tableViewInfo = await core.events.request(
+        v_req.getViewInfo(tableView.id)
+    ) as v_types.ViewInfo
+    const idColumn = tableViewInfo.columns.find(c => c.name === PK_COLUMN)
     const filterView = await core.events.request(
         v_req.createView(
             viewId(tableView.id),
@@ -90,18 +97,18 @@ async function createTable(
         )
     )
     const tableDescriptors = { baseTable, tableView, filterView }
-    await Promise.all(table.joins.map(j => addJoin(core, tableDescriptors, j)))
     return tableDescriptors
 }
 
 async function addJoin(
     core: PluginLoader,
-    table: Table,
+    baseTable: TableDescriptor,
+    tableView: v_types.ViewDescriptor,
     join: JoinSpec
 ): Promise<void> {
     const fk = (await core.events.request(
         createColumnInTable(
-            table.baseTable.id,
+            baseTable.id,
             join.fkColumn.name,
             join.fkColumn.type
         )
@@ -121,7 +128,7 @@ async function addJoin(
         }
     })
     await core.events.request(
-        v_req.addJoinToView(table.tableView.id, {
+        v_req.addJoinToView(tableView.id, {
             foreignSource: viewId(foreignTable.tableView.id),
             on: [fk.id, "=", pk.id],
             columns: foreignColumns,
@@ -158,7 +165,7 @@ function baseRowOptions(idColumn: ColumnDescriptor): v_types.RowOptions {
         groupColumns: [],
         sortColumns: [
             {
-                column: { parentColumnId: idColumn.id, joinId: 0 },
+                column: { parentColumnId: idColumn.id, joinId: null },
                 order: v_types.SortOrder.Ascending,
             },
         ],
