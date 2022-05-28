@@ -1,6 +1,5 @@
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { useEffect } from "react"
 import useSWR, { unstable_serialize } from "swr"
 
 /**

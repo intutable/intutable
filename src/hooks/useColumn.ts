@@ -1,8 +1,8 @@
-import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views"
+import { ColumnInfo } from "@intutable/lazy-views"
 import { fetcher } from "api"
-import { Parser } from "api/utils"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { Column, TableData } from "types"
+import { ViewHookOptions, useView } from "hooks/useView"
+import { Column } from "types"
 
 /**
  * Get the Column Info {@type {ColumnInfo}} for a specific column
@@ -33,8 +33,25 @@ export const getColumnInfo = (
  *
  * @param {ViewDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
  */
-export const useColumn = (options?: TableHookOptions) => {
-    const { data: table, error, mutate } = useTable(options)
+export const useColumn = (
+    tableOptions?: TableHookOptions,
+    viewOptions?: ViewHookOptions
+) => {
+    const { data: table, error, mutate } = useTable(tableOptions)
+    const { data: view } = useView(viewOptions)
+
+    /** Find a column in the base table. */
+    const getTableColumn = (column: Column): ColumnInfo => {
+        const viewColumn = view?.metadata.columns.find(
+            c => c.key === column.key
+        )
+        const tableColumn = table?.metadata.columns.find(
+            c => c.id === viewColumn?.parentColumnId
+        )
+        if (!tableColumn)
+            throw Error(`Could not find Column Info fo column ${column}`)
+        return tableColumn
+    }
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
@@ -85,7 +102,9 @@ export const useColumn = (options?: TableHookOptions) => {
     }
 
     return {
+        error,
         mutate,
+        getTableColumn,
         createColumn,
         renameColumn,
         deleteColumn,

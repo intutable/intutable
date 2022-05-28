@@ -81,12 +81,13 @@ async function createTable(
         )
     )) as v_types.ViewDescriptor
     // add joins
-    await Promise.all(table.joins.map(j =>
-        addJoin(core, baseTable, tableView, j)))
+    await Promise.all(
+        table.joins.map(j => addJoin(core, baseTable, tableView, j))
+    )
 
-    const tableViewInfo = await core.events.request(
+    const tableViewInfo = (await core.events.request(
         v_req.getViewInfo(tableView.id)
-    ) as v_types.ViewInfo
+    )) as v_types.ViewInfo
     const idColumn = tableViewInfo.columns.find(c => c.name === PK_COLUMN)
     const filterView = await core.events.request(
         v_req.createView(

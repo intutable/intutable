@@ -27,14 +27,14 @@ import { withUserCheck } from "utils/withUserCheck"
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { viewId, column } = req.body as {
-            viewId: ViewDescriptor["id"]
+        const { tableViewId, column } = req.body as {
+            tableViewId: ViewDescriptor["id"]
             column: Column.Serialized
         }
         const user = req.session.user!
 
         const options = await coreRequest<ViewOptions>(
-            getViewOptions(viewId),
+            getViewOptions(tableViewId),
             user.authCookie
         )
 
@@ -46,7 +46,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         const viewColumn = await coreRequest<View_Column>(
             addColumnToView(
-                viewId,
+                tableViewId,
                 Parser.Column.deparse(column, tableColumn.id)
             ),
             user.authCookie

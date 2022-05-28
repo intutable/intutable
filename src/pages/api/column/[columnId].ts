@@ -14,7 +14,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
-import objToSql from "utils/objToSql"
+import { objToSql } from "utils/objToSql"
 
 /**
  * Update the metadata of a column. Only its `attributes` can be changed, all
@@ -74,7 +74,9 @@ const DELETE = async (
     columnId: ColumnInfo["id"]
 ) => {
     try {
-        const { viewId } = req.body as { viewId: ViewDescriptor["id"] }
+        const { tableViewId } = req.body as {
+            tableViewId: ViewDescriptor["id"]
+        }
         const user = req.session.user!
 
         const column = await coreRequest<ColumnInfo>(
@@ -96,7 +98,7 @@ const DELETE = async (
         else if (column.attributes.formatter === "linkColumn") {
             // if column is a link column, we need to do some more work:
             const info = await coreRequest<ViewInfo>(
-                getViewInfo(viewId),
+                getViewInfo(tableViewId),
                 user.authCookie
             )
             // delete foreign key column

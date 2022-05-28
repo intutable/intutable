@@ -1,18 +1,14 @@
 import { FormatterComponent } from "@datagrid/Formatter"
 import { getId } from "@intutable/lazy-views/dist/selectable"
-import {
-    JoinDescriptor,
-    ViewDescriptor,
-} from "@intutable/lazy-views/dist/types"
 import { Box, Stack, Tooltip } from "@mui/material"
 import { fetcher } from "api"
 import { useAPI } from "context"
-import { getColumnInfo } from "hooks/useColumn"
+import { useColumn } from "hooks/useColumn"
 import { getRowId } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { Row } from "types"
 import { DeleteButton } from "../components/DeleteButton"
 import { RowSelector } from "../components/RowSelector"
@@ -31,11 +27,12 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const handleCloseModal = () => setAnchorEL(null)
 
     const { data, mutate } = useTable()
+    const { getTableColumn } = useColumn()
     const { project } = useAPI()
     const { tables } = useTables(project)
 
     const metaColumn = useMemo(
-        () => (data ? getColumnInfo(data.metadata.columns, column) : null),
+        () => (data ? getTableColumn(column) : null),
         [column, data]
     )
 

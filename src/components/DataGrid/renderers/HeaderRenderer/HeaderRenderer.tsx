@@ -25,7 +25,7 @@ import {
 import { fetcher } from "api/fetcher"
 import { useUser } from "auth"
 import { useAPI, useHeaderSearchField } from "context"
-import { useColumn, getColumnInfo } from "hooks/useColumn"
+import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
@@ -45,7 +45,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
     const { data, mutate } = useTable()
-    const { renameColumn, deleteColumn } = useColumn()
+    const { renameColumn, deleteColumn, getTableColumn } = useColumn()
     const { project } = useAPI()
 
     const {
@@ -55,8 +55,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     } = useHeaderSearchField()
 
     const col = useMemo(
-        () =>
-            data ? getColumnInfo(data.metadata.columns, props.column) : null,
+        () => (data ? getTableColumn(props.column) : null),
         [data, props.column]
     )
     // column that represents a link to another table

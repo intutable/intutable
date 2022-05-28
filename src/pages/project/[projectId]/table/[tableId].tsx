@@ -1,10 +1,9 @@
-import { DetailedViewModal } from "@datagrid/Detail Window/DetailedViewModal"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
 import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Grid, Box, Typography, useTheme, Button } from "@mui/material"
 import { fetcher } from "api"
@@ -23,11 +22,11 @@ import {
 import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { getRowId, useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import { useTable } from "hooks/useTable"
+import { useView } from "hooks/useView"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import React, { useEffect, useState } from "react"
-import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import DataGrid, { RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData } from "types"
@@ -66,7 +65,7 @@ const TablePage: React.FC = () => {
 
     const { headerHeight } = useHeaderSearchField()
     const { project, table } = useAPI()
-    const { data, error } = useTable()
+    const { data, error } = useView()
     const { tables: tableList } = useTables(project)
     const { updateRow } = useRow()
 
@@ -223,8 +222,19 @@ const TablePage: React.FC = () => {
 
 type PageProps = {
     project: ProjectDescriptor
+    /**
+     * In order to allow links/joins, tables are actually implemented using
+     * views. The user-facing views (filtering, hiding columns, etc.) are
+     * implemented as views on views, so be careful not to get confused.
+     */
     table: ViewDescriptor
     tableList: ViewDescriptor[]
+    /**
+     * The current filter view, which selects from the table view
+     * {@link table}
+     */
+    view: ViewDescriptor
+    viewList: ViewDescriptor[]
     // fallback: {
     //     [cacheKey: string]: ViewData
     // }
@@ -232,9 +242,9 @@ type PageProps = {
 
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ project, table }) => {
+> = ({ project, table, view }) => {
     return (
-        <APIContextProvider project={project} table={table}>
+        <APIContextProvider project={project} table={table} view={view}>
             <HeaderSearchFieldProvider>
                 <TablePage />
             </HeaderSearchFieldProvider>
@@ -263,13 +273,12 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
             notFound: true,
         }
 
-    // workaround until PM exposes the required method
+    // workaround until PM exposes a "get project" method
     const projects = await fetcher<ProjectDescriptor[]>({
         url: `/api/projects`,
         method: "GET",
         headers: context.req.headers as HeadersInit,
     })
-
     const project = projects.find(p => p.id === projectId)
 
     if (project == null) return { notFound: true }
@@ -279,9 +288,25 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
         method: "GET",
         headers: context.req.headers as HeadersInit,
     })
+    const tableData = await fetcher<TableData.Serialized>({
+        url: `/api/table/${tableId}`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+    const viewList = await fetcher<ViewDescriptor[]>({
+        url: `/api/views/${tableId}`,
+        method: "GET",
+        headers: context.req.headers as HeadersInit,
+    })
+
+    if (viewList.length === 0) {
+        console.log(`table ${tableId} has no views`)
+        return { notFound: true }
+    }
+    const view: ViewDescriptor = viewList[0]
 
     const data = await fetcher<TableData.Serialized>({
-        url: `/api/table/${tableId}`,
+        url: `/api/view/${view.id}`,
         method: "GET",
         headers: context.req.headers as HeadersInit,
     })
@@ -289,8 +314,10 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     return {
         props: {
             project,
-            table: data.metadata.descriptor,
+            table: tableData.metadata.descriptor,
             tableList,
+            view: data.metadata.descriptor,
+            viewList,
             // fallback: {
             //     [unstable_serialize({
             //         url: `/api/table/${tableId}`,

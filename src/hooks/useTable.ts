@@ -1,5 +1,5 @@
 import { TableDescriptor } from "@intutable/lazy-views"
-import { useAPI, APIContextProvider } from "context"
+import { useAPI } from "context"
 import useSWR, { unstable_serialize } from "swr"
 import { TableData } from "types"
 import { ViewDescriptor } from "@intutable/lazy-views"
