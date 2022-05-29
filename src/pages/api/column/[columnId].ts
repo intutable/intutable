@@ -1,8 +1,9 @@
 import {
     changeColumnAttributes,
     ColumnInfo,
-    getColumnInfo,
     getViewInfo,
+    listViews,
+    viewId,
     removeColumnFromView,
     removeJoinFromView,
     ViewDescriptor,
@@ -41,7 +42,6 @@ const PATCH = async (
         }
         const user = req.session.user!
 
-        console.log("Well? " + JSON.stringify(update))
         // TODO: check if the name is already taken
 
         // change property in view column, underlying table column is never used
@@ -79,15 +79,42 @@ const DELETE = async (
         }
         const user = req.session.user!
 
-        const column = await coreRequest<ColumnInfo>(
-            getColumnInfo(columnId),
+        const tableView = await coreRequest<ViewInfo>(
+            getViewInfo(tableViewId),
             user.authCookie
         )
+        const column = tableView.columns.find(c => c.id === columnId)
 
+        if (!column)
+            throw Error("columnNotFound")
         if (column.attributes.userPrimary)
             // cannot delete the primary column
             throw Error("deleteUserPrimary")
 
+        // delete column in all filter views:
+        const filterViews = await coreRequest<ViewDescriptor[]>(
+            listViews(viewId(tableViewId)),
+            user.authCookie
+        )
+        await Promise.all(filterViews.map(async v => {
+            const info = await coreRequest<ViewInfo>(
+                getViewInfo(v.id),
+                user.authCookie
+            )
+            // technically, it's possible that there are multiple columns
+            // with the same parent column, but there can only be one per join,
+            // and filter views never have joins.
+            const viewColumn = info.columns.find(
+                c => c.parentColumnId === column.id
+            )
+            if (viewColumn)
+                await coreRequest(
+                    removeColumnFromView(viewColumn.id),
+                    user.authCookie
+                )
+        }))
+
+        // delete column in table view:
         await coreRequest(removeColumnFromView(columnId), user.authCookie)
         if (column.joinId === null)
             // if column belongs to base table, delete underlying table column

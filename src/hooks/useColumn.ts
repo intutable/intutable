@@ -37,11 +37,12 @@ export const useColumn = (
     tableOptions?: TableHookOptions,
     viewOptions?: ViewHookOptions
 ) => {
-    const { data: table, error, mutate } = useTable(tableOptions)
-    const { data: view } = useView(viewOptions)
+    const { data: table, mutate: mutateTable } = useTable(tableOptions)
+    const { data: view, mutate: mutateView } = useView(viewOptions)
+    const mutate = async () => { await mutateTable() ;await mutateView() }
 
     /** Find a column in the base table. */
-    const getTableColumn = (column: Column): ColumnInfo => {
+    const getTableColumn = (column: Column): ColumnInfo | null => {
         const viewColumn = view?.metadata.columns.find(
             c => c.key === column.key
         )
@@ -49,7 +50,7 @@ export const useColumn = (
             c => c.id === viewColumn?.parentColumnId
         )
         if (!tableColumn)
-            throw Error(`Could not find Column Info for column ${column}`)
+            return null
         return tableColumn
     }
 
@@ -59,7 +60,7 @@ export const useColumn = (
         await fetcher({
             url: "/api/column",
             body: {
-                viewId: table?.metadata.descriptor.id,
+                tableViewId: table?.metadata.descriptor.id,
                 column,
             },
         })
@@ -92,9 +93,10 @@ export const useColumn = (
     // TODO: the state should be updated differently
     // TODO: get rid of `getColumnByKey`
     const deleteColumn = async (column: Column): Promise<void> => {
+        const tableColumn = getTableColumn(column)
         await fetcher({
-            url: `/api/column/${column._id!}`,
-            body: { viewId: table!.metadata.descriptor.id },
+            url: `/api/column/${tableColumn!.id}`,
+            body: { tableViewId: table!.metadata.descriptor.id },
             method: "DELETE",
         })
 
