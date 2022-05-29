@@ -1,11 +1,13 @@
 import { ColumnType } from "@intutable/database/dist/column"
 import {
     addJoinToView,
+    addColumnToView,
     getViewInfo,
     JoinDescriptor,
     selectable,
     viewId as mkViewId,
     ViewInfo,
+    ColumnInfo
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
@@ -16,6 +18,8 @@ import { project_management_constants } from "types/type-annotations/project-man
 import { makeError } from "utils/error-handling/utils/makeError"
 import makeForeignKeyName from "utils/makeForeignKeyName"
 import { withUserCheck } from "utils/withUserCheck"
+import { defaultColumnAttributes } from "utils/backendDefaults"
+import { addColumnToFilterViews } from "utils/backend/views"
 
 /**
  * Add a link from one table view to another. The target table will be
@@ -71,24 +75,35 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             addJoinToView(viewId, {
                 foreignSource: mkViewId(foreignViewId),
                 on: [fkColumn.id, "=", foreignIdColumn.id],
-                columns: [
-                    {
-                        parentColumnId: primaryColumn.id,
-                        attributes: {
-                            displayName,
-                            editable: 1,
-                            editor: "string",
-                            formatter: "standard",
-                            _kind: "link",
-                        },
-                    },
-                ],
+                columns: [],
             }),
             user.authCookie
         )
+
+        const attributes = {
+            ...defaultColumnAttributes(displayName),
+            _kind: "link"
+        }
+
+        const linkColumn = await coreRequest<ColumnInfo>(
+            addColumnToView(
+                viewId,
+                { parentColumnId: primaryColumn.id, attributes },
+                join.id
+            ),
+            user.authCookie
+        )
+
+        await addColumnToFilterViews(
+            viewId,
+            { parentColumnId: linkColumn.id, attributes },
+            user.authCookie
+        )
+
         res.status(200).json(join)
     } catch (err) {
         const error = makeError(err)
+        console.log(error.toString())
         res.status(500).json({ error: error.message })
     }
 }

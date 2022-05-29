@@ -16,6 +16,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { Column } from "types"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "utils/withUserCheck"
+import { addColumnToFilterViews } from "utils/backend/views"
 
 /**
  * Add a column to a table.
@@ -56,17 +57,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         )
 
         // add column to each filter view
-        const filterViews = await coreRequest<ViewDescriptor[]>(
-            listViews(viewId(tableViewId)),
+        await addColumnToFilterViews(
+            tableViewId,
+            Parser.Column.deparse(column, tableViewColumn.id),
             user.authCookie
         )
-        await Promise.all(filterViews.map(v => coreRequest(
-            addColumnToView(
-                v.id,
-                Parser.Column.deparse(column, tableViewColumn.id)
-            ),
-            user.authCookie
-        )))
 
         const parsedColumn = Parser.Column.parse(tableViewColumn)
 

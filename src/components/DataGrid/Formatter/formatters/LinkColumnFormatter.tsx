@@ -4,10 +4,11 @@ import { Box, Stack, Tooltip } from "@mui/material"
 import { fetcher } from "api"
 import { useAPI } from "context"
 import { useColumn } from "hooks/useColumn"
-import { getRowId } from "hooks/useRow"
+import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
+import { useTable } from "hooks/useTable"
+import { useView } from "hooks/useView"
 import React, { useCallback, useMemo, useState } from "react"
 import { Row } from "types"
 import { DeleteButton } from "../components/DeleteButton"
@@ -26,10 +27,12 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     }
     const handleCloseModal = () => setAnchorEL(null)
 
-    const { data, mutate } = useTable()
     const { getTableColumn } = useColumn()
     const { project } = useAPI()
     const { tables } = useTables(project)
+    const { data, mutate: mutateTable } = useTable()
+    const { mutate: mutateView } = useView()
+    const { getRowId } = useRow()
 
     const metaColumn = useMemo(
         () => (data ? getTableColumn(column) : null),
@@ -59,18 +62,19 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                 await fetcher({
                     url: `/api/join/${join!.id}`,
                     body: {
-                        viewId: data!.metadata.descriptor.id,
-                        rowId: getRowId(data, row),
+                        tableViewId: data!.metadata.descriptor.id,
+                        rowId: getRowId(row),
                         value: null,
                     },
                 })
-                await mutate() // TODO: handle mutation differently
+                await mutateTable()
+                await mutateView()
             } catch (error) {
                 snackError("Der Inhalt konnte nicht gelöscht werden")
             }
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [data, join, mutate, row]
+        [data, join, mutateTable, row]
     )
 
     if (join == null || foreignTable == null) return null
@@ -101,7 +105,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                 </Box>
             </Tooltip>
             <RowSelector
-                rowId={getRowId(data, row)}
+                rowId={getRowId(row)}
                 join={join}
                 foreignTable={foreignTable}
                 open={anchorEL != null}

@@ -34,15 +34,15 @@ const POST = async (
     joinId: JoinDescriptor["id"]
 ) => {
     try {
-        const { viewId, rowId, value } = req.body as {
-            viewId: ViewDescriptor["id"]
+        const { tableViewId, rowId, value } = req.body as {
+            tableViewId: ViewDescriptor["id"]
             rowId: number
-            value: number
+            value: number | null
         }
         const user = req.session.user!
 
         const viewInfo = await coreRequest<ViewInfo>(
-            getViewInfo(viewId),
+            getViewInfo(tableViewId),
             user.authCookie
         )
         const baseTableInfo = await coreRequest<TableInfo>(
@@ -51,7 +51,6 @@ const POST = async (
         )
 
         const join = viewInfo.joins.find(j => j.id === joinId)!
-
         const fkColumn = baseTableInfo.columns.find(c => c.id === join.on[0])!
 
         await coreRequest(
@@ -65,6 +64,7 @@ const POST = async (
         res.status(200).json({})
     } catch (err) {
         const error = makeError(err)
+        console.log(error.toString())
         res.status(500).json({ error: error.message })
     }
 }

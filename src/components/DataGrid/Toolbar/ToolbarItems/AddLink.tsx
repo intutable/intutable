@@ -19,6 +19,7 @@ import {
 import { fetcher } from "api"
 import { useAPI } from "context"
 import { useTable } from "hooks/useTable"
+import { useView } from "hooks/useView"
 import { useTables } from "hooks/useTables"
 import { useSnackbar } from "notistack"
 import React, { useEffect, useState } from "react"
@@ -29,7 +30,8 @@ import React, { useEffect, useState } from "react"
 export const AddLink: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data: currentTable, mutate } = useTable()
+    const { data: currentTable, mutate: mutateTable } = useTable()
+    const { mutate: mutateView } = useView()
     const { project } = useAPI()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -52,7 +54,8 @@ export const AddLink: React.FC = () => {
                     foreignViewId: table.id,
                 },
             })
-            await mutate()
+            await mutateTable()
+            await mutateView()
             enqueueSnackbar("Die Tabelle wurde erfolgreich verlinkt.", {
                 variant: "success",
             })

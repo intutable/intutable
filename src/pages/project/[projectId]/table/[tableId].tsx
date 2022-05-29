@@ -20,7 +20,7 @@ import {
     useHeaderSearchField,
 } from "context"
 import { useBrowserInfo } from "hooks/useBrowserInfo"
-import { getRowId, useRow } from "hooks/useRow"
+import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import { useTables } from "hooks/useTables"
@@ -67,7 +67,7 @@ const TablePage: React.FC = () => {
     const { project, table } = useAPI()
     const { data, error } = useView()
     const { tables: tableList } = useTables(project)
-    const { updateRow } = useRow()
+    const { getRowId, updateRow } = useRow()
 
     // views side panel
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(true)
@@ -88,7 +88,7 @@ const TablePage: React.FC = () => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
 
-        await updateRow(col, getRowId(data, changedRow), changedRow[col.key])
+        await updateRow(col, getRowId(changedRow), changedRow[col.key])
     }
 
     useEffect(() => {
