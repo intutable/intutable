@@ -31,7 +31,7 @@ export const getRowId = (data: TableData | undefined, row: Row) => {
 export const useRow = (options?: TableHookOptions) => {
     const { data: table } = useTable(options)
     const { data: view, error, mutate } = useView()
-    const { getViewColumn } = useColumn(options)
+    const { getTableColumn } = useColumn(options)
 
     /**
      * Used for row reordering / drag n drop
@@ -101,7 +101,7 @@ export const useRow = (options?: TableHookOptions) => {
     ): Promise<void> => {
         // it's a view on top of a view, but the property `column.name`
         // reflects the actual name in the DB regardless of nesting.
-        const metaColumn = getViewColumn(column)
+        const metaColumn = getTableColumn(column)!
         const baseColumnKey = metaColumn.name
 
         // TODO: put this in the api route
