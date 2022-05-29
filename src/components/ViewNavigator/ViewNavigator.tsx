@@ -5,17 +5,21 @@ import {
     Tooltip,
     Typography,
     useTheme,
-    Button,
     IconButton,
     Divider,
 } from "@mui/material"
 import React from "react"
 import Zoom from "@mui/material/Zoom"
 import ChevronRightIcon from "@mui/icons-material/ChevronRight"
-import AddIcon from "@mui/icons-material/Add"
+import AddBoxIcon from "@mui/icons-material/AddBox"
+import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+
+import { useTable } from "hooks/useTable"
+import { useViews } from "hooks/useViews"
+
 
 type ViewListItemProps = {
-    children: React.ReactNode
+    view: ViewDescriptor
     /**
      * only when `children` is not a string
      */
@@ -27,18 +31,12 @@ type ViewListItemProps = {
 }
 
 const ViewListItem: React.FC<ViewListItemProps> = props => {
-    if (typeof props.children !== "string" && props.title == null)
-        throw new RangeError(
-            "A value for 'title' is required if `children` is not a string!"
-        )
+
+    const view: ViewDescriptor = props.view
 
     return (
         <ListItem
-            key={
-                typeof props.children === "string"
-                    ? props.children
-                    : props.title!
-            }
+            key={view.id}
             sx={{
                 p: 0,
                 mb: 1,
@@ -46,11 +44,7 @@ const ViewListItem: React.FC<ViewListItemProps> = props => {
         >
             {props.icon || <ChevronRightIcon />}
             <Tooltip
-                title={
-                    typeof props.children === "string"
-                        ? props.children
-                        : props.title!
-                }
+                title={"Sicht ${view.name} anzeigen"}
                 arrow
                 TransitionComponent={Zoom}
                 enterDelay={500}
@@ -67,18 +61,38 @@ const ViewListItem: React.FC<ViewListItemProps> = props => {
                         textOverflow: "ellipsis",
                     }}
                 >
-                    {props.children}
+                    {view.name}
                 </Typography>
             </Tooltip>
         </ListItem>
     )
 }
+
+const AddViewButton: React.FC = () => {
+    return (
+        <Tooltip
+            title={"Neue Sicht anlegen"}
+            arrow
+            TransitionComponent={Zoom}
+            enterDelay={500}
+            placement="right"
+        >
+            <IconButton size="medium">
+                <AddBoxIcon />
+            </IconButton>
+        </Tooltip>
+    )
+}
+
 export type ViewNavigatorProps = {
     open: boolean
 }
 
 export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     const theme = useTheme()
+
+    const { data } = useTable()
+    const { views } = useViews(data?.metadata.descriptor)
 
     if (props.open === false) return null
 
@@ -113,24 +127,9 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
                     overflowY: "scroll",
                 }}
             >
-                <ViewListItem>View1</ViewListItem>
-                <ViewListItem>View2</ViewListItem>
-                <ViewListItem>
-                    ThisViewHasASomewhatLongerNameThanMostDo
-                </ViewListItem>
-                <ViewListItem title={""} icon={<AddIcon />}>
-                    <Box
-                        sx={{
-                            cursor: "pointer",
-                            "&:hover": {
-                                textDecoration: "underline",
-                            },
-                        }}
-                    >
-                        Add View
-                    </Box>
-                </ViewListItem>
+                {views && views.map(view => <ViewListItem view={view} />)}
             </List>
+            <AddViewButton />
         </Box>
     )
 }
