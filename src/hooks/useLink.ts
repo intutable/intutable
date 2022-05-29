@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { Row } from "types"
+import { Row, Column } from "types"
 import { project_management_constants } from "types/type-annotations/project-management"
 
 export type RowPreview = {
@@ -9,6 +9,10 @@ export type RowPreview = {
     text: string
 }
 
+/**
+ * When manipulating tables that have links to other tables, those other tables
+ * are loaded with this hook.
+ */
 export const useLink = (options: TableHookOptions) => {
     const { data: linkTableData, error, mutate } = useTable(options)
 
@@ -53,10 +57,23 @@ export const useLink = (options: TableHookOptions) => {
         [linkTableData]
     )
 
+    /**
+     * Given a RDG column of the linked table, find the abstract back-end
+     * column it corresponds to.
+     */
+    const getColumn = (column: Column): ColumnInfo => {
+        const tableColumn = linkTableData?.metadata.columns.find(
+            c => c.key === column.key
+        )
+        if (!tableColumn)
+            throw Error("no column with key ${column.key} found")
+        return tableColumn
+    }
     return {
         error,
         mutate,
         primaryColumn,
-        rowPreviews
+        rowPreviews,
+        getColumn,
     }
 }

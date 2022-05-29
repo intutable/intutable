@@ -48,7 +48,7 @@ export function defaultViewName(){
     return "Standard"
 }
 
-export function defaultColumnAttributes(
+export function standardColumnAttributes(
     displayName: string,
     userPrimary?: boolean
 ){
@@ -56,8 +56,32 @@ export function defaultColumnAttributes(
         _kind: "standard",
         ...(userPrimary !== undefined && { userPrimary }),
         displayName,
-        editable: true,
+        editable: 1,
         editor: "string",
         formatter: "standard",
+    })
+}
+
+export function linkColumnAttributes(
+    displayName: string
+) {
+    return toSQL({
+        _kind: "link",
+        displayName,
+        editable: 1,
+        editor: "string",
+        formatter: "link"
+    })
+}
+
+export function lookupColumnAttributes(
+    displayName: string
+) {
+    return toSQL({
+        _kind: "lookup",
+        displayName,
+        editable: 0,
+        editor: "string",
+        formatter: "lookup"
     })
 }

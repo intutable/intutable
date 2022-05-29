@@ -14,7 +14,7 @@ import {
     useTheme,
 } from "@mui/material"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
-import { useColumn } from "hooks/useColumn"
+import { useLink } from "hooks/useLink"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import React, { useEffect, useMemo, useState } from "react"
@@ -24,21 +24,19 @@ type AddLookupModal = {
     open: boolean
     onClose: () => void
     onAddLookupModal: (column: ColumnInfo) => unknown
-    foreignView: ViewDescriptor
+    foreignTable: ViewDescriptor
 }
 
 export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { data, error } = useTable({
-        table: props.foreignView,
-    })
+    const { data, error } = useTable({ table: props.foreignTable })
+    const { getColumn } = useLink({ table: props.foreignTable })
 
-    const { getTableColumn } = useColumn()
     const [selection, setSelection] = useState<Column | null>(null)
     const selectedColDescriptor = useMemo(
-        () => (selection && data ? getTableColumn(selection) : null),
+        () => (selection && data ? getColumn(selection) : null),
         [data, selection]
     )
 
@@ -49,12 +47,16 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    const onClickHandler = (column: Column) => setSelection(column)
+    const onClickHandler = (column: Column) => {
+        setSelection(column)
+        console.log(JSON.stringify(data?.metadata.descriptor))
+        console.dir(selectedColDescriptor)
+    }
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>
-                Spalte aus verlinkter Tabelle <i>{props.foreignView.name}</i>{" "}
+                Spalte aus verlinkter Tabelle <i>{props.foreignTable.name}</i>{" "}
                 als Lookup hinzufügen
             </DialogTitle>
             <DialogContent>

@@ -19,7 +19,7 @@ import {
     emptyRowOptions,
     defaultRowOptions,
     defaultViewName,
-    defaultColumnAttributes,
+    standardColumnAttributes,
 } from "backend/defaults"
 import { withUserCheck } from "utils/withUserCheck"
 
@@ -71,8 +71,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         const columnSpecs = baseColumns.map(c => ({
             parentColumnId: c.id,
             attributes: c.name === "name"
-                ? defaultColumnAttributes("Name", true)
-                : defaultColumnAttributes("ID")
+                ? standardColumnAttributes("Name", true)
+                : standardColumnAttributes("ID")
         }))
 
         // create table view

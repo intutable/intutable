@@ -18,7 +18,7 @@ import { project_management_constants } from "types/type-annotations/project-man
 import { makeError } from "utils/error-handling/utils/makeError"
 import makeForeignKeyName from "utils/makeForeignKeyName"
 import { withUserCheck } from "utils/withUserCheck"
-import { defaultColumnAttributes } from "utils/backendDefaults"
+import { linkColumnAttributes } from "backend/defaults"
 import { addColumnToFilterViews } from "utils/backend/views"
 
 /**
@@ -80,10 +80,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             user.authCookie
         )
 
-        const attributes = {
-            ...defaultColumnAttributes(displayName),
-            _kind: "link"
-        }
+        const attributes = linkColumnAttributes(displayName)
 
         const linkColumn = await coreRequest<ColumnInfo>(
             addColumnToView(
