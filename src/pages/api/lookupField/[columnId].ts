@@ -11,7 +11,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withSessionRoute } from "auth"
 import { withUserCheck } from "utils/withUserCheck"
-import { lookupColumnAttributes } from "backend/defaults"
+import { lookupColumnAttributes } from "@backend/defaults"
 import { addColumnToFilterViews } from "utils/backend/views"
 
 /**

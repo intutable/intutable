@@ -20,7 +20,7 @@ import {
     defaultRowOptions,
     defaultViewName,
     standardColumnAttributes,
-} from "backend/defaults"
+} from "@backend/defaults"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
