@@ -37,7 +37,7 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const [selection, setSelection] = useState<Column | null>(null)
     const selectedColDescriptor = useMemo(
         () => (selection && data ? getColumn(selection) : null),
-        [data, selection]
+        [data, selection, getColumn]
     )
 
     useEffect(() => {
@@ -49,8 +49,6 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
 
     const onClickHandler = (column: Column) => {
         setSelection(column)
-        console.log(JSON.stringify(data?.metadata.descriptor))
-        console.dir(selectedColDescriptor)
     }
 
     return (

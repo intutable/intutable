@@ -36,7 +36,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
 
     const metaColumn = useMemo(
         () => (data ? getTableColumn(column) : null),
-        [column, data]
+        [column, getTableColumn, data]
     )
 
     const join = useMemo(() => {

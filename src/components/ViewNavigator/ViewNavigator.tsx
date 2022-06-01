@@ -31,6 +31,7 @@ import { useViews } from "hooks/useViews"
 
 type ViewListItemProps = {
     view: ViewDescriptor
+    key: number
     /**
      * only when `children` is not a string
      */
@@ -57,7 +58,7 @@ const ViewListItem: React.FC<ViewListItemProps> = props => {
     }
     return (
         <ListItem
-            key={view.id}
+            key={props.key}
             sx={{
                 p: 0,
                 mb: 1,
@@ -147,8 +148,6 @@ export type ViewNavigatorProps = {
     open: boolean
 }
 export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
-    if (props.open === false) return null
-
     const theme = useTheme()
 
     const { view: currentView, setView } = useAPI()
@@ -161,6 +160,8 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     // anchor for "create view" modal
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
+    if (props.open === false) return null
+
     const handleCreateView = async (name: string): Promise<void> => {
         await createView(name)
         mutate()
@@ -170,7 +171,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
         else setView(view)
     }
     const handleDeleteView = async (view: ViewDescriptor): Promise<void> => {
-        if (views.length === 1){
+        if (views.length === 1) {
             snackInfo("Kann einzige Sicht nicht löschen")
             return
         }
@@ -212,6 +213,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
                 {views &&
                     views.map(view => (
                         <ViewListItem
+                            key={view.id}
                             view={view}
                             onHandleSelectView={handleSelectView}
                             onHandleDeleteView={handleDeleteView}

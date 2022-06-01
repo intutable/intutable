@@ -58,7 +58,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
 
     const col = useMemo(
         () => (data ? getTableColumn(props.column) : null),
-        [data, props.column]
+        [data, props.column, getTableColumn]
     )
     // column that represents a link to another table
     const isLinkCol = props.column._kind! === "link"

@@ -85,8 +85,7 @@ const DELETE = async (
         )
         const column = tableView.columns.find(c => c.id === columnId)
 
-        if (!column)
-            throw Error("columnNotFound")
+        if (!column) throw Error("columnNotFound")
         if (column.attributes.userPrimary)
             // cannot delete the primary column
             throw Error("deleteUserPrimary")
@@ -96,23 +95,25 @@ const DELETE = async (
             listViews(viewId(tableViewId)),
             user.authCookie
         )
-        await Promise.all(filterViews.map(async v => {
-            const info = await coreRequest<ViewInfo>(
-                getViewInfo(v.id),
-                user.authCookie
-            )
-            // technically, it's possible that there are multiple columns
-            // with the same parent column, but there can only be one per join,
-            // and filter views never have joins.
-            const viewColumn = info.columns.find(
-                c => c.parentColumnId === column.id
-            )
-            if (viewColumn)
-                await coreRequest(
-                    removeColumnFromView(viewColumn.id),
+        await Promise.all(
+            filterViews.map(async v => {
+                const info = await coreRequest<ViewInfo>(
+                    getViewInfo(v.id),
                     user.authCookie
                 )
-        }))
+                // technically, it's possible that there are multiple columns
+                // with the same parent column, but there can only be one per join,
+                // and filter views never have joins.
+                const viewColumn = info.columns.find(
+                    c => c.parentColumnId === column.id
+                )
+                if (viewColumn)
+                    await coreRequest(
+                        removeColumnFromView(viewColumn.id),
+                        user.authCookie
+                    )
+            })
+        )
 
         // delete column in table view:
         await coreRequest(removeColumnFromView(columnId), user.authCookie)

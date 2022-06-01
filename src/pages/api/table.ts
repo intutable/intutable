@@ -1,5 +1,12 @@
 import { ColumnType } from "@intutable/database/dist/column"
-import { createView, tableId, viewId, getViewInfo, ViewInfo, ViewDescriptor } from "@intutable/lazy-views"
+import {
+    createView,
+    tableId,
+    viewId,
+    getViewInfo,
+    ViewInfo,
+    ViewDescriptor,
+} from "@intutable/lazy-views"
 import {
     createTableInProject,
     getColumnsFromTable,
@@ -70,9 +77,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         )
         const columnSpecs = baseColumns.map(c => ({
             parentColumnId: c.id,
-            attributes: c.name === "name"
-                ? standardColumnAttributes("Name", true)
-                : standardColumnAttributes("ID")
+            attributes:
+                c.name === "name"
+                    ? standardColumnAttributes("Name", true)
+                    : standardColumnAttributes("ID"),
         }))
 
         // create table view
