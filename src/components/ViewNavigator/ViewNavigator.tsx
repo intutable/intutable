@@ -24,6 +24,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 
+import { useSnacki } from "hooks/useSnacki"
 import { useAPI } from "context/APIContext"
 import { useTable } from "hooks/useTable"
 import { useViews } from "hooks/useViews"
@@ -155,7 +156,9 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     const { views, createView, deleteView, mutate } = useViews(
         data?.metadata.descriptor
     )
+    const { snackInfo } = useSnacki()
 
+    // anchor for "create view" modal
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
     const handleCreateView = async (name: string): Promise<void> => {
@@ -167,7 +170,10 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
         else setView(view)
     }
     const handleDeleteView = async (view: ViewDescriptor): Promise<void> => {
-        if (view.name === "Standard") return
+        if (views.length === 1){
+            snackInfo("Kann einzige Sicht nicht löschen")
+            return
+        }
         await deleteView(view.id)
         mutate()
     }

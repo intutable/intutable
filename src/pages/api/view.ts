@@ -41,7 +41,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             throw Error("alreadyTaken")
 
         // create new filter view
-
         const tableColumns = await coreRequest<ViewInfo>(
             getViewInfo(tableViewId),
             user.authCookie
