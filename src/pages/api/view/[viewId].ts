@@ -8,6 +8,7 @@ import {
     ViewDescriptor,
     ViewOptions,
     asView,
+    isTable,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
 import { Table } from "api/utils/parse"
@@ -112,7 +113,21 @@ const DELETE = async (
 ) => {
     try {
         const user = req.session.user!
+
+        const options = await coreRequest<ViewOptions>(
+            getViewOptions(viewId),
+            user.authCookie
+        )
+
+        /**
+         * If the view's source is a table, it must be a table view, and you
+         * can only delete those through their dedicated endpoint.
+         */
+        if (isTable(options.source))
+            throw Error("deleteTableThroughViewEndpoint")
+
         await coreRequest(deleteView(viewId), user.authCookie)
+        console.log("deleted view " + viewId)
 
         res.status(200).send({})
     } catch (err) {
