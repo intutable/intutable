@@ -7,7 +7,7 @@ import {
     selectable,
     viewId as mkViewId,
     ViewInfo,
-    ColumnInfo
+    ColumnInfo,
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"

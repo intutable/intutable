@@ -24,12 +24,14 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 
+import { useSnacki } from "hooks/useSnacki"
 import { useAPI } from "context/APIContext"
 import { useTable } from "hooks/useTable"
 import { useViews } from "hooks/useViews"
 
 type ViewListItemProps = {
     view: ViewDescriptor
+    key: number
     /**
      * only when `children` is not a string
      */
@@ -56,7 +58,7 @@ const ViewListItem: React.FC<ViewListItemProps> = props => {
     }
     return (
         <ListItem
-            key={view.id}
+            key={props.key}
             sx={{
                 p: 0,
                 mb: 1,
@@ -146,8 +148,6 @@ export type ViewNavigatorProps = {
     open: boolean
 }
 export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
-    if (props.open === false) return null
-
     const theme = useTheme()
 
     const { view: currentView, setView } = useAPI()
@@ -155,8 +155,12 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     const { views, createView, deleteView, mutate } = useViews(
         data?.metadata.descriptor
     )
+    const { snackInfo } = useSnacki()
 
+    // anchor for "create view" modal
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
+
+    if (props.open === false) return null
 
     const handleCreateView = async (name: string): Promise<void> => {
         await createView(name)
@@ -167,7 +171,10 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
         else setView(view)
     }
     const handleDeleteView = async (view: ViewDescriptor): Promise<void> => {
-        if (view.name === "Standard") return
+        if (views.length === 1) {
+            snackInfo("Kann einzige Sicht nicht löschen")
+            return
+        }
         await deleteView(view.id)
         mutate()
     }
@@ -206,6 +213,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
                 {views &&
                     views.map(view => (
                         <ViewListItem
+                            key={view.id}
                             view={view}
                             onHandleSelectView={handleSelectView}
                             onHandleDeleteView={handleDeleteView}

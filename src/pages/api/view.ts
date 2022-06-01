@@ -4,15 +4,13 @@ import {
     getViewInfo,
     listViews,
     ViewInfo,
-    ViewDescriptor
+    ViewDescriptor,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
-import {
-    defaultRowOptions,
-} from "@backend/defaults"
+import { defaultRowOptions } from "@backend/defaults"
 import { withUserCheck } from "utils/withUserCheck"
 
 /**
@@ -41,7 +39,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             throw Error("alreadyTaken")
 
         // create new filter view
-
         const tableColumns = await coreRequest<ViewInfo>(
             getViewInfo(tableViewId),
             user.authCookie
