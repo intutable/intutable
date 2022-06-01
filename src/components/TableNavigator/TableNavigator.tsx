@@ -9,7 +9,7 @@ export const TableNavigator: React.FC = () => {
     const router = useRouter()
 
     const { project, table: currentTable } = useAPI()
-    const { tables: tableList } = useTables(project)
+    const { tables: tableList } = useTables()
 
     if (tableList == null) return null
 

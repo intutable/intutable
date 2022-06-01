@@ -58,7 +58,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
 
     const col = useMemo(
         () => (data ? getTableColumn(props.column) : null),
-        [data, props.column]
+        [data, getTableColumn, props.column]
     )
     // column that represents a link to another table
     const isLinkCol = props.column._kind! === "link"
@@ -70,7 +70,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         () => (col ? col.attributes.userPrimary === 1 : null),
         [col]
     )
-    const { tables } = useTables(project)
+    const { tables } = useTables()
 
     const foreignTable = useMemo(() => {
         if (col == null) return null

@@ -105,7 +105,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { tables, error } = useTables(props.project)
+    const { tables, error } = useTables({ project: props.project })
 
     const [selection, setSelection] = useState<ViewDescriptor | null>(null)
 

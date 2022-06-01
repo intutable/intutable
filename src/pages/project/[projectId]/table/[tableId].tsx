@@ -64,9 +64,9 @@ const TablePage: React.FC = () => {
     // #################### states ####################
 
     const { headerHeight } = useHeaderSearchField()
-    const { project, table } = useAPI()
+    const { project } = useAPI()
     const { data, error } = useView()
-    const { tables: tableList } = useTables(project)
+    const { tables: tableList } = useTables()
     const { getRowId, updateRow } = useRow()
 
     // views side panel
@@ -95,12 +95,11 @@ const TablePage: React.FC = () => {
         console.log(theme.colorScheme)
     }, [theme])
 
-    if (project == null || table == null || tableList == null || data == null)
-        return <LoadingSkeleton />
+    if (tableList == null || data == null) return <LoadingSkeleton />
 
     return (
         <>
-            <Title title={project.name} />
+            <Title title={project!.name} />
             <Typography
                 sx={{
                     mb: theme.spacing(4),
@@ -109,14 +108,14 @@ const TablePage: React.FC = () => {
             >
                 Deine Tabellen in{" "}
                 <Link
-                    href={`/project/${project.id}`}
+                    href={`/project/${project!.id}`}
                     muiLinkProps={{
                         underline: "hover",
                         color: theme.palette.primary.main,
                         textDecoration: "none",
                     }}
                 >
-                    {project.name}
+                    {project!.name}
                 </Link>
             </Typography>
 

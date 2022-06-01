@@ -28,15 +28,14 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const handleCloseModal = () => setAnchorEL(null)
 
     const { getTableColumn } = useColumn()
-    const { project } = useAPI()
-    const { tables } = useTables(project)
+    const { tables } = useTables()
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
     const { getRowId } = useRow()
 
     const metaColumn = useMemo(
         () => (data ? getTableColumn(column) : null),
-        [column, data]
+        [column, data, getTableColumn]
     )
 
     const join = useMemo(() => {

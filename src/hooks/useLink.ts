@@ -43,19 +43,13 @@ export const useLink = (options: TableHookOptions) => {
      * The user-primary column of the linked table. Used for giving a preview
      * of each row. Not to be confused with the back-end, SQL primary column.
      */
-    const primaryColumn = useMemo(
-        () => getPrimaryColumn(),
-        [linkTableData]
-    )
+    const primaryColumn = useMemo(() => getPrimaryColumn(), [linkTableData])
 
     /**
      * A "preview" for each row. Currently consists of the value in
      * {@link primaryColumn} plus an ID.
      */
-    const rowPreviews = useMemo(
-        () => getRowPreviews(),
-        [linkTableData]
-    )
+    const rowPreviews = useMemo(() => getRowPreviews(), [linkTableData])
 
     /**
      * Given a RDG column of the linked table, find the abstract back-end
@@ -65,8 +59,7 @@ export const useLink = (options: TableHookOptions) => {
         const tableColumn = linkTableData?.metadata.columns.find(
             c => c.key === column.key
         )
-        if (!tableColumn)
-            throw Error("no column with key ${column.key} found")
+        if (!tableColumn) throw Error("no column with key ${column.key} found")
         return tableColumn
     }
     return {
