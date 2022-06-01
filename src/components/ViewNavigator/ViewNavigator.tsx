@@ -152,9 +152,9 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
 
     const { view: currentView, setView } = useAPI()
     const { data } = useTable()
-    const { views, createView, deleteView, mutate } = useViews(
-        data?.metadata.descriptor
-    )
+    const { views, createView, deleteView, mutate } = useViews({
+        table: data?.metadata.descriptor,
+    })
     const { snackInfo } = useSnacki()
 
     // anchor for "create view" modal
@@ -171,6 +171,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
         else setView(view)
     }
     const handleDeleteView = async (view: ViewDescriptor): Promise<void> => {
+        if (views == null) return
         if (views.length === 1) {
             snackInfo("Kann einzige Sicht nicht löschen")
             return

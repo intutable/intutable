@@ -7,7 +7,7 @@ import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 
 export type TableHookOptions = {
-    table?: ViewDescriptor
+    table?: ViewDescriptor | null
     swrOptions?: Partial<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         PublicConfiguration<TableData, any, BareFetcher<TableData>>

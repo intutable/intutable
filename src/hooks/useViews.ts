@@ -2,31 +2,42 @@ import { ViewDescriptor } from "@intutable/lazy-views"
 import useSWR, { unstable_serialize } from "swr"
 import { fetcher } from "api"
 import { useAPI } from "context/APIContext"
+import { TableHookOptions } from "./useTable"
+import { useMemo } from "react"
 
 /**
  * ### useViews hook.
  *
  * Returns a list of views on a given table.
  */
-export const useViews = (table: ViewDescriptor | null | undefined) => {
-    const { view: currentView, setView } = useAPI()
+export const useViews = (options?: TableHookOptions) => {
+    const { view: currentView, setView, table: api_table } = useAPI()
+
+    // if the table param is specified, use that over the api context
+    const tableToFetch = useMemo(
+        () => (options?.table ? options.table : api_table),
+        [api_table, options?.table]
+    )
+
     const {
         data: views,
         error,
         mutate,
     } = useSWR<ViewDescriptor[]>(
-        table ? { url: `/api/views/${table.id}`, method: "GET" } : null
+        tableToFetch
+            ? { url: `/api/views/${tableToFetch.id}`, method: "GET" }
+            : null
     )
 
     /**
      * Create a new view with a given name, returning its descriptor.
      */
     const createView = async (name: string): Promise<ViewDescriptor | null> => {
-        if (!table) return null
+        if (!tableToFetch) return null
         const view = await fetcher<ViewDescriptor>({
             url: "/api/view",
             body: {
-                tableViewId: table.id,
+                tableViewId: tableToFetch.id,
                 name,
             },
             method: "POST",
@@ -44,10 +55,9 @@ export const useViews = (table: ViewDescriptor | null | undefined) => {
             body: {},
             method: "DELETE",
         }).then(async () => {
-            await mutate()
-            if (viewId === currentView?.id && views && views.length > 0) {
+            if (viewId === currentView?.id && views && views.length > 0)
                 setView(views[0])
-            }
+            await mutate()
         })
     }
 
