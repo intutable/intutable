@@ -13,7 +13,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Column } from "types"
 import { makeError } from "utils/error-handling/utils/makeError"
-import { withUserCheck } from "utils/withUserCheck"
+import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
  * Add a column to a table.

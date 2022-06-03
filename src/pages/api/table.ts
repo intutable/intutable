@@ -16,7 +16,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import sanitizeName from "utils/sanitizeName"
 import defaultRowOptions from "utils/defaultRowOptions"
-import { withUserCheck } from "utils/withUserCheck"
+import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
  * Create a new table with the specified name.

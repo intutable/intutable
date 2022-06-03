@@ -15,7 +15,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { project_management_constants } from "types/type-annotations/project-management"
 import { makeError } from "utils/error-handling/utils/makeError"
 import makeForeignKeyName from "utils/makeForeignKeyName"
-import { withUserCheck } from "utils/withUserCheck"
+import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
  * Add a link from one table view to another. The target table will be

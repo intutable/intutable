@@ -11,7 +11,7 @@ import { coreRequest } from "api/utils"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withSessionRoute } from "auth"
-import { withUserCheck } from "utils/withUserCheck"
+import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
  * Add a lookup field from a linked table.

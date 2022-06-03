@@ -8,7 +8,7 @@ import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
-import { withUserCheck } from "utils/withUserCheck"
+import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
  * GET a single project @type {ProjectDescriptor}.

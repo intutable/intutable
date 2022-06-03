@@ -7,7 +7,7 @@ import { Row } from "types"
 import { project_management_constants } from "types/type-annotations/project-management"
 import Obj from "types/Obj"
 import { makeError } from "utils/error-handling/utils/makeError"
-import { withUserCheck } from "utils/withUserCheck"
+import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
  * Create a new row with some starting values. Ensuring that the types of

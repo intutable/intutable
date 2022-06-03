@@ -13,7 +13,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { project_management_constants } from "types/type-annotations/project-management"
 import { makeError } from "utils/error-handling/utils/makeError"
-import { withUserCheck } from "utils/withUserCheck"
+import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
  * Link rows in linked tables, by setting the value in the linking table's

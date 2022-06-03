@@ -57,7 +57,7 @@ export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
  * Catches Exceptions (http status codes in range of 4xx to 5xx)
  * and throws them to allow the handlers to catch them in a catch-block
  */
-const catchException = async (res: Response): Promise<Response> => {
+export const catchException = async (res: Response): Promise<Response> => {
     if (res.status >= 400 && res.status < 600) {
         console.error(`Fetcher Received Exception (${res.status}): ${res}`)
 
@@ -72,9 +72,10 @@ const catchException = async (res: Response): Promise<Response> => {
     return res
 }
 
-// Set of error checking functions that are intended to operate by
-// fall-through principle
-const catchAuthError = async (res: Response): Promise<Response> => {
+/**
+ * Catches Authentication Errors (http status code 4xx - 5xx)
+ */
+export const catchAuthError = async (res: Response): Promise<Response> => {
     if (res.type === "opaqueredirect" || [301, 302].includes(res.status))
         throw new AuthenticationError(
             "core call blocked by authentication middleware",
