@@ -16,7 +16,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
         >
             <ListItem key={1}>View1</ListItem>
             <ListItem key={2}>View2</ListItem>
-            <ListItem key={2}>
+            <ListItem key={3}>
                 ThisViewHasASomewhatLongerNameThanMostDo
             </ListItem>
         </List>

@@ -16,17 +16,16 @@ import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
-import { useTablesConfig } from "hooks/useTables"
 import { useSnacki } from "hooks/useSnacki"
-import { useTables } from "hooks/useTables"
+import { useTables, useTablesConfig } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
-import { prepareName } from "utils/validateName"
 import { makeError } from "utils/error-handling/utils/makeError"
-import { ErrorBoundary } from "components/ErrorBoundary"
+import { prepareName } from "utils/validateName"
+import { withSSRCatch } from "utils/withSSRCatch"
 
 type TableContextMenuProps = {
     anchorEL: Element
@@ -116,60 +115,49 @@ const TableCard: React.FC<TableCardProps> = props => {
 
     return (
         <>
-            <ErrorBoundary
-                fallback={
-                    <span>Die Tabellen konnten nicht geladen werden.</span>
-                }
+            <Card
+                onClick={handleOnClick}
+                onContextMenu={handleOpenContextMenu}
+                sx={{
+                    minWidth: 150,
+                    minHeight: 150,
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    "&:hover": {
+                        bgcolor: theme.palette.action.hover,
+                    },
+                }}
             >
-                <Card
-                    onClick={handleOnClick}
-                    onContextMenu={handleOpenContextMenu}
-                    sx={{
-                        minWidth: 150,
-                        minHeight: 150,
-                        cursor: "pointer",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        "&:hover": {
-                            bgcolor: theme.palette.action.hover,
-                        },
-                    }}
+                <CardContent>{props.children}</CardContent>
+            </Card>
+
+            {anchorEL && (
+                <TableContextMenu
+                    anchorEL={anchorEL}
+                    open={anchorEL != null}
+                    onClose={handleCloseContextMenu}
                 >
-                    <CardContent>{props.children}</CardContent>
-                </Card>
-            </ErrorBoundary>
-            <ErrorBoundary
-                fallback={
-                    <span>Die Aktion konnte nicht ausgeführt werden.</span>
-                }
-            >
-                {anchorEL && (
-                    <TableContextMenu
-                        anchorEL={anchorEL}
-                        open={anchorEL != null}
-                        onClose={handleCloseContextMenu}
+                    <Box
+                        onClick={async () => {
+                            handleCloseContextMenu()
+                            await props.handleRename(props.table)
+                        }}
                     >
-                        <Box
-                            onClick={async () => {
-                                handleCloseContextMenu()
-                                await props.handleRename(props.table)
-                            }}
-                        >
-                            Umbenennen
-                        </Box>
-                        <Box
-                            onClick={async () => {
-                                handleCloseContextMenu()
-                                await props.handleDelete(props.table)
-                            }}
-                            sx={{ color: theme.palette.warning.main }}
-                        >
-                            Löschen
-                        </Box>
-                    </TableContextMenu>
-                )}
-            </ErrorBoundary>
+                        Umbenennen
+                    </Box>
+                    <Box
+                        onClick={async () => {
+                            handleCloseContextMenu()
+                            await props.handleDelete(props.table)
+                        }}
+                        sx={{ color: theme.palette.warning.main }}
+                    >
+                        Löschen
+                    </Box>
+                </TableContextMenu>
+            )}
         </>
     )
 }
@@ -308,48 +296,52 @@ const Page: NextPage<
     </SWRConfig>
 )
 
-export const getServerSideProps = withSessionSsr<PageProps>(async context => {
-    const query = context.query as DynamicRouteQuery<
-        typeof context.query,
-        "projectId"
-    >
-    const user = context.req.session.user
+export const getServerSideProps = withSSRCatch(
+    withSessionSsr<PageProps>(async context => {
+        const query = context.query as DynamicRouteQuery<
+            typeof context.query,
+            "projectId"
+        >
+        const user = context.req.session.user
 
-    if (user == null || user.isLoggedIn === false)
+        if (user == null || user.isLoggedIn === false)
+            return {
+                notFound: true,
+            }
+
+        const projectId: ProjectDescriptor["id"] = Number.parseInt(
+            query.projectId
+        )
+        if (isNaN(projectId))
+            return {
+                notFound: true,
+            }
+
+        const projects = await fetcher<ProjectDescriptor[]>({
+            url: `/api/projects`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+
+        const project = projects.find(p => p.id === projectId)
+        if (project == null) return { notFound: true }
+
+        const tables = await fetcher<ViewDescriptor[]>({
+            url: `/api/tables/${project.id}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+
         return {
-            notFound: true,
-        }
-
-    const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
-    if (isNaN(projectId))
-        return {
-            notFound: true,
-        }
-
-    const projects = await fetcher<ProjectDescriptor[]>({
-        url: `/api/projects`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-
-    const project = projects.find(p => p.id === projectId)
-    if (project == null) return { notFound: true }
-
-    const tables = await fetcher<ViewDescriptor[]>({
-        url: `/api/tables/${project.id}`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-
-    return {
-        props: {
-            project,
-            fallback: {
-                [unstable_serialize(useTablesConfig.cacheKey(projectId))]:
-                    tables,
+            props: {
+                project,
+                fallback: {
+                    [unstable_serialize(useTablesConfig.cacheKey(projectId))]:
+                        tables,
+                },
             },
-        },
-    }
-})
+        }
+    })
+)
 
 export default Page

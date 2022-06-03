@@ -2,7 +2,6 @@ import { Box, TextField, Typography } from "@mui/material"
 import { SxProps, Theme } from "@mui/system"
 import { fetcher } from "api"
 import { useUser } from "auth/useUser"
-import { ErrorBoundary } from "components/ErrorBoundary"
 import Title from "components/Head/Title"
 import { Paper } from "components/LoginOutRegister/Paper"
 import type { NextPage } from "next"
@@ -116,66 +115,58 @@ const Login: NextPage = () => {
                     alignItems: "center",
                 }}
             >
-                <ErrorBoundary
-                    fallback={
-                        <span>
-                            Die Login-Seite konnte nicht geladen werden.
-                        </span>
+                <Paper
+                    mode="login"
+                    handleAction={handleLogin}
+                    loading={false}
+                    disabled={
+                        usernameValid instanceof Error ||
+                        usernameValid == null ||
+                        passwordValid instanceof Error ||
+                        passwordValid == null
                     }
                 >
-                    <Paper
-                        mode="login"
-                        handleAction={handleLogin}
-                        loading={false}
-                        disabled={
-                            usernameValid instanceof Error ||
-                            usernameValid == null ||
-                            passwordValid instanceof Error ||
-                            passwordValid == null
+                    <TextField
+                        autoFocus
+                        value={form.username}
+                        onChange={handleUsername}
+                        label="E-Mail"
+                        placeholder="yourid@uni-heidelberg.de"
+                        type="email"
+                        required
+                        error={usernameValid instanceof Error}
+                        helperText={
+                            usernameValid instanceof Error
+                                ? usernameValid.message
+                                : undefined
                         }
-                    >
-                        <TextField
-                            autoFocus
-                            value={form.username}
-                            onChange={handleUsername}
-                            label="E-Mail"
-                            placeholder="yourid@uni-heidelberg.de"
-                            type="email"
-                            required
-                            error={usernameValid instanceof Error}
-                            helperText={
-                                usernameValid instanceof Error
-                                    ? usernameValid.message
-                                    : undefined
-                            }
-                            fullWidth
-                            sx={textFieldStyle}
-                            variant="standard"
-                        />
-                        <TextField
-                            value={form.password}
-                            onChange={handlePassword}
-                            label="Passwort"
-                            placeholder="pw1234"
-                            type="password"
-                            required
-                            error={passwordValid instanceof Error}
-                            helperText={
-                                passwordValid instanceof Error
-                                    ? passwordValid.message
-                                    : undefined
-                            }
-                            fullWidth
-                            sx={textFieldStyle}
-                            variant="standard"
-                        />
-                        {error && (
-                            <Typography sx={{ color: "red" }}>
-                                {error.message}
-                            </Typography>
-                        )}
-                    </Paper>
-                </ErrorBoundary>
+                        fullWidth
+                        sx={textFieldStyle}
+                        variant="standard"
+                    />
+                    <TextField
+                        value={form.password}
+                        onChange={handlePassword}
+                        label="Passwort"
+                        placeholder="pw1234"
+                        type="password"
+                        required
+                        error={passwordValid instanceof Error}
+                        helperText={
+                            passwordValid instanceof Error
+                                ? passwordValid.message
+                                : undefined
+                        }
+                        fullWidth
+                        sx={textFieldStyle}
+                        variant="standard"
+                    />
+                    {error && (
+                        <Typography sx={{ color: "red" }}>
+                            {error.message}
+                        </Typography>
+                    )}
+                </Paper>
             </Box>
         </>
     )

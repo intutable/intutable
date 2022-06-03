@@ -13,7 +13,6 @@ import {
 } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import { ErrorBoundary } from "components/ErrorBoundary"
 import Title from "components/Head/Title"
 import { useProjects, useProjectsConfig } from "hooks/useProjects"
 import { useSnacki } from "hooks/useSnacki"
@@ -23,6 +22,7 @@ import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
+import { withSSRCatch } from "utils/withSSRCatch"
 
 type ProjectContextMenuProps = {
     anchorEL: Element
@@ -109,60 +109,49 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
 
     return (
         <>
-            <ErrorBoundary
-                fallback={
-                    <span>Die Projekte konnten nicht geladen werden.</span>
-                }
+            <Card
+                onClick={handleOnClick}
+                onContextMenu={handleOpenContextMenu}
+                sx={{
+                    minWidth: 150,
+                    minHeight: 150,
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    "&:hover": {
+                        bgcolor: theme.palette.action.hover,
+                    },
+                }}
             >
-                <Card
-                    onClick={handleOnClick}
-                    onContextMenu={handleOpenContextMenu}
-                    sx={{
-                        minWidth: 150,
-                        minHeight: 150,
-                        cursor: "pointer",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        "&:hover": {
-                            bgcolor: theme.palette.action.hover,
-                        },
-                    }}
+                <CardContent>{props.children}</CardContent>
+            </Card>
+
+            {anchorEL && (
+                <ProjectContextMenu
+                    anchorEL={anchorEL}
+                    open={anchorEL != null}
+                    onClose={handleCloseContextMenu}
                 >
-                    <CardContent>{props.children}</CardContent>
-                </Card>
-            </ErrorBoundary>
-            <ErrorBoundary
-                fallback={
-                    <span>Die Aktion konnte nicht ausgeführt werden.</span>
-                }
-            >
-                {anchorEL && (
-                    <ProjectContextMenu
-                        anchorEL={anchorEL}
-                        open={anchorEL != null}
-                        onClose={handleCloseContextMenu}
+                    <Box
+                        onClick={async () => {
+                            handleCloseContextMenu()
+                            await props.handleRename(props.project)
+                        }}
                     >
-                        <Box
-                            onClick={async () => {
-                                handleCloseContextMenu()
-                                await props.handleRename(props.project)
-                            }}
-                        >
-                            Umbenennen
-                        </Box>
-                        <Box
-                            onClick={async () => {
-                                handleCloseContextMenu()
-                                await props.handleDelete(props.project)
-                            }}
-                            sx={{ color: theme.palette.warning.main }}
-                        >
-                            Löschen
-                        </Box>
-                    </ProjectContextMenu>
-                )}
-            </ErrorBoundary>
+                        Umbenennen
+                    </Box>
+                    <Box
+                        onClick={async () => {
+                            handleCloseContextMenu()
+                            await props.handleDelete(props.project)
+                        }}
+                        sx={{ color: theme.palette.warning.main }}
+                    >
+                        Löschen
+                    </Box>
+                </ProjectContextMenu>
+            )}
         </>
     )
 }
@@ -281,28 +270,29 @@ const Page: NextPage<
     </SWRConfig>
 )
 
-export const getServerSideProps = withSessionSsr<PageProps>(async context => {
-    const user = context.req.session.user
+export const getServerSideProps = withSSRCatch(
+    withSessionSsr<PageProps>(async context => {
+        const user = context.req.session.user
 
-    if (user == null || user.isLoggedIn === false)
+        if (user == null || user.isLoggedIn === false)
+            return {
+                notFound: true,
+            }
+
+        const projects = await fetcher<ProjectDescriptor[]>({
+            url: `/api/projects`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+
         return {
-            notFound: true,
-        }
-
-    const projects = await fetcher<ProjectDescriptor[]>({
-        url: `/api/projects`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-    if (projects == null) return { notFound: true }
-
-    return {
-        props: {
-            fallback: {
-                [unstable_serialize(useProjectsConfig.cacheKey)]: projects,
+            props: {
+                fallback: {
+                    [useProjectsConfig.cacheKey]: projects,
+                },
             },
-        },
-    }
-})
+        }
+    })
+)
 
 export default Page

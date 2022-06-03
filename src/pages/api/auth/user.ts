@@ -3,23 +3,26 @@ import { withSessionRoute } from "auth/withSessionRoute"
 import { NextApiRequest, NextApiResponse } from "next"
 import { User } from "types/User"
 
-const userRoute = async (req: NextApiRequest, res: NextApiResponse<User>) => {
+const userRoute = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        if (req.session.user == null) throw null
+        if (req.session == null || req.session.user == null)
+            throw new Error("No session")
+
         const user = await getCurrentUser(req.session.user.authCookie)
-        if (user == null) throw null
+        if (user == null)
+            return res.json({
+                isLoggedIn: false,
+                username: "",
+                authCookie: "",
+                id: -1,
+            } as User)
 
         res.json({
             ...req.session.user,
             isLoggedIn: true,
-        })
-    } catch (_) {
-        res.json({
-            isLoggedIn: false,
-            username: "",
-            authCookie: "",
-            id: -1,
-        })
+        } as User)
+    } catch (error) {
+        res.status(500).send("Could not get the user")
     }
 }
 

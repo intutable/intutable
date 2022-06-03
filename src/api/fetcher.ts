@@ -1,7 +1,6 @@
-import { User } from "types/User"
-import type { Fetcher } from "swr"
-import Obj from "types/Obj"
 import { AuthenticationError } from "api/utils/AuthenticationError"
+import Obj from "types/Obj"
+import { isErrorLike } from "utils/error-handling/ErrorLike"
 import { isErrorObject } from "utils/error-handling/utils/ErrorObject"
 /**
  * Fetcher function for use with useSWR hookb
@@ -33,8 +32,8 @@ type FetcherOptions = {
  *
  * Otherwise the deserialized json is returned.
  */
-export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
-    fetch(process.env.NEXT_PUBLIC_API_URL! + args.url, {
+export const fetcher = async <T>(args: FetcherOptions): Promise<T> => {
+    const res = await fetch(process.env.NEXT_PUBLIC_API_URL! + args.url, {
         method: args.method || "POST",
         headers: {
             "Content-Type": "application/json",
@@ -49,33 +48,41 @@ export const fetcher = <T>(args: FetcherOptions): Promise<T> =>
                 : JSON.stringify(args.body)
             : undefined,
     })
-        .then(catchAuthError)
-        .then(catchException)
-        .then(r => r.json())
 
+    const body = await res.json()
+
+    await catchAuthError(res, body)
+    await catchException(res, body)
+
+    return body
+}
 /**
  * Catches Exceptions (http status codes in range of 4xx to 5xx)
  * and throws them to allow the handlers to catch them in a catch-block
  */
-const catchException = async (res: Response): Promise<Response> => {
+export const catchException = async (
+    res: Response,
+    body: unknown
+): Promise<Response> => {
     if (res.status >= 400 && res.status < 600) {
-        console.error(`Fetcher Received Exception (${res.status}): ${res}`)
-
-        const body = await res.json()
-
-        if (isErrorObject(body)) {
-            throw body
-        }
-
+        if (isErrorObject(body) || isErrorLike(body)) throw body
         throw res
     }
     return res
 }
 
-// Set of error checking functions that are intended to operate by
-// fall-through principle
-const catchAuthError = async (res: Response): Promise<Response> => {
-    if (res.type === "opaqueredirect" || [301, 302].includes(res.status))
+/**
+ * Catches Authentication Errors (http status code 302 or type === "opaqueredirect")
+ */
+export const catchAuthError = async (
+    res: Response,
+    body: unknown
+): Promise<Response> => {
+    if (
+        res.type === "opaqueredirect" ||
+        [301, 302].includes(res.status) ||
+        (isErrorLike(body) && body.name === "AuthenticationError")
+    )
         throw new AuthenticationError(
             "core call blocked by authentication middleware",
             302,

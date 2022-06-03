@@ -5,10 +5,9 @@ import {
 } from "@intutable/project-management/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
+import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
-import { withUserCheck } from "utils/withUserCheck"
 
 /**
  * GET a single project @type {ProjectDescriptor}.
@@ -18,12 +17,8 @@ import { withUserCheck } from "utils/withUserCheck"
  * - URL: `/api/project/[id]` e.g. `/api/project/1`
  * ```
  */
-const GET = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    projectId: ProjectDescriptor["id"]
-) => {
-    try {
+const GET = withCatchingAPIRoute(
+    async (req, res, projectId: ProjectDescriptor["id"]) => {
         const user = req.session.user!
 
         const allProjects = await coreRequest<ProjectDescriptor[]>(
@@ -36,11 +31,8 @@ const GET = async (
             throw new Error(`could not find project with id: ${projectId}`)
 
         res.status(200).json(project)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 /**
  * PATCH/update the name of a single project.
@@ -56,12 +48,8 @@ const GET = async (
  *   }
  * ```
  */
-const PATCH = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    projectId: ProjectDescriptor["id"]
-) => {
-    try {
+const PATCH = withCatchingAPIRoute(
+    async (req, res, projectId: ProjectDescriptor["id"]) => {
         const { newName } = req.body as {
             newName: ProjectDescriptor["name"]
         }
@@ -84,11 +72,8 @@ const PATCH = async (
         )
 
         res.status(200).json(updatedProject)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 /**
  * DELETE a project. Returns an empty object.
@@ -98,25 +83,18 @@ const PATCH = async (
  * - URL: `/api/project/[id]` e.g. `/api/project/1`
  * ```
  */
-const DELETE = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    projectId: ProjectDescriptor["id"]
-) => {
-    try {
+const DELETE = withCatchingAPIRoute(
+    async (req, res, projectId: ProjectDescriptor["id"]) => {
         const user = req.session.user!
         // delete project in project-management
         await coreRequest(removeProject(projectId), user.authCookie)
 
-        res.status(200).send({})
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
+        res.status(200).json({})
     }
-}
+)
 
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         const { query, method } = req
         const projectId = parseInt(query.projectId as string)
 

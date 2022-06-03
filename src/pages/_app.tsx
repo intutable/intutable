@@ -83,8 +83,9 @@ const MyApp = (props: AppProps) => {
                 value={{
                     fetcher: fetcher,
                     use: [logger, deserializeTable],
-                    onError: err => console.error(err),
-                    // suspense: true, // not supported for ssr as of now
+                    // onError: err =>
+                    //     console.error("global swr error caught:", err),
+                    suspense: false, // suspense not supported for ssr as of now by nextjs
                     revalidateOnFocus: false,
                 }}
             >
