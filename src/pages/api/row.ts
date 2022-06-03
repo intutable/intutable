@@ -1,13 +1,12 @@
 import { deleteRow, insert, update } from "@intutable/database/dist/requests"
 import { TableDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
-import { withSessionRoute } from "auth"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { Row } from "types"
-import { project_management_constants } from "types/type-annotations/project-management"
-import Obj from "types/Obj"
-import { makeError } from "utils/error-handling/utils/makeError"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withSessionRoute } from "auth"
+import { Row } from "types"
+import Obj from "types/Obj"
+import { project_management_constants } from "types/type-annotations/project-management"
 
 /**
  * Create a new row with some starting values. Ensuring that the types of
@@ -20,27 +19,22 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * }
  * ```
  */
-const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const { table, values } = req.body as {
-            table: TableDescriptor
-            values: Obj
-        }
-
-        // create row in database
-        const rowId = await coreRequest<
-            typeof project_management_constants.UID_KEY
-        >(
-            insert(table.key, values, [project_management_constants.UID_KEY]),
-            req.session.user!.authCookie
-        )
-
-        res.status(200).send(rowId)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
+const POST = withCatchingAPIRoute(async (req, res) => {
+    const { table, values } = req.body as {
+        table: TableDescriptor
+        values: Obj
     }
-}
+
+    // create row in database
+    const rowId = await coreRequest<
+        typeof project_management_constants.UID_KEY
+    >(
+        insert(table.key, values, [project_management_constants.UID_KEY]),
+        req.session.user!.authCookie
+    )
+
+    res.status(200).send(rowId)
+})
 
 /**
  * Update a row, identified by `condition`. Ensuring that the types of
@@ -54,32 +48,28 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
  * }
  * ```
  */
-const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const {
-            table,
+const PATCH = withCatchingAPIRoute(async (req, res) => {
+    const {
+        table,
+        condition,
+        update: rowUpdate,
+    } = req.body as {
+        table: TableDescriptor
+        condition: unknown[]
+        update: { [index: string]: unknown }
+    }
+
+    const updatedRow = await coreRequest<Row>(
+        update(table.key, {
             condition,
             update: rowUpdate,
-        } = req.body as {
-            table: TableDescriptor
-            condition: unknown[]
-            update: { [index: string]: unknown }
-        }
+        }),
+        req.session.user!.authCookie
+    )
 
-        const updatedRow = await coreRequest<Row>(
-            update(table.key, {
-                condition,
-                update: rowUpdate,
-            }),
-            req.session.user!.authCookie
-        )
+    res.status(200).json(updatedRow)
+})
 
-        res.status(200).json(updatedRow)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
-    }
-}
 /**
  * Delete a row, identified by `condition`.
  * @tutorial
@@ -90,27 +80,22 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
  * }
  * ```
  */
-const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const { table, condition } = req.body as {
-            table: TableDescriptor
-            condition: unknown[]
-        }
-
-        await coreRequest(
-            deleteRow(table.key, condition),
-            req.session.user!.authCookie
-        )
-
-        res.status(200).send({})
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
+const DELETE = withCatchingAPIRoute(async (req, res) => {
+    const { table, condition } = req.body as {
+        table: TableDescriptor
+        condition: unknown[]
     }
-}
+
+    await coreRequest(
+        deleteRow(table.key, condition),
+        req.session.user!.authCookie
+    )
+
+    res.status(200).end()
+})
 
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         switch (req.method) {
             case "POST":
                 await POST(req, res)

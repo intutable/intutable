@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 
-export type APIRouteHandler<T extends unknown[]> = (
+export type CustomNextApiHandler<T extends unknown[]> = (
     req: NextApiRequest,
     res: NextApiResponse,
     ...args: T
@@ -12,7 +12,7 @@ export type APIRouteHandler<T extends unknown[]> = (
  * @param handler
  */
 export const withCatchingAPIRoute =
-    <T extends unknown[]>(handler: APIRouteHandler<T>) =>
+    <T extends unknown[]>(handler: CustomNextApiHandler<T>) =>
     async (req: NextApiRequest, res: NextApiResponse, ...args: T) => {
         try {
             await handler(req, res, ...args)

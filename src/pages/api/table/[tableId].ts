@@ -18,10 +18,9 @@ import {
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { Table } from "api/utils/parse"
-import { withSessionRoute } from "auth"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withSessionRoute } from "auth"
 
 /**
  * GET a single table view's data {@type {TableData.Serialized}}.
@@ -32,12 +31,8 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * - Body: {}
  * ```
  */
-const GET = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    tableId: ViewDescriptor["id"]
-) => {
-    try {
+const GET = withCatchingAPIRoute(
+    async (req, res, tableId: ViewDescriptor["id"]) => {
         const user = req.session.user!
         const tableData = await coreRequest<ViewData>(
             getViewData(tableId),
@@ -48,11 +43,8 @@ const GET = async (
         const parsedTableData = Table.parse(tableData)
 
         res.status(200).json(parsedTableData)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 /**
  * PATCH/update the name of a single table.
@@ -68,12 +60,8 @@ const GET = async (
  *   }
  * ```
  */
-const PATCH = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    tableId: ViewDescriptor["id"]
-) => {
-    try {
+const PATCH = withCatchingAPIRoute(
+    async (req, res, tableId: ViewDescriptor["id"]) => {
         const { newName, project } = req.body as {
             newName: ViewDescriptor["name"]
             project: ProjectDescriptor
@@ -103,16 +91,11 @@ const PATCH = async (
             user.authCookie
         )
 
-        console.log("table patch endpoint called...")
-
         if (isTaken) throw new Error("alreadyTaken")
 
         res.status(200).json(updatedTable)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 /**
  * DELETE a table. Returns an empty object.
@@ -123,12 +106,8 @@ const PATCH = async (
  * - Body: {}
  * ```
  */
-const DELETE = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    tableId: ViewDescriptor["id"]
-) => {
-    try {
+const DELETE = withCatchingAPIRoute(
+    async (req, res, tableId: ViewDescriptor["id"]) => {
         const user = req.session.user!
         // delete table in project-management
         const options = await coreRequest<ViewOptions>(
@@ -143,15 +122,12 @@ const DELETE = async (
         // delete table in lazy-views
         await coreRequest(deleteView(tableId), user.authCookie)
 
-        res.status(200).send({})
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
+        res.status(200).end()
     }
-}
+)
 
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         const { query, method } = req
         const tableId = parseInt(query.tableId as string)
 

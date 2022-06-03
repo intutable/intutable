@@ -11,12 +11,11 @@ import {
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
-import { withSessionRoute } from "auth"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
-import sanitizeName from "utils/sanitizeName"
-import defaultRowOptions from "utils/defaultRowOptions"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withSessionRoute } from "auth"
+import defaultRowOptions from "utils/defaultRowOptions"
+import sanitizeName from "utils/sanitizeName"
 
 /**
  * Create a new table with the specified name.
@@ -33,65 +32,60 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * }
  * ```
  */
-const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const { projectId, name } = req.body as {
-            projectId: ProjectDescriptor["id"]
-            name: string
-        }
-        const user = req.session.user!
-
-        const internalName = sanitizeName(name)
-
-        const existingTables = await coreRequest<TableDescriptor[]>(
-            getTablesFromProject(projectId),
-            user.authCookie
-        )
-        if (existingTables.some(t => t.name === internalName))
-            throw Error("alreadyTaken")
-
-        // create table in project-management with primary "name" column
-        const table = await coreRequest<TableDescriptor>(
-            createTableInProject(user.id, projectId, internalName, [
-                { name: "name", type: ColumnType.string, options: [] },
-            ]),
-            user.authCookie
-        )
-
-        // make specifiers for view columns
-        const baseColumns = await coreRequest<PM_Column[]>(
-            getColumnsFromTable(table.id),
-            user.authCookie
-        )
-        const columnSpecs = baseColumns.map(c => ({
-            parentColumnId: c.id,
-            attributes:
-                c.name === "name"
-                    ? { userPrimary: 1, displayName: "Name", editor: "string" }
-                    : { displayName: "ID", editor: "number" },
-        }))
-
-        // create view
-        const tableView = await coreRequest<ViewDescriptor>(
-            createView(
-                tableId(table.id),
-                name,
-                { columns: columnSpecs, joins: [] },
-                defaultRowOptions(baseColumns),
-                user.id
-            ),
-            user.authCookie
-        )
-
-        res.status(200).json(tableView)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
+const POST = withCatchingAPIRoute(async (req, res) => {
+    const { projectId, name } = req.body as {
+        projectId: ProjectDescriptor["id"]
+        name: string
     }
-}
+    const user = req.session.user!
+
+    const internalName = sanitizeName(name)
+
+    const existingTables = await coreRequest<TableDescriptor[]>(
+        getTablesFromProject(projectId),
+        user.authCookie
+    )
+    if (existingTables.some(t => t.name === internalName))
+        throw Error("alreadyTaken")
+
+    // create table in project-management with primary "name" column
+    const table = await coreRequest<TableDescriptor>(
+        createTableInProject(user.id, projectId, internalName, [
+            { name: "name", type: ColumnType.string, options: [] },
+        ]),
+        user.authCookie
+    )
+
+    // make specifiers for view columns
+    const baseColumns = await coreRequest<PM_Column[]>(
+        getColumnsFromTable(table.id),
+        user.authCookie
+    )
+    const columnSpecs = baseColumns.map(c => ({
+        parentColumnId: c.id,
+        attributes:
+            c.name === "name"
+                ? { userPrimary: 1, displayName: "Name", editor: "string" }
+                : { displayName: "ID", editor: "number" },
+    }))
+
+    // create view
+    const tableView = await coreRequest<ViewDescriptor>(
+        createView(
+            tableId(table.id),
+            name,
+            { columns: columnSpecs, joins: [] },
+            defaultRowOptions(baseColumns),
+            user.id
+        ),
+        user.authCookie
+    )
+
+    res.status(200).json(tableView)
+})
 
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         switch (req.method) {
             case "POST":
                 await POST(req, res)

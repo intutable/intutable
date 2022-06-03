@@ -1,17 +1,16 @@
 import {
+    addColumnToView,
+    asView,
+    ColumnInfo,
+    ColumnSpecifier,
+    getViewInfo,
     ViewDescriptor,
     ViewInfo,
-    ColumnSpecifier,
-    ColumnInfo,
-    addColumnToView,
-    getViewInfo,
-    asView,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
-import { withSessionRoute } from "auth"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withSessionRoute } from "auth"
 
 /**
  * Add a lookup field from a linked table.
@@ -23,12 +22,8 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * }
  * ```
  */
-const POST = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    columnId: ColumnInfo["id"]
-) => {
-    try {
+const POST = withCatchingAPIRoute(
+    async (req, res, columnId: ColumnInfo["id"]) => {
         const { viewId, joinId } = req.body as {
             viewId: ViewDescriptor["id"]
             joinId: Exclude<ColumnInfo["joinId"], null>
@@ -69,14 +64,11 @@ const POST = async (
         )
 
         res.status(200).json(newColumn)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         const { query } = req
         const columnId = parseInt(query.columnId as string)
 

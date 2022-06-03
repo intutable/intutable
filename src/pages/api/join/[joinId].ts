@@ -9,11 +9,10 @@ import {
 import { getTableInfo } from "@intutable/project-management/dist/requests"
 import { TableInfo } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
-import { withSessionRoute } from "auth"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { project_management_constants } from "types/type-annotations/project-management"
-import { makeError } from "utils/error-handling/utils/makeError"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withSessionRoute } from "auth"
+import { project_management_constants } from "types/type-annotations/project-management"
 
 /**
  * Link rows in linked tables, by setting the value in the linking table's
@@ -28,12 +27,8 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * }
  * ```
  */
-const POST = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    joinId: JoinDescriptor["id"]
-) => {
-    try {
+const POST = withCatchingAPIRoute(
+    async (req, res, joinId: JoinDescriptor["id"]) => {
         const { viewId, rowId, value } = req.body as {
             viewId: ViewDescriptor["id"]
             rowId: number
@@ -62,15 +57,12 @@ const POST = async (
             user.authCookie
         )
 
-        res.status(200).json({})
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
+        res.status(200).end()
     }
-}
+)
 
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         const { query } = req
         const joinId = parseInt(query.joinId as string)
 
