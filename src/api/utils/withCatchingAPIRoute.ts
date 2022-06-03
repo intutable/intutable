@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
+import { ErrorLike, isErrorLike } from "utils/error-handling/ErrorLike"
 import { makeError } from "utils/error-handling/utils/makeError"
 
 export type CustomNextApiHandler<T extends unknown[]> = (
@@ -8,7 +9,7 @@ export type CustomNextApiHandler<T extends unknown[]> = (
 ) => Promise<void>
 
 /**
- *
+ * A custom Next.js API handler that catches errors and sends them to the client.
  * @param handler
  */
 export const withCatchingAPIRoute =
@@ -17,6 +18,17 @@ export const withCatchingAPIRoute =
         try {
             await handler(req, res, ...args)
         } catch (error) {
+            if (isErrorLike(error)) {
+                const err = error as ErrorLike
+                const status = Object.prototype.hasOwnProperty.call(
+                    err,
+                    "status"
+                )
+                    ? (err as unknown as { status: number }).status
+                    : 500
+                return res.status(status).json(err)
+            }
+
             const err = makeError(error)
             res.status(500).json({ error: err.message })
         }
