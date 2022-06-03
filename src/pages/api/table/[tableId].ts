@@ -122,7 +122,7 @@ const DELETE = withCatchingAPIRoute(
         // delete table in lazy-views
         await coreRequest(deleteView(tableId), user.authCookie)
 
-        res.status(200).end()
+        res.status(200).json({})
     }
 )
 

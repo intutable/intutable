@@ -95,7 +95,7 @@ const DELETE = withCatchingAPIRoute(
             )
         }
 
-        res.status(200).end()
+        res.status(200).json({})
     }
 )
 

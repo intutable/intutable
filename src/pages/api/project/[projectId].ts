@@ -89,7 +89,7 @@ const DELETE = withCatchingAPIRoute(
         // delete project in project-management
         await coreRequest(removeProject(projectId), user.authCookie)
 
-        res.status(200).end()
+        res.status(200).json({})
     }
 )
 

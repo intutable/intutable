@@ -91,7 +91,7 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
         req.session.user!.authCookie
     )
 
-    res.status(200).end()
+    res.status(200).json({})
 })
 
 export default withSessionRoute(

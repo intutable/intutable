@@ -6,10 +6,9 @@ import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Grid, Box, Typography, useTheme, Button } from "@mui/material"
+import { Box, Button, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import { ErrorBoundary } from "components/ErrorBoundary"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
@@ -33,6 +32,7 @@ import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
+import { withSSRCatch } from "utils/withSSRCatch"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -126,36 +126,22 @@ const TablePage: React.FC = () => {
                 />
             )}
 
-            <ErrorBoundary fallback={null}>
-                <TableNavigator />
-            </ErrorBoundary>
+            <TableNavigator />
 
             {error ? (
                 <span>Die Tabelle konnte nicht geladen Werden</span>
             ) : (
-                <ErrorBoundary
-                    fallback={
-                        <span>Die Tabelle konnte nicht geladen werden.</span>
-                    }
-                >
-                    <ErrorBoundary
-                        fallback={
-                            <span>
-                                Die Views konnten nicht angezeigt werden.
-                            </span>
-                        }
-                    >
-                        {viewsOpen && (
-                            <ViewNavigator
-                                sx={{ maxWidth: "12%", height: "100%" }}
-                            />
-                        )}
-                    </ErrorBoundary>
+                <>
+                    {viewsOpen && (
+                        <ViewNavigator
+                            sx={{ maxWidth: "12%", height: "100%" }}
+                        />
+                    )}
 
                     <Box>
                         <Toolbar position="top">
                             <ToolbarItem.Views
-                                handleClick={_ => setViewsOpen(!viewsOpen)}
+                                handleClick={() => setViewsOpen(!viewsOpen)}
                             />
                             <ToolbarItem.AddCol />
                             <ToolbarItem.AddLink />
@@ -191,7 +177,7 @@ const TablePage: React.FC = () => {
                             <ToolbarItem.Connection status={"connected"} />
                         </Toolbar>
                     </Box>
-                </ErrorBoundary>
+                </>
             )}
         </>
     )
@@ -218,63 +204,67 @@ const Page: NextPage<
     )
 }
 
-export const getServerSideProps = withSessionSsr<PageProps>(async context => {
-    const query = context.query as DynamicRouteQuery<
-        typeof context.query,
-        "tableId" | "projectId"
-    >
+export const getServerSideProps = withSSRCatch(
+    withSessionSsr<PageProps>(async context => {
+        const query = context.query as DynamicRouteQuery<
+            typeof context.query,
+            "tableId" | "projectId"
+        >
 
-    const user = context.req.session.user
+        const user = context.req.session.user
 
-    if (user == null || user.isLoggedIn === false)
+        if (user == null || user.isLoggedIn === false)
+            return {
+                notFound: true,
+            }
+
+        const projectId: ProjectDescriptor["id"] = Number.parseInt(
+            query.projectId
+        )
+        const tableId: ViewDescriptor["id"] = Number.parseInt(query.tableId)
+
+        if (isNaN(projectId) || isNaN(tableId))
+            return {
+                notFound: true,
+            }
+
+        // workaround until PM exposes the required method
+        const projects = await fetcher<ProjectDescriptor[]>({
+            url: `/api/projects`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+
+        const project = projects.find(p => p.id === projectId)
+
+        if (project == null) return { notFound: true }
+
+        const tableList = await fetcher<ViewDescriptor[]>({
+            url: `/api/tables/${projectId}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+
+        const data = await fetcher<TableData.Serialized>({
+            url: `/api/table/${tableId}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+
         return {
-            notFound: true,
+            props: {
+                project,
+                table: data.metadata.descriptor,
+                tableList,
+                // fallback: {
+                //     [unstable_serialize({
+                //         url: `/api/table/${tableId}`,
+                //         method: "GET",
+                //     })]: data,
+                // },
+            },
         }
-
-    const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
-    const tableId: ViewDescriptor["id"] = Number.parseInt(query.tableId)
-
-    if (isNaN(projectId) || isNaN(tableId))
-        return {
-            notFound: true,
-        }
-
-    // workaround until PM exposes the required method
-    const projects = await fetcher<ProjectDescriptor[]>({
-        url: `/api/projects`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
     })
-
-    const project = projects.find(p => p.id === projectId)
-
-    if (project == null) return { notFound: true }
-
-    const tableList = await fetcher<ViewDescriptor[]>({
-        url: `/api/tables/${projectId}`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-
-    const data = await fetcher<TableData.Serialized>({
-        url: `/api/table/${tableId}`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-
-    return {
-        props: {
-            project,
-            table: data.metadata.descriptor,
-            tableList,
-            // fallback: {
-            //     [unstable_serialize({
-            //         url: `/api/table/${tableId}`,
-            //         method: "GET",
-            //     })]: data,
-            // },
-        },
-    }
-})
+)
 
 export default Page

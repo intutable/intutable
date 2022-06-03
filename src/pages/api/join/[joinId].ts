@@ -57,7 +57,7 @@ const POST = withCatchingAPIRoute(
             user.authCookie
         )
 
-        res.status(200).end()
+        res.status(200).json({})
     }
 )
 
