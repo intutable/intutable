@@ -104,8 +104,6 @@ const PATCH = async (
             user.authCookie
         )
 
-        console.log("table patch endpoint called...")
-
         if (isTaken) throw new Error("alreadyTaken")
 
         res.status(200).json(updatedTable)

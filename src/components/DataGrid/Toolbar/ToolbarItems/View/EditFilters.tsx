@@ -74,12 +74,16 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
         <>
             <Select defaultValue={props.columns[0]._id}>
                 {props.columns.map(c => (
-                    <MenuItem value={c._id}>{c.name}</MenuItem>
+                    <MenuItem key={c._id} value={c._id}>
+                        {c.name}
+                    </MenuItem>
                 ))}
             </Select>
             <Select defaultValue={"="}>
                 {CONDITION_OPERATORS.map(op => (
-                    <MenuItem value={op}>{op}</MenuItem>
+                    <MenuItem key={op} value={op}>
+                        {op}
+                    </MenuItem>
                 ))}
             </Select>
             <TextField variant="filled"></TextField>

@@ -6,7 +6,9 @@ import * as Util from "."
 /**
  * Serializes
  */
-export const serialize = (table: TableData): TableData.Serialized => {
+export const serialize = (
+    table: TableData.Deserialized
+): TableData.Serialized => {
     /**
      * TODO:
      * 1.1 remove IDs from each row
@@ -41,7 +43,9 @@ export const serialize = (table: TableData): TableData.Serialized => {
  * Convert SerializedTableData (abstract, bound neither to database nor to
  * GUI) to {@link TableData}, which can directly be used with RDG.
  */
-export const deserialize = (table: TableData.Serialized): TableData => {
+export const deserialize = (
+    table: TableData.Serialized
+): TableData.Deserialized => {
     // deserialize each row
     const rows: Row[] = table.rows.map(Util.Row.deserialize)
 

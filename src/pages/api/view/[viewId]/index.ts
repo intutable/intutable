@@ -48,7 +48,6 @@ const GET = async (
         res.status(200).json(parsedData)
     } catch (err) {
         const error = makeError(err)
-        console.log(error.toString())
         res.status(500).json({ error: error.message })
     }
 }
@@ -132,7 +131,6 @@ const DELETE = async (
             throw Error("deleteTableThroughViewEndpoint")
 
         await coreRequest(deleteView(viewId), user.authCookie)
-        console.log("deleted view " + viewId)
 
         res.status(200).send({})
     } catch (err) {

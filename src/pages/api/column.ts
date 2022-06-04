@@ -4,9 +4,7 @@ import {
     ViewOptions,
     addColumnToView,
     getViewOptions,
-    listViews,
     asTable,
-    viewId,
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
@@ -68,7 +66,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(200).json(parsedColumn)
     } catch (err) {
         const error = makeError(err)
-        console.log(error.toString())
         res.status(500).json({ error: error.message })
     }
 }

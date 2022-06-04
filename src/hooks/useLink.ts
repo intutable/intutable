@@ -65,6 +65,7 @@ export const useLink = (options: TableHookOptions) => {
     return {
         error,
         mutate,
+        linkTableData,
         primaryColumn,
         rowPreviews,
         getColumn,

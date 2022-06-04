@@ -16,7 +16,6 @@ import {
 import { isAppColumn } from "api/utils/de_serialize/column"
 import { useLink } from "hooks/useLink"
 import { useSnacki } from "hooks/useSnacki"
-import { useTable } from "hooks/useTable"
 import React, { useEffect, useMemo, useState } from "react"
 import { TableColumn } from "types"
 
@@ -31,8 +30,11 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { data, error } = useTable({ table: props.foreignTable })
-    const { getColumn } = useLink({ table: props.foreignTable })
+    const {
+        linkTableData: data,
+        error,
+        getColumn,
+    } = useLink({ table: props.foreignTable })
 
     const [selection, setSelection] = useState<TableColumn | null>(null)
     const selectedColDescriptor = useMemo(

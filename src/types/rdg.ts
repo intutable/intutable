@@ -23,8 +23,14 @@ type Table<COL, ROW> = {
 }
 
 export type TableData = Table<SerializedColumn, SerializedRow>
+/**
+ * @deprecated no GUI components directly display table data, only
+ * {@link ViewData}
+ */
+export type DeserializedTableData = Table<Column, Row>
 
 export namespace TableData {
+    export type Deserialized = DeserializedTableData
     export type Serialized = SerializedTableData
 }
 

@@ -300,7 +300,6 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     })
 
     if (viewList.length === 0) {
-        console.log(`table ${tableId} has no views`)
         return { notFound: true }
     }
     const view: ViewDescriptor = viewList[0]
