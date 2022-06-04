@@ -157,6 +157,7 @@ const TablePage: React.FC = () => {
                                     <ToolbarItem.AddCol />
                                     <ToolbarItem.AddLink />
                                     <ToolbarItem.AddRow />
+                                    <ToolbarItem.EditFilters />
                                     <ToolbarItem.FileDownload
                                         getData={() => []}
                                     />
