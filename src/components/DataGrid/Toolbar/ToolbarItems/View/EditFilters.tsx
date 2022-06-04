@@ -11,14 +11,15 @@ import {
     IconButton,
 } from "@mui/material"
 
+import { TableColumn } from "types/rdg"
 import { CONDITION_OPERATORS } from "@backend/condition"
+import { isAppColumn } from "api/utils/de_serialize/column"
 import { useTable } from "hooks/useTable"
 
 /**
  * Button to open the filter editor
  */
 export const EditFilters: React.FC = () => {
-
     const { data } = useTable()
     const [anchorEl, setAnchorEl] = useState<Element | null>(null)
 
@@ -36,46 +37,52 @@ export const EditFilters: React.FC = () => {
     }
 
     return (
-    <>
-        <Button
-            startIcon={<FilterListIcon />}
-            onClick={toggleEditor}
-        >
-            Filter
-        </Button>
-        <Popper
-            open={anchorEl != null}
-            anchorEl={anchorEl}
-        >
-            <Paper elevation={2} sx={{ padding: "16px" }}>
-                <IconButton
-                    onClick={handleCloseEditor}
-                    sx={{
-                        float: "right",
-                        display: "block"
-                    }}
-                >
-                    <CloseIcon />
-                </IconButton>
-                {data &&
-                    <Select defaultValue={data.metadata.columns[0].id}>
-                        {data.metadata.columns.map(c =>
-                            <MenuItem value={c.id}>{c.name}</MenuItem>
-                        )}
-                    </Select>
-                }
-                {data &&
-                    <Select defaultValue={"="}>
-                        {CONDITION_OPERATORS.map(op =>
-                            <MenuItem value={op}>{op}</MenuItem>
-                        )}
-                    </Select>
-                }
-                <TextField variant="filled">
-                </TextField>
-            </Paper>
-        </Popper>
-    </>
-)
+        <>
+            <Button startIcon={<FilterListIcon />} onClick={toggleEditor}>
+                Filter
+            </Button>
+            <Popper open={anchorEl != null} anchorEl={anchorEl}>
+                <Paper elevation={2} sx={{ padding: "16px" }}>
+                    <IconButton
+                        onClick={handleCloseEditor}
+                        sx={{
+                            float: "right",
+                            display: "block",
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                    {data && (
+                        <SingleFilter
+                            columns={data.columns.filter(c => !isAppColumn(c))}
+                        />
+                    )}
+                </Paper>
+            </Popper>
+        </>
+    )
 }
 
+type SingleFilterProps = {
+    columns: TableColumn[]
+}
+/**
+ * A single, basic filter of the form <column> <operator> <value>.
+ */
+const SingleFilter: React.FC<SingleFilterProps> = props => {
+    return (
+        <>
+            <Select defaultValue={props.columns[0]._id}>
+                {props.columns.map(c => (
+                    <MenuItem value={c._id}>{c.name}</MenuItem>
+                ))}
+            </Select>
+            <Select defaultValue={"="}>
+                {CONDITION_OPERATORS.map(op => (
+                    <MenuItem value={op}>{op}</MenuItem>
+                ))}
+            </Select>
+            <TextField variant="filled"></TextField>
+        </>
+    )
+}

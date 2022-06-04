@@ -39,18 +39,18 @@ export const useColumn = (
 ) => {
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
-    const mutate = async () => { await mutateTable() ;await mutateView() }
+    const mutate = async () => {
+        await mutateTable()
+        await mutateView()
+    }
 
     /** Find a column in the base table. */
     const getTableColumn = (column: Column): ColumnInfo | null => {
-        const viewColumn = view?.metadata.columns.find(
-            c => c.key === column.key
-        )
+        const viewColumn = view?.metaColumns.find(c => c.key === column.key)
         const tableColumn = table?.metadata.columns.find(
             c => c.id === viewColumn?.parentColumnId
         )
-        if (!tableColumn)
-            return null
+        if (!tableColumn) return null
         return tableColumn
     }
 

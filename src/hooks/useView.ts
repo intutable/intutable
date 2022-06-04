@@ -1,6 +1,6 @@
 import { useAPI } from "context"
 import useSWR, { unstable_serialize } from "swr"
-import { TableData } from "types"
+import { ViewData } from "types"
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
@@ -9,7 +9,7 @@ export type ViewHookOptions = {
     view?: ViewDescriptor
     swrOptions?: Partial<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PublicConfiguration<TableData, any, BareFetcher<TableData>>
+        PublicConfiguration<ViewData, any, BareFetcher<ViewData>>
     >
 }
 
@@ -21,7 +21,7 @@ export type ViewHookOptions = {
  * It uses the {@link APIContextProvider}
  * to determine the current selected view.
  *
- * @param {Partial<PublicConfiguration<TableData, any, BareFetcher<TableData>>>} [options.swrOptions] Options for the underlying {@link useSWR} hook.
+ * @param {Partial<PublicConfiguration<ViewData, any, BareFetcher<ViewData>>>} [options.swrOptions] Options for the underlying {@link useSWR} hook.
  *
  * @param {ViewDescriptor} [options.view] If you want to fetch a different
  * view than specified in the api context, you can use this option.
@@ -35,7 +35,7 @@ export const useView = (options?: ViewHookOptions) => {
         [currentView, options?.view]
     )
 
-    const { data, error, mutate, isValidating } = useSWR<TableData>(
+    const { data, error, mutate, isValidating } = useSWR<ViewData>(
         viewToFetch
             ? {
                   url: `/api/view/${viewToFetch.id}`,

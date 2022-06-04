@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { Row, Column } from "types"
+import { TableRow, TableColumn } from "types"
 import { project_management_constants } from "types/type-annotations/project-management"
 
 export type RowPreview = {
@@ -23,7 +23,7 @@ export const useLink = (options: TableHookOptions) => {
         )!
     }
 
-    const getRowId = (row: Row): number => {
+    const getRowId = (row: TableRow): number => {
         const uidColumn = linkTableData!.metadata.columns.find(
             c => c.name === project_management_constants.UID_KEY
         )!
@@ -55,7 +55,7 @@ export const useLink = (options: TableHookOptions) => {
      * Given a RDG column of the linked table, find the abstract back-end
      * column it corresponds to.
      */
-    const getColumn = (column: Column): ColumnInfo => {
+    const getColumn = (column: TableColumn): ColumnInfo => {
         const tableColumn = linkTableData?.metadata.columns.find(
             c => c.key === column.key
         )

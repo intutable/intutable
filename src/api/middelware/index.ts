@@ -1,2 +1,2 @@
-export * from "./deserializeTable"
+export * from "./deserializeView"
 export * from "./logger"

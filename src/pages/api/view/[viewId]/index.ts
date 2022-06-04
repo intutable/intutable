@@ -11,7 +11,7 @@ import {
     isTable,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
-import { Table } from "api/utils/parse"
+import { View } from "api/utils/parse"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
@@ -33,17 +33,22 @@ const GET = async (
 ) => {
     try {
         const user = req.session.user!
+        const options = await coreRequest<ViewOptions>(
+            getViewOptions(viewId),
+            user.authCookie
+        )
         const tableData = await coreRequest<ViewData>(
             getViewData(viewId),
             user.authCookie
         )
 
         // parse it
-        const parsedTableData = Table.parse(tableData)
+        const parsedData = View.parse(options, tableData)
 
-        res.status(200).json(parsedTableData)
+        res.status(200).json(parsedData)
     } catch (err) {
         const error = makeError(err)
+        console.log(error.toString())
         res.status(500).json({ error: error.message })
     }
 }

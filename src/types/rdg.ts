@@ -1,38 +1,54 @@
-import type {
-    Column as ReactDataGrid_Column,
-    CalculatedColumn,
-} from "react-data-grid"
+import type { Column as ReactDataGrid_Column } from "react-data-grid"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import type { CellContentType } from "@datagrid/Editor/types/CellContentType"
-import type { ViewInfo } from "@intutable/lazy-views"
+import type {
+    ViewDescriptor,
+    ColumnInfo,
+    ViewInfo,
+    Condition as Filter,
+    SortColumn,
+    ParentColumnSpecifier as GroupColumn,
+} from "@intutable/lazy-views"
 import { project_management } from "./type-annotations/project-management"
 import { Formatter } from "@datagrid/Formatter/formatters"
-import { deserialize } from "api/utils/de_serialize/column"
-import Obj from "./Obj"
-import { FormatterComponent } from "@datagrid/Formatter/"
-import { FormatterComponentMap } from "@datagrid/Formatter"
-import { headerRenderer } from "@datagrid/renderers/HeaderRenderer/HeaderRenderer"
 
 // #################################################################
 //       Table
 // #################################################################
 
 type Table<COL, ROW> = {
-    // Asserting that the view's source is always a table.
     metadata: ViewInfo
     columns: COL[]
     rows: ROW[]
 }
 
-export type TableData = Table<Column, Row>
-
-type SerializedTableData = Table<SerializedColumn, SerializedRow>
+export type TableData = Table<SerializedColumn, SerializedRow>
 
 export namespace TableData {
     export type Serialized = SerializedTableData
-    export type Deserialized = TableData
 }
 
+// #################################################################
+//       View
+// #################################################################
+type View<COL, ROW> = {
+    descriptor: ViewDescriptor
+    metaColumns: ColumnInfo[]
+    filters: Filter[]
+    sortColumns: SortColumn[]
+    groupColumns: GroupColumn[]
+    columns: COL[]
+    rows: ROW[]
+}
+
+export type ViewData = View<Column, Row>
+
+type SerializedViewData = View<SerializedColumn, SerializedRow>
+
+export namespace ViewData {
+    export type Serialized = SerializedViewData
+    export type Deserialized = ViewData
+}
 // #################################################################
 //       Row
 // #################################################################
@@ -402,3 +418,6 @@ export namespace Column {
     export type Serialized = SerializedColumn
     export type Deserialized = Column
 }
+
+export type TableColumn = Column.Serialized
+export type TableRow = Row.Serialized

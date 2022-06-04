@@ -3,6 +3,7 @@ import { isCellContentType } from "@datagrid/Editor/type-management"
 import { FormatterComponentMap } from "@datagrid/Formatter/formatters/map"
 import { headerRenderer } from "@datagrid/renderers"
 import { Column } from "types"
+import { PLACEHOLDER } from "./PLACEHOLDER_KEYS"
 
 /**
  * Serializes a single Column.
@@ -59,3 +60,14 @@ export const deserialize = (col: Column.Serialized): Column.Deserialized => {
         headerRenderer: headerRenderer,
     }
 }
+
+/**
+ * Identifies columns which are not part of the real object data, but rather
+ * control elements specific to this GUI, such as the row index column and
+ * selector checkbox.
+ */
+export const isAppColumn = (
+    column: Column.Serialized | Column.Deserialized
+): boolean =>
+    column.key === PLACEHOLDER.ROW_INDEX_KEY ||
+    column.key === PLACEHOLDER.COL_SELECTOR

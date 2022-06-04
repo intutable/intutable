@@ -29,7 +29,7 @@ import React, { useEffect, useState } from "react"
 import DataGrid, { RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import type { Row, TableData } from "types"
+import type { Row, TableData, ViewData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { useThemeToggler } from "pages/_app"
@@ -305,7 +305,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
     }
     const view: ViewDescriptor = viewList[0]
 
-    const data = await fetcher<TableData.Serialized>({
+    const data = await fetcher<ViewData.Serialized>({
         url: `/api/view/${view.id}`,
         method: "GET",
         headers: context.req.headers as HeadersInit,
@@ -316,7 +316,7 @@ export const getServerSideProps = withSessionSsr<PageProps>(async context => {
             project,
             table: tableData.metadata.descriptor,
             tableList,
-            view: data.metadata.descriptor,
+            view: data.descriptor,
             viewList,
             // fallback: {
             //     [unstable_serialize({

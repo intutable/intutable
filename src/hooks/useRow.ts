@@ -32,7 +32,7 @@ export const useRow = (
      * correct key. The table can be overridden with {@link viewOptions}.
      */
     const getRowId = (row: Row): number => {
-        const uidColumn = view!.metadata.columns.find(
+        const uidColumn = view!.metaColumns.find(
             c => c.name === project_management_constants.UID_KEY
         )!
         return row[uidColumn.key] as number
@@ -106,7 +106,8 @@ export const useRow = (
         value: unknown
     ): Promise<void> => {
         // it's a view on top of a view, but the property `column.name`
-        // reflects the actual name in the DB regardless of nesting.
+        // reflects the actual name in the DB regardless of how deep the
+        // tree is.
         const metaColumn = getTableColumn(column)!
         const baseColumnKey = metaColumn.name
 

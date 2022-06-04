@@ -13,12 +13,12 @@ import {
     ListItemText,
     useTheme,
 } from "@mui/material"
-import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
+import { isAppColumn } from "api/utils/de_serialize/column"
 import { useLink } from "hooks/useLink"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import React, { useEffect, useMemo, useState } from "react"
-import { Column } from "types"
+import { TableColumn } from "types"
 
 type AddLookupModal = {
     open: boolean
@@ -34,7 +34,7 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
     const { data, error } = useTable({ table: props.foreignTable })
     const { getColumn } = useLink({ table: props.foreignTable })
 
-    const [selection, setSelection] = useState<Column | null>(null)
+    const [selection, setSelection] = useState<TableColumn | null>(null)
     const selectedColDescriptor = useMemo(
         () => (selection && data ? getColumn(selection) : null),
         [data, selection, getColumn]
@@ -47,7 +47,7 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    const onClickHandler = (column: Column) => {
+    const onClickHandler = (column: TableColumn) => {
         setSelection(column)
     }
 
@@ -66,11 +66,7 @@ export const AddLookupModal: React.FC<AddLookupModal> = props => {
                     <>
                         <List>
                             {data!.columns
-                                .filter(
-                                    col =>
-                                        col.key !== PLACEHOLDER.ROW_INDEX_KEY &&
-                                        col.key !== PLACEHOLDER.COL_SELECTOR
-                                )
+                                .filter(c => !isAppColumn(c))
                                 .map((col, i) => (
                                     <ListItem
                                         key={i}
