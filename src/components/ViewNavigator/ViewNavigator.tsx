@@ -103,6 +103,8 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
             const err = makeError(error)
             if (err.message === "alreadyTaken")
                 snackError("Dieser Name wird bereits für eine Sicht verwendet!")
+            else if (err.message === "changeDefaultView")
+                snackInfo("Standardsicht kann nicht umbenannt werden.")
             else snackError("Sicht konnte nicht umbenannt werden!")
         }
     }
@@ -113,8 +115,15 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
             snackInfo("Kann einzige Sicht nicht löschen")
             return
         }
-        await deleteView(view.id)
-        mutate()
+        try {
+            await deleteView(view.id)
+            mutate()
+        } catch (error) {
+            const err = makeError(error)
+            if (err.message === "changeDefaultView")
+                snackInfo("Standardsicht kann nicht gelöscht werden..")
+            else snackError("Sicht konnte nicht gelöscht werden")
+        }
     }
 
     return (

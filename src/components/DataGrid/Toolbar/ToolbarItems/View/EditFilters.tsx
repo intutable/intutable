@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
@@ -21,6 +21,8 @@ import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
 import { isInternalColumn } from "api/utils/parse/column"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
+import { useSnacki } from "hooks/useSnacki"
+import { makeError } from "utils/error-handling/utils/makeError"
 
 // TEMP
 type ColumnStub = {
@@ -43,8 +45,9 @@ const prepareColumns = (columns: ColumnInfo[]): ColumnStub[] =>
  */
 export const EditFilters: React.FC = () => {
     const { data: tableData } = useTable()
-    const { data: viewData, updateFilters, mutate } = useView()
+    const { data: viewData, updateFilters } = useView()
     const [anchorEl, setAnchorEl] = useState<Element | null>(null)
+    const { snackInfo, snackError } = useSnacki()
 
     const handleOpenEditor = (
         event: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -59,7 +62,18 @@ export const EditFilters: React.FC = () => {
         else handleOpenEditor(event)
     }
 
-    const handleUpdateFilters = updateFilters
+    const handleUpdateFilters = async (
+        newFilters: SimpleFilter[]
+    ): Promise<void> => {
+        try {
+            await updateFilters(newFilters)
+        } catch (error) {
+            const err = makeError(error)
+            if (err.message === "changeDefaultView")
+                snackInfo("Standardsicht kann nicht geändert werden.")
+            else snackError("Filter erstellen fehlgeschlagen.")
+        }
+    }
 
     if (!tableData || !viewData) return null
 

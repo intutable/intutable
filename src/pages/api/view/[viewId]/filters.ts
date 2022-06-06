@@ -11,6 +11,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { defaultViewName } from "@backend/defaults"
 
 /**
  * PATCH/update the name of a single view.
@@ -46,8 +47,6 @@ const PATCH = async (
             ...options.rowOptions,
             conditions: filters,
         }
-
-        console.dir(newRowOptions)
 
         await coreRequest(
             changeRowOptions(viewId, newRowOptions),
