@@ -76,9 +76,9 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const columnSpecs = baseColumns.map(c => ({
         parentColumnId: c.id,
         attributes:
-        c.name === "name"
-            ? standardColumnAttributes("Name", true)
-            : standardColumnAttributes("ID"),
+            c.name === "name"
+                ? standardColumnAttributes("Name", true)
+                : standardColumnAttributes("ID"),
     }))
 
     // create table view

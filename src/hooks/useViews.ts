@@ -45,6 +45,19 @@ export const useViews = (options?: TableHookOptions) => {
         return view
     }
 
+    const renameView = async (
+        viewId: ViewDescriptor["id"],
+        newName: string
+    ): Promise<void> => {
+        if (!currentView) return
+        await fetcher({
+            url: `/api/view/${viewId}`,
+            body: { newName },
+            method: "PATCH",
+        })
+        await mutate()
+    }
+
     /**
      * Delete a view. If the deleted view is the currently selected one, also
      * set a new current view.
@@ -61,7 +74,7 @@ export const useViews = (options?: TableHookOptions) => {
         })
     }
 
-    return { views, createView, deleteView, error, mutate }
+    return { views, createView, renameView, deleteView, error, mutate }
 }
 
 /**

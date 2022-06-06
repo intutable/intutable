@@ -135,7 +135,7 @@ const TablePage: React.FC = () => {
                 <>
                     <Grid container spacing={2}>
                         <Grid item xs={viewNavOpen ? 2 : 0}>
-                                <ViewNavigator open={viewNavOpen} />
+                            <ViewNavigator open={viewNavOpen} />
                         </Grid>
 
                         <Grid item xs={8}>

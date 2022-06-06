@@ -40,8 +40,7 @@ const PATCH = async (
         )
 
         // prevent altering the default view
-        if (options.name === defaultViewName())
-            throw Error("changeDefaultView")
+        if (options.name === defaultViewName()) throw Error("changeDefaultView")
 
         const newRowOptions = {
             ...options.rowOptions,
@@ -56,7 +55,6 @@ const PATCH = async (
         )
 
         res.status(200).json({})
-
     } catch (err) {
         const error = makeError(err)
         res.status(500).json({ error: error.message })

@@ -80,8 +80,7 @@ const PATCH = async (
             user.authCookie
         )
         // prevent renaming the default view
-        if (options.name === defaultViewName())
-            throw Error("changeDefaultView")
+        if (options.name === defaultViewName()) throw Error("changeDefaultView")
 
         // check if name is taken
         const otherViews = await coreRequest<ViewDescriptor[]>(
@@ -128,8 +127,7 @@ const DELETE = async (
             user.authCookie
         )
         // prevent deleting the default view
-        if (options.name === defaultViewName())
-            throw Error("changeDefaultView")
+        if (options.name === defaultViewName()) throw Error("changeDefaultView")
 
         /**
          * If the view's source is a table, it must be a table view, and you

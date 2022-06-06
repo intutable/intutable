@@ -1,9 +1,6 @@
 import {
     Box,
     List,
-    ListItem,
-    ListItemButton,
-    ListItemText,
     Tooltip,
     Typography,
     useTheme,
@@ -17,92 +14,18 @@ import {
     TextField,
     Button,
 } from "@mui/material"
-import ClearIcon from "@mui/icons-material/Clear"
 import React, { useState } from "react"
 import Zoom from "@mui/material/Zoom"
-import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 
+import { makeError } from "utils/error-handling/utils/makeError"
 import { useSnacki } from "hooks/useSnacki"
 import { useAPI } from "context/APIContext"
 import { useTable } from "hooks/useTable"
 import { useViews } from "hooks/useViews"
 
-type ViewListItemProps = {
-    view: ViewDescriptor
-    key: number
-    /**
-     * only when `children` is not a string
-     */
-    title?: string
-    /**
-     * default {@link ChevronRightIcon}
-     */
-    icon?: React.ReactNode
-    onHandleSelectView: (view: ViewDescriptor) => Promise<void>
-    onHandleDeleteView: (view: ViewDescriptor) => Promise<void>
-}
-
-const ViewListItem: React.FC<ViewListItemProps> = props => {
-    const view: ViewDescriptor = props.view
-    const { view: currentView } = useAPI()
-    const theme = useTheme()
-
-    const handleDeleteViewButton = (
-        event: React.MouseEvent<HTMLButtonElement>
-    ) => {
-        event.stopPropagation()
-        const confirmed = confirm("Sicht wirklich löschen?")
-        if (confirmed) return props.onHandleDeleteView(view)
-    }
-    return (
-        <ListItem
-            sx={{
-                p: 0,
-                mb: 1,
-                bgcolor:
-                    view.id === currentView?.id
-                        ? theme.palette.action.selected
-                        : undefined,
-            }}
-            disablePadding
-        >
-            <Tooltip
-                title={`Sicht ${view.name} anzeigen`}
-                arrow
-                TransitionComponent={Zoom}
-                enterDelay={500}
-                placement="right"
-            >
-                <Typography
-                    variant="subtitle2"
-                    onClick={() => {}}
-                    sx={{
-                        cursor: "pointer",
-                        width: "100%",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                    }}
-                >
-                    <ListItemButton
-                        onClick={() => props.onHandleSelectView(view)}
-                    >
-                        {props.icon || <ChevronRightIcon />}
-                        <ListItemText primary={view.name}></ListItemText>
-                        <IconButton
-                            size={"small"}
-                            onClick={handleDeleteViewButton}
-                        >
-                            <ClearIcon />
-                        </IconButton>
-                    </ListItemButton>
-                </Typography>
-            </Tooltip>
-        </ListItem>
-    )
-}
+import { ViewListItem } from "./ViewListItem"
 
 type AddViewModalProps = {
     open: boolean
@@ -151,10 +74,10 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
 
     const { view: currentView, setView } = useAPI()
     const { data } = useTable()
-    const { views, createView, deleteView, mutate } = useViews({
+    const { views, createView, renameView, deleteView, mutate } = useViews({
         table: data?.metadata.descriptor,
     })
-    const { snackInfo } = useSnacki()
+    const { snackInfo, snackError } = useSnacki()
 
     // anchor for "create view" modal
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -169,6 +92,21 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
         if (currentView?.id === view.id) return
         else setView(view)
     }
+
+    const handleRenameView = async (
+        view: ViewDescriptor,
+        newName: string
+    ): Promise<void> => {
+        try {
+            await renameView(view.id, newName)
+        } catch (error) {
+            const err = makeError(error)
+            if (err.message === "alreadyTaken")
+                snackError("Dieser Name wird bereits für eine Sicht verwendet!")
+            else snackError("Sicht konnte nicht umbenannt werden!")
+        }
+    }
+
     const handleDeleteView = async (view: ViewDescriptor): Promise<void> => {
         if (views == null) return
         if (views.length === 1) {
@@ -216,6 +154,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
                             key={view.id}
                             view={view}
                             onHandleSelectView={handleSelectView}
+                            onHandleRenameView={handleRenameView}
                             onHandleDeleteView={handleDeleteView}
                         />
                     ))}

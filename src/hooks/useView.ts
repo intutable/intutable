@@ -7,7 +7,6 @@ import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 import { ViewDescriptor, Condition as Filter } from "@intutable/lazy-views"
 import { fetcher } from "api/fetcher"
 
-
 export type ViewHookOptions = {
     view?: ViewDescriptor
     swrOptions?: Partial<
@@ -48,6 +47,11 @@ export const useView = (options?: ViewHookOptions) => {
         options?.swrOptions
     )
 
+    /**
+     * Change the filters of the view. As of now, can only overwrite them
+     * wholesale. Incremental updates do not work as long as there are no
+     * IDs or similar.
+     */
     const updateFilters = async (filters: Filter[]): Promise<void> => {
         if (!currentView) return
         await fetcher({

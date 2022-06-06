@@ -33,17 +33,15 @@ const prepareColumn = (column: ColumnInfo): ColumnStub => ({
     id: column.id,
     parentColumnId: column.parentColumnId,
     joinId: column.joinId,
-    name: column.attributes.displayName!
+    name: column.attributes.displayName!,
 })
-const prepareColumns = (columns: ColumnInfo[]): ColumnStub[] => 
+const prepareColumns = (columns: ColumnInfo[]): ColumnStub[] =>
     columns.filter(c => !isInternalColumn(c)).map(prepareColumn)
-
 
 /**
  * Button to open the filter editor
  */
 export const EditFilters: React.FC = () => {
-
     const { data: tableData } = useTable()
     const { data: viewData, updateFilters, mutate } = useView()
     const [anchorEl, setAnchorEl] = useState<Element | null>(null)
@@ -75,7 +73,8 @@ export const EditFilters: React.FC = () => {
                     columns={prepareColumns(tableData.metadata.columns)}
                     activeFilters={viewData.filters as SimpleFilter[]}
                     onHandleCloseEditor={handleCloseEditor}
-                    onUpdateFilters={handleUpdateFilters} />
+                    onUpdateFilters={handleUpdateFilters}
+                />
             </Popper>
         </>
     )
@@ -101,16 +100,13 @@ type FilterEditorProps = {
 }
 
 const FilterEditor: React.FC<FilterEditorProps> = props => {
-
     const [filters, setFilters] = useState<(SimpleFilter | null)[]>([])
 
     useEffect(() => {
         // The GUI components created when you click "add" are not yet ready
         // to create a filter from, so we just keep these as null.
-        if (props.activeFilters.length > 0)
-            setFilters(props.activeFilters)
-        else
-            setFilters([null])
+        if (props.activeFilters.length > 0) setFilters(props.activeFilters)
+        else setFilters([null])
     }, [props.activeFilters])
 
     const handleAddFilter = () => setFilters(prev => prev.concat(null))
@@ -140,14 +136,15 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
                             <CloseIcon />
                         </IconButton>
                     </Box>
-                    {filters && filters.map((f, i) =>
-                        <SingleFilter
-                            key={i}
-                            columns={props.columns}
-                            filter={f}
-                            onCommitFilter={f => handleCommitFilter(i, f)}
-                        />
-                    )}
+                    {filters &&
+                        filters.map((f, i) => (
+                            <SingleFilter
+                                key={i}
+                                columns={props.columns}
+                                filter={f}
+                                onCommitFilter={f => handleCommitFilter(i, f)}
+                            />
+                        ))}
                     <IconButton
                         onClick={handleAddFilter}
                         sx={{
@@ -162,7 +159,7 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
     )
 }
 
-/** 
+/**
  * An editor component for one single filter. The total filter consists
  * of the logical conjunction of these.
  */
@@ -205,55 +202,60 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
             joinId: null,
         }
         const newFilter: SimpleFilter = {
-                left: columnSpec,
-                operator: operator,
-                right: (operator === "LIKE" ? "%" + value + "%" : value)
+            left: columnSpec,
+            operator: operator,
+            right: operator === "LIKE" ? "%" + value + "%" : value,
         }
         return props.onCommitFilter(newFilter)
     }
 
     return (
-        <Box sx={{
-            margin: "2px",
-            padding: "4px",
-            bgcolor: theme.palette.action.selected,
-            borderRadius: "4px",
-        }}>
-            <Select value={column}
-                onChange={(e) => {
-                    setColumn(e.target.value);
+        <Box
+            sx={{
+                margin: "2px",
+                padding: "4px",
+                bgcolor: theme.palette.action.selected,
+                borderRadius: "4px",
+            }}
+        >
+            <Select
+                value={column}
+                onChange={e => {
+                    setColumn(e.target.value)
                     tryCommit()
-                }
-                }>
+                }}
+            >
                 {props.columns.map(c => (
                     <MenuItem key={c.id} value={c.id}>
                         {c.name}
                     </MenuItem>
                 ))}
             </Select>
-            <Select value={operator}
-                onChange={(e) => {
-                    setOperator(e.target.value);
+            <Select
+                value={operator}
+                onChange={e => {
+                    setOperator(e.target.value)
                     tryCommit()
-                }
-                }>
+                }}
+            >
                 {FILTER_OPERATORS.map(op => (
                     <MenuItem key={op.raw} value={op.raw}>
                         {op.pretty}
                     </MenuItem>
                 ))}
             </Select>
-            <TextField variant="filled"
+            <TextField
+                variant="filled"
                 value={value}
-                onChange={(e) => {
-                    setValue(e.target.value);
+                onChange={e => {
+                    setValue(e.target.value)
                     tryCommit()
                 }}
+            ></TextField>
+            <IconButton
+                sx={{ verticalAlign: "revert" }}
+                onClick={() => commit()}
             >
-
-            </TextField>
-            <IconButton sx={{ verticalAlign: "revert" }}
-                        onClick={() => commit()}>
                 <AddBoxIcon />
             </IconButton>
             <IconButton sx={{ verticalAlign: "revert" }}>
