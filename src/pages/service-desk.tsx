@@ -1,6 +1,7 @@
 import Title from "components/Head/Title"
 import {
     Avatar,
+    Box,
     Divider,
     List,
     ListItem,
@@ -79,9 +80,9 @@ const ServiceDesk: NextPage = () => {
             >
                 <ListItem>
                     <ListItemAvatar>
-                        <Avatar>v1</Avatar>
+                        <Avatar>1</Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary="Alpha" secondary="Feb 0, 2022" />
+                    <ListItemText primary="MVP" secondary="Apr 7, 2022" />
                 </ListItem>
             </List>
         </>

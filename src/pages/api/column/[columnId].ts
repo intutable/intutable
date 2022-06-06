@@ -11,10 +11,9 @@ import {
 } from "@intutable/lazy-views"
 import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withSessionRoute } from "auth"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
-import { withUserCheck } from "utils/withUserCheck"
+import { withUserCheck } from "api/utils/withUserCheck"
 import { objToSql } from "utils/objToSql"
 
 /**
@@ -31,12 +30,8 @@ import { objToSql } from "utils/objToSql"
  * }
  * ```
  */
-const PATCH = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    columnId: ColumnInfo["id"]
-) => {
-    try {
+const PATCH = withCatchingAPIRoute(
+    async (req, res, columnId: ColumnInfo["id"]) => {
         const { update } = req.body as {
             update: Record<string, unknown>
         }
@@ -51,12 +46,8 @@ const PATCH = async (
         )
 
         res.status(200).json(updatedColumn)
-    } catch (err) {
-        const error = makeError(err)
-        console.log(error.toString())
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 /**
  * Delete a column.
@@ -68,12 +59,8 @@ const PATCH = async (
  * }
  * ```
  */
-const DELETE = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    columnId: ColumnInfo["id"]
-) => {
-    try {
+const DELETE = withCatchingAPIRoute(
+    async (req, res, columnId: ColumnInfo["id"]) => {
         const { tableViewId } = req.body as {
             tableViewId: ViewDescriptor["id"]
         }
@@ -139,15 +126,12 @@ const DELETE = async (
             )
         }
 
-        res.status(200).send({})
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
+        res.status(200).json({})
     }
-}
+)
 
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         const { query, method } = req
         const columnId = parseInt(query.columnId as string)
 

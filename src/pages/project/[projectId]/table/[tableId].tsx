@@ -5,10 +5,9 @@ import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Grid, Box, Typography, useTheme, Button } from "@mui/material"
+import { Box, Button, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import { ErrorBoundary } from "components/ErrorBoundary"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
@@ -32,11 +31,10 @@ import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
-import { useThemeToggler } from "pages/_app"
+import { withSSRCatch } from "utils/withSSRCatch"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
-    const { getTheme } = useThemeToggler()
     const { snackWarning, closeSnackbar } = useSnacki()
     const { isChrome } = useBrowserInfo()
     // warn if browser is not chrome
@@ -119,102 +117,67 @@ const TablePage: React.FC = () => {
                 </Link>
             </Typography>
 
-            <ErrorBoundary fallback={null}>
-                <TableNavigator />
-            </ErrorBoundary>
+            {detailedViewOpen && (
+                <DetailedViewModal
+                    open={detailedViewOpen != null}
+                    data={detailedViewOpen}
+                    onCloseHandler={() => setDetailedViewOpen(null)}
+                />
+            )}
+
+            <TableNavigator />
 
             {error ? (
                 <span>Die Tabelle konnte nicht geladen Werden</span>
             ) : (
-                <ErrorBoundary
-                    fallback={
-                        <span>Die Tabelle konnte nicht geladen werden.</span>
-                    }
-                >
-                    <Grid container spacing={2}>
-                        <Grid item xs={viewNavOpen ? 2 : 0}>
-                            <ErrorBoundary
-                                fallback={
-                                    <span>
-                                        Die Views konnten nicht angezeigt
-                                        werden.
-                                    </span>
-                                }
-                            >
-                                <ViewNavigator open={viewNavOpen} />
-                            </ErrorBoundary>
-                        </Grid>
+                <>
+                    {viewsOpen && (
+                        <ViewNavigator
+                            sx={{ maxWidth: "12%", height: "100%" }}
+                        />
+                    )}
 
-                        <Grid item xs={8}>
-                            <Box>
-                                <Toolbar position="top">
-                                    <ToolbarItem.Views
-                                        handleClick={() =>
-                                            setViewNavOpen(prev => !prev)
-                                        }
-                                        open={viewNavOpen}
-                                    />
-                                    <ToolbarItem.AddCol />
-                                    <ToolbarItem.AddLink />
-                                    <ToolbarItem.AddRow />
-                                    <ToolbarItem.EditFilters />
-                                    <ToolbarItem.FileDownload
-                                        getData={() => []}
-                                    />
-                                    <ToolbarItem.DetailView
-                                        handleClick={() =>
-                                            setDetailedViewOpen(prev => !prev)
-                                        }
-                                        open={detailedViewOpen != null}
-                                    />
-                                </Toolbar>
+                    <Box>
+                        <Toolbar position="top">
+                            <ToolbarItem.Views
+                                handleClick={() => setViewsOpen(!viewsOpen)}
+                            />
+                            <ToolbarItem.AddCol />
+                            <ToolbarItem.AddLink />
+                            <ToolbarItem.AddRow />
+                            <ToolbarItem.EditFilters />
+                            <ToolbarItem.FileDownload getData={() => []} />
+                        </Toolbar>
 
-                                <DndProvider backend={HTML5Backend}>
-                                    <DataGrid
-                                        className={"rdg-" + getTheme()}
-                                        rows={data.rows}
-                                        columns={data.columns}
-                                        components={{
-                                            noRowsFallback: <NoRowsFallback />,
-                                            rowRenderer: RowRenderer,
-                                            // checkboxFormatter: // TODO: adjust
-                                            // sortIcon: // TODO: adjust
-                                        }}
-                                        rowKeyGetter={rowKeyGetter}
-                                        defaultColumnOptions={{
-                                            sortable: true,
-                                            resizable: true,
-                                            // formatter: // TODO: adjust
-                                        }}
-                                        selectedRows={selectedRows}
-                                        onSelectedRowsChange={setSelectedRows}
-                                        onRowsChange={partialRowUpdate}
-                                        headerRowHeight={headerHeight}
-                                    />
-                                </DndProvider>
+                        <DndProvider backend={HTML5Backend}>
+                            <DataGrid
+                                className={"rdg-" + theme.palette.mode}
+                                rows={data.rows}
+                                columns={data.columns}
+                                components={{
+                                    noRowsFallback: <NoRowsFallback />,
+                                    rowRenderer: RowRenderer,
+                                    // checkboxFormatter: // TODO: adjust
+                                    // sortIcon: // TODO: adjust
+                                }}
+                                rowKeyGetter={rowKeyGetter}
+                                defaultColumnOptions={{
+                                    sortable: true,
+                                    resizable: true,
+                                    // formatter: // TODO: adjust
+                                }}
+                                selectedRows={selectedRows}
+                                onSelectedRowsChange={setSelectedRows}
+                                onRowsChange={partialRowUpdate}
+                                headerRowHeight={headerHeight}
+                            />
+                        </DndProvider>
 
-                                <Toolbar position="bottom">
-                                    <ToolbarItem.Connection
-                                        status={"connected"}
-                                    />
-                                </Toolbar>
-                            </Box>
-                        </Grid>
-
-                        <Grid item xs={detailedViewOpen ? 2 : 0}>
-                            {detailedViewOpen && (
-                                // <DetailedViewModal
-                                //     open={detailedViewOpen != null}
-                                //     data={detailedViewOpen}
-                                //     onCloseHandler={() =>
-                                //         setDetailedViewOpen(null)
-                                //     }
-                                // />
-                                <span>Hallo</span>
-                            )}
-                        </Grid>
-                    </Grid>
-                </ErrorBoundary>
+                        <Toolbar position="bottom">
+                            <ToolbarItem.Connection status={"connected"} />
+                        </Toolbar>
+                    </Box>
+                </>
             )}
         </>
     )
@@ -252,79 +215,83 @@ const Page: NextPage<
     )
 }
 
-export const getServerSideProps = withSessionSsr<PageProps>(async context => {
-    const query = context.query as DynamicRouteQuery<
-        typeof context.query,
-        "tableId" | "projectId"
-    >
+export const getServerSideProps = withSSRCatch(
+    withSessionSsr<PageProps>(async context => {
+        const query = context.query as DynamicRouteQuery<
+            typeof context.query,
+            "tableId" | "projectId"
+        >
 
-    const user = context.req.session.user
+        const user = context.req.session.user
 
-    if (user == null || user.isLoggedIn === false)
-        return {
-            notFound: true,
+        if (user == null || user.isLoggedIn === false)
+            return {
+                notFound: true,
+            }
+
+        const projectId: ProjectDescriptor["id"] = Number.parseInt(
+            query.projectId
+        )
+        const tableId: ViewDescriptor["id"] = Number.parseInt(query.tableId)
+
+        if (isNaN(projectId) || isNaN(tableId))
+            return {
+                notFound: true,
+            }
+
+        // workaround until PM exposes a "get project" method
+        const projects = await fetcher<ProjectDescriptor[]>({
+            url: `/api/projects`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+        const project = projects.find(p => p.id === projectId)
+
+        if (project == null) return { notFound: true }
+
+        const tableList = await fetcher<ViewDescriptor[]>({
+            url: `/api/tables/${projectId}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+        const tableData = await fetcher<TableData.Serialized>({
+            url: `/api/table/${tableId}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+        const viewList = await fetcher<ViewDescriptor[]>({
+            url: `/api/views/${tableId}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+
+        if (viewList.length === 0) {
+            return { notFound: true }
         }
+        const view: ViewDescriptor = viewList[0]
 
-    const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
-    const tableId: ViewDescriptor["id"] = Number.parseInt(query.tableId)
+        const data = await fetcher<ViewData.Serialized>({
+            url: `/api/view/${view.id}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
 
-    if (isNaN(projectId) || isNaN(tableId))
         return {
-            notFound: true,
+            props: {
+                project,
+                table: tableData.metadata.descriptor,
+                tableList,
+                view: data.descriptor,
+                viewList,
+                // fallback: {
+                //     [unstable_serialize({
+                //         url: `/api/table/${tableId}`,
+                //         method: "GET",
+                //     })]: data,
+                // },
+            },
         }
-
-    // workaround until PM exposes a "get project" method
-    const projects = await fetcher<ProjectDescriptor[]>({
-        url: `/api/projects`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
     })
-    const project = projects.find(p => p.id === projectId)
-
-    if (project == null) return { notFound: true }
-
-    const tableList = await fetcher<ViewDescriptor[]>({
-        url: `/api/tables/${projectId}`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-    const tableData = await fetcher<TableData.Serialized>({
-        url: `/api/table/${tableId}`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-    const viewList = await fetcher<ViewDescriptor[]>({
-        url: `/api/views/${tableId}`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-
-    if (viewList.length === 0) {
-        return { notFound: true }
-    }
-    const view: ViewDescriptor = viewList[0]
-
-    const data = await fetcher<ViewData.Serialized>({
-        url: `/api/view/${view.id}`,
-        method: "GET",
-        headers: context.req.headers as HeadersInit,
-    })
-
-    return {
-        props: {
-            project,
-            table: tableData.metadata.descriptor,
-            tableList,
-            view: data.descriptor,
-            viewList,
-            // fallback: {
-            //     [unstable_serialize({
-            //         url: `/api/table/${tableId}`,
-            //         method: "GET",
-            //     })]: data,
-            // },
-        },
-    }
-})
+)
 
 export default Page

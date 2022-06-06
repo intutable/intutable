@@ -12,12 +12,11 @@ import {
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
+import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import type { NextApiRequest, NextApiResponse } from "next"
 import { project_management_constants } from "types/type-annotations/project-management"
-import { makeError } from "utils/error-handling/utils/makeError"
 import makeForeignKeyName from "utils/makeForeignKeyName"
-import { withUserCheck } from "utils/withUserCheck"
 import { linkColumnAttributes } from "@backend/defaults"
 import { addColumnToFilterViews } from "utils/backend/views"
 
@@ -35,77 +34,72 @@ import { addColumnToFilterViews } from "utils/backend/views"
  * }
  * ```
  */
-const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const { viewId, foreignViewId } = req.body as {
-            viewId: number
-            foreignViewId: number
-        }
-        const user = req.session.user!
-
-        const viewInfo = await coreRequest<ViewInfo>(
-            getViewInfo(viewId),
-            user.authCookie
-        )
-
-        // create foreign key column
-        const fkColumn = await coreRequest<PM_Column>(
-            createColumnInTable(
-                selectable.getId(viewInfo.source),
-                makeForeignKeyName(viewInfo),
-                ColumnType.integer
-            ),
-            user.authCookie
-        )
-
-        const foreignViewInfo = await coreRequest<ViewInfo>(
-            getViewInfo(foreignViewId),
-            user.authCookie
-        )
-
-        const foreignIdColumn = foreignViewInfo.columns.find(
-            c => c.name === project_management_constants.UID_KEY
-        )!
-        const primaryColumn = foreignViewInfo.columns.find(
-            c => c.attributes.userPrimary! === 1
-        )!
-        const displayName = (primaryColumn.attributes.displayName ||
-            primaryColumn.name) as string
-        const join = await coreRequest<JoinDescriptor>(
-            addJoinToView(viewId, {
-                foreignSource: mkViewId(foreignViewId),
-                on: [fkColumn.id, "=", foreignIdColumn.id],
-                columns: [],
-            }),
-            user.authCookie
-        )
-
-        const attributes = linkColumnAttributes(displayName)
-
-        const linkColumn = await coreRequest<ColumnInfo>(
-            addColumnToView(
-                viewId,
-                { parentColumnId: primaryColumn.id, attributes },
-                join.id
-            ),
-            user.authCookie
-        )
-
-        await addColumnToFilterViews(
-            viewId,
-            { parentColumnId: linkColumn.id, attributes },
-            user.authCookie
-        )
-
-        res.status(200).json(join)
-    } catch (err) {
-        const error = makeError(err)
-        console.log(error.toString())
-        res.status(500).json({ error: error.message })
+const POST = withCatchingAPIRoute(async (req, res) => {
+    const { viewId, foreignViewId } = req.body as {
+        viewId: number
+        foreignViewId: number
     }
-}
+    const user = req.session.user!
+
+    const viewInfo = await coreRequest<ViewInfo>(
+        getViewInfo(viewId),
+        user.authCookie
+    )
+
+    // create foreign key column
+    const fkColumn = await coreRequest<PM_Column>(
+        createColumnInTable(
+            selectable.getId(viewInfo.source),
+            makeForeignKeyName(viewInfo),
+            ColumnType.integer
+        ),
+        user.authCookie
+    )
+
+    const foreignViewInfo = await coreRequest<ViewInfo>(
+        getViewInfo(foreignViewId),
+        user.authCookie
+    )
+
+    const foreignIdColumn = foreignViewInfo.columns.find(
+        c => c.name === project_management_constants.UID_KEY
+    )!
+    const primaryColumn = foreignViewInfo.columns.find(
+        c => c.attributes.userPrimary! === 1
+    )!
+    const displayName = (primaryColumn.attributes.displayName ||
+        primaryColumn.name) as string
+    const join = await coreRequest<JoinDescriptor>(
+        addJoinToView(viewId, {
+            foreignSource: mkViewId(foreignViewId),
+            on: [fkColumn.id, "=", foreignIdColumn.id],
+            columns: [],
+        }),
+        user.authCookie
+    )
+
+    const attributes = linkColumnAttributes(displayName)
+
+    const linkColumn = await coreRequest<ColumnInfo>(
+        addColumnToView(
+            viewId,
+            { parentColumnId: primaryColumn.id, attributes },
+            join.id
+        ),
+        user.authCookie
+    )
+
+    await addColumnToFilterViews(
+        viewId,
+        { parentColumnId: linkColumn.id, attributes },
+        user.authCookie
+    )
+
+    res.status(200).json(join)
+})
+
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         switch (req.method) {
             case "POST":
                 await POST(req, res)

@@ -1,6 +1,5 @@
 import { Divider, Typography } from "@mui/material"
-import { useUser } from "auth"
-import { ErrorBoundary } from "components/ErrorBoundary"
+import { useUser, withSessionSsr } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import type { NextPage } from "next"
@@ -13,23 +12,27 @@ const Home: NextPage = () => {
             <Title title="Startseite" />
             <Typography variant={"h4"}>Startseite</Typography>
             <Divider />
-            <ErrorBoundary
-                fallback={
-                    <span>Die Startseite konnte nicht geladen werden.</span>
-                }
-            >
-                <Typography sx={{ mt: 2 }}>
-                    {user?.isLoggedIn ? (
-                        <>Hallo {user.username}!</>
-                    ) : (
-                        <>
-                            Melde dich an: <Link href="/login">anmelden</Link>
-                        </>
-                    )}
-                </Typography>
-            </ErrorBoundary>
+            <Typography sx={{ mt: 2 }}>
+                {user?.isLoggedIn ? (
+                    <>Hallo {user.username}!</>
+                ) : (
+                    <>
+                        Melde dich an: <Link href="/login">anmelden</Link>
+                    </>
+                )}
+            </Typography>
         </>
     )
 }
 
 export default Home
+
+export const getServerSideProps = withSessionSsr(async context => {
+    const user = context.req.session.user
+
+    console.log(user)
+
+    return {
+        props: {},
+    }
+})

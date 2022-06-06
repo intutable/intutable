@@ -1,16 +1,15 @@
 import {
+    addColumnToView,
+    asView,
+    ColumnInfo,
+    getViewInfo,
     ViewDescriptor,
     ViewInfo,
-    ColumnInfo,
-    addColumnToView,
-    getViewInfo,
-    asView,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
-import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
+import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import { withUserCheck } from "utils/withUserCheck"
 import { lookupColumnAttributes } from "@backend/defaults"
 import { addColumnToFilterViews } from "utils/backend/views"
 
@@ -24,12 +23,8 @@ import { addColumnToFilterViews } from "utils/backend/views"
  * }
  * ```
  */
-const POST = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    columnId: ColumnInfo["id"]
-) => {
-    try {
+const POST = withCatchingAPIRoute(
+    async (req, res, columnId: ColumnInfo["id"]) => {
         const { tableViewId, joinId } = req.body as {
             tableViewId: ViewDescriptor["id"]
             joinId: Exclude<ColumnInfo["joinId"], null>
@@ -74,14 +69,11 @@ const POST = async (
         )
 
         res.status(200).json(newColumn)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 export default withSessionRoute(
-    withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
+    withUserCheck(async (req, res) => {
         const { query } = req
         const columnId = parseInt(query.columnId as string)
 

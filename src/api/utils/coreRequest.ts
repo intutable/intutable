@@ -1,5 +1,6 @@
 import { NextApiRequest } from "next"
 import Obj from "types/Obj"
+import { ErrorLike } from "utils/error-handling/ErrorLike"
 const CORE_ENDPOINT = process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
 const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
 
@@ -25,14 +26,11 @@ export class CoreRequestError extends Error {
  * @returns {Promise<object>} - The response parsed from JSON as an object.
  * @throws {CoreRequestError}
  */
-export const coreRequest = <T = unknown>(
+export const coreRequest = async <T = unknown>(
     request: Obj,
     authCookie?: NextApiRequest | string
 ): Promise<T> => {
-    const channel = request.channel
-    const method = request.method
-    delete request.channel
-    delete request.method
+    const { channel, method, ...req } = request
     const cookie =
         typeof authCookie === "string"
             ? authCookie
@@ -48,25 +46,30 @@ export const coreRequest = <T = unknown>(
         },
         credentials: "include",
         redirect: "manual",
-        body: JSON.stringify(request),
+        body: JSON.stringify(req),
     })
         .then(passedLogin)
         .then(checkError)
         .then(res => res.json())
 }
 
+// TODO: once serialization for errors is implemented, replace those functions
+
 // Set of error checking functions that are intended to operate by
 // fall-through principle
-export function passedLogin(res: Response): Promise<Response> {
-    return res.type === "opaqueredirect" || [301, 302].includes(res.status)
-        ? Promise.reject({
-              status: 302,
-              message: "core call blocked by authentication middleware",
-          })
-        : Promise.resolve(res)
+export const passedLogin = async (res: Response): Promise<Response> => {
+    if (res.type === "opaqueredirect" || [301, 302].includes(res.status))
+        throw {
+            name: "AuthenticationError",
+            stack: "Next API Handler",
+            message: "core call blocked by authentication middleware",
+            status: 302,
+        } as ErrorLike
+
+    return res
 }
 
-export async function checkError(res: Response): Promise<Response> {
+export const checkError = async (res: Response): Promise<Response> => {
     if (res.ok) return res
-    return Promise.reject(new CoreRequestError(await res.text(), res.status))
+    throw new CoreRequestError(await res.text(), res.status)
 }
