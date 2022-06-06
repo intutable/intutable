@@ -58,7 +58,6 @@ const ViewListItem: React.FC<ViewListItemProps> = props => {
     }
     return (
         <ListItem
-            key={props.key}
             sx={{
                 p: 0,
                 mb: 1,
