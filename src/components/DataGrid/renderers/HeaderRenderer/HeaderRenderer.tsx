@@ -200,7 +200,11 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 onClick={() => snackWarning("Not Implemented.")}
                                 size="small"
                             >
-                                <KeyIcon />
+                                <KeyIcon
+                                    sx={{
+                                        fontSize: "80%",
+                                    }}
+                                />
                             </IconButton>
                         </span>
                     </Tooltip>
