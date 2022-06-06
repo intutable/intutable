@@ -31,22 +31,6 @@ export const EditFilters: React.FC = () => {
     const { data: viewData } = useView()
     const [anchorEl, setAnchorEl] = useState<Element | null>(null)
 
-    const filters = useMemo(() => {
-        if (!tableData || !viewData) return
-
-        // The GUI components created when you click "add" are not yet ready
-        // to create a filter from, so we just keep these as null.
-        if (viewData.filters.length > 0)
-            return viewData.filters as SimpleFilter[]
-        else
-            return [null]
-    }, [tableData, viewData])
-
-    /* const [filters, setFilters] = useState<(SimpleFilter | null)[] | undefined>(
-*     initialFilters)
-
-* if (!filters) return null */
-
     const handleOpenEditor = (
         event: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ) => {
@@ -60,44 +44,79 @@ export const EditFilters: React.FC = () => {
         else handleOpenEditor(event)
     }
 
-    const handleAddFilter = () => {
-        //setFilters(prev => prev!.concat(null))
-    }
+    if (!tableData || !viewData) return null
+
     return (
         <>
             <Button startIcon={<FilterListIcon />} onClick={toggleEditor}>
                 Filter
             </Button>
             <Popper open={anchorEl != null} anchorEl={anchorEl}>
-                <Paper elevation={2} sx={{ padding: "16px" }}>
-                    <Stack>
-                        <Box>
-                            <IconButton
-                                onClick={handleCloseEditor}
-                                sx={{
-                                    float: "right",
-                                }}
-                            >
-                                <CloseIcon />
-                            </IconButton>
-                        </Box>
-                        {tableData && filters && filters.map((f, i) =>
-                            <SingleFilter
-                                columns={tableData.columns.filter(
-                                    c => !isAppColumn(c))}
-                                filter={f}
-                            />
-                        )}
-                        <IconButton onClick={handleAddFilter}>
-                            <AddBoxIcon />
-                        </IconButton>
-                    </Stack>
-                </Paper>
+                <FilterEditor
+                    columns={tableData.columns}
+                    activeFilters={viewData.filters as SimpleFilter[]}
+                    onHandleCloseEditor={handleCloseEditor}/>
             </Popper>
         </>
     )
 }
 
+type FilterEditorProps = {
+    columns: TableColumn[]
+    activeFilters: SimpleFilter[]
+    onHandleCloseEditor: () => void
+}
+
+const FilterEditor: React.FC<FilterEditorProps> = props => {
+
+    const [filters, setFilters] = useState<(SimpleFilter | null)[]>([])
+
+    useEffect(() => {
+        // The GUI components created when you click "add" are not yet ready
+        // to create a filter from, so we just keep these as null.
+        if (props.activeFilters.length > 0)
+            setFilters(props.activeFilters)
+        else
+            setFilters([null])
+    }, [props.activeFilters])
+
+    const handleAddFilter = () => setFilters(prev => prev.concat(null))
+
+    return (
+        <>
+            <Paper elevation={2} sx={{ padding: "16px" }}>
+                <Stack>
+                    <Box>
+                        <IconButton
+                            onClick={props.onHandleCloseEditor}
+                            sx={{
+                                float: "right",
+                            }}
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+                    {filters && filters.map((f, i) =>
+                        <SingleFilter
+                            key={i}
+                            columns={props.columns.filter(
+                                c => !isAppColumn(c))}
+                            filter={f}
+                        />
+                    )}
+                    <IconButton
+                        onClick={handleAddFilter}
+                        sx={{
+                            borderRadius: "4px",
+                        }}
+                    >
+                        <AddBoxIcon />
+                    </IconButton>
+                </Stack>
+            </Paper>
+        </>
+    )
+}
 
 type SingleFilterProps = {
     filter: SimpleFilter | null

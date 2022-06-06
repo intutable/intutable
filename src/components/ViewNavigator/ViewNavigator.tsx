@@ -230,6 +230,10 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
                 <IconButton
                     size="medium"
                     onClick={e => setAnchorEL(e.currentTarget)}
+                    sx={{
+                        width: "100%",
+                        borderRadius: "4px",
+                    }}
                 >
                     <AddBoxIcon />
                 </IconButton>
