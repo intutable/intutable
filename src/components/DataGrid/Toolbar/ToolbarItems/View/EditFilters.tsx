@@ -125,6 +125,25 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
 
     const handleAddFilter = () => setFilters(prev => prev.concat(null))
 
+    /**
+     * This is really messy. If the filter to be deleted is not yet committed,
+     * i.e. its `props.filter` is `null`, then only update the displayed
+     * filters. And the guarantee that there will never be a committed filter
+     * with `null` `props.filter` is simply that the back-end causes
+     * everything to re-render on committing. Definitely spaghetti.
+     */
+    const handleDeleteFilter = async (index: number): Promise<void> => {
+        if (!filters) return
+        const newFilters = filters
+            .slice(0, index)
+            .concat(...filters.slice(index + 1, filters.length))
+        if (filters[index] === null) setFilters(newFilters)
+        else
+            return props.onUpdateFilters(
+                newFilters.filter(f => f !== null) as SimpleFilter[]
+            )
+    }
+
     const handleCommitFilter = async (
         index: number,
         newFilter: SimpleFilter
@@ -156,6 +175,7 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
                                 key={i}
                                 columns={props.columns}
                                 filter={f}
+                                onHandleDelete={() => handleDeleteFilter(i)}
                                 onCommitFilter={f => handleCommitFilter(i, f)}
                             />
                         ))}
@@ -185,6 +205,7 @@ type SingleFilterProps = {
     filter: SimpleFilter | null
     /** TEMP TableColumn is currently not usable for this task. */
     columns: ColumnStub[]
+    onHandleDelete: () => Promise<void>
     /**
      * When the data have been sufficiently set (plus a timer to avoid
      * excessive updates), the editor calls its `onCommitFilter` prop, asking
@@ -207,6 +228,7 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
         filter?.operator || FILTER_OPERATORS[0].raw
     )
     const [value, setValue] = useState<string>(filter?.right.toString() || "")
+
     const tryCommit = () => {}
 
     const commit = () => {
@@ -272,7 +294,10 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
             >
                 <AddBoxIcon />
             </IconButton>
-            <IconButton sx={{ verticalAlign: "revert" }}>
+            <IconButton
+                sx={{ verticalAlign: "revert" }}
+                onClick={props.onHandleDelete}
+            >
                 <DeleteIcon />
             </IconButton>
         </Box>
