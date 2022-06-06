@@ -1,9 +1,12 @@
 import { useAPI } from "context"
 import useSWR, { unstable_serialize } from "swr"
 import { ViewData } from "types"
-import { ViewDescriptor } from "@intutable/lazy-views"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
+
+import { ViewDescriptor, Condition as Filter } from "@intutable/lazy-views"
+import { fetcher } from "api/fetcher"
+
 
 export type ViewHookOptions = {
     view?: ViewDescriptor
@@ -45,8 +48,19 @@ export const useView = (options?: ViewHookOptions) => {
         options?.swrOptions
     )
 
+    const updateFilters = async (filters: Filter[]): Promise<void> => {
+        if (!currentView) return
+        await fetcher({
+            url: `/api/view/${currentView.id}/filters`,
+            body: { filters },
+            method: "PATCH",
+        })
+        await mutate()
+    }
+
     return {
         data,
+        updateFilters,
         error,
         mutate,
         loading: (error == null && data == null) || isValidating,

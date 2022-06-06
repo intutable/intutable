@@ -38,14 +38,25 @@ const PATCH = async (
             getViewOptions(viewId),
             user.authCookie
         )
+
+        // prevent altering the default view
+        if (options.name === defaultViewName())
+            throw Error("changeDefaultView")
+
         const newRowOptions = {
             ...options.rowOptions,
             conditions: filters,
         }
+
+        console.dir(newRowOptions)
+
         await coreRequest(
             changeRowOptions(viewId, newRowOptions),
             user.authCookie
         )
+
+        res.status(200).json({})
+
     } catch (err) {
         const error = makeError(err)
         res.status(500).json({ error: error.message })

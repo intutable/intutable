@@ -16,6 +16,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { defaultViewName } from "@backend/defaults"
 
 /**
  * GET a single filter view's data {@type {TableData.Serialized}}.
@@ -74,11 +75,15 @@ const PATCH = async (
         }
         const user = req.session.user!
 
-        // check if name is taken
         const options = await coreRequest<ViewOptions>(
             getViewOptions(viewId),
             user.authCookie
         )
+        // prevent renaming the default view
+        if (options.name === defaultViewName())
+            throw Error("changeDefaultView")
+
+        // check if name is taken
         const otherViews = await coreRequest<ViewDescriptor[]>(
             listViews(asView(options.source)),
             user.authCookie
@@ -122,6 +127,9 @@ const DELETE = async (
             getViewOptions(viewId),
             user.authCookie
         )
+        // prevent deleting the default view
+        if (options.name === defaultViewName())
+            throw Error("changeDefaultView")
 
         /**
          * If the view's source is a table, it must be a table view, and you
