@@ -24,6 +24,8 @@ import { useView } from "hooks/useView"
 import { useSnacki } from "hooks/useSnacki"
 import { makeError } from "utils/error-handling/utils/makeError"
 
+type WipFilter = Partial<SimpleFilter>
+
 // TEMP
 type ColumnStub = {
     id: number
@@ -114,21 +116,23 @@ type FilterEditorProps = {
 }
 
 const FilterEditor: React.FC<FilterEditorProps> = props => {
-    const [filters, setFilters] = useState<(SimpleFilter | null)[]>([])
+    const [filters, setFilters] = useState<WipFilter[]>([])
 
     useEffect(() => {
         // The GUI components created when you click "add" are not yet ready
         // to create a filter from, so we just keep these as null.
         if (props.activeFilters.length > 0) setFilters(props.activeFilters)
-        else setFilters([null])
+        else setFilters([newEmptyWipFilter()])
     }, [props.activeFilters])
 
-    const handleAddFilter = () => setFilters(prev => prev.concat(null))
+    const handleAddFilter = () => setFilters(
+        prev => prev.concat(newEmptyWipFilter())
+    )
 
     /**
      * This is really messy. If the filter to be deleted is not yet committed,
-     * i.e. its `props.filter` is `null`, then only update the displayed
-     * filters. And the guarantee that there will never be a committed filter
+     * then only update the displayed filters. And the guarantee that
+     * there will never be a committed filter
      * with `null` `props.filter` is simply that the back-end causes
      * everything to re-render on committing. Definitely spaghetti.
      */
@@ -151,7 +155,7 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
         if (!filters) return
         const filterCopy = [...filters]
         filterCopy[index] = newFilter
-        const newFilters = filterCopy.filter(f => f !== null) as SimpleFilter[]
+        const newFilters = filterCopy.filter(isValidFilter) as SimpleFilter[]
         return props.onUpdateFilters(newFilters)
     }
 
@@ -199,10 +203,11 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
  */
 type SingleFilterProps = {
     /** When the user clicks "create new filter", a new filter with no data
-     * in any of the input fields is generated. It is simply represented by
-     * an initial setting of `null` for {@link filter}.
+     * in any of the input fields is generated. Also, a filter may have some
+     * of its fields set, but not enough to send to the back-end yet, so we
+     * can't just represent it with `null` or something.
      */
-    filter: SimpleFilter | null
+    filter: WipFilter
     /** TEMP TableColumn is currently not usable for this task. */
     columns: ColumnStub[]
     onHandleDelete: () => Promise<void>
@@ -222,12 +227,18 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
     const theme = useTheme()
 
     const [column, setColumn] = useState<number | string>(
-        filter?.left.parentColumnId || ""
+        filter.left?.parentColumnId || ""
     )
     const [operator, setOperator] = useState<string>(
-        filter?.operator || FILTER_OPERATORS[0].raw
+        filter.operator || FILTER_OPERATORS[0].raw
     )
-    const [value, setValue] = useState<string>(filter?.right.toString() || "")
+    const [value, setValue] = useState<string>(filter.right?.toString() || "")
+
+    useEffect(() => {
+        setColumn(filter.left?.parentColumnId || "")
+        setOperator(filter.operator || FILTER_OPERATORS[0].raw)
+        setValue(filter.right?.toString() || "")
+    }, [props.filter])
 
     const tryCommit = () => {}
 
@@ -303,3 +314,12 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
         </Box>
     )
 }
+
+const newEmptyWipFilter = (): WipFilter => ({
+    operator: FILTER_OPERATORS[0].raw,
+})
+
+const isValidFilter = (filter: WipFilter): filter is SimpleFilter => 
+    filter.left !== undefined &&
+    filter.operator !== undefined &&
+    filter.right !== undefined
