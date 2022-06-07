@@ -116,36 +116,62 @@ type FilterEditorProps = {
 }
 
 const FilterEditor: React.FC<FilterEditorProps> = props => {
+
+    /** 
+     * We want the user to be able to save and apply filters without the
+     * incomplete ones they are also editing to be deleted on each re-render.
+     * To this end, we keep a list of "WIP filters", where all incomplete
+     * filters are stored directly in the array, and the real, back-end
+     * filters are simply nulls that will be populated on render.
+     * INVARIANT: the number of nulls in `wipFilters` <= number of
+     * elements in `props.activeFilters`
+     */
+    const [wipFilters, setWipFilters] = useState<(WipFilter | null)[]>(
+        props.activeFilters.length > 0
+            ? new Array(props.activeFilters.length).fill(null)
+            : [newEmptyWipFilter()]
+    )
     const [filters, setFilters] = useState<WipFilter[]>([])
 
+    /**
+     * Merge {@link wipFilters} with the active filters from the back-end
+     * to get the currently-displayed filter list.
+     */
     useEffect(() => {
-        // The GUI components created when you click "add" are not yet ready
-        // to create a filter from, so we just keep these as null.
-        if (props.activeFilters.length > 0) setFilters(props.activeFilters)
-        else setFilters([newEmptyWipFilter()])
-    }, [props.activeFilters])
+        if (!props.activeFilters || !wipFilters) return
+        const displayFilters = new Array(wipFilters.length)
+        for(let aI = 0, wI = 0; wI < wipFilters.length; wI++){
+            if (wipFilters[wI] === null){
+                displayFilters[wI] = props.activeFilters[aI]
+                aI++
+            } else {
+                displayFilters[wI] = wipFilters[wI]
+            }
+        }
+        setFilters(displayFilters)
+    }, [props.activeFilters, wipFilters])
 
-    const handleAddFilter = () => setFilters(
+    const handleAddFilter = () => setWipFilters(
         prev => prev.concat(newEmptyWipFilter())
     )
 
     /**
-     * This is really messy. If the filter to be deleted is not yet committed,
-     * then only update the displayed filters. And the guarantee that
-     * there will never be a committed filter
-     * with `null` `props.filter` is simply that the back-end causes
-     * everything to re-render on committing. Definitely spaghetti.
+       Righto, uh. if it's a WIP filter, easy going. If not... we need
+       the right index... oh lawd.
      */
     const handleDeleteFilter = async (index: number): Promise<void> => {
         if (!filters) return
-        const newFilters = filters
-            .slice(0, index)
-            .concat(...filters.slice(index + 1, filters.length))
-        if (filters[index] === null) setFilters(newFilters)
-        else
-            return props.onUpdateFilters(
-                newFilters.filter(f => f !== null) as SimpleFilter[]
-            )
+        // if it's a WIP filter, just delete that
+        setWipFilters(prev => arrayRemove(prev, index))
+
+        // find index within the active filters:
+        const aIndex = wipFilters
+            .slice(0, index + 1)
+            .filter(f => f === null)
+            .length
+            - 1
+        const newFilters = arrayRemove(props.activeFilters, aIndex)
+        return props.onUpdateFilters(newFilters)
     }
 
     const handleCommitFilter = async (
@@ -319,7 +345,10 @@ const newEmptyWipFilter = (): WipFilter => ({
     operator: FILTER_OPERATORS[0].raw,
 })
 
-const isValidFilter = (filter: WipFilter): filter is SimpleFilter => 
+const isValidFilter = (filter: WipFilter): filter is SimpleFilter =>
     filter.left !== undefined &&
     filter.operator !== undefined &&
     filter.right !== undefined
+
+const arrayRemove = <A,>(a: Array<A>, i: number): Array<A> =>
+    a.slice(0, i).concat(...a.slice(i + 1))
