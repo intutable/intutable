@@ -3,7 +3,7 @@ import {
     ParentColumnDescriptor,
     RowOptions,
     SortOrder,
-} from "@intutable/lazy-views"
+} from "@intutable/lazy-views/dist/types"
 import { toSQL } from "./attributes"
 
 export const UID_KEY = "_id"

@@ -16,32 +16,17 @@ import {
     Box,
 } from "@mui/material"
 
-import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
-import { isInternalColumn } from "api/utils/parse/column"
+import { defaultViewName } from "@backend/defaults"
+import { TableColumn } from "types/rdg"
+import { isAppColumn } from "api/utils/de_serialize/column"
 import { useAPI } from "context/APIContext"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
 import { useSnacki } from "hooks/useSnacki"
 import { makeError } from "utils/error-handling/utils/makeError"
 
-type WipFilter = Partial<SimpleFilter>
-
-// TEMP
-type ColumnStub = {
-    id: number
-    parentColumnId: number
-    joinId: number | null
-    name: string
-}
-const prepareColumn = (column: ColumnInfo): ColumnStub => ({
-    id: column.id,
-    parentColumnId: column.parentColumnId,
-    joinId: column.joinId,
-    name: column.attributes.displayName!,
-})
-const prepareColumns = (columns: ColumnInfo[]): ColumnStub[] =>
-    columns.filter(c => !isInternalColumn(c)).map(prepareColumn)
 
 /**
  * Button to open the filter editor
@@ -82,12 +67,15 @@ export const EditFilters: React.FC = () => {
 
     return (
         <>
-            <Button startIcon={<FilterListIcon />} onClick={toggleEditor}>
+            <Button startIcon={<FilterListIcon />}
+                    onClick={toggleEditor}
+                    disabled={viewData.descriptor.name === defaultViewName()}>
                 Filter
             </Button>
             <FilterEditor
                 anchorEl={anchorEl}
-                columns={prepareColumns(tableData.metadata.columns)}
+                columns={tableData.columns.filter(
+                    c => !isAppColumn(c))}
                 activeFilters={viewData.filters as SimpleFilter[]}
                 onHandleCloseEditor={handleCloseEditor}
                 onUpdateFilters={handleUpdateFilters}
@@ -97,9 +85,9 @@ export const EditFilters: React.FC = () => {
 }
 
 type FilterEditorProps = {
-    anchorEl: HTMLElement | null
+    anchorEl: Element | null
     /** The columns to choose the left operand from. */
-    columns: ColumnStub[]
+    columns: TableColumn[]
     /**
      * The real filters currently limiting the displayed data. The actual
      * set of individual filter editors is computed from this plus some
@@ -115,6 +103,8 @@ type FilterEditorProps = {
      */
     onUpdateFilters: (newFilters: SimpleFilter[]) => Promise<void>
 }
+
+type WipFilter = Partial<SimpleFilter>
 
 /**
  * We want the user to be able to save and apply filters without the
@@ -255,7 +245,7 @@ type SingleFilterProps = {
      */
     filter: WipFilter
     /** TEMP TableColumn is currently not usable for this task. */
-    columns: ColumnStub[]
+    columns: TableColumn[]
     onHandleDelete: () => Promise<void>
     /**
      * When the data have been sufficiently set (plus a timer to avoid
@@ -289,9 +279,9 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
     const tryCommit = () => {}
 
     const commit = () => {
-        const leftColumn = props.columns.find(c => c.id === column)!
+        const leftColumn = props.columns.find(c => c._id === column)!
         const columnSpec = {
-            parentColumnId: leftColumn.id,
+            parentColumnId: leftColumn._id,
             joinId: null,
         }
         const newFilter: SimpleFilter = {
@@ -319,7 +309,7 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
                 }}
             >
                 {props.columns.map(c => (
-                    <MenuItem key={c.id} value={c.id}>
+                    <MenuItem key={c._id} value={c._id}>
                         {c.name}
                     </MenuItem>
                 ))}
