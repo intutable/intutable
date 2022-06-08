@@ -9,7 +9,13 @@ export type ToggleDetailViewProps = {
 }
 
 export const ToggleDetailView: React.FC<ToggleDetailViewProps> = props => (
-    <Tooltip arrow title="Detaillierte Zeilen-Ansicht" enterDelay={1000}>
+    <Tooltip
+        arrow
+        title={`Detaillierte Zeilen-Ansicht ${
+            props.open ? "schließen" : "öffnen"
+        }`}
+        enterDelay={1000}
+    >
         <IconButton onClick={props.handleClick}>
             {props.open ? <OpenInNewIcon /> : <OpenInNewOffIcon />}
         </IconButton>
