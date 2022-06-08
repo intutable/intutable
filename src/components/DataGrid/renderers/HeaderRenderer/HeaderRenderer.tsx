@@ -172,6 +172,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     justifyContent: "flex-start",
                     alignContent: "center",
                     alignItems: "center",
+                    whiteSpace: "nowrap",
                 }}
             >
                 {isLinkCol && (
@@ -186,7 +187,11 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 size="small"
                                 disabled={foreignTable == null}
                             >
-                                <LinkIcon />
+                                <LinkIcon
+                                    sx={{
+                                        fontSize: "90%",
+                                    }}
+                                />
                             </IconButton>
                         </span>
                     </Tooltip>
@@ -203,7 +208,11 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 onClick={() => snackWarning("Not Implemented.")}
                                 size="small"
                             >
-                                <KeyIcon />
+                                <KeyIcon
+                                    sx={{
+                                        fontSize: "80%",
+                                    }}
+                                />
                             </IconButton>
                         </span>
                     </Tooltip>
@@ -215,31 +224,57 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 onClick={() => snackWarning("Not Implemented.")}
                                 size="small"
                             >
-                                <LookupIcon />
+                                <LookupIcon
+                                    sx={{
+                                        fontSize: "90%",
+                                    }}
+                                />
                             </IconButton>
                         </span>
                     </Tooltip>
                 )}
-                <Tooltip title={props.column.name}>
-                    <Typography
-                        sx={{
-                            fontWeight: "bold",
-                        }}
-                    >
-                        {props.column.name}
-                    </Typography>
-                </Tooltip>
-                <Box sx={{ flex: 1 }} />
+
+                <Box
+                    sx={{
+                        flex: 1,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                    }}
+                >
+                    <Tooltip title={props.column.name}>
+                        <Typography
+                            sx={{
+                                fontWeight: "bold",
+                            }}
+                        >
+                            {props.column.name}
+                        </Typography>
+                    </Tooltip>
+                </Box>
+
                 <Box>
                     <Tooltip title="Filter">
-                        <IconButton size="small">
-                            <FilterAltIcon fontSize="inherit" />
+                        <IconButton size="small" edge="end">
+                            <FilterAltIcon
+                                sx={{
+                                    fontSize: "80%",
+                                }}
+                            />
                         </IconButton>
                     </Tooltip>
-                    <IconButton onClick={handleOpenContextMenu} size="small">
-                        <MoreVertIcon fontSize="inherit" />
+                    <IconButton
+                        onClick={handleOpenContextMenu}
+                        size="small"
+                        edge="start"
+                    >
+                        <MoreVertIcon
+                            sx={{
+                                fontSize: "80%",
+                            }}
+                        />
                     </IconButton>
                 </Box>
+
                 <Menu
                     elevation={0}
                     anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -290,6 +325,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     )}
                 </Menu>
             </Box>
+
             {headerOpen && (
                 <Box
                     sx={{
