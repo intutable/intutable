@@ -40,6 +40,8 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
     const { view: currentView } = useAPI()
     const theme = useTheme()
 
+    const [hovering, setHovering] = useState<boolean>(false)
+
     const [anchorEl, setAnchorEl] = useState<Element | null>(null)
 
     const handleOpenContextMenu = (event: React.MouseEvent<HTMLLIElement>) => {
@@ -68,20 +70,27 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
             <ListItem
                 sx={{
                     p: 0,
-                    mb: 1,
+                    mb: 0.5,
                     bgcolor:
                         view.id === currentView?.id
-                            ? theme.palette.action.selected
+                            ? theme.palette.grey[100]
                             : undefined,
                 }}
+                dense
                 disablePadding
                 onContextMenu={handleOpenContextMenu}
+                onMouseOver={() => setHovering(true)}
+                onMouseOut={() => setHovering(false)}
             >
                 <Tooltip
-                    title={`Sicht ${view.name} anzeigen`}
+                    title={
+                        view.id === currentView?.id
+                            ? `Sicht ${view.name} wird angezeigt`
+                            : `Sicht ${view.name} anzeigen`
+                    }
                     arrow
                     TransitionComponent={Zoom}
-                    enterDelay={500}
+                    enterDelay={1000}
                     placement="right"
                 >
                     <Typography
@@ -99,13 +108,19 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                             onClick={() => props.onHandleSelectView(view)}
                         >
                             {props.icon || <ChevronRightIcon />}
-                            <ListItemText primary={view.name}></ListItemText>
-                            <IconButton
-                                size={"small"}
-                                onClick={handleDeleteViewButton}
-                            >
-                                <ClearIcon />
-                            </IconButton>
+                            <ListItemText sx={{ ml: 1 }} primary={view.name} />
+                            {hovering && (
+                                <IconButton
+                                    size="small"
+                                    onClick={handleDeleteViewButton}
+                                >
+                                    <ClearIcon
+                                        sx={{
+                                            fontSize: "80%",
+                                        }}
+                                    />
+                                </IconButton>
+                            )}
                         </ListItemButton>
                     </Typography>
                 </Tooltip>

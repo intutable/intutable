@@ -13,6 +13,7 @@ import {
     FormControl,
     TextField,
     Button,
+    Stack,
 } from "@mui/material"
 import React, { useState } from "react"
 import Zoom from "@mui/material/Zoom"
@@ -136,6 +137,8 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
                 borderRadius: "4px",
                 overflow: "hidden",
                 p: theme.spacing(1),
+                display: "flex",
+                flexDirection: "column",
             }}
         >
             <Typography
@@ -155,6 +158,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
             <List
                 sx={{
                     overflowY: "scroll",
+                    flex: 1,
                 }}
             >
                 {views &&
