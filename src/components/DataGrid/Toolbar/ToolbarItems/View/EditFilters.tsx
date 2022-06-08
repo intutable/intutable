@@ -1,8 +1,13 @@
+/**
+ * TODO: find a good place for isValidFilter, decide which component should
+ * be deciding when to commit.
+ */
 import React, { useState, useEffect, useRef } from "react"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
+import SaveIcon from "@mui/icons-material/Save"
 import {
     useTheme,
     Button,
@@ -26,7 +31,6 @@ import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
 import { useSnacki } from "hooks/useSnacki"
 import { makeError } from "utils/error-handling/utils/makeError"
-
 
 /**
  * Button to open the filter editor
@@ -67,15 +71,16 @@ export const EditFilters: React.FC = () => {
 
     return (
         <>
-            <Button startIcon={<FilterListIcon />}
-                    onClick={toggleEditor}
-                    disabled={viewData.descriptor.name === defaultViewName()}>
+            <Button
+                startIcon={<FilterListIcon />}
+                onClick={toggleEditor}
+                disabled={viewData.descriptor.name === defaultViewName()}
+            >
                 Filter
             </Button>
             <FilterEditor
                 anchorEl={anchorEl}
-                columns={tableData.columns.filter(
-                    c => !isAppColumn(c))}
+                columns={tableData.columns.filter(c => !isAppColumn(c))}
                 activeFilters={viewData.filters as SimpleFilter[]}
                 onHandleCloseEditor={handleCloseEditor}
                 onUpdateFilters={handleUpdateFilters}
@@ -165,8 +170,8 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
         setWipFilters(prev => prev.concat(newEmptyWipFilter()))
 
     /**
-       Righto, uh. if it's a WIP filter, easy going. If not... we need
-       the right index... oh lawd.
+     * Delete a filter - if it's a WIP filter, just remove the GUI component,
+     * otherwise, we have to talk to the back-end.
      */
     const handleDeleteFilter = async (index: number): Promise<void> => {
         if (!filters) return
@@ -184,6 +189,32 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
         }
     }
 
+    /**
+     * If (e.g.) the user deletes the text of a filter's "value" field, then
+     * it should be disabled, but without the GUI component being deleted
+     * altogether. This callback handles that event.
+     */
+    const handleFilterBecomeInvalid = async (
+        index: number,
+        incomplete: WipFilter
+    ): Promise<void> => {
+        // if it was a WIP filter already, just leave it
+        if (!filters) return
+        if (wipFilters[index] !== null) return
+        else {
+            const aIndex =
+                wipFilters.slice(0, index + 1).filter(f => f === null).length -
+                1
+            setWipFilters(prev => {
+                const copy = [...prev]
+                copy[index] = incomplete
+                return copy
+            })
+            const newFilters = arrayRemove(props.activeFilters, aIndex)
+            return props.onUpdateFilters(newFilters)
+        }
+    }
+
     const handleCommitFilter = async (
         index: number,
         newFilter: SimpleFilter
@@ -192,7 +223,12 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
         const filterCopy = [...filters]
         filterCopy[index] = newFilter
         const newFilters = filterCopy.filter(isValidFilter) as SimpleFilter[]
-        return props.onUpdateFilters(newFilters)
+        await props.onUpdateFilters(newFilters)
+        setWipFilters(prev => {
+            const copy = [...prev]
+            copy[index] = null
+            return copy
+        })
     }
 
     return (
@@ -216,7 +252,10 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
                                 columns={props.columns}
                                 filter={f}
                                 onHandleDelete={() => handleDeleteFilter(i)}
-                                onCommitFilter={f => handleCommitFilter(i, f)}
+                                onCommit={f => handleCommitFilter(i, f)}
+                                onBecomeInvalid={f =>
+                                    handleFilterBecomeInvalid(i, f)
+                                }
                             />
                         ))}
                     <IconButton
@@ -252,16 +291,17 @@ type SingleFilterProps = {
      * excessive updates), the editor calls its `onCommitFilter` prop, asking
      * the parent component to commit the current filter to the back-end.
      */
-    onCommitFilter: (newFilter: SimpleFilter) => Promise<void>
+    onCommit: (newFilter: SimpleFilter) => Promise<void>
+    onBecomeInvalid: (partialFilter: WipFilter) => Promise<void>
 }
 /**
  * A single, basic filter of the form <column> <operator> <value>.
  */
 const SingleFilter: React.FC<SingleFilterProps> = props => {
+    const COMMIT_TIMEOUT = 500
     const filter = props.filter
 
     const theme = useTheme()
-
     const [column, setColumn] = useState<number | string>(
         filter.left?.parentColumnId || ""
     )
@@ -269,27 +309,40 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
         filter.operator || FILTER_OPERATORS[0].raw
     )
     const [value, setValue] = useState<string>(filter.right?.toString() || "")
+    const [readyForCommit, setReadyForCommit] = useState<boolean>(true)
+    const filterState = useRef<WipFilter>()
 
     useEffect(() => {
-        setColumn(filter.left?.parentColumnId || "")
-        setOperator(filter.operator || FILTER_OPERATORS[0].raw)
-        setValue(filter.right?.toString() || "")
-    }, [filter])
+        filterState.current = assembleFilter()
+        if (readyForCommit) commit()
+    }, [column, operator, value])
 
-    const tryCommit = () => {}
+    const commit = async () => {
+        setReadyForCommit(false)
+        const currentFilter = filterState.current
+        if (!currentFilter) return
 
-    const commit = () => {
-        const leftColumn = props.columns.find(c => c._id === column)!
-        const columnSpec = {
-            parentColumnId: leftColumn._id,
-            joinId: null,
-        }
-        const newFilter: SimpleFilter = {
+        setTimeout(async () => {
+            const newFilter = filterState.current!
+            if (isValidFilter(newFilter)) await props.onCommit(newFilter)
+            else await props.onBecomeInvalid(newFilter)
+            setReadyForCommit(true)
+        }, COMMIT_TIMEOUT)
+        if (isValidFilter(currentFilter)) await props.onCommit(currentFilter)
+        else await props.onBecomeInvalid(currentFilter)
+    }
+
+    const assembleFilter = () => {
+        const leftColumn = props.columns.find(c => c._id === column)
+        const columnSpec = leftColumn
+            ? { parentColumnId: leftColumn._id, joinId: null }
+            : undefined
+        const newFilter: WipFilter = {
             left: columnSpec,
             operator: operator,
             right: operator === "LIKE" ? "%" + value + "%" : value,
         }
-        return props.onCommitFilter(newFilter)
+        return newFilter
     }
 
     return (
@@ -305,7 +358,6 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
                 value={column}
                 onChange={e => {
                     setColumn(e.target.value)
-                    tryCommit()
                 }}
             >
                 {props.columns.map(c => (
@@ -318,7 +370,6 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
                 value={operator}
                 onChange={e => {
                     setOperator(e.target.value)
-                    tryCommit()
                 }}
             >
                 {FILTER_OPERATORS.map(op => (
@@ -332,15 +383,8 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
                 value={value}
                 onChange={e => {
                     setValue(e.target.value)
-                    tryCommit()
                 }}
             ></TextField>
-            <IconButton
-                sx={{ verticalAlign: "revert" }}
-                onClick={() => commit()}
-            >
-                <AddBoxIcon />
-            </IconButton>
             <IconButton
                 sx={{ verticalAlign: "revert" }}
                 onClick={props.onHandleDelete}
@@ -358,7 +402,13 @@ const newEmptyWipFilter = (): WipFilter => ({
 const isValidFilter = (filter: WipFilter): filter is SimpleFilter =>
     filter.left !== undefined &&
     filter.operator !== undefined &&
-    filter.right !== undefined
+    filter.right !== undefined &&
+    filter.right !== ""
 
 const arrayRemove = <A,>(a: Array<A>, i: number): Array<A> =>
     a.slice(0, i).concat(...a.slice(i + 1))
+
+const filterEquals = (f1: WipFilter, f2: WipFilter) =>
+    f1.left?.parentColumnId === f2.left?.parentColumnId &&
+    f1.operator === f2.operator &&
+    f1.right === f2.right
