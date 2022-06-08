@@ -16,7 +16,7 @@ export const ToggleDetailView: React.FC<ToggleDetailViewProps> = props => (
         }`}
         enterDelay={1000}
     >
-        <IconButton onClick={props.handleClick}>
+        <IconButton onClick={props.handleClick} color="primary">
             {props.open ? <OpenInNewIcon /> : <OpenInNewOffIcon />}
         </IconButton>
     </Tooltip>
