@@ -85,19 +85,19 @@ export const EditFilters: React.FC = () => {
             <Button startIcon={<FilterListIcon />} onClick={toggleEditor}>
                 Filter
             </Button>
-            <Popper open={anchorEl != null} anchorEl={anchorEl}>
-                <FilterEditor
-                    columns={prepareColumns(tableData.metadata.columns)}
-                    activeFilters={viewData.filters as SimpleFilter[]}
-                    onHandleCloseEditor={handleCloseEditor}
-                    onUpdateFilters={handleUpdateFilters}
-                />
-            </Popper>
+            <FilterEditor
+                anchorEl={anchorEl}
+                columns={prepareColumns(tableData.metadata.columns)}
+                activeFilters={viewData.filters as SimpleFilter[]}
+                onHandleCloseEditor={handleCloseEditor}
+                onUpdateFilters={handleUpdateFilters}
+            />
         </>
     )
 }
 
 type FilterEditorProps = {
+    anchorEl: HTMLElement | null
     /** The columns to choose the left operand from. */
     columns: ColumnStub[]
     /**
@@ -132,11 +132,11 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
     const viewRef = useRef<ViewDescriptor | null>()
     useEffect(() => {
         viewRef.current = view
-    }, [])
+    })
     const prevView = viewRef.current
     useEffect(() => {
         if (prevView && prevView.id !== view?.id) props.onHandleCloseEditor()
-    }, [view])
+    }, [view, prevView, props])
 
     /**
      * The trick is that `wipFilters` is as long as there are filters in total,
@@ -206,7 +206,7 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
     }
 
     return (
-        <>
+        <Popper open={props.anchorEl != null} anchorEl={props.anchorEl}>
             <Paper elevation={2} sx={{ padding: "16px" }}>
                 <Stack>
                     <Box>
@@ -239,7 +239,7 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
                     </IconButton>
                 </Stack>
             </Paper>
-        </>
+        </Popper>
     )
 }
 
@@ -284,7 +284,7 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
         setColumn(filter.left?.parentColumnId || "")
         setOperator(filter.operator || FILTER_OPERATORS[0].raw)
         setValue(filter.right?.toString() || "")
-    }, [props.filter])
+    }, [filter])
 
     const tryCommit = () => {}
 
