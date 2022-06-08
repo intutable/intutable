@@ -20,6 +20,7 @@ import {
     IconButton,
     Stack,
     Box,
+    Typography,
 } from "@mui/material"
 
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
@@ -237,6 +238,7 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
             <Paper elevation={2} sx={{ padding: "16px" }}>
                 <Stack>
                     <Box>
+                        <Typography></Typography>
                         <IconButton
                             onClick={props.onHandleCloseEditor}
                             sx={{
@@ -263,6 +265,7 @@ const FilterEditor: React.FC<FilterEditorProps> = props => {
                         onClick={handleAddFilter}
                         sx={{
                             borderRadius: "4px",
+                            mt: 2,
                         }}
                     >
                         <AddBoxIcon />
@@ -363,10 +366,11 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
     return (
         <Box
             sx={{
-                margin: "2px",
-                padding: "4px",
-                bgcolor: theme.palette.action.selected,
+                m: 0.5,
+                p: 0.5,
                 borderRadius: "4px",
+                display: "flex",
+                alignContent: "center",
             }}
         >
             <Select
@@ -374,6 +378,10 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
                 onChange={e => {
                     setColumn(e.target.value)
                 }}
+                sx={{
+                    mr: 1,
+                }}
+                size="small"
             >
                 {columns.map(c => (
                     <MenuItem key={c._id} value={c._id}>
@@ -386,6 +394,10 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
                 onChange={e => {
                     setOperator(e.target.value)
                 }}
+                sx={{
+                    mr: 1,
+                }}
+                size="small"
             >
                 {FILTER_OPERATORS.map(op => (
                     <MenuItem key={op.raw} value={op.raw}>
@@ -394,17 +406,24 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
                 ))}
             </Select>
             <TextField
-                variant="filled"
+                size="small"
                 value={value}
                 onChange={e => {
                     setValue(e.target.value)
                 }}
-            ></TextField>
+                sx={{
+                    mr: 1,
+                }}
+            />
             <IconButton
                 sx={{ verticalAlign: "revert" }}
                 onClick={props.onHandleDelete}
             >
-                <DeleteIcon />
+                <DeleteIcon
+                    sx={{
+                        fontSize: "80%",
+                    }}
+                />
             </IconButton>
         </Box>
     )

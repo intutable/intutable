@@ -33,6 +33,7 @@ import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 import { useThemeToggler } from "pages/_app"
+import { DetailedRowView } from "@datagrid/Detail Window/DetailedRowView"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -70,7 +71,7 @@ const TablePage: React.FC = () => {
     const { getRowId, updateRow } = useRow()
 
     // views side panel
-    const [viewNavOpen, setViewNavOpen] = useState<boolean>(true)
+    const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
 
     // Column Selector
     const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
@@ -79,6 +80,7 @@ const TablePage: React.FC = () => {
 
     // Detailed View
     const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(true)
+    const [detailedViewRow, setDetailedViewRow] = useState<Row | null>(null)
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
@@ -91,9 +93,12 @@ const TablePage: React.FC = () => {
         await updateRow(col, getRowId(changedRow), changedRow[col.key])
     }
 
-    useEffect(() => {
-        console.log(theme.colorScheme)
-    }, [theme])
+    const tableSize =
+        viewNavOpen && detailedViewOpen
+            ? 8
+            : viewNavOpen != detailedViewOpen
+            ? 10
+            : 12
 
     if (tableList == null || data == null) return <LoadingSkeleton />
 
@@ -119,14 +124,6 @@ const TablePage: React.FC = () => {
                 </Link>
             </Typography>
 
-            {/* {detailedViewOpen && (
-                <DetailedViewModal
-                    open={detailedViewOpen != null}
-                    data={detailedViewOpen}
-                    onCloseHandler={() => setDetailedViewOpen(null)}
-                />
-            )}
-              */}
             <TableNavigator />
 
             {error ? (
@@ -134,11 +131,13 @@ const TablePage: React.FC = () => {
             ) : (
                 <>
                     <Grid container spacing={2}>
-                        <Grid item xs={viewNavOpen ? 2 : 0}>
-                            <ViewNavigator open={viewNavOpen} />
-                        </Grid>
+                        {viewNavOpen && (
+                            <Grid item xs={2}>
+                                <ViewNavigator open={viewNavOpen} />
+                            </Grid>
+                        )}
 
-                        <Grid item xs={8}>
+                        <Grid item xs={tableSize}>
                             <Box>
                                 <Toolbar position="top">
                                     <ToolbarItem.Views
@@ -158,7 +157,7 @@ const TablePage: React.FC = () => {
                                         handleClick={() =>
                                             setDetailedViewOpen(prev => !prev)
                                         }
-                                        open={detailedViewOpen != null}
+                                        open={detailedViewOpen}
                                     />
                                 </Toolbar>
 
@@ -183,6 +182,9 @@ const TablePage: React.FC = () => {
                                         onSelectedRowsChange={setSelectedRows}
                                         onRowsChange={partialRowUpdate}
                                         headerRowHeight={headerHeight}
+                                        onRowClick={(row, column) =>
+                                            setDetailedViewRow(row)
+                                        }
                                     />
                                 </DndProvider>
 
@@ -194,18 +196,14 @@ const TablePage: React.FC = () => {
                             </Box>
                         </Grid>
 
-                        <Grid item xs={detailedViewOpen ? 2 : 0}>
-                            {detailedViewOpen && (
-                                // <DetailedViewModal
-                                //     open={detailedViewOpen != null}
-                                //     data={detailedViewOpen}
-                                //     onCloseHandler={() =>
-                                //         setDetailedViewOpen(null)
-                                //     }
-                                // />
-                                <span>Hallo</span>
-                            )}
-                        </Grid>
+                        {detailedViewOpen && (
+                            <Grid item xs={2}>
+                                <DetailedRowView
+                                    row={detailedViewRow || undefined}
+                                    open={detailedViewOpen}
+                                />
+                            </Grid>
+                        )}
                     </Grid>
                 </>
             )}

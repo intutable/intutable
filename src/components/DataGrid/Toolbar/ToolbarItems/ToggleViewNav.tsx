@@ -15,7 +15,7 @@ export const Views: React.FC<ViewsProps> = props => {
             title={`Views-Editor ${props.open ? "schließen" : "öffnen"}`}
             enterDelay={1000}
         >
-            <IconButton onClick={props.handleClick}>
+            <IconButton onClick={props.handleClick} color="primary">
                 {props.open ? <VisibilityIcon /> : <VisibilityOffIcon />}
             </IconButton>
         </Tooltip>
