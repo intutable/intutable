@@ -1,13 +1,28 @@
 import { Box, Divider, Typography, useTheme } from "@mui/material"
-import React from "react"
+import { getColumnInfo } from "hooks/useColumn"
+import { useView } from "hooks/useView"
+import React, { useMemo } from "react"
+import { CalculatedColumn } from "react-data-grid"
 import { Row } from "types"
 
 export type DetailedRowViewProps = {
     open: boolean
-    row?: Row
+    data?: { row: Row; column: CalculatedColumn<Row> }
 }
 export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
     const theme = useTheme()
+    const { data } = useView()
+
+    const row = useMemo(() => {
+        if (props.data == null || data == null) return null
+        const _row: { [key: string]: unknown } = {}
+        Object.entries(props.data.row).forEach(([key, value]) => {
+            const col = data.columns.find(col => col.key === key)!
+            if (col == null) return
+            _row[col.name as string] = value
+        })
+        return _row
+    }, [data, props.data])
 
     if (props.open === false) return null
 
@@ -37,26 +52,27 @@ export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
                 }}
             >
                 Detail-Ansicht{" "}
-                {props.row ? `Zeile ${props.row.__rowIndex__}` : ""}
+                {props.data ? `Zeile ${props.data.row.__rowIndex__}` : ""}
             </Typography>
             <Divider />
-            {props.row == null && (
+            {props.data == null && (
                 <Typography variant="caption">
                     Keine Zeile ausgewählt
                 </Typography>
             )}
-            {props.row && (
+            {row && (
                 <ul>
-                    {Object.entries(props.row).map(([key, value], i) => (
+                    {Object.entries(row).map(([key, value], i) => (
                         <li key={i}>
                             <>
-                                {key}: {value}
+                                <Typography variant="caption">{key}</Typography>
+                                : {value}
                             </>
                         </li>
                     ))}
                 </ul>
             )}
-            {props.row && (
+            {props.data && (
                 <>
                     <Divider sx={{ mt: 5, mb: 0.5 }} />
                     <Typography

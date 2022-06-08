@@ -25,7 +25,7 @@ import { useView } from "hooks/useView"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import React, { useEffect, useState } from "react"
-import DataGrid, { RowsChangeData } from "react-data-grid"
+import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
@@ -79,8 +79,11 @@ const TablePage: React.FC = () => {
     )
 
     // Detailed View
-    const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(true)
-    const [detailedViewRow, setDetailedViewRow] = useState<Row | null>(null)
+    const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(false)
+    const [detailedViewData, setDetailedViewData] = useState<{
+        row: Row
+        column: CalculatedColumn<Row>
+    } | null>(null)
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
@@ -183,15 +186,13 @@ const TablePage: React.FC = () => {
                                         onRowsChange={partialRowUpdate}
                                         headerRowHeight={headerHeight}
                                         onRowClick={(row, column) =>
-                                            setDetailedViewRow(row)
+                                            setDetailedViewData({ row, column })
                                         }
                                     />
                                 </DndProvider>
 
                                 <Toolbar position="bottom">
-                                    <ToolbarItem.Connection
-                                        status={"connected"}
-                                    />
+                                    <ToolbarItem.Connection status="connected" />
                                 </Toolbar>
                             </Box>
                         </Grid>
@@ -199,7 +200,7 @@ const TablePage: React.FC = () => {
                         {detailedViewOpen && (
                             <Grid item xs={2}>
                                 <DetailedRowView
-                                    row={detailedViewRow || undefined}
+                                    data={detailedViewData || undefined}
                                     open={detailedViewOpen}
                                 />
                             </Grid>

@@ -37,7 +37,6 @@ export const useUser = (options: UseUserOptions = UseUserDefaultOptions) => {
     })
 
     useEffect(() => {
-        console.log(1, user)
         // if no redirect needed, just return
         // if user data not yet there (fetch in progress, logged in or not) then don't do anything yet
         if (!redirectTo || user == null || error != null || isValidating) return
