@@ -7,6 +7,7 @@ import {
     renameView,
     TableDescriptor,
     tableId as makeTableId,
+    viewId,
     ViewData,
     ViewDescriptor,
     ViewOptions,
@@ -109,18 +110,30 @@ const PATCH = withCatchingAPIRoute(
 const DELETE = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
         const user = req.session.user!
-        // delete table in project-management
+
+        // delete filter views
+        const filterViews = await coreRequest<ViewDescriptor[]>(
+            listViews(viewId(tableId)),
+            user.authCookie
+        )
+
+        Promise.all(
+            filterViews.map(v => coreRequest(deleteView(v.id), user.authCookie))
+        )
+
         const options = await coreRequest<ViewOptions>(
             getViewOptions(tableId),
             user.authCookie
         )
+
+        // delete table view
+        await coreRequest(deleteView(tableId), user.authCookie)
+
+        // delete table in project-management
         await coreRequest(
             removeTable(asTable(options.source).id),
             user.authCookie
         )
-
-        // delete table in lazy-views
-        await coreRequest(deleteView(tableId), user.authCookie)
 
         res.status(200).json({})
     }

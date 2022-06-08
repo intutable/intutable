@@ -1,5 +1,12 @@
 import { ColumnType } from "@intutable/database/dist/column"
-import { createView, tableId, ViewDescriptor } from "@intutable/lazy-views"
+import {
+    createView,
+    tableId,
+    viewId,
+    getViewInfo,
+    ViewInfo,
+    ViewDescriptor,
+} from "@intutable/lazy-views"
 import {
     createTableInProject,
     getColumnsFromTable,
@@ -14,8 +21,13 @@ import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import defaultRowOptions from "utils/defaultRowOptions"
 import sanitizeName from "utils/sanitizeName"
+import {
+    emptyRowOptions,
+    defaultRowOptions,
+    defaultViewName,
+    standardColumnAttributes,
+} from "@backend/defaults"
 
 /**
  * Create a new table with the specified name.
@@ -23,7 +35,7 @@ import sanitizeName from "utils/sanitizeName"
  * renamed, but not deleted. We call this column "user primary", and it
  * functions as the table's key for all directly user-relevant purposes, e.g.
  * in making previews of rows for link columns. It has nothing to do with
- * the actual, integer primary key in the database.
+ * the actual, SQL primary key in the database.
  * @tutorial
  * ```
  * - Body: {
@@ -65,17 +77,33 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         parentColumnId: c.id,
         attributes:
             c.name === "name"
-                ? { userPrimary: 1, displayName: "Name", editor: "string" }
-                : { displayName: "ID", editor: "number" },
+                ? standardColumnAttributes("Name", true)
+                : standardColumnAttributes("ID"),
     }))
 
-    // create view
+    // create table view
     const tableView = await coreRequest<ViewDescriptor>(
         createView(
             tableId(table.id),
             name,
             { columns: columnSpecs, joins: [] },
-            defaultRowOptions(baseColumns),
+            emptyRowOptions(),
+            user.id
+        ),
+        user.authCookie
+    )
+
+    // create default filter view
+    const tableColumns = await coreRequest<ViewInfo>(
+        getViewInfo(tableView.id),
+        user.authCookie
+    ).then(i => i.columns)
+    await coreRequest<ViewDescriptor>(
+        createView(
+            viewId(tableView.id),
+            defaultViewName(),
+            { columns: [], joins: [] },
+            defaultRowOptions(tableColumns),
             user.id
         ),
         user.authCookie

@@ -13,6 +13,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import { Column } from "types"
+import { addColumnToFilterViews } from "utils/backend/views"
 
 /**
  * Add a column to a table.
@@ -25,14 +26,14 @@ import { Column } from "types"
  * ```
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
-    const { viewId, column } = req.body as {
-        viewId: ViewDescriptor["id"]
+    const { tableViewId, column } = req.body as {
+        tableViewId: ViewDescriptor["id"]
         column: Column.Serialized
     }
     const user = req.session.user!
 
     const options = await coreRequest<ViewOptions>(
-        getViewOptions(viewId),
+        getViewOptions(tableViewId),
         user.authCookie
     )
 
@@ -42,12 +43,23 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         user.authCookie
     )
 
-    const viewColumn = await coreRequest<View_Column>(
-        addColumnToView(viewId, Parser.Column.deparse(column, tableColumn.id)),
+    // add column to table view
+    const tableViewColumn = await coreRequest<View_Column>(
+        addColumnToView(
+            tableViewId,
+            Parser.Column.deparse(column, tableColumn.id)
+        ),
         user.authCookie
     )
 
-    const parsedColumn = Parser.Column.parse(viewColumn)
+    // add column to each filter view
+    await addColumnToFilterViews(
+        tableViewId,
+        Parser.Column.deparse(column, tableViewColumn.id),
+        user.authCookie
+    )
+
+    const parsedColumn = Parser.Column.parse(tableViewColumn)
 
     res.status(200).json(parsedColumn)
 })

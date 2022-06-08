@@ -6,7 +6,7 @@ import createTheme from "./utils"
  * `COLOR_SCHEME` is added to the theme via module augmentation in `./utils.ts`.
  * You can access added colors by `theme.colorScheme[STRING]`.
  */
-export const COLOR_SCHEME = {}
+export const COLOR_SCHEME = {} as const
 
 /**
  * Light Theme for the App

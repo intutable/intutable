@@ -7,6 +7,8 @@ export type APIContextProps = {
     setProject: React.Dispatch<React.SetStateAction<ProjectDescriptor | null>>
     table: ViewDescriptor | null
     setTable: React.Dispatch<React.SetStateAction<ViewDescriptor | null>>
+    view: ViewDescriptor | null
+    setView: React.Dispatch<React.SetStateAction<ViewDescriptor | null>>
 }
 
 const initialState: APIContextProps = {
@@ -14,6 +16,8 @@ const initialState: APIContextProps = {
     setProject: undefined!,
     table: undefined!,
     setTable: undefined!,
+    view: undefined!,
+    setView: undefined!,
 }
 
 const APIContext = React.createContext<APIContextProps>(initialState)
@@ -23,6 +27,7 @@ export const useAPI = () => React.useContext(APIContext)
 export type APIContextProviderProps = {
     project?: ProjectDescriptor
     table?: ViewDescriptor
+    view?: ViewDescriptor
     children: React.ReactNode
 }
 
@@ -38,15 +43,27 @@ export const APIContextProvider: React.FC<APIContextProviderProps> = props => {
         props.table || null
     )
 
+    const [view, setView] = useState<ViewDescriptor | null>(props.view || null)
+
     // BUG: the props change, but the state does not change
     // TODO: use a better solution
     useEffect(() => {
         setProject(props.project || null)
         setTable(props.table || null)
-    }, [props.project, props.table])
+        setView(props.view || null)
+    }, [props.project, props.table, props.view])
 
     return (
-        <APIContext.Provider value={{ table, setTable, project, setProject }}>
+        <APIContext.Provider
+            value={{
+                project,
+                setProject,
+                table,
+                setTable,
+                view,
+                setView,
+            }}
+        >
             {props.children}
         </APIContext.Provider>
     )

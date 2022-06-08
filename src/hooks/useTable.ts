@@ -1,5 +1,5 @@
 import { TableDescriptor } from "@intutable/lazy-views"
-import { useAPI, APIContextProvider } from "context"
+import { useAPI } from "context"
 import useSWR, { unstable_serialize } from "swr"
 import { TableData } from "types"
 import { ViewDescriptor } from "@intutable/lazy-views"
@@ -7,7 +7,7 @@ import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 
 export type TableHookOptions = {
-    table?: ViewDescriptor
+    table?: ViewDescriptor | null
     swrOptions?: Partial<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         PublicConfiguration<TableData, any, BareFetcher<TableData>>

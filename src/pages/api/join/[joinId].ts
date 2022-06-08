@@ -29,15 +29,15 @@ import { project_management_constants } from "types/type-annotations/project-man
  */
 const POST = withCatchingAPIRoute(
     async (req, res, joinId: JoinDescriptor["id"]) => {
-        const { viewId, rowId, value } = req.body as {
-            viewId: ViewDescriptor["id"]
+        const { tableViewId, rowId, value } = req.body as {
+            tableViewId: ViewDescriptor["id"]
             rowId: number
-            value: number
+            value: number | null
         }
         const user = req.session.user!
 
         const viewInfo = await coreRequest<ViewInfo>(
-            getViewInfo(viewId),
+            getViewInfo(tableViewId),
             user.authCookie
         )
         const baseTableInfo = await coreRequest<TableInfo>(
@@ -46,7 +46,6 @@ const POST = withCatchingAPIRoute(
         )
 
         const join = viewInfo.joins.find(j => j.id === joinId)!
-
         const fkColumn = baseTableInfo.columns.find(c => c.id === join.on[0])!
 
         await coreRequest(

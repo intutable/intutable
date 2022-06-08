@@ -1,6 +1,7 @@
 import { ColumnInfo, ColumnSpecifier } from "@intutable/lazy-views"
 import { Column } from "types"
 import { isNumber } from "utils/isNumber"
+import { project_management_constants } from "types/type-annotations/project-management"
 
 /** Convert a column coming from the DB to a serialized stub of a RDG column. */
 export const parse = (column: ColumnInfo): Column.Serialized => ({
@@ -106,3 +107,6 @@ export const deparse = (
         attributes,
     }
 }
+
+export const isInternalColumn = (column: ColumnInfo): boolean =>
+    column.name === project_management_constants.UID_KEY

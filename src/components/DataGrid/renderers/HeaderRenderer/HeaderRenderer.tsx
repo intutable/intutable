@@ -25,10 +25,11 @@ import {
 import { fetcher } from "api/fetcher"
 import { useUser } from "auth"
 import { useAPI, useHeaderSearchField } from "context"
-import { useColumn, getColumnInfo } from "hooks/useColumn"
+import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
-import { useTable } from "hooks/useTable"
 import { useTables } from "hooks/useTables"
+import { useTable } from "hooks/useTable"
+import { useView } from "hooks/useView"
 import { useRouter } from "next/router"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
@@ -44,8 +45,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { snackError, snackSuccess, snackWarning } = useSnacki()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
-    const { data, mutate } = useTable()
-    const { renameColumn, deleteColumn } = useColumn()
+    const { data, mutate: mutateTable } = useTable()
+    const { mutate: mutateView } = useView()
+    const { renameColumn, deleteColumn, getTableColumn } = useColumn()
     const { project } = useAPI()
 
     const {
@@ -55,9 +57,8 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     } = useHeaderSearchField()
 
     const col = useMemo(
-        () =>
-            data ? getColumnInfo(data.metadata.columns, props.column) : null,
-        [data, props.column]
+        () => (data ? getTableColumn(props.column) : null),
+        [data, getTableColumn, props.column]
     )
     // column that represents a link to another table
     const isLinkCol = props.column._kind! === "link"
@@ -69,9 +70,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         () => (col ? col.attributes.userPrimary === 1 : null),
         [col]
     )
-    const { tables } = useTables(project)
+    const { tables } = useTables()
 
-    const foreignView = useMemo(() => {
+    const foreignTable = useMemo(() => {
         if (col == null) return null
         if (!data || !tables) return undefined
         const join = data.metadata.joins.find(j => j.id === col.joinId)
@@ -103,7 +104,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     }
 
     const navigateToView = () =>
-        router.push(`/project/${project!.id}/table/${foreignView?.id}`)
+        router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
 
     const handleRenameColumn = async () => {
         try {
@@ -138,11 +139,13 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
-                    viewId: data!.metadata.descriptor.id,
+                    tableViewId: data!.metadata.descriptor.id,
                     joinId,
                 },
             })
-            await mutate()
+            await mutateTable()
+            await mutateView()
+            handleCloseContextMenu()
         } catch (error) {
             snackError("Der Lookup konnte nicht hinzugefügt werden!")
         }
@@ -175,14 +178,14 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 {isLinkCol && (
                     <Tooltip
                         title={`(Verlinkte Spalte) Ursprung: Primärspalte aus Tabelle '${
-                            foreignView ? foreignView.name : "Lädt..."
+                            foreignTable ? foreignTable.name : "Lädt..."
                         }'.`}
                     >
                         <span>
                             <IconButton
                                 onClick={navigateToView}
                                 size="small"
-                                disabled={foreignView == null}
+                                disabled={foreignTable == null}
                             >
                                 <LinkIcon
                                     sx={{
@@ -312,12 +315,12 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     >
                         <ListItemText>Löschen</ListItemText>
                     </MenuItem>
-                    {foreignView && (
+                    {foreignTable && (
                         <AddLookupModal
                             open={anchorEL_LookupModal != null}
                             onClose={handleCloseLookupModal}
                             onAddLookupModal={handleAddLookup}
-                            foreignView={foreignView}
+                            foreignTable={foreignTable}
                         />
                     )}
                 </Menu>

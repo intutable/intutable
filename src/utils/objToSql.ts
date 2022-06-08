@@ -1,5 +1,6 @@
 /**
- *
+ * Go through an object and convert all of its boolean values to 0 | 1
+ * for storage in a database.
  */
 export const objToSql = (
     obj: Record<string, unknown>

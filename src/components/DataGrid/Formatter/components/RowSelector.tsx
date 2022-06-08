@@ -14,15 +14,11 @@ import {
     useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
-import { getRowId } from "hooks/useRow"
+import { RowPreview, useLink } from "hooks/useLink"
 import { useTable } from "hooks/useTable"
+import { useView } from "hooks/useView"
 import { useSnackbar } from "notistack"
-import React, { useEffect, useMemo, useState } from "react"
-
-export type RowPreview = {
-    id: number
-    text: string
-}
+import React, { useState } from "react"
 
 export type RowSelectorProps = {
     rowId: number
@@ -36,41 +32,24 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data: baseTableData, mutate } = useTable()
-
-    const { data: linkTableData, error } = useTable({
-        table: props.foreignTable,
-    })
+    const { data: baseTableData, mutate: mutateTable } = useTable()
+    const { mutate: mutateView } = useView()
+    const { error, rowPreviews } = useLink({ table: props.foreignTable })
 
     const [selection, setSelection] = useState<RowPreview | null>(null)
-
-    const primaryColumn = useMemo(() => {
-        if (linkTableData == null) return null
-        return linkTableData.metadata.columns.find(
-            c => c.attributes.userPrimary! === 1
-        )!
-    }, [linkTableData])
-
-    // get data from target table and generate previews of rows
-    const options = useMemo(() => {
-        if (primaryColumn == null) return null
-        return linkTableData!.rows.map(r => ({
-            id: getRowId(linkTableData, r),
-            text: r[primaryColumn.key] as string,
-        }))
-    }, [linkTableData, primaryColumn])
 
     const handlePickRow = async () => {
         try {
             await fetcher({
                 url: `/api/join/${props.join.id}`,
                 body: {
-                    viewId: baseTableData!.metadata.descriptor.id,
+                    tableViewId: baseTableData!.metadata.descriptor.id,
                     rowId: props.rowId,
                     value: selection?.id,
                 },
             })
-            await mutate()
+            await mutateTable()
+            await mutateView()
         } catch (err) {
             enqueueSnackbar("Die Zeile konnte nicht hinzugefügt werden!", {
                 variant: "error",
@@ -84,14 +63,14 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>Wähle eine Zeile</DialogTitle>
             <DialogContent>
-                {options == null && error == null ? (
+                {rowPreviews == null && error == null ? (
                     <CircularProgress />
                 ) : error ? (
                     <>Error: {error}</>
                 ) : (
                     <>
                         <List>
-                            {options!
+                            {rowPreviews!
                                 .filter(row => row.text != null)
                                 .map(row => (
                                     <ListItem
@@ -120,7 +99,7 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <LoadingButton
-                    loading={linkTableData?.rows == null && error == null}
+                    loading={rowPreviews == null && error == null}
                     loadingIndicator="Lädt..."
                     onClick={handlePickRow}
                     disabled={selection == null || error}

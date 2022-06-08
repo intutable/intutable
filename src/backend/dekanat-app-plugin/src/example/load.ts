@@ -16,11 +16,12 @@ import { requests as v_req } from "@intutable/lazy-views/"
 import { types as v_types } from "@intutable/lazy-views"
 import { tableId, viewId } from "@intutable/lazy-views"
 
+import { emptyRowOptions, defaultRowOptions } from "../defaults"
+
 import {
     TableSpec,
     JoinSpec,
     Table,
-    PK_COLUMN,
     PERSONEN,
     PERSONEN_DATA,
     ORGANE,
@@ -63,7 +64,6 @@ async function createTable(
     const tableInfo = (await core.events.request(
         getTableInfo(baseTable.id)
     )) as TableInfo
-    const idColumn = tableInfo.columns.find(c => c.name === PK_COLUMN)
     const viewColumns: v_types.ColumnSpecifier[] = table.columns.map(c => {
         const baseColumn = tableInfo.columns.find(
             parent => parent.name === c.baseColumn.name
@@ -78,30 +78,40 @@ async function createTable(
             tableId(baseTable.id),
             table.name,
             { columns: viewColumns, joins: [] },
-            EMPTY_ROW_OPTIONS
+            emptyRowOptions(),
+            userId
         )
     )) as v_types.ViewDescriptor
+    // add joins
+    await Promise.all(
+        table.joins.map(j => addJoin(core, baseTable, tableView, j))
+    )
+
+    const tableViewInfo = (await core.events.request(
+        v_req.getViewInfo(tableView.id)
+    )) as v_types.ViewInfo
     const filterView = await core.events.request(
         v_req.createView(
             viewId(tableView.id),
             "Standard",
             { columns: [], joins: [] },
-            baseRowOptions(idColumn)
+            defaultRowOptions(tableViewInfo.columns),
+            userId
         )
     )
     const tableDescriptors = { baseTable, tableView, filterView }
-    await Promise.all(table.joins.map(j => addJoin(core, tableDescriptors, j)))
     return tableDescriptors
 }
 
 async function addJoin(
     core: PluginLoader,
-    table: Table,
+    baseTable: TableDescriptor,
+    tableView: v_types.ViewDescriptor,
     join: JoinSpec
 ): Promise<void> {
     const fk = (await core.events.request(
         createColumnInTable(
-            table.baseTable.id,
+            baseTable.id,
             join.fkColumn.name,
             join.fkColumn.type
         )
@@ -121,7 +131,7 @@ async function addJoin(
         }
     })
     await core.events.request(
-        v_req.addJoinToView(table.tableView.id, {
+        v_req.addJoinToView(tableView.id, {
             foreignSource: viewId(foreignTable.tableView.id),
             on: [fk.id, "=", pk.id],
             columns: foreignColumns,
@@ -145,22 +155,4 @@ export async function insertExampleData(core: PluginLoader): Promise<void> {
             core.events.request(insert(rollen.baseTable.key, r))
         )
     )
-}
-
-const EMPTY_ROW_OPTIONS: v_types.RowOptions = {
-    conditions: [],
-    groupColumns: [],
-    sortColumns: [],
-}
-function baseRowOptions(idColumn: ColumnDescriptor): v_types.RowOptions {
-    return {
-        conditions: [],
-        groupColumns: [],
-        sortColumns: [
-            {
-                column: { parentColumnId: idColumn.id, joinId: 0 },
-                order: v_types.SortOrder.Ascending,
-            },
-        ],
-    }
 }

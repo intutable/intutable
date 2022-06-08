@@ -1,12 +1,11 @@
-import { DetailedViewModal } from "@datagrid/Detail Window/DetailedViewModal"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
 import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Box, Button, Typography, useTheme } from "@mui/material"
+import { Grid, Box, Button, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Title from "components/Head/Title"
@@ -20,22 +19,24 @@ import {
     useHeaderSearchField,
 } from "context"
 import { useBrowserInfo } from "hooks/useBrowserInfo"
-import { getRowId, useRow } from "hooks/useRow"
+import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import { useTable } from "hooks/useTable"
+import { useView } from "hooks/useView"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import React, { useEffect, useState } from "react"
-import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import DataGrid, { RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import type { Row, TableData } from "types"
+import type { Row, TableData, ViewData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
+import { useThemeToggler } from "pages/_app"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
+    const { getTheme } = useThemeToggler()
     const { snackWarning, closeSnackbar } = useSnacki()
     const { isChrome } = useBrowserInfo()
     // warn if browser is not chrome
@@ -63,13 +64,13 @@ const TablePage: React.FC = () => {
     // #################### states ####################
 
     const { headerHeight } = useHeaderSearchField()
-    const { project, table } = useAPI()
-    const { data, error } = useTable()
-    const { tables: tableList } = useTables(project)
-    const { updateRow } = useRow()
+    const { project } = useAPI()
+    const { data, error } = useView()
+    const { tables: tableList } = useTables()
+    const { getRowId, updateRow } = useRow()
 
     // views side panel
-    const [viewsOpen, setViewsOpen] = useState<boolean>(true)
+    const [viewNavOpen, setViewNavOpen] = useState<boolean>(true)
 
     // Column Selector
     const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
@@ -77,10 +78,7 @@ const TablePage: React.FC = () => {
     )
 
     // Detailed View
-    const [detailedViewOpen, setDetailedViewOpen] = useState<{
-        row: Row
-        column: CalculatedColumn<Row>
-    } | null>(null)
+    const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(true)
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
@@ -90,15 +88,18 @@ const TablePage: React.FC = () => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
 
-        await updateRow(col, getRowId(data, changedRow), changedRow[col.key])
+        await updateRow(col, getRowId(changedRow), changedRow[col.key])
     }
 
-    if (project == null || table == null || tableList == null || data == null)
-        return <LoadingSkeleton />
+    useEffect(() => {
+        console.log(theme.colorScheme)
+    }, [theme])
+
+    if (tableList == null || data == null) return <LoadingSkeleton />
 
     return (
         <>
-            <Title title={project.name} />
+            <Title title={project!.name} />
             <Typography
                 sx={{
                     mb: theme.spacing(4),
@@ -107,76 +108,105 @@ const TablePage: React.FC = () => {
             >
                 Deine Tabellen in{" "}
                 <Link
-                    href={`/project/${project.id}`}
+                    href={`/project/${project!.id}`}
                     muiLinkProps={{
                         underline: "hover",
                         color: theme.palette.primary.main,
                         textDecoration: "none",
                     }}
                 >
-                    {project.name}
+                    {project!.name}
                 </Link>
             </Typography>
 
-            {detailedViewOpen && (
+            {/* {detailedViewOpen && (
                 <DetailedViewModal
                     open={detailedViewOpen != null}
                     data={detailedViewOpen}
                     onCloseHandler={() => setDetailedViewOpen(null)}
                 />
             )}
-
+              */}
             <TableNavigator />
 
             {error ? (
                 <span>Die Tabelle konnte nicht geladen Werden</span>
             ) : (
                 <>
-                    {viewsOpen && (
-                        <ViewNavigator
-                            sx={{ maxWidth: "12%", height: "100%" }}
-                        />
-                    )}
+                    <Grid container spacing={2}>
+                        <Grid item xs={viewNavOpen ? 2 : 0}>
+                            <ViewNavigator open={viewNavOpen} />
+                        </Grid>
 
-                    <Box>
-                        <Toolbar position="top">
-                            <ToolbarItem.Views
-                                handleClick={() => setViewsOpen(!viewsOpen)}
-                            />
-                            <ToolbarItem.AddCol />
-                            <ToolbarItem.AddLink />
-                            <ToolbarItem.AddRow />
-                            <ToolbarItem.FileDownload getData={() => []} />
-                        </Toolbar>
+                        <Grid item xs={8}>
+                            <Box>
+                                <Toolbar position="top">
+                                    <ToolbarItem.Views
+                                        handleClick={() =>
+                                            setViewNavOpen(prev => !prev)
+                                        }
+                                        open={viewNavOpen}
+                                    />
+                                    <ToolbarItem.AddCol />
+                                    <ToolbarItem.AddLink />
+                                    <ToolbarItem.AddRow />
+                                    <ToolbarItem.EditFilters />
+                                    <ToolbarItem.FileDownload
+                                        getData={() => []}
+                                    />
+                                    <ToolbarItem.DetailView
+                                        handleClick={() =>
+                                            setDetailedViewOpen(prev => !prev)
+                                        }
+                                        open={detailedViewOpen != null}
+                                    />
+                                </Toolbar>
 
-                        <DndProvider backend={HTML5Backend}>
-                            <DataGrid
-                                className={"rdg-" + theme.palette.mode}
-                                rows={data.rows}
-                                columns={data.columns}
-                                components={{
-                                    noRowsFallback: <NoRowsFallback />,
-                                    rowRenderer: RowRenderer,
-                                    // checkboxFormatter: // TODO: adjust
-                                    // sortIcon: // TODO: adjust
-                                }}
-                                rowKeyGetter={rowKeyGetter}
-                                defaultColumnOptions={{
-                                    sortable: true,
-                                    resizable: true,
-                                    // formatter: // TODO: adjust
-                                }}
-                                selectedRows={selectedRows}
-                                onSelectedRowsChange={setSelectedRows}
-                                onRowsChange={partialRowUpdate}
-                                headerRowHeight={headerHeight}
-                            />
-                        </DndProvider>
+                                <DndProvider backend={HTML5Backend}>
+                                    <DataGrid
+                                        className={"rdg-" + getTheme()}
+                                        rows={data.rows}
+                                        columns={data.columns}
+                                        components={{
+                                            noRowsFallback: <NoRowsFallback />,
+                                            rowRenderer: RowRenderer,
+                                            // checkboxFormatter: // TODO: adjust
+                                            // sortIcon: // TODO: adjust
+                                        }}
+                                        rowKeyGetter={rowKeyGetter}
+                                        defaultColumnOptions={{
+                                            sortable: true,
+                                            resizable: true,
+                                            // formatter: // TODO: adjust
+                                        }}
+                                        selectedRows={selectedRows}
+                                        onSelectedRowsChange={setSelectedRows}
+                                        onRowsChange={partialRowUpdate}
+                                        headerRowHeight={headerHeight}
+                                    />
+                                </DndProvider>
 
-                        <Toolbar position="bottom">
-                            <ToolbarItem.Connection status={"connected"} />
-                        </Toolbar>
-                    </Box>
+                                <Toolbar position="bottom">
+                                    <ToolbarItem.Connection
+                                        status={"connected"}
+                                    />
+                                </Toolbar>
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={detailedViewOpen ? 2 : 0}>
+                            {detailedViewOpen && (
+                                // <DetailedViewModal
+                                //     open={detailedViewOpen != null}
+                                //     data={detailedViewOpen}
+                                //     onCloseHandler={() =>
+                                //         setDetailedViewOpen(null)
+                                //     }
+                                // />
+                                <span>Hallo</span>
+                            )}
+                        </Grid>
+                    </Grid>
                 </>
             )}
         </>
@@ -185,8 +215,19 @@ const TablePage: React.FC = () => {
 
 type PageProps = {
     project: ProjectDescriptor
+    /**
+     * In order to allow links/joins, tables are actually implemented using
+     * views. The user-facing views (filtering, hiding columns, etc.) are
+     * implemented as views on views, so be careful not to get confused.
+     */
     table: ViewDescriptor
     tableList: ViewDescriptor[]
+    /**
+     * The current filter view, which selects from the table view
+     * {@link table}
+     */
+    view: ViewDescriptor
+    viewList: ViewDescriptor[]
     // fallback: {
     //     [cacheKey: string]: ViewData
     // }
@@ -194,9 +235,9 @@ type PageProps = {
 
 const Page: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ project, table }) => {
+> = ({ project, table, view }) => {
     return (
-        <APIContextProvider project={project} table={table}>
+        <APIContextProvider project={project} table={table} view={view}>
             <HeaderSearchFieldProvider>
                 <TablePage />
             </HeaderSearchFieldProvider>
@@ -228,13 +269,12 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
-        // workaround until PM exposes the required method
+        // workaround until PM exposes a "get project" method
         const projects = await fetcher<ProjectDescriptor[]>({
             url: `/api/projects`,
             method: "GET",
             headers: context.req.headers as HeadersInit,
         })
-
         const project = projects.find(p => p.id === projectId)
 
         if (project == null) return { notFound: true }
@@ -244,9 +284,24 @@ export const getServerSideProps = withSSRCatch(
             method: "GET",
             headers: context.req.headers as HeadersInit,
         })
-
-        const data = await fetcher<TableData.Serialized>({
+        const tableData = await fetcher<TableData.Serialized>({
             url: `/api/table/${tableId}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+        const viewList = await fetcher<ViewDescriptor[]>({
+            url: `/api/views/${tableId}`,
+            method: "GET",
+            headers: context.req.headers as HeadersInit,
+        })
+
+        if (viewList.length === 0) {
+            return { notFound: true }
+        }
+        const view: ViewDescriptor = viewList[0]
+
+        const data = await fetcher<ViewData.Serialized>({
+            url: `/api/view/${view.id}`,
             method: "GET",
             headers: context.req.headers as HeadersInit,
         })
@@ -254,8 +309,10 @@ export const getServerSideProps = withSSRCatch(
         return {
             props: {
                 project,
-                table: data.metadata.descriptor,
+                table: tableData.metadata.descriptor,
                 tableList,
+                view: data.descriptor,
+                viewList,
                 // fallback: {
                 //     [unstable_serialize({
                 //         url: `/api/table/${tableId}`,

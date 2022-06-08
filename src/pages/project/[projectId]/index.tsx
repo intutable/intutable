@@ -169,7 +169,7 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { tables, error, mutate } = useTables(project)
+    const { tables, error, mutate } = useTables({ project: project })
 
     const handleCreateTable = async () => {
         try {

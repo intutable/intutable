@@ -1,20 +1,10 @@
-import { ViewDescriptor } from "@intutable/lazy-views"
 import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { Column, Row, TableData } from "types"
+import { ViewHookOptions, useView } from "hooks/useView"
+import { Column, Row } from "types"
 import { project_management_constants } from "types/type-annotations/project-management"
-import { getColumnInfo } from "./useColumn"
-
-/**
- * @deprecated
- */
-export const getRowId = (data: TableData | undefined, row: Row) => {
-    const uidColumn = data!.metadata.columns.find(
-        c => c.name === project_management_constants.UID_KEY
-    )!
-    return row[uidColumn.key] as number
-}
+import { useColumn } from "./useColumn"
 
 /**
  * ### useRow hook.
@@ -28,18 +18,35 @@ export const getRowId = (data: TableData | undefined, row: Row) => {
  *
  * @param {ViewDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
  */
-export const useRow = (options?: TableHookOptions) => {
-    const { data: table, error, mutate } = useTable(options)
+export const useRow = (
+    tableOptions?: TableHookOptions,
+    viewOptions?: ViewHookOptions
+) => {
+    const { data: table, mutate: mutateTable } = useTable(tableOptions)
+    const { data: view, mutate: mutateView } = useView(viewOptions)
+    const { getTableColumn } = useColumn(tableOptions, viewOptions)
+
+    /**
+     * Get the (backend, primary key) ID of a row from its RDG counterpart.
+     * Uses the view supplied given by {@link useView} to determine the
+     * correct key. The table can be overridden with {@link viewOptions}.
+     */
+    const getRowId = (row: Row): number => {
+        const uidColumn = view!.metaColumns.find(
+            c => c.name === project_management_constants.UID_KEY
+        )!
+        return row[uidColumn.key] as number
+    }
 
     /**
      * Used for row reordering / drag n drop
      * // TODO: implement
      */
     const onRowReorder = (fromIndex: number, toIndex: number) => {
-        if (table) {
-            const newRows = [...table.rows]
+        if (table && view) {
+            const newRows = [...view.rows]
             newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0])
-            mutate({ ...table, rows: newRows })
+            mutateView({ ...view, rows: newRows })
             // await XYZ() // update data
             // mutate() // make sure data is updated
         }
@@ -54,7 +61,8 @@ export const useRow = (options?: TableHookOptions) => {
             body: { table: asTable(table!.metadata.source).table, values: {} },
         })
 
-        await mutate()
+        await mutateTable()
+        await mutateView()
         // const lastRowIndex = rows.length
         // const deserializedRow = SerializableTable.deserializeRow(
         //     serializedRow,
@@ -70,7 +78,6 @@ export const useRow = (options?: TableHookOptions) => {
     // TODO: the state should be updated differently
     // TODO: filter row and delete by index and then shift them
     // TODO: put `asTable` into the corresponding api route
-    // TODO: get rid of getRowId
     const deleteRow = async (row: Row): Promise<void> => {
         await fetcher({
             url: "/api/row",
@@ -78,13 +85,14 @@ export const useRow = (options?: TableHookOptions) => {
                 table: asTable(table!.metadata.source).table,
                 condition: [
                     project_management_constants.UID_KEY,
-                    getRowId(table, row),
-                ], // just use row._id ?
+                    getRowId(row),
+                ],
             },
             method: "DELETE",
         })
 
-        await mutate()
+        await mutateTable()
+        await mutateView()
     }
 
     // TODO: the cache should be mutated differently
@@ -97,7 +105,10 @@ export const useRow = (options?: TableHookOptions) => {
         rowId: Row["_id"],
         value: unknown
     ): Promise<void> => {
-        const metaColumn = getColumnInfo(table!.metadata.columns, column)
+        // it's a view on top of a view, but the property `column.name`
+        // reflects the actual name in the DB regardless of how deep the
+        // tree is.
+        const metaColumn = getTableColumn(column)!
         const baseColumnKey = metaColumn.name
 
         // TODO: put this in the api route
@@ -115,12 +126,12 @@ export const useRow = (options?: TableHookOptions) => {
             },
             method: "PATCH",
         })
-        await mutate()
+        await mutateTable()
+        await mutateView()
     }
 
     return {
-        error,
-        mutate,
+        getRowId,
         onRowReorder,
         createRow,
         deleteRow,

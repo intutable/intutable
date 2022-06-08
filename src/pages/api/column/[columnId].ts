@@ -1,8 +1,9 @@
 import {
     changeColumnAttributes,
     ColumnInfo,
-    getColumnInfo,
     getViewInfo,
+    listViews,
+    viewId,
     removeColumnFromView,
     removeJoinFromView,
     ViewDescriptor,
@@ -11,8 +12,8 @@ import {
 import { removeColumn } from "@intutable/project-management/dist/requests"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
-import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
+import { withUserCheck } from "api/utils/withUserCheck"
 import { objToSql } from "utils/objToSql"
 
 /**
@@ -60,18 +61,48 @@ const PATCH = withCatchingAPIRoute(
  */
 const DELETE = withCatchingAPIRoute(
     async (req, res, columnId: ColumnInfo["id"]) => {
-        const { viewId } = req.body as { viewId: ViewDescriptor["id"] }
+        const { tableViewId } = req.body as {
+            tableViewId: ViewDescriptor["id"]
+        }
         const user = req.session.user!
 
-        const column = await coreRequest<ColumnInfo>(
-            getColumnInfo(columnId),
+        const tableView = await coreRequest<ViewInfo>(
+            getViewInfo(tableViewId),
             user.authCookie
         )
+        const column = tableView.columns.find(c => c.id === columnId)
 
+        if (!column) throw Error("columnNotFound")
         if (column.attributes.userPrimary)
             // cannot delete the primary column
             throw Error("deleteUserPrimary")
 
+        // delete column in all filter views:
+        const filterViews = await coreRequest<ViewDescriptor[]>(
+            listViews(viewId(tableViewId)),
+            user.authCookie
+        )
+        await Promise.all(
+            filterViews.map(async v => {
+                const info = await coreRequest<ViewInfo>(
+                    getViewInfo(v.id),
+                    user.authCookie
+                )
+                // technically, it's possible that there are multiple columns
+                // with the same parent column, but there can only be one per join,
+                // and filter views never have joins.
+                const viewColumn = info.columns.find(
+                    c => c.parentColumnId === column.id
+                )
+                if (viewColumn)
+                    await coreRequest(
+                        removeColumnFromView(viewColumn.id),
+                        user.authCookie
+                    )
+            })
+        )
+
+        // delete column in table view:
         await coreRequest(removeColumnFromView(columnId), user.authCookie)
         if (column.joinId === null)
             // if column belongs to base table, delete underlying table column
@@ -82,7 +113,7 @@ const DELETE = withCatchingAPIRoute(
         else if (column.attributes.formatter === "linkColumn") {
             // if column is a link column, we need to do some more work:
             const info = await coreRequest<ViewInfo>(
-                getViewInfo(viewId),
+                getViewInfo(tableViewId),
                 user.authCookie
             )
             // delete foreign key column

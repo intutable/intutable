@@ -1,8 +1,8 @@
-import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views"
+import { ColumnInfo } from "@intutable/lazy-views"
 import { fetcher } from "api"
-import { Parser } from "api/utils"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { Column, TableData } from "types"
+import { ViewHookOptions, useView } from "hooks/useView"
+import { Column } from "types"
 
 /**
  * Get the Column Info {@type {ColumnInfo}} for a specific column
@@ -33,8 +33,26 @@ export const getColumnInfo = (
  *
  * @param {ViewDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
  */
-export const useColumn = (options?: TableHookOptions) => {
-    const { data: table, error, mutate } = useTable(options)
+export const useColumn = (
+    tableOptions?: TableHookOptions,
+    viewOptions?: ViewHookOptions
+) => {
+    const { data: table, mutate: mutateTable } = useTable(tableOptions)
+    const { data: view, mutate: mutateView } = useView(viewOptions)
+    const mutate = async () => {
+        await mutateTable()
+        await mutateView()
+    }
+
+    /** Find a column in the base table. */
+    const getTableColumn = (column: Column): ColumnInfo | null => {
+        const viewColumn = view?.metaColumns.find(c => c.key === column.key)
+        const tableColumn = table?.metadata.columns.find(
+            c => c.id === viewColumn?.parentColumnId
+        )
+        if (!tableColumn) return null
+        return tableColumn
+    }
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
@@ -42,7 +60,7 @@ export const useColumn = (options?: TableHookOptions) => {
         await fetcher({
             url: "/api/column",
             body: {
-                viewId: table?.metadata.descriptor.id,
+                tableViewId: table?.metadata.descriptor.id,
                 column,
             },
         })
@@ -75,9 +93,10 @@ export const useColumn = (options?: TableHookOptions) => {
     // TODO: the state should be updated differently
     // TODO: get rid of `getColumnByKey`
     const deleteColumn = async (column: Column): Promise<void> => {
+        const tableColumn = getTableColumn(column)
         await fetcher({
-            url: `/api/column/${column._id!}`,
-            body: { viewId: table!.metadata.descriptor.id },
+            url: `/api/column/${tableColumn!.id}`,
+            body: { tableViewId: table!.metadata.descriptor.id },
             method: "DELETE",
         })
 
@@ -85,8 +104,8 @@ export const useColumn = (options?: TableHookOptions) => {
     }
 
     return {
-        error,
         mutate,
+        getTableColumn,
         createColumn,
         renameColumn,
         deleteColumn,

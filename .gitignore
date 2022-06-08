@@ -1,6 +1,7 @@
 .next/
 node_modules
-src/backend/dist/
+src/backend/dekanat-app-plugin/dist/
+src/backend/startup/dist/
 data.db
 todo
 .DS_Store
