@@ -1,5 +1,5 @@
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord"
-import { Box, useTheme } from "@mui/material"
+import { Box, Typography, useTheme } from "@mui/material"
 
 const useConnectionStatusColor = (status: ConnectionStatus) => {
     const theme = useTheme()
@@ -30,7 +30,13 @@ type ConnectionProps = {
  * Toolbar item for connection status.
  */
 const Connection: React.FC<ConnectionProps> = props => (
-    <Box sx={{ display: "flex", padding: 2 }}>
+    <Box
+        sx={{
+            display: "flex",
+            padding: 2,
+            alignItems: "center",
+        }}
+    >
         <FiberManualRecordIcon
             fontSize="small"
             sx={{
@@ -38,7 +44,15 @@ const Connection: React.FC<ConnectionProps> = props => (
                 color: useConnectionStatusColor(props.status),
             }}
         />
-        {props.status}
+        <Typography
+            variant="caption"
+            sx={{
+                fontStyle: "italic",
+                color: "#666",
+            }}
+        >
+            {props.status === "connected" ? "verbunden" : props.status}
+        </Typography>
     </Box>
 )
 
