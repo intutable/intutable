@@ -1,13 +1,14 @@
 /**
  * TODO: find a good place for isValidFilter, decide which component should
  * be deciding when to commit.
+ * give singlefilter only one commit function, let parent component decide if
+ * it's valid or not.
  */
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useCallback, useRef } from "react"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
-import SaveIcon from "@mui/icons-material/Save"
 import {
     useTheme,
     Button,
@@ -299,7 +300,8 @@ type SingleFilterProps = {
  */
 const SingleFilter: React.FC<SingleFilterProps> = props => {
     const COMMIT_TIMEOUT = 500
-    const filter = props.filter
+
+    const { columns, filter, onCommit, onBecomeInvalid } = props
 
     const theme = useTheme()
     const [column, setColumn] = useState<number | string>(
@@ -310,30 +312,34 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
     )
     const [value, setValue] = useState<string>(filter.right?.toString() || "")
     const [readyForCommit, setReadyForCommit] = useState<boolean>(true)
+    /**
+     * The current state of the filter in progress. Required for our
+     * dynamic updating behavior below.
+     */
     const filterState = useRef<WipFilter>()
 
-    useEffect(() => {
-        filterState.current = assembleFilter()
-        if (readyForCommit) commit()
-    }, [column, operator, value])
-
-    const commit = async () => {
+    /**
+     * The filter is committed automatically as the user enters data,
+     * so we set a timer to prevent excessive fetching. After the timer expires,
+     * the data are re-committed one last time.
+     */
+    const commit = useCallback(async () => {
         setReadyForCommit(false)
         const currentFilter = filterState.current
         if (!currentFilter) return
 
         setTimeout(async () => {
             const newFilter = filterState.current!
-            if (isValidFilter(newFilter)) await props.onCommit(newFilter)
-            else await props.onBecomeInvalid(newFilter)
+            if (isValidFilter(newFilter)) await onCommit(newFilter)
+            else await onBecomeInvalid(newFilter)
             setReadyForCommit(true)
         }, COMMIT_TIMEOUT)
-        if (isValidFilter(currentFilter)) await props.onCommit(currentFilter)
-        else await props.onBecomeInvalid(currentFilter)
-    }
+        if (isValidFilter(currentFilter)) await onCommit(currentFilter)
+        else await onBecomeInvalid(currentFilter)
+    }, [onCommit, onBecomeInvalid])
 
-    const assembleFilter = () => {
-        const leftColumn = props.columns.find(c => c._id === column)
+    const assembleFilter = useCallback(() => {
+        const leftColumn = columns.find(c => c._id === column)
         const columnSpec = leftColumn
             ? { parentColumnId: leftColumn._id, joinId: null }
             : undefined
@@ -343,7 +349,16 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
             right: operator === "LIKE" ? "%" + value + "%" : value,
         }
         return newFilter
-    }
+    }, [column, operator, columns, value])
+
+    /** See {@link commit} */
+    useEffect(() => {
+        const newFilter = assembleFilter()
+        if (filterState.current && filterEquals(filterState.current, newFilter))
+            return
+        filterState.current = newFilter
+        if (readyForCommit) commit()
+    }, [column, operator, value, assembleFilter, readyForCommit, commit])
 
     return (
         <Box
@@ -360,7 +375,7 @@ const SingleFilter: React.FC<SingleFilterProps> = props => {
                     setColumn(e.target.value)
                 }}
             >
-                {props.columns.map(c => (
+                {columns.map(c => (
                     <MenuItem key={c._id} value={c._id}>
                         {c.name}
                     </MenuItem>
