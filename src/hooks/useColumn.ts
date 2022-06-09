@@ -57,12 +57,10 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const createColumn = async (column: Column.Serialized): Promise<void> => {
+        const tableId = table!.metadata.descriptor.id
         await fetcher({
-            url: "/api/column",
-            body: {
-                tableId: table?.metadata.descriptor.id,
-                column,
-            },
+            url: `/api/table/${tableId}/column`,
+            body: { column },
         })
         await mutate()
     }

@@ -41,7 +41,7 @@ const PATCH = withCatchingAPIRoute(
             update: Record<string, unknown>
             cascade?: boolean
         }
-        const cascade_ = typeof(cascade) === "boolean" ? cascade : true
+        const cascade_ = typeof cascade === "boolean" ? cascade : true
 
         const user = req.session.user!
 
@@ -51,9 +51,12 @@ const PATCH = withCatchingAPIRoute(
         )
 
         // check if the name is already taken
-        if (update.hasOwnProperty("displayName") &&
+        if (
+            update.hasOwnProperty("displayName") &&
             tableInfo.columns.some(
-                c => c.attributes.displayName === update.displayName))
+                c => c.attributes.displayName === update.displayName
+            )
+        )
             throw Error("alreadyTaken")
 
         // change property in table column
@@ -62,27 +65,32 @@ const PATCH = withCatchingAPIRoute(
             user.authCookie
         )
 
-        if (cascade_){
+        if (cascade_) {
             // change property in view columns
             const filterViews = await coreRequest<ViewDescriptor[]>(
                 listViews(viewId(tableId)),
                 user.authCookie
             )
-            await Promise.all(filterViews.map(async v => {
-                const viewInfo = await coreRequest<ViewInfo>(
-                    getViewInfo(v.id),
-                    user.authCookie
-                )
-                // we don't want to be accidentally renaming links or lookups.
-                const theColumn = viewInfo.columns.find(
-                    c => c.parentColumnId === columnId && c.joinId === null
-                )
-                if (theColumn !== undefined)
-                    await coreRequest<ColumnInfo>(
-                        changeColumnAttributes(theColumn.id, objToSql(update)),
+            await Promise.all(
+                filterViews.map(async v => {
+                    const viewInfo = await coreRequest<ViewInfo>(
+                        getViewInfo(v.id),
                         user.authCookie
                     )
-            }))
+                    // we don't want to be accidentally renaming links or lookups.
+                    const theColumn = viewInfo.columns.find(
+                        c => c.parentColumnId === columnId && c.joinId === null
+                    )
+                    if (theColumn !== undefined)
+                        await coreRequest<ColumnInfo>(
+                            changeColumnAttributes(
+                                theColumn.id,
+                                objToSql(update)
+                            ),
+                            user.authCookie
+                        )
+                })
+            )
         }
 
         res.status(200).json(updatedColumn)
