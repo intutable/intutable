@@ -1,3 +1,4 @@
+import OpenInFullIcon from "@mui/icons-material/OpenInFull"
 import {
     Box,
     Divider,
@@ -7,13 +8,11 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import { getColumnInfo } from "hooks/useColumn"
+import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useMemo } from "react"
 import { CalculatedColumn } from "react-data-grid"
 import { Row } from "types"
-import OpenInFullIcon from "@mui/icons-material/OpenInFull"
-import { useSnacki } from "hooks/useSnacki"
 
 export type DetailedRowViewProps = {
     open: boolean
