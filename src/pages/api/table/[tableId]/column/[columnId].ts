@@ -52,7 +52,7 @@ const PATCH = withCatchingAPIRoute(
 
         // check if the name is already taken
         if (
-            update.hasOwnProperty("displayName") &&
+            update["displayName"] !== undefined &&
             tableInfo.columns.some(
                 c => c.attributes.displayName === update.displayName
             )
