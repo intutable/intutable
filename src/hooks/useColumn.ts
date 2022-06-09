@@ -60,7 +60,7 @@ export const useColumn = (
         await fetcher({
             url: "/api/column",
             body: {
-                tableViewId: table?.metadata.descriptor.id,
+                tableId: table?.metadata.descriptor.id,
                 column,
             },
         })
@@ -96,7 +96,7 @@ export const useColumn = (
         const tableColumn = getTableColumn(column)
         await fetcher({
             url: `/api/column/${tableColumn!.id}`,
-            body: { tableViewId: table!.metadata.descriptor.id },
+            body: { tableId: table!.metadata.descriptor.id },
             method: "DELETE",
         })
 

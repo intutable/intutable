@@ -43,7 +43,7 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
             await fetcher({
                 url: `/api/join/${props.join.id}`,
                 body: {
-                    tableViewId: baseTableData!.metadata.descriptor.id,
+                    tableId: baseTableData!.metadata.descriptor.id,
                     rowId: props.rowId,
                     value: selection?.id,
                 },

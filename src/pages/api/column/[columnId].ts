@@ -61,13 +61,13 @@ const PATCH = withCatchingAPIRoute(
  */
 const DELETE = withCatchingAPIRoute(
     async (req, res, columnId: ColumnInfo["id"]) => {
-        const { tableViewId } = req.body as {
-            tableViewId: ViewDescriptor["id"]
+        const { tableId } = req.body as {
+            tableId: ViewDescriptor["id"]
         }
         const user = req.session.user!
 
         const tableView = await coreRequest<ViewInfo>(
-            getViewInfo(tableViewId),
+            getViewInfo(tableId),
             user.authCookie
         )
         const column = tableView.columns.find(c => c.id === columnId)
@@ -79,7 +79,7 @@ const DELETE = withCatchingAPIRoute(
 
         // delete column in all filter views:
         const filterViews = await coreRequest<ViewDescriptor[]>(
-            listViews(viewId(tableViewId)),
+            listViews(viewId(tableId)),
             user.authCookie
         )
         await Promise.all(
@@ -113,7 +113,7 @@ const DELETE = withCatchingAPIRoute(
         else if (column.attributes.formatter === "linkColumn") {
             // if column is a link column, we need to do some more work:
             const info = await coreRequest<ViewInfo>(
-                getViewInfo(tableViewId),
+                getViewInfo(tableId),
                 user.authCookie
             )
             // delete foreign key column

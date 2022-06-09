@@ -5,7 +5,7 @@ import {
     getViewInfo,
     JoinDescriptor,
     selectable,
-    viewId as mkViewId,
+    tableId as mkViewId,
     ViewInfo,
     ColumnInfo,
 } from "@intutable/lazy-views"
@@ -35,14 +35,14 @@ import { addColumnToFilterViews } from "utils/backend/views"
  * ```
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
-    const { viewId, foreignViewId } = req.body as {
-        viewId: number
-        foreignViewId: number
+    const { tableId, foreignTableId } = req.body as {
+        tableId: number
+        foreignTableId: number
     }
     const user = req.session.user!
 
     const viewInfo = await coreRequest<ViewInfo>(
-        getViewInfo(viewId),
+        getViewInfo(tableId),
         user.authCookie
     )
 
@@ -57,7 +57,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     )
 
     const foreignViewInfo = await coreRequest<ViewInfo>(
-        getViewInfo(foreignViewId),
+        getViewInfo(foreignTableId),
         user.authCookie
     )
 
@@ -70,8 +70,8 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const displayName = (primaryColumn.attributes.displayName ||
         primaryColumn.name) as string
     const join = await coreRequest<JoinDescriptor>(
-        addJoinToView(viewId, {
-            foreignSource: mkViewId(foreignViewId),
+        addJoinToView(tableId, {
+            foreignSource: mkViewId(foreignTableId),
             on: [fkColumn.id, "=", foreignIdColumn.id],
             columns: [],
         }),
@@ -82,7 +82,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 
     const linkColumn = await coreRequest<ColumnInfo>(
         addColumnToView(
-            viewId,
+            tableId,
             { parentColumnId: primaryColumn.id, attributes },
             join.id
         ),
@@ -90,7 +90,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     )
 
     await addColumnToFilterViews(
-        viewId,
+        tableId,
         { parentColumnId: linkColumn.id, attributes },
         user.authCookie
     )

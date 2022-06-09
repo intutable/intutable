@@ -24,15 +24,15 @@ import { withUserCheck } from "api/utils/withUserCheck"
  */
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const { tableViewId, name } = req.body as {
-            tableViewId: ViewDescriptor["id"]
+        const { tableId, name } = req.body as {
+            tableId: ViewDescriptor["id"]
             name: string
         }
         const user = req.session.user!
 
         // avoid duplicates
         const existingViews = await coreRequest<ViewDescriptor[]>(
-            listViews(viewId(tableViewId)),
+            listViews(viewId(tableId)),
             user.authCookie
         )
         if (existingViews.some(v => v.name === name))
@@ -40,12 +40,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // create new filter view
         const tableColumns = await coreRequest<ViewInfo>(
-            getViewInfo(tableViewId),
+            getViewInfo(tableId),
             user.authCookie
         ).then(i => i.columns)
         const filterView = await coreRequest<ViewDescriptor>(
             createView(
-                viewId(tableViewId),
+                viewId(tableId),
                 name,
                 { columns: [], joins: [] },
                 defaultRowOptions(tableColumns),

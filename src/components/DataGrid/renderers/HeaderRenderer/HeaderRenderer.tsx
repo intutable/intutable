@@ -139,7 +139,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
-                    tableViewId: data!.metadata.descriptor.id,
+                    tableId: data!.metadata.descriptor.id,
                     joinId,
                 },
             })

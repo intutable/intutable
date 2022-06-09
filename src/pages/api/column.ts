@@ -26,14 +26,14 @@ import { addColumnToFilterViews } from "utils/backend/views"
  * ```
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
-    const { tableViewId, column } = req.body as {
-        tableViewId: ViewDescriptor["id"]
+    const { tableId, column } = req.body as {
+        tableId: ViewDescriptor["id"]
         column: Column.Serialized
     }
     const user = req.session.user!
 
     const options = await coreRequest<ViewOptions>(
-        getViewOptions(tableViewId),
+        getViewOptions(tableId),
         user.authCookie
     )
 
@@ -45,16 +45,13 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 
     // add column to table view
     const tableViewColumn = await coreRequest<View_Column>(
-        addColumnToView(
-            tableViewId,
-            Parser.Column.deparse(column, tableColumn.id)
-        ),
+        addColumnToView(tableId, Parser.Column.deparse(column, tableColumn.id)),
         user.authCookie
     )
 
     // add column to each filter view
     await addColumnToFilterViews(
-        tableViewId,
+        tableId,
         Parser.Column.deparse(column, tableViewColumn.id),
         user.authCookie
     )
