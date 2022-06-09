@@ -1,5 +1,5 @@
 import { Divider, Typography } from "@mui/material"
-import { useUser, withSessionSsr } from "auth"
+import { useUser } from "auth"
 import Title from "components/Head/Title"
 import Link from "components/Link"
 import type { NextPage } from "next"
@@ -26,13 +26,3 @@ const Home: NextPage = () => {
 }
 
 export default Home
-
-export const getServerSideProps = withSessionSsr(async context => {
-    const user = context.req.session.user
-
-    console.log(user)
-
-    return {
-        props: {},
-    }
-})
