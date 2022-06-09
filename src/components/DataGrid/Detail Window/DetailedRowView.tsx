@@ -1,9 +1,19 @@
-import { Box, Divider, Typography, useTheme } from "@mui/material"
+import {
+    Box,
+    Divider,
+    IconButton,
+    Stack,
+    Tooltip,
+    Typography,
+    useTheme,
+} from "@mui/material"
 import { getColumnInfo } from "hooks/useColumn"
 import { useView } from "hooks/useView"
 import React, { useMemo } from "react"
 import { CalculatedColumn } from "react-data-grid"
 import { Row } from "types"
+import OpenInFullIcon from "@mui/icons-material/OpenInFull"
+import { useSnacki } from "hooks/useSnacki"
 
 export type DetailedRowViewProps = {
     open: boolean
@@ -11,6 +21,7 @@ export type DetailedRowViewProps = {
 }
 export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
     const theme = useTheme()
+    const { snackWarning } = useSnacki()
     const { data } = useView()
 
     const row = useMemo(() => {
@@ -61,20 +72,57 @@ export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
                 </Typography>
             )}
             {row && (
-                <ul>
+                <Stack
+                    sx={{
+                        overflow: "scroll",
+                        pl: 1,
+                        pt: 1,
+                    }}
+                >
                     {Object.entries(row).map(([key, value], i) => (
-                        <li key={i}>
-                            <>
-                                <Typography variant="caption">{key}</Typography>
-                                : {value}
-                            </>
-                        </li>
+                        // TODO: sort based on columns
+                        <Stack key={i}>
+                            <Typography variant="body1" sx={{ mt: 1.5 }}>
+                                {value as string}
+                            </Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    mt: -0.5,
+                                    fontStyle: "italic",
+                                    color: theme.palette.grey[700],
+                                    fontSize: "60%",
+                                }}
+                            >
+                                {key}
+                            </Typography>
+                        </Stack>
                     ))}
-                </ul>
+                </Stack>
             )}
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    mt: 5,
+                }}
+            >
+                <Tooltip title="Ansicht maximieren" enterDelay={1000} arrow>
+                    <IconButton
+                        size="small"
+                        onClick={() => snackWarning("Nicht unterstützt")}
+                    >
+                        <OpenInFullIcon
+                            sx={{
+                                fontSize: "80%",
+                            }}
+                        />
+                    </IconButton>
+                </Tooltip>
+            </Box>
             {props.data && (
                 <>
-                    <Divider sx={{ mt: 5, mb: 0.5 }} />
+                    <Divider sx={{ my: 0.5 }} />
                     <Typography
                         sx={{
                             p: 1,
