@@ -114,7 +114,7 @@ export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
                     >
                         <OpenInFullIcon
                             sx={{
-                                fontSize: "80%",
+                                fontSize: "70%",
                             }}
                         />
                     </IconButton>
