@@ -113,6 +113,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             await renameColumn(props.column, prepareName(name))
         } catch (error) {
             const err = makeError(error)
+            console.log(err)
             if (err.message === "alreadyTaken")
                 snackError(
                     err.message === "alreadyTaken"
