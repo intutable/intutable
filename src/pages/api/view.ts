@@ -9,7 +9,7 @@ import {
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { defaultRowOptions } from "@backend/defaults"
 import { withUserCheck } from "api/utils/withUserCheck"
 
@@ -22,8 +22,8 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * }
  * ```
  */
-const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
+const POST = withCatchingAPIRoute(
+    async (req: NextApiRequest, res: NextApiResponse) => {
         const { tableId, name } = req.body as {
             tableId: ViewDescriptor["id"]
             name: string
@@ -55,11 +55,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         )
 
         res.status(200).json(filterView)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
