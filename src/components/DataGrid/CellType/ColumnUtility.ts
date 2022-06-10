@@ -42,7 +42,8 @@ import { Column } from "types"
  * In this sense you can say that a column has a 'type' since every cell of that column
  * should have the same type and therefore the same editor.
  *
- * A editor is always required (at least whenever a column resp. its cell are editable) and
+ * A editor is mostly required (at least whenever a column resp. its cell are editable,
+ * e.g. the boolean type uses only a formatter) and
  * is independent and not affected by the formatter or kind.
  *
  * #### Kind (of a column)

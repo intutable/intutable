@@ -39,6 +39,7 @@ import { prepareName } from "utils/validateName"
 import { AddLookupModal } from "./AddLookupModal"
 import DownloadingIcon from "@mui/icons-material/Downloading"
 import { GenerateMailListDialog } from "./GenerateMailListDialog"
+import ContentPasteIcon from "@mui/icons-material/ContentPaste"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
@@ -322,10 +323,11 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                     onClick={handleOpenGenerateMailList}
                                 >
                                     <ListItemIcon>
-                                        <DownloadingIcon />
+                                        <ContentPasteIcon />
                                     </ListItemIcon>
                                     <ListItemText>
-                                        Mailing-Liste generieren
+                                        E-Mail-Adressen in die Zwischenablage
+                                        kopieren
                                     </ListItemText>
                                 </MenuItem>
                                 <GenerateMailListDialog

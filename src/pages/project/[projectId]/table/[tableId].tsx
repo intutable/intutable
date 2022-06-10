@@ -93,6 +93,8 @@ const TablePage: React.FC = () => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
 
+        // BUG: in react-data-grid RowsChangeData.column is sometimes undefined here
+
         await updateRow(col, getRowId(changedRow), changedRow[col.key])
     }
 

@@ -1,5 +1,4 @@
 export * from "./AvatarEditor"
-export * from "./BooleanEditor"
 export * from "./ComplexEditor"
 export * from "./CurrencyEditor"
 export * from "./DateEditor"

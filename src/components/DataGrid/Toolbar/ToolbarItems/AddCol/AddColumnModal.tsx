@@ -125,8 +125,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                         value={type}
                                         disabled={
                                             type !== "string" &&
-                                            type !== "email" &&
-                                            type !== "boolean"
+                                            type !== "email"
                                         }
                                     >
                                         {CellContentTypeDisplayName[type]}
