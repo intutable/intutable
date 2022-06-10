@@ -37,6 +37,7 @@ import { Row } from "types"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
 import { AddLookupModal } from "./AddLookupModal"
+import DownloadingIcon from "@mui/icons-material/Downloading"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
@@ -298,6 +299,21 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         </MenuItem>,
                         <Divider key={1} />,
                     ]}
+                    {col &&
+                        Object.prototype.hasOwnProperty.call(
+                            col,
+                            "attributes"
+                        ) &&
+                        col.attributes.editor === "email" && (
+                            <MenuItem key={0} onClick={() => {}}>
+                                <ListItemIcon>
+                                    <DownloadingIcon />
+                                </ListItemIcon>
+                                <ListItemText>
+                                    Mailing-Liste generieren
+                                </ListItemText>
+                            </MenuItem>
+                        )}
                     <MenuItem onClick={handleToggleHeaderSearchField}>
                         {headerOpen && (
                             <ListItemIcon>
