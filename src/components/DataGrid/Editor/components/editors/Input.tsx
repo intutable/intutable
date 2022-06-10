@@ -19,16 +19,22 @@ const StyledInputElement = styled("input")`
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type InputProps = {
-    props: UseInputProps
+    props: UseInputProps & { onEnter?: () => void }
     ref: React.Ref<HTMLInputElement> | undefined
 }
 
 export const Input = React.forwardRef(
-    (props: UseInputProps, ref: React.Ref<HTMLInputElement> | undefined) => (
+    (
+        props: UseInputProps & {
+            onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
+        },
+        ref: React.Ref<HTMLInputElement> | undefined
+    ) => (
         <InputUnstyled
             components={{ Input: StyledInputElement }}
             {...props}
             ref={ref}
+            onKeyDown={props.onKeyDown}
         />
     )
 )

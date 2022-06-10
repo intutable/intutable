@@ -99,28 +99,34 @@ export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
                     ))}
                 </Stack>
             )}
-            <Box
-                sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    mt: 5,
-                }}
-            >
-                <Tooltip title="Ansicht maximieren" enterDelay={1000} arrow>
-                    <IconButton
-                        size="small"
-                        onClick={() => snackWarning("Nicht unterstützt")}
-                    >
-                        <OpenInFullIcon
-                            sx={{
-                                fontSize: "70%",
-                            }}
-                        />
-                    </IconButton>
-                </Tooltip>
-            </Box>
             {props.data && (
                 <>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            mt: 5,
+                        }}
+                    >
+                        <Tooltip
+                            title="Ansicht maximieren"
+                            enterDelay={1000}
+                            arrow
+                        >
+                            <IconButton
+                                size="small"
+                                onClick={() =>
+                                    snackWarning("Nicht unterstützt")
+                                }
+                            >
+                                <OpenInFullIcon
+                                    sx={{
+                                        fontSize: "70%",
+                                    }}
+                                />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
                     <Divider sx={{ my: 0.5 }} />
                     <Typography
                         sx={{
