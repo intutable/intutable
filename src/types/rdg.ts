@@ -226,7 +226,7 @@ type SerializedColumn = MetaColumnProps & {
      * __Note__: The formatter component is a HOC ({@link https://reactjs.org/docs/higher-order-components.html})
      * that can be extended by a component defined by {@link MetaColumnProps._kind}.
      */
-    formatter: Omit<CellContentType, "link"> | MetaColumnProps["_kind"]
+    formatter: Exclude<CellContentType, "link"> | MetaColumnProps["_kind"]
     /**
      * @property {(undefined | null)} [summaryFormatter]
      *
