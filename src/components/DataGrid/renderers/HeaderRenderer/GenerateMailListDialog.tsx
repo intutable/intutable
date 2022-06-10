@@ -41,7 +41,7 @@ export const GenerateMailListDialog: React.FC<
                         mt: 3,
                     }}
                 >
-                    <Select></Select>
+                    {/* <Select></Select> */}
                 </FormControl>
             </DialogContent>
             <DialogActions>
