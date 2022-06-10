@@ -38,6 +38,7 @@ import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
 import { AddLookupModal } from "./AddLookupModal"
 import DownloadingIcon from "@mui/icons-material/Downloading"
+import { GenerateMailListDialog } from "./GenerateMailListDialog"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
@@ -151,6 +152,16 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             snackError("Der Lookup konnte nicht hinzugefügt werden!")
         }
     }
+
+    const [anchorEL_GenerateMailList, setAnchorEL_GenerateMailList] =
+        useState<Element | null>(null)
+    const handleOpenGenerateMailList = (
+        e: React.MouseEvent<HTMLLIElement, MouseEvent>
+    ) => {
+        e.preventDefault()
+        setAnchorEL_GenerateMailList(e.currentTarget)
+    }
+    const handleCloseGenerateMailList = () => setAnchorEL_GenerateMailList(null)
 
     const handleToggleHeaderSearchField = () => {
         if (headerOpen) closeSearchField()
@@ -305,14 +316,23 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                             "attributes"
                         ) &&
                         col.attributes.editor === "email" && (
-                            <MenuItem key={0} onClick={() => {}}>
-                                <ListItemIcon>
-                                    <DownloadingIcon />
-                                </ListItemIcon>
-                                <ListItemText>
-                                    Mailing-Liste generieren
-                                </ListItemText>
-                            </MenuItem>
+                            <>
+                                <MenuItem
+                                    key={0}
+                                    onClick={handleOpenGenerateMailList}
+                                >
+                                    <ListItemIcon>
+                                        <DownloadingIcon />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        Mailing-Liste generieren
+                                    </ListItemText>
+                                </MenuItem>
+                                <GenerateMailListDialog
+                                    open={anchorEL_GenerateMailList != null}
+                                    onClose={handleCloseGenerateMailList}
+                                />
+                            </>
                         )}
                     <MenuItem onClick={handleToggleHeaderSearchField}>
                         {headerOpen && (
