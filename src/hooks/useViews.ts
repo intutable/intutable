@@ -37,7 +37,7 @@ export const useViews = (options?: TableHookOptions) => {
         const view = await fetcher<ViewDescriptor>({
             url: "/api/view",
             body: {
-                tableViewId: tableToFetch.id,
+                tableId: tableToFetch.id,
                 name,
             },
             method: "POST",

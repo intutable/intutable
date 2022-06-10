@@ -24,15 +24,15 @@ import { addColumnToFilterViews } from "utils/backend/views"
  * ```
  */
 const POST = withCatchingAPIRoute(
-    async (req, res, columnId: ColumnInfo["id"]) => {
-        const { tableViewId, joinId } = req.body as {
-            tableViewId: ViewDescriptor["id"]
+    async (req, res, parentColumnId: ColumnInfo["id"]) => {
+        const { tableId, joinId } = req.body as {
+            tableId: ViewDescriptor["id"]
             joinId: Exclude<ColumnInfo["joinId"], null>
         }
         const user = req.session.user!
 
         const viewInfo = await coreRequest<ViewInfo>(
-            getViewInfo(tableViewId),
+            getViewInfo(tableId),
             user.authCookie
         )
 
@@ -43,7 +43,7 @@ const POST = withCatchingAPIRoute(
             user.authCookie
         )
         const foreignColumn = foreignViewInfo.columns.find(
-            c => c.id === columnId
+            c => c.id === parentColumnId
         )!
 
         // determine props
@@ -54,8 +54,8 @@ const POST = withCatchingAPIRoute(
         // add to table view
         const newColumn = await coreRequest<ColumnInfo>(
             addColumnToView(
-                tableViewId,
-                { parentColumnId: columnId, attributes },
+                tableId,
+                { parentColumnId: parentColumnId, attributes },
                 joinId
             ),
             user.authCookie
@@ -63,7 +63,7 @@ const POST = withCatchingAPIRoute(
 
         // add to filter views
         await addColumnToFilterViews(
-            tableViewId,
+            tableId,
             { parentColumnId: newColumn.id, attributes },
             user.authCookie
         )
@@ -75,11 +75,11 @@ const POST = withCatchingAPIRoute(
 export default withSessionRoute(
     withUserCheck(async (req, res) => {
         const { query } = req
-        const columnId = parseInt(query.columnId as string)
+        const parentColumnId = parseInt(query.parentColumnId as string)
 
         switch (req.method) {
             case "POST":
-                await POST(req, res, columnId)
+                await POST(req, res, parentColumnId)
                 break
             default:
                 res.setHeader("Allow", ["POST"])

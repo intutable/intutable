@@ -113,6 +113,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             await renameColumn(props.column, prepareName(name))
         } catch (error) {
             const err = makeError(error)
+            console.log(err)
             if (err.message === "alreadyTaken")
                 snackError(
                     err.message === "alreadyTaken"
@@ -139,7 +140,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
-                    tableViewId: data!.metadata.descriptor.id,
+                    tableId: data!.metadata.descriptor.id,
                     joinId,
                 },
             })

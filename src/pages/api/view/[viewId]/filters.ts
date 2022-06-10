@@ -9,7 +9,7 @@ import {
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { defaultViewName } from "@backend/defaults"
 
@@ -24,12 +24,12 @@ import { defaultViewName } from "@backend/defaults"
  *   }
  * ```
  */
-const PATCH = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    viewId: ViewDescriptor["id"]
-) => {
-    try {
+const PATCH = withCatchingAPIRoute(
+    async (
+        req: NextApiRequest,
+        res: NextApiResponse,
+        viewId: ViewDescriptor["id"]
+    ) => {
         const { filters } = req.body as {
             filters: Condition[]
         }
@@ -54,11 +54,8 @@ const PATCH = async (
         )
 
         res.status(200).json({})
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {
