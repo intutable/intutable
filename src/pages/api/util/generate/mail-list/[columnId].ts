@@ -20,6 +20,11 @@ const GET = withCatchingAPIRoute(
             format: "csv" | "json"
         }
 
+        const tableData = await coreRequest<ViewData>(
+            getViewData(viewId),
+            user.authCookie
+        )
+
         res.status(200).json({})
     }
 )

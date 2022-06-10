@@ -34,12 +34,18 @@ import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 import { useThemeToggler } from "pages/_app"
 import { DetailedRowView } from "@datagrid/Detail Window/DetailedRowView"
+import {
+    SelectedRowsContextProvider,
+    useSelectedRows,
+} from "context/SelectedRowsContext"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
     const { getTheme } = useThemeToggler()
     const { snackWarning, closeSnackbar } = useSnacki()
     const { isChrome } = useBrowserInfo()
+    const { selectedRows, setSelectedRows } = useSelectedRows()
+
     // warn if browser is not chrome
     useEffect(() => {
         if (isChrome === false)
@@ -72,11 +78,6 @@ const TablePage: React.FC = () => {
 
     // views side panel
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
-
-    // Column Selector
-    const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
-        () => new Set()
-    )
 
     // Detailed View
     const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(false)
@@ -239,9 +240,11 @@ const Page: NextPage<
 > = ({ project, table, view }) => {
     return (
         <APIContextProvider project={project} table={table} view={view}>
-            <HeaderSearchFieldProvider>
-                <TablePage />
-            </HeaderSearchFieldProvider>
+            <SelectedRowsContextProvider>
+                <HeaderSearchFieldProvider>
+                    <TablePage />
+                </HeaderSearchFieldProvider>
+            </SelectedRowsContextProvider>
         </APIContextProvider>
     )
 }

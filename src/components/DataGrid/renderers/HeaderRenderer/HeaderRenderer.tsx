@@ -31,8 +31,8 @@ import { useTables } from "hooks/useTables"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
 import { useRouter } from "next/router"
-import React, { useMemo, useState } from "react"
-import { HeaderRendererProps } from "react-data-grid"
+import React, { useEffect, useMemo, useState } from "react"
+import { HeaderRendererProps, useRowSelection } from "react-data-grid"
 import { Row } from "types"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
@@ -40,14 +40,18 @@ import { AddLookupModal } from "./AddLookupModal"
 import DownloadingIcon from "@mui/icons-material/Downloading"
 import { GenerateMailListDialog } from "./GenerateMailListDialog"
 import ContentPasteIcon from "@mui/icons-material/ContentPaste"
+import { columnToClipboard } from "utils/columnToClipboard"
+import { isValidMailAddress } from "utils/isValidMailAddress"
+import { useSelectedRows } from "context/SelectedRowsContext"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
     const router = useRouter()
     const { user } = useUser()
-    const { snackError, snackSuccess, snackWarning } = useSnacki()
+    const { snackError, snackSuccess, snackWarning, snackInfo } = useSnacki()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
+    const { selectedRows } = useSelectedRows()
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
     const { renameColumn, deleteColumn, getTableColumn } = useColumn()
@@ -323,11 +327,10 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                     onClick={handleOpenGenerateMailList}
                                 >
                                     <ListItemIcon>
-                                        <ContentPasteIcon />
+                                        <DownloadingIcon />
                                     </ListItemIcon>
                                     <ListItemText>
-                                        E-Mail-Adressen in die Zwischenablage
-                                        kopieren
+                                        Mailing-Liste generieren
                                     </ListItemText>
                                 </MenuItem>
                                 <GenerateMailListDialog
@@ -336,16 +339,64 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 />
                             </>
                         )}
+
+                    <MenuItem
+                        onClick={() => {
+                            // get values
+                            let values = data!.rows
+                                .map(row => row[col!.key])
+                                .filter(e => e != null)
+
+                            // consider row selection
+                            if (
+                                props.allRowsSelected === false &&
+                                selectedRows.size > 0
+                            ) {
+                                values = data!.rows
+                                    .map(row => {
+                                        if (
+                                            row[col!.key] != null &&
+                                            selectedRows.has(row.__rowIndex__)
+                                        )
+                                            return row
+                                    })
+                                    .filter(e => e != null)
+                            }
+
+                            if (col?.attributes.editor === "email")
+                                // filter invalid emails
+                                values = values?.filter(isValidMailAddress)
+                            columnToClipboard(
+                                values as (string | boolean | number)[]
+                            )
+                            snackInfo("In die Zwischenablage kopiert!")
+                        }}
+                    >
+                        <ListItemIcon>
+                            <ContentPasteIcon />
+                        </ListItemIcon>
+                        <ListItemText>
+                            {/* Note: when a row is selected and the email is invalid, it will still count the row */}
+                            {props.allRowsSelected || selectedRows.size === 0
+                                ? "Alle Werte"
+                                : selectedRows.size === 1
+                                ? "Einen Wert"
+                                : selectedRows.size + " Werte"}{" "}
+                            in die Zwischenablage kopieren
+                        </ListItemText>
+                    </MenuItem>
+
                     <MenuItem onClick={handleToggleHeaderSearchField}>
-                        {headerOpen && (
-                            <ListItemIcon>
-                                <Check />
-                            </ListItemIcon>
-                        )}
+                        <ListItemIcon>
+                            {headerOpen ? <Check /> : <SearchIcon />}
+                        </ListItemIcon>
                         <ListItemText>Suchleiste</ListItemText>
                     </MenuItem>
                     <MenuItem onClick={handleRenameColumn}>
                         <ListItemText>Umbenennen</ListItemText>
+                    </MenuItem>
+                    <MenuItem onClick={() => {}}>
+                        <ListItemText>Eigenschaften</ListItemText>
                     </MenuItem>
                     <MenuItem
                         onClick={handleDeleteColumn}
