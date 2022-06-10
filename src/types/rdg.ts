@@ -1,16 +1,16 @@
-import type { Column as ReactDataGrid_Column } from "react-data-grid"
-import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import type { CellContentType } from "@datagrid/Editor/types/CellContentType"
-import type {
-    ViewDescriptor,
-    ColumnInfo,
-    ViewInfo,
-    Condition as Filter,
-    SortColumn,
-    ParentColumnSpecifier as GroupColumn,
-} from "@intutable/lazy-views"
-import { project_management } from "./type-annotations/project-management"
 import { Formatter } from "@datagrid/Formatter/formatters"
+import type {
+    ColumnInfo,
+    Condition as Filter,
+    ParentColumnSpecifier as GroupColumn,
+    SortColumn,
+    ViewDescriptor,
+    ViewInfo,
+} from "@intutable/lazy-views"
+import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
+import type { Column as ReactDataGrid_Column } from "react-data-grid"
+import { project_management } from "./type-annotations/project-management"
 
 // #################################################################
 //       Table
@@ -184,18 +184,28 @@ type SerializedColumn = MetaColumnProps & {
      * a function that determines the value `cellClass` based on a
      * given row that is received as a argument by the function.
      * This function would need to be serialized like other props.
+     *
+     * __Note__: Probably used to override the default style of the cell.
      */
     cellClass?: string | null
     /**
      * @property {(string | undefined | null)} [headerCellClass]
      *
      * See the orignal type here: {@link Column.headerCellClass}.
+     *
+     * ---
+     *
+     * __Note__: Probably used to override the default style of the header cell.
      */
     headerCellClass?: string | null
     /**
      * @property {(undefined | null)} [summaryCellClass]
      *
      * See the orignal type here: {@link Column.summaryCellClass}.
+     *
+     * ---
+     *
+     * __Note__: Probably used to override the default style of the summary cell.
      */
     summaryCellClass?: string | null
     /**
@@ -390,6 +400,26 @@ type SerializedColumn = MetaColumnProps & {
      */
     headerRenderer?: string | null
 }
+
+/**
+ * Our version of the default props for some properties of {@link SerializedColumn}.
+ */
+export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
+    _kind: "standard",
+    width: undefined,
+    formatter: "standard",
+    editor: "string",
+    editable: true,
+    frozen: false,
+    resizable: true,
+    sortable: true,
+    editorOptions: {
+        renderFormatter: true, // TODO: determine the role of this property
+        editOnClick: true,
+        commitOnOutsideClick: true,
+    },
+    headerRenderer: "headerRenderer",
+} as const
 
 type DatabaseColumnAttributes = {
     _kind: string
