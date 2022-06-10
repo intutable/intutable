@@ -108,12 +108,16 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                 labelId="addcol-select-type"
                                 label="Typ"
                                 value={options.editor}
-                                onChange={e =>
+                                onChange={e => {
                                     setOption(
                                         "editor",
                                         e.target.value as CellContentType
                                     )
-                                }
+                                    setOption(
+                                        "formatter",
+                                        e.target.value as CellContentType
+                                    )
+                                }}
                             >
                                 {Runtime_CellContentType.map((type, i) => (
                                     <MenuItem
