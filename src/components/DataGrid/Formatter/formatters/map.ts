@@ -2,6 +2,7 @@ import { CellContentType } from "@datagrid/Editor/type-management"
 import { MetaColumnProps } from "types"
 import { FormatterComponent } from ".."
 import { Formatter } from "../formatters"
+import { BooleanFormatter } from "./BooleanFormatter"
 import { EMailFormatter } from "./EMailFormatter"
 import { LinkColumnFormatter } from "./LinkColumnFormatter"
 import { StandardFormatter } from "./StandardFormatter"
@@ -18,7 +19,7 @@ export const FormatterComponentMap: {
     number: StandardFormatter,
     percentage: StandardFormatter,
     currency: StandardFormatter,
-    boolean: StandardFormatter,
+    boolean: BooleanFormatter,
     date: StandardFormatter,
     datetime: StandardFormatter,
     time: StandardFormatter,
