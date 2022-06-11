@@ -2,10 +2,13 @@ import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import DownloadingIcon from "@mui/icons-material/Downloading"
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
 import React, { useState } from "react"
+import { HeaderRendererProps } from "react-data-grid"
+import { Row } from "types"
 import { GenerateMailListDialog } from "./GenerateMailListDialog"
 
 export type CreateMailListProps = {
     colInfo: ColumnInfo
+    headerRendererProps: HeaderRendererProps<Row>
 }
 
 export const CreateMailList: React.FC<CreateMailListProps> = props => {
@@ -38,6 +41,7 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
             <GenerateMailListDialog
                 open={anchorEL != null}
                 onClose={closeModal}
+                headerRendererProps={props.headerRendererProps}
             />
         </>
     )

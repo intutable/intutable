@@ -49,6 +49,8 @@ export const fetcher = async <T>(args: FetcherOptions): Promise<T> => {
             : undefined,
     })
 
+    console.log(res)
+
     const body = await res.json()
 
     await catchAuthError(res, body)
