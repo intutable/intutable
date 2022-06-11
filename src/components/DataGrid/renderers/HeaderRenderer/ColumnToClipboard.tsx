@@ -5,6 +5,7 @@ import { useSelectedRows } from "context/SelectedRowsContext"
 import { checkPrimeSync } from "crypto"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
+import { useView } from "hooks/useView"
 import React from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
@@ -20,12 +21,20 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
     const { headerRendererProps, colInfo: col } = props
 
     const { selectedRows } = useSelectedRows()
-    const { data } = useTable()
+
+    const { data: viewData } = useView()
     const { snackInfo } = useSnacki()
 
     const handleCopyToClipboard = () => {
+        const viewColInfo = viewData?.metaColumns.find(
+            c => c.parentColumnId === col.id
+        )
+        if (viewColInfo == null) return
+
         // get values
-        let values = data!.rows.map(row => row[col!.key]).filter(e => e != null)
+        let values = viewData!.rows
+            .map(row => row[viewColInfo!.key])
+            .filter(e => e != null)
 
         // consider row selection
         // TODO: uncomment once either rows are deserialized or serialized ones have indices

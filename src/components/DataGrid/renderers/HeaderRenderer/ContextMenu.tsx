@@ -32,7 +32,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
     const { colInfo: col, foreignTable, headerRendererProps } = props
 
     const theme = useTheme()
-    const { snackError, snackSuccess } = useSnacki()
+    const { snackError } = useSnacki()
 
     const {
         open: headerOpen,
@@ -120,7 +120,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                     headerRendererProps={headerRendererProps}
                 />
 
-                <CreateMailList colInfo={col} />
+                <CreateMailList
+                    colInfo={col}
+                    headerRendererProps={headerRendererProps}
+                />
 
                 <ColumnToClipboard
                     colInfo={col}
