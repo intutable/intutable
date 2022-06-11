@@ -7,6 +7,8 @@ import SupportAgentIcon from "@mui/icons-material/SupportAgent"
 import SupportAgentIconOutlined from "@mui/icons-material/SupportAgentOutlined"
 import WorkspacesIcon from "@mui/icons-material/Workspaces"
 import WorkspacesIconOutlined from "@mui/icons-material/WorkspacesOutlined"
+import DashboardIcon from "@mui/icons-material/Dashboard"
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined"
 import {
     Divider,
     Drawer as MuiDrawer,
@@ -126,12 +128,20 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                 activeIcon={<HomeIcon />}
             />
             {user?.isLoggedIn && (
-                <DrawerListItem
-                    text="Projekte"
-                    href="/projects"
-                    nonActiveIcon={<WorkspacesIconOutlined />}
-                    activeIcon={<WorkspacesIcon />}
-                />
+                <>
+                    <DrawerListItem
+                        text="Dashboard"
+                        href="/dashboard"
+                        nonActiveIcon={<DashboardOutlinedIcon />}
+                        activeIcon={<DashboardIcon />}
+                    />
+                    <DrawerListItem
+                        text="Projekte"
+                        href="/projects"
+                        nonActiveIcon={<WorkspacesIconOutlined />}
+                        activeIcon={<WorkspacesIcon />}
+                    />
+                </>
             )}
             <Divider
                 sx={{

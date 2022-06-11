@@ -1,5 +1,6 @@
 import { CellContentTypeComponents } from "@datagrid/Editor"
 import { isCellContentType } from "@datagrid/Editor/type-management"
+import { EMailFormatter } from "@datagrid/Formatter/formatters/EMailFormatter"
 import { FormatterComponentMap } from "@datagrid/Formatter/formatters/map"
 import { headerRenderer } from "@datagrid/renderers"
 import { Column } from "types"
@@ -49,7 +50,10 @@ export const deserialize = (col: Column.Serialized): Column.Deserialized => {
         editor: isCellContentType(col.editor)
             ? CellContentTypeComponents[col.editor]
             : undefined,
-        formatter: FormatterComponentMap[formatter],
+        formatter:
+            col.editor === "email"
+                ? EMailFormatter
+                : FormatterComponentMap[formatter], // TODO: quick hack, find a better solution
         summaryFormatter: undefined, // currently not supported
         groupFormatter: undefined, // currently not supported
         colSpan: undefined, // currently not supported

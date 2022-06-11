@@ -1,22 +1,18 @@
-import React, { useState } from "react"
+import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import ChevronRightIcon from "@mui/icons-material/ChevronRight"
+import ClearIcon from "@mui/icons-material/Clear"
 import {
-    Tooltip,
-    Typography,
+    IconButton,
     ListItem,
     ListItemButton,
     ListItemText,
-    IconButton,
     Menu,
     MenuItem,
+    Typography,
     useTheme,
 } from "@mui/material"
-import Zoom from "@mui/material/Zoom"
-import ClearIcon from "@mui/icons-material/Clear"
-import ChevronRightIcon from "@mui/icons-material/ChevronRight"
-
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
-
 import { useAPI } from "context/APIContext"
+import React, { useState } from "react"
 
 export type ViewListItemProps = {
     view: ViewDescriptor
@@ -82,48 +78,36 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                 onMouseOver={() => setHovering(true)}
                 onMouseOut={() => setHovering(false)}
             >
-                <Tooltip
-                    title={
-                        view.id === currentView?.id
-                            ? `Sicht ${view.name} wird angezeigt`
-                            : `Sicht ${view.name} anzeigen`
-                    }
-                    arrow
-                    TransitionComponent={Zoom}
-                    enterDelay={1000}
-                    placement="right"
+                <Typography
+                    variant="subtitle2"
+                    onClick={() => {}}
+                    sx={{
+                        cursor: "pointer",
+                        width: "100%",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                    }}
                 >
-                    <Typography
-                        variant="subtitle2"
-                        onClick={() => {}}
-                        sx={{
-                            cursor: "pointer",
-                            width: "100%",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                        }}
+                    <ListItemButton
+                        onClick={() => props.onHandleSelectView(view)}
                     >
-                        <ListItemButton
-                            onClick={() => props.onHandleSelectView(view)}
-                        >
-                            {props.icon || <ChevronRightIcon />}
-                            <ListItemText sx={{ ml: 1 }} primary={view.name} />
-                            {hovering && (
-                                <IconButton
-                                    size="small"
-                                    onClick={handleDeleteViewButton}
-                                >
-                                    <ClearIcon
-                                        sx={{
-                                            fontSize: "80%",
-                                        }}
-                                    />
-                                </IconButton>
-                            )}
-                        </ListItemButton>
-                    </Typography>
-                </Tooltip>
+                        {props.icon || <ChevronRightIcon />}
+                        <ListItemText sx={{ ml: 1 }} primary={view.name} />
+                        {hovering && (
+                            <IconButton
+                                size="small"
+                                onClick={handleDeleteViewButton}
+                            >
+                                <ClearIcon
+                                    sx={{
+                                        fontSize: "80%",
+                                    }}
+                                />
+                            </IconButton>
+                        )}
+                    </ListItemButton>
+                </Typography>
             </ListItem>
             <Menu
                 elevation={0}

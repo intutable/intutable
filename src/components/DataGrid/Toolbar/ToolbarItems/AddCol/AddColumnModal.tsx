@@ -13,15 +13,38 @@ import {
     DialogTitle,
     FormControl,
     FormControlLabel,
+    IconButton,
     InputLabel,
     MenuItem,
     Select,
+    Stack,
     Switch,
     TextField,
+    Tooltip,
     Typography,
     useTheme,
 } from "@mui/material"
 import sanitizeName from "utils/sanitizeName"
+import HelpIcon from "@mui/icons-material/Help"
+
+const CellContentTypeDisplayName: {
+    [key in CellContentType]: string
+} = {
+    string: "Freitexteingabe (String)",
+    number: "Dezimalzahlen",
+    percentage: "Prozent",
+    currency: "Währung",
+    boolean: "Boolescher Wert / Checkbox",
+    date: "Datum",
+    datetime: "Datum & Zeit",
+    time: "Zeit",
+    avatar: "Avatar",
+    link: "Link",
+    email: "E-Mail",
+    select: "Auswahlliste",
+    multiSelect: "Auswahlliste",
+    complex: "Komplexer Typ",
+} as const
 
 type AddColumnModalProps = {
     open: boolean
@@ -49,14 +72,6 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         setOption("key", sanitizeName(options.name))
     }, [options.name])
 
-    // DEV ONLY
-    useEffect(() => {
-        if (options.editor !== "string") {
-            alert("Ausschließlich der Typ 'string' wird zzt. unterstützt!")
-            setOption("editor", "string")
-        }
-    }, [options.editor])
-
     const setOption = <T extends keyof Column.Serialized>(
         option: T,
         value: Column.Serialized[T]
@@ -81,27 +96,63 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                     />
 
                     {/* Type */}
-                    <FormControl fullWidth sx={{ mt: 2 }}>
-                        <InputLabel id="addcol-select-type">Typ</InputLabel>
-                        <Select
-                            labelId="addcol-select-type"
-                            label="Typ"
-                            value={options.editor}
-                            onChange={e =>
-                                setOption(
-                                    "editor",
-                                    e.target.value as CellContentType
-                                )
-                            }
+                    <Stack
+                        direction="row"
+                        sx={{
+                            alignItems: "center",
+                        }}
+                    >
+                        <FormControl fullWidth sx={{ mt: 2 }}>
+                            <InputLabel id="addcol-select-type">Typ</InputLabel>
+                            <Select
+                                labelId="addcol-select-type"
+                                label="Typ"
+                                value={options.editor}
+                                onChange={e =>
+                                    setOption(
+                                        "editor",
+                                        e.target.value as CellContentType
+                                    )
+                                }
+                            >
+                                {Runtime_CellContentType.map((type, i) => (
+                                    <MenuItem
+                                        key={i}
+                                        value={type}
+                                        disabled={
+                                            type !== "string" &&
+                                            type !== "email"
+                                        }
+                                    >
+                                        {CellContentTypeDisplayName[type]}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <Tooltip
+                            title="Typ der Zellen einer Spalte"
+                            arrow
+                            enterDelay={1000}
+                            placement="right"
                         >
-                            {Runtime_CellContentType.map((type, i) => (
-                                <MenuItem key={i} value={type}>
-                                    {type}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                            <IconButton
+                                size="small"
+                                sx={{
+                                    mt: 2,
+                                    ml: 0.5,
+                                }}
+                            >
+                                <HelpIcon
+                                    sx={{
+                                        cursor: "pointer",
+                                        fontSize: "85%",
+                                    }}
+                                />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
                     {moreOptionsActive && (
+                        // Editable
                         <Box sx={{ mt: 2 }}>
                             <FormControlLabel
                                 control={
@@ -118,6 +169,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                 label="Editierbar"
                             />
                         </Box>
+                        // Frozen
+                        // Resizable
+                        // sortable
                     )}
                 </FormControl>
                 <Typography

@@ -23,11 +23,7 @@ const AddCol: React.FC = () => {
 
     const handleCreateColumn = async (col: Column.Serialized) => {
         try {
-            // TODO: check if name or key is already taken
             await createColumn(col)
-            enqueueSnackbar(`Du hast erfolgreich '${col.name}' erstellt!`, {
-                variant: "success",
-            })
         } catch (error) {
             enqueueSnackbar("Die Spalte konnte nicht erstellt werden!", {
                 variant: "error",

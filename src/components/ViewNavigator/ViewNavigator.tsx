@@ -1,31 +1,26 @@
+import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import AddBoxIcon from "@mui/icons-material/AddBox"
 import {
     Box,
-    List,
-    Tooltip,
-    Typography,
-    useTheme,
-    IconButton,
-    Divider,
+    Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
+    Divider,
     FormControl,
+    IconButton,
+    List,
     TextField,
-    Button,
-    Stack,
+    Typography,
+    useTheme,
 } from "@mui/material"
-import React, { useState } from "react"
-import Zoom from "@mui/material/Zoom"
-import AddBoxIcon from "@mui/icons-material/AddBox"
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
-
-import { makeError } from "utils/error-handling/utils/makeError"
-import { useSnacki } from "hooks/useSnacki"
 import { useAPI } from "context/APIContext"
+import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useViews } from "hooks/useViews"
-
+import React, { useState } from "react"
+import { makeError } from "utils/error-handling/utils/makeError"
 import { ViewListItem } from "./ViewListItem"
 
 type AddViewModalProps = {
@@ -172,24 +167,16 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
                         />
                     ))}
             </List>
-            <Tooltip
-                title={"Neue Sicht anlegen"}
-                arrow
-                TransitionComponent={Zoom}
-                enterDelay={500}
-                placement="right"
+            <IconButton
+                size="medium"
+                onClick={e => setAnchorEL(e.currentTarget)}
+                sx={{
+                    width: "100%",
+                    borderRadius: "4px",
+                }}
             >
-                <IconButton
-                    size="medium"
-                    onClick={e => setAnchorEL(e.currentTarget)}
-                    sx={{
-                        width: "100%",
-                        borderRadius: "4px",
-                    }}
-                >
-                    <AddBoxIcon />
-                </IconButton>
-            </Tooltip>
+                <AddBoxIcon />
+            </IconButton>
             <AddViewModal
                 open={anchorEL != null}
                 onClose={() => setAnchorEL(null)}
