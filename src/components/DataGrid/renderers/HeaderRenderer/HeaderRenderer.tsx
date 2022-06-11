@@ -43,6 +43,8 @@ import ContentPasteIcon from "@mui/icons-material/ContentPaste"
 import { columnToClipboard } from "utils/columnToClipboard"
 import { isValidMailAddress } from "utils/isValidMailAddress"
 import { useSelectedRows } from "context/SelectedRowsContext"
+import { ColumnToClipboard } from "./ColumnToClipboard"
+import { SearchBar } from "./SearchBar"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const theme = useTheme()
@@ -172,6 +174,8 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         if (headerOpen) closeSearchField()
         else openSearchField()
     }
+
+    if (col == null) return null
 
     return (
         <Stack
@@ -340,51 +344,10 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                             </>
                         )}
 
-                    <MenuItem
-                        onClick={() => {
-                            // get values
-                            let values = data!.rows
-                                .map(row => row[col!.key])
-                                .filter(e => e != null)
-
-                            // consider row selection
-                            if (
-                                props.allRowsSelected === false &&
-                                selectedRows.size > 0
-                            ) {
-                                values = data!.rows
-                                    .map(row => {
-                                        if (
-                                            row[col!.key] != null &&
-                                            selectedRows.has(row.__rowIndex__)
-                                        )
-                                            return row
-                                    })
-                                    .filter(e => e != null)
-                            }
-
-                            if (col?.attributes.editor === "email")
-                                // filter invalid emails
-                                values = values?.filter(isValidMailAddress)
-                            columnToClipboard(
-                                values as (string | boolean | number)[]
-                            )
-                            snackInfo("In die Zwischenablage kopiert!")
-                        }}
-                    >
-                        <ListItemIcon>
-                            <ContentPasteIcon />
-                        </ListItemIcon>
-                        <ListItemText>
-                            {/* Note: when a row is selected and the email is invalid, it will still count the row */}
-                            {props.allRowsSelected || selectedRows.size === 0
-                                ? "Alle Werte"
-                                : selectedRows.size === 1
-                                ? "Einen Wert"
-                                : selectedRows.size + " Werte"}{" "}
-                            in die Zwischenablage kopieren
-                        </ListItemText>
-                    </MenuItem>
+                    <ColumnToClipboard
+                        colInfo={col}
+                        headerRendererProps={props}
+                    />
 
                     <MenuItem onClick={handleToggleHeaderSearchField}>
                         <ListItemIcon>
@@ -392,12 +355,15 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         </ListItemIcon>
                         <ListItemText>Suchleiste</ListItemText>
                     </MenuItem>
+
                     <MenuItem onClick={handleRenameColumn}>
                         <ListItemText>Umbenennen</ListItemText>
                     </MenuItem>
+
                     <MenuItem onClick={() => {}}>
                         <ListItemText>Eigenschaften</ListItemText>
                     </MenuItem>
+
                     <MenuItem
                         onClick={handleDeleteColumn}
                         sx={{ color: theme.palette.warning.main }}
@@ -415,44 +381,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 </Menu>
             </Box>
 
-            {headerOpen && (
-                <Box
-                    sx={{
-                        width: "100%",
-                        height: "35px",
-                        display: "inline-flex",
-                        justifyContent: "center",
-                        alignContent: "flex-start",
-                        alignItems: "flex-start",
-                        overflow: "hidden",
-                    }}
-                >
-                    <TextField
-                        sx={{
-                            maxHeight: "20px",
-                            width: "100%",
-                        }}
-                        size="small"
-                        disabled
-                        variant="outlined"
-                        value="Suche"
-                        margin="none"
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                </InputAdornment>
-                            ),
-                        }}
-                        inputProps={{
-                            style: {
-                                height: "30px",
-                                padding: "0 14px",
-                            },
-                        }}
-                    />
-                </Box>
-            )}
+            <SearchBar />
         </Stack>
     )
 }
