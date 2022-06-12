@@ -1,3 +1,4 @@
+import { removeColumn } from "@intutable/project-management/dist/requests"
 import {
     changeColumnAttributes,
     ColumnInfo,
@@ -9,7 +10,7 @@ import {
     ViewDescriptor,
     ViewInfo,
 } from "@intutable/lazy-views"
-import { removeColumn } from "@intutable/project-management/dist/requests"
+
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withSessionRoute } from "auth"
@@ -22,28 +23,75 @@ import { objToSql } from "utils/objToSql"
  * messed with.
  * @tutorial
  * ```
- * URL : `/api/column/[id]`, e.g. `/api/column/32`
+ * URL : `/api/table/[tableId]/column/[columnId]`, e.g.
+ * `/api/table/5/column/32`
  * - Body: {
- *    user: {@type {User}}
- *    projectId: {@type {number}}
- *    name: {@type {string}}
+ *     update: Record<string, unknown>
  * }
  * ```
  */
 const PATCH = withCatchingAPIRoute(
-    async (req, res, columnId: ColumnInfo["id"]) => {
-        const { update } = req.body as {
+    async (
+        req,
+        res,
+        tableId: ViewDescriptor["id"],
+        columnId: ColumnInfo["id"]
+    ) => {
+        const { update, cascade } = req.body as {
             update: Record<string, unknown>
+            cascade?: boolean
         }
+        const cascade_ = typeof cascade === "boolean" ? cascade : true
+
         const user = req.session.user!
 
-        // TODO: check if the name is already taken
+        const tableInfo = await coreRequest<ViewInfo>(
+            getViewInfo(tableId),
+            user.authCookie
+        )
 
-        // change property in view column, underlying table column is never used
+        // check if the name is already taken
+        if (
+            update["displayName"] !== undefined &&
+            tableInfo.columns.some(
+                c => c.attributes.displayName === update.displayName
+            )
+        )
+            throw Error("alreadyTaken")
+
+        // change property in table column
         const updatedColumn = await coreRequest<ColumnInfo>(
             changeColumnAttributes(columnId, objToSql(update)),
             user.authCookie
         )
+
+        if (cascade_) {
+            // change property in view columns
+            const filterViews = await coreRequest<ViewDescriptor[]>(
+                listViews(viewId(tableId)),
+                user.authCookie
+            )
+            await Promise.all(
+                filterViews.map(async v => {
+                    const viewInfo = await coreRequest<ViewInfo>(
+                        getViewInfo(v.id),
+                        user.authCookie
+                    )
+                    // we don't want to be accidentally renaming links or lookups.
+                    const theColumn = viewInfo.columns.find(
+                        c => c.parentColumnId === columnId && c.joinId === null
+                    )
+                    if (theColumn !== undefined)
+                        await coreRequest<ColumnInfo>(
+                            changeColumnAttributes(
+                                theColumn.id,
+                                objToSql(update)
+                            ),
+                            user.authCookie
+                        )
+                })
+            )
+        }
 
         res.status(200).json(updatedColumn)
     }
@@ -60,14 +108,16 @@ const PATCH = withCatchingAPIRoute(
  * ```
  */
 const DELETE = withCatchingAPIRoute(
-    async (req, res, columnId: ColumnInfo["id"]) => {
-        const { tableViewId } = req.body as {
-            tableViewId: ViewDescriptor["id"]
-        }
+    async (
+        req,
+        res,
+        tableId: ViewDescriptor["id"],
+        columnId: ColumnInfo["id"]
+    ) => {
         const user = req.session.user!
 
         const tableView = await coreRequest<ViewInfo>(
-            getViewInfo(tableViewId),
+            getViewInfo(tableId),
             user.authCookie
         )
         const column = tableView.columns.find(c => c.id === columnId)
@@ -79,7 +129,7 @@ const DELETE = withCatchingAPIRoute(
 
         // delete column in all filter views:
         const filterViews = await coreRequest<ViewDescriptor[]>(
-            listViews(viewId(tableViewId)),
+            listViews(viewId(tableId)),
             user.authCookie
         )
         await Promise.all(
@@ -89,8 +139,8 @@ const DELETE = withCatchingAPIRoute(
                     user.authCookie
                 )
                 // technically, it's possible that there are multiple columns
-                // with the same parent column, but there can only be one per join,
-                // and filter views never have joins.
+                // with the same parent column, but there can only be one per
+                // join, and filter views never have joins.
                 const viewColumn = info.columns.find(
                     c => c.parentColumnId === column.id
                 )
@@ -113,7 +163,7 @@ const DELETE = withCatchingAPIRoute(
         else if (column.attributes.formatter === "linkColumn") {
             // if column is a link column, we need to do some more work:
             const info = await coreRequest<ViewInfo>(
-                getViewInfo(tableViewId),
+                getViewInfo(tableId),
                 user.authCookie
             )
             // delete foreign key column
@@ -133,14 +183,15 @@ const DELETE = withCatchingAPIRoute(
 export default withSessionRoute(
     withUserCheck(async (req, res) => {
         const { query, method } = req
+        const tableId = parseInt(query.tableId as string)
         const columnId = parseInt(query.columnId as string)
 
         switch (method) {
             case "PATCH":
-                await PATCH(req, res, columnId)
+                await PATCH(req, res, tableId, columnId)
                 break
             case "DELETE":
-                await DELETE(req, res, columnId)
+                await DELETE(req, res, tableId, columnId)
                 break
             default:
                 res.setHeader("Allow", ["PATCH", "DELETE"])

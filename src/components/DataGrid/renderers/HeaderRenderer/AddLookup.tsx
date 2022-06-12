@@ -148,7 +148,7 @@ export const AddLookup: React.FC<AddLookupProps> = props => {
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
-                    tableViewId: data!.metadata.descriptor.id,
+                    tableId: data!.metadata.descriptor.id,
                     joinId,
                 },
             })

@@ -9,7 +9,7 @@ import {
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { defaultRowOptions } from "@backend/defaults"
 import { withUserCheck } from "api/utils/withUserCheck"
 
@@ -22,17 +22,17 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * }
  * ```
  */
-const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const { tableViewId, name } = req.body as {
-            tableViewId: ViewDescriptor["id"]
+const POST = withCatchingAPIRoute(
+    async (req: NextApiRequest, res: NextApiResponse) => {
+        const { tableId, name } = req.body as {
+            tableId: ViewDescriptor["id"]
             name: string
         }
         const user = req.session.user!
 
         // avoid duplicates
         const existingViews = await coreRequest<ViewDescriptor[]>(
-            listViews(viewId(tableViewId)),
+            listViews(viewId(tableId)),
             user.authCookie
         )
         if (existingViews.some(v => v.name === name))
@@ -40,12 +40,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // create new filter view
         const tableColumns = await coreRequest<ViewInfo>(
-            getViewInfo(tableViewId),
+            getViewInfo(tableId),
             user.authCookie
         ).then(i => i.columns)
         const filterView = await coreRequest<ViewDescriptor>(
             createView(
-                viewId(tableViewId),
+                viewId(tableId),
                 name,
                 { columns: [], joins: [] },
                 defaultRowOptions(tableColumns),
@@ -55,11 +55,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         )
 
         res.status(200).json(filterView)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {

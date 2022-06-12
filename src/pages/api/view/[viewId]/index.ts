@@ -13,8 +13,9 @@ import {
 import { coreRequest } from "api/utils"
 import { View } from "api/utils/parse"
 import { withSessionRoute } from "auth"
+import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { makeError } from "utils/error-handling/utils/makeError"
+
 import { withUserCheck } from "api/utils/withUserCheck"
 import { defaultViewName } from "@backend/defaults"
 
@@ -27,12 +28,12 @@ import { defaultViewName } from "@backend/defaults"
  * - Body: {}
  * ```
  */
-const GET = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    viewId: ViewDescriptor["id"]
-) => {
-    try {
+const GET = withCatchingAPIRoute(
+    async (
+        req: NextApiRequest,
+        res: NextApiResponse,
+        viewId: ViewDescriptor["id"]
+    ) => {
         const user = req.session.user!
         const options = await coreRequest<ViewOptions>(
             getViewOptions(viewId),
@@ -47,11 +48,8 @@ const GET = async (
         const parsedData = View.parse(options, tableData)
 
         res.status(200).json(parsedData)
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 /**
  * PATCH/update the name of a single view.
@@ -64,12 +62,12 @@ const GET = async (
  *   }
  * ```
  */
-const PATCH = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    viewId: ViewDescriptor["id"]
-) => {
-    try {
+const PATCH = withCatchingAPIRoute(
+    async (
+        req: NextApiRequest,
+        res: NextApiResponse,
+        viewId: ViewDescriptor["id"]
+    ) => {
         const { newName } = req.body as {
             newName: ViewDescriptor["name"]
         }
@@ -99,11 +97,8 @@ const PATCH = async (
             )
             res.status(200).json(updatedView)
         }
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 /**
  * DELETE a view. Returns an empty object.
@@ -114,12 +109,12 @@ const PATCH = async (
  * - Body: {}
  * ```
  */
-const DELETE = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    viewId: ViewDescriptor["id"]
-) => {
-    try {
+const DELETE = withCatchingAPIRoute(
+    async (
+        req: NextApiRequest,
+        res: NextApiResponse,
+        viewId: ViewDescriptor["id"]
+    ) => {
         const user = req.session.user!
 
         const options = await coreRequest<ViewOptions>(
@@ -139,11 +134,8 @@ const DELETE = async (
         await coreRequest(deleteView(viewId), user.authCookie)
 
         res.status(200).send({})
-    } catch (err) {
-        const error = makeError(err)
-        res.status(500).json({ error: error.message })
     }
-}
+)
 
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {

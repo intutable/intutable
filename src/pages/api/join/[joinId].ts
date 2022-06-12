@@ -21,7 +21,7 @@ import { project_management_constants } from "types/type-annotations/project-man
  * ```
  * - URL: `/api/join/[id]`, e.g. `/api/join/3`
  * - Body: {
- *    viewId: {@type {number} The ID of the view in which to create the link.
+ *    tableId: {@type {number} The ID of the view in which to create the link.
  *    rowId: {@type {number}} Row of the linking table.
  *    value: {@type {number}} The ID of the row in the linked table.
  * }
@@ -29,15 +29,15 @@ import { project_management_constants } from "types/type-annotations/project-man
  */
 const POST = withCatchingAPIRoute(
     async (req, res, joinId: JoinDescriptor["id"]) => {
-        const { tableViewId, rowId, value } = req.body as {
-            tableViewId: ViewDescriptor["id"]
+        const { tableId, rowId, value } = req.body as {
+            tableId: ViewDescriptor["id"]
             rowId: number
             value: number | null
         }
         const user = req.session.user!
 
         const viewInfo = await coreRequest<ViewInfo>(
-            getViewInfo(tableViewId),
+            getViewInfo(tableId),
             user.authCookie
         )
         const baseTableInfo = await coreRequest<TableInfo>(

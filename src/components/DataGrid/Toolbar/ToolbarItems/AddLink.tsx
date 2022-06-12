@@ -50,8 +50,8 @@ export const AddLink: React.FC = () => {
             await fetcher({
                 url: "/api/join",
                 body: {
-                    viewId: currentTable.metadata.descriptor.id,
-                    foreignViewId: table.id,
+                    tableId: currentTable.metadata.descriptor.id,
+                    foreignTableId: table.id,
                 },
             })
             await mutateTable()

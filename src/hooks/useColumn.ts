@@ -57,32 +57,24 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const createColumn = async (column: Column.Serialized): Promise<void> => {
+        const tableId = table!.metadata.descriptor.id
         await fetcher({
-            url: "/api/column",
-            body: {
-                tableViewId: table?.metadata.descriptor.id,
-                column,
-            },
+            url: `/api/table/${tableId}/column`,
+            body: { column },
         })
         await mutate()
     }
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    // TODO: handle the 'alreadyTaken'-Error differently, e.g. create a dedicated error class
-    // TODO: check for naming conflicts in the api route
-    // TODO: get rid of `getColumnByKey`
     const renameColumn = async (
         column: Column,
         newName: Column["name"]
     ): Promise<void> => {
-        if (
-            table?.columns.some(c => c.key !== column.key && c.name === newName)
-        )
-            return Promise.reject("alreadyTaken") // instanceof IsTakenError
-
+        const tableId = table!.metadata.descriptor.id
+        const baseColumn = getTableColumn(column)
         await fetcher({
-            url: `/api/column/${column._id!}`,
+            url: `/api/table/${tableId}/column/${baseColumn!.id}`,
             body: { update: { displayName: newName } },
             method: "PATCH",
         })
@@ -93,10 +85,11 @@ export const useColumn = (
     // TODO: the state should be updated differently
     // TODO: get rid of `getColumnByKey`
     const deleteColumn = async (column: Column): Promise<void> => {
+        const tableId = table!.metadata.descriptor.id
         const tableColumn = getTableColumn(column)
         await fetcher({
-            url: `/api/column/${tableColumn!.id}`,
-            body: { tableViewId: table!.metadata.descriptor.id },
+            url: `/api/table/${tableId}/column/${tableColumn!.id}`,
+            body: { tableId: table!.metadata.descriptor.id },
             method: "DELETE",
         })
 
