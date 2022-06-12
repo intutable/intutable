@@ -5,6 +5,7 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    DialogContentText,
     DialogTitle,
     FormControl,
     FormControlLabel,
@@ -33,7 +34,20 @@ import { Row } from "types"
 type GenerateMailListDialogProps = {
     open: boolean
     onClose: () => void
+    onFileAvailable: (file: string) => void
     headerRendererProps: HeaderRendererProps<Row>
+}
+
+const inistalState: ExportViewRequestBody = {
+    fileName: "",
+    format: "csv",
+    columns: [],
+    options: {
+        csvOptions: {
+            header: false,
+            includeEmptyRows: false,
+        },
+    },
 }
 
 export const GenerateMailListDialog: React.FC<
@@ -43,17 +57,7 @@ export const GenerateMailListDialog: React.FC<
     const { data: viewData } = useView()
     const { selectedRows } = useSelectedRows() // TODO: consider row selection
 
-    const [state, setState] = useState<ExportViewRequestBody>({
-        fileName: "",
-        format: "csv",
-        columns: [],
-        options: {
-            csvOptions: {
-                header: false,
-                includeEmptyRows: false,
-            },
-        },
-    })
+    const [state, setState] = useState<ExportViewRequestBody>(inistalState)
 
     const valid = useMemo(
         () => state.fileName.length > 0 && state.columns.length > 0,
@@ -61,11 +65,13 @@ export const GenerateMailListDialog: React.FC<
     )
 
     const [loading, setLoading] = useState<boolean>(false)
+    const [file, setFile] = useState<string | null>(null)
+    const filename = state.fileName + "." + state.format
 
     const exportView = async () => {
+        setLoading(true)
         try {
-            setLoading(true)
-            const csv = await fetcher({
+            const csv = await fetcher<string>({
                 url: `/api/util/export/view/${viewData?.descriptor.id}`,
                 body: {
                     ...state,
@@ -75,14 +81,15 @@ export const GenerateMailListDialog: React.FC<
                     "Content-Type": "text/csv",
                     Accept: "text/csv",
                 },
+                isReadstream: true,
             })
-            console.log(csv)
+            setFile(csv)
         } catch (error) {
             console.log(error)
-            snackError("Export fehlgeschlagen")
+            snackError("Export fehlgeschlagen.")
+            props.onClose()
         } finally {
             setLoading(false)
-            props.onClose()
         }
     }
 
@@ -115,6 +122,29 @@ export const GenerateMailListDialog: React.FC<
         <Dialog open={props.open} onClose={props.onClose}>
             <DialogTitle>Mailing-Liste erstellen</DialogTitle>
             <DialogContent>
+                {state.columns.length > 0 && (
+                    <DialogContentText
+                        sx={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "flex-end",
+                        }}
+                    >
+                        <Typography
+                            onClick={() => setState(inistalState)}
+                            variant="caption"
+                            sx={{
+                                cursor: "pointer",
+                                fontStyle: "italic",
+                                "&:hover": {
+                                    textDecoration: "underline",
+                                },
+                            }}
+                        >
+                            zurücksetzen
+                        </Typography>
+                    </DialogContentText>
+                )}
                 <FormControl
                     fullWidth
                     sx={{
@@ -260,6 +290,18 @@ export const GenerateMailListDialog: React.FC<
                 >
                     Exportieren
                 </LoadingButton>
+                {file && (
+                    <a
+                        ref={ref => {
+                            ref?.click()
+                            setFile(null)
+                            props.onClose()
+                        }}
+                        download={filename}
+                        href={file}
+                        title={filename}
+                    ></a>
+                )}
             </DialogActions>
         </Dialog>
     )

@@ -17,6 +17,9 @@ import fs from "fs-extra"
 import path from "path"
 import tmp from "tmp"
 
+const capitalizeFirstLetter = (string: string) =>
+    string.charAt(0).toUpperCase() + string.slice(1)
+
 export class TmpDir {
     public readonly path: string
     private removeCallback: () => void
@@ -54,17 +57,11 @@ const intersectRows = (columns: Column.Serialized[], rows: Row.Serialized[]) =>
         const a: Obj = {}
 
         columns.forEach(col => {
-            a[col.name] = row[col.key]
+            a[capitalizeFirstLetter(col.name)] = row[col.key]
         })
 
         return a
     })
-// columns.map(col => ({
-//     name: col.name,
-//     values: rows.map(row => row[col.key]) as AnyArray,
-// }))
-
-// export const toJSON = (data: JSONFormat): string => JSON.stringify(data)
 
 export const toCSV = async (data: Obj[], csvOptions?: CSVExportOptions) =>
     await parseAsync(data, {
@@ -116,7 +113,7 @@ const POST = withCatchingAPIRoute(
             readStream.pipe(res)
             readStream.on("end", resolve)
         })
-        // dir.delete()
+        dir.delete()
     }
 )
 

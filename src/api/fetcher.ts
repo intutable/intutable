@@ -19,6 +19,10 @@ type FetcherOptions = {
      */
     method?: "GET" | "POST" | "PATCH" | "DELETE"
     headers?: HeadersInit
+    /**
+     * @default false
+     */
+    isReadstream?: boolean
 }
 
 /**
@@ -49,14 +53,44 @@ export const fetcher = async <T>(args: FetcherOptions): Promise<T> => {
             : undefined,
     })
 
-    console.log(res)
+    if (args.isReadstream) {
+        // TODO: use error handling
+        const reader = res.body?.getReader()
+        if (reader == null)
+            throw new Error("Could not get reader from response body")
 
-    const body = await res.json()
+        const stream = new ReadableStream({
+            start(controller) {
+                return pump()
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                function pump(): any {
+                    return reader!.read().then(({ done, value }) => {
+                        if (done) {
+                            controller.close()
+                            return
+                        }
 
-    await catchAuthError(res, body)
-    await catchException(res, body)
+                        controller.enqueue(value)
+                        return pump()
+                    })
+                }
+            },
+        })
 
-    return body
+        const resStream = new Response(stream)
+        const blob = await resStream.blob()
+        const file = URL.createObjectURL(blob)
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return file as any
+    }
+
+    const json = await res.json()
+
+    await catchAuthError(res, json)
+    await catchException(res, json)
+
+    return json
 }
 /**
  * Catches Exceptions (http status codes in range of 4xx to 5xx)
