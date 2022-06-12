@@ -1,5 +1,7 @@
 import FileDownloadIcon from "@mui/icons-material/FileDownload"
 import { IconButton, Tooltip } from "@mui/material"
+import { useSelectedRows } from "context/SelectedRowsContext"
+import { useView } from "hooks/useView"
 import React, { useState } from "react"
 import { ExportViewDialog } from "./ExportViewDialog"
 
@@ -14,6 +16,13 @@ const ExportView: React.FC = () => {
     }
     const closeModal = () => setAnchorEL(null)
 
+    const { selectedRows } = useSelectedRows()
+    const { data } = useView()
+
+    const allRowsSelected = data
+        ? data.rows.length === selectedRows.size
+        : false
+
     return (
         <>
             <Tooltip title="View exportieren" arrow enterDelay={1000}>
@@ -24,7 +33,7 @@ const ExportView: React.FC = () => {
             <ExportViewDialog
                 open={anchorEL != null}
                 onClose={closeModal}
-                allRowsSelected={false}
+                allRowsSelected={allRowsSelected}
             />
         </>
     )
