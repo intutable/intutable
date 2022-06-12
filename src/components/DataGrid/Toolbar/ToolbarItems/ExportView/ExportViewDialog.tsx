@@ -31,11 +31,14 @@ import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
 
-type GenerateMailListDialogProps = {
+type ExportViewDialogProps = {
     open: boolean
     onClose: () => void
-    onFileAvailable: (file: string) => void
-    headerRendererProps: HeaderRendererProps<Row>
+    allRowsSelected: boolean
+    options?: {
+        title?: string
+        initialState?: ExportViewRequestBody
+    }
 }
 
 const inistalState: ExportViewRequestBody = {
@@ -50,14 +53,16 @@ const inistalState: ExportViewRequestBody = {
     },
 }
 
-export const GenerateMailListDialog: React.FC<
-    GenerateMailListDialogProps
-> = props => {
+export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
     const { snackError } = useSnacki()
     const { data: viewData } = useView()
     const { selectedRows } = useSelectedRows() // TODO: consider row selection
 
-    const [state, setState] = useState<ExportViewRequestBody>(inistalState)
+    const [state, setState] = useState<ExportViewRequestBody>(
+        props.options?.initialState || inistalState
+    )
+    const resetState = () =>
+        setState(props.options?.initialState || inistalState)
 
     const valid = useMemo(
         () => state.fileName.length > 0 && state.columns.length > 0,
@@ -120,7 +125,9 @@ export const GenerateMailListDialog: React.FC<
 
     return (
         <Dialog open={props.open} onClose={props.onClose}>
-            <DialogTitle>Mailing-Liste erstellen</DialogTitle>
+            <DialogTitle>
+                {props.options?.title || "View exportieren"}
+            </DialogTitle>
             <DialogContent>
                 {state.columns.length > 0 && (
                     <DialogContentText
@@ -131,7 +138,7 @@ export const GenerateMailListDialog: React.FC<
                         }}
                     >
                         <Typography
-                            onClick={() => setState(inistalState)}
+                            onClick={resetState}
                             variant="caption"
                             sx={{
                                 cursor: "pointer",
@@ -260,12 +267,12 @@ export const GenerateMailListDialog: React.FC<
                                     }
                                 />
                             }
-                            label="Leere Zeile übernehmen"
+                            label="Leere Zeilen übernehmen"
                         />
                     )}
 
                     {selectedRows.size > 0 &&
-                        props.headerRendererProps.allRowsSelected === false && (
+                        props.allRowsSelected === false && (
                             <FormControlLabel
                                 control={<Switch checked disabled />}
                                 label="Nur markierte Zeilen exportieren"

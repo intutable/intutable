@@ -156,9 +156,7 @@ const TablePage: React.FC = () => {
                                     <ToolbarItem.AddLink />
                                     <ToolbarItem.AddRow />
                                     <ToolbarItem.EditFilters />
-                                    <ToolbarItem.FileDownload
-                                        getData={() => []}
-                                    />
+                                    <ToolbarItem.ExportView />
                                     <ToolbarItem.DetailView
                                         handleClick={() =>
                                             setDetailedViewOpen(prev => !prev)

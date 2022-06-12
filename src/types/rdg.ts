@@ -124,6 +124,10 @@ export type MetaColumnProps = {
      *
      */
     _kind: "standard" | "link" | "lookup"
+    /**
+     * // TODO: add
+     */
+    // _cellContentType: CellContentType
 }
 
 /**
