@@ -16,6 +16,7 @@ import Obj from "types/Obj"
 import fs from "fs-extra"
 import path from "path"
 import tmp from "tmp"
+import { isValidMailAddress } from "utils/isValidMailAddress"
 
 const capitalizeFirstLetter = (string: string) =>
     string.charAt(0).toUpperCase() + string.slice(1)
@@ -54,13 +55,26 @@ export type ExportViewRequestBody = {
 
 const intersectRows = (columns: Column.Serialized[], rows: Row.Serialized[]) =>
     rows.map(row => {
-        const a: Obj = {}
+        const intersection: Obj = {}
 
         columns.forEach(col => {
-            a[capitalizeFirstLetter(col.name)] = row[col.key]
+            const value = row[col.key]
+            const key = capitalizeFirstLetter(col.name)
+
+            // hack for email type: filter out every invalid address
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const cellType = (col as any).attributes.editor
+            if (cellType === "email") {
+                if (isValidMailAddress(value) === false) {
+                    intersection[key] = ""
+                    return
+                }
+            }
+
+            intersection[key] = value
         })
 
-        return a
+        return intersection
     })
 
 export const toCSV = async (data: Obj[], csvOptions?: CSVExportOptions) =>
