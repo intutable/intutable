@@ -15,7 +15,7 @@ export const CellContentTypeComponents: {
     time: Editor.DateEditor,
     avatar: Editor.AvatarEditor,
     hyperlink: Editor.HyperlinkEditor,
-    email: Editor.EMailEditor,
+    email: Editor.StringEditor,
     select: Editor.SelectEditor,
     multiSelect: Editor.SelectEditor,
     complex: Editor.ComplexEditor,
