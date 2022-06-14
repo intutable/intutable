@@ -74,6 +74,8 @@ CREATE TABLE view_columns(
     "userPrimary" INTEGER DEFAULT 0 NOT NULL,
     -- kinds of columns: plain data (text, date, ...), link to other table, lookup field, ...
     _kind TEXT NOT NULL DEFAULT 'standard',
+    -- type of the content of a column
+    -- _cellContentType TEXT NOT NULL,
     "displayName" TEXT NULL,
     -- various RDG props
     editable INTEGER DEFAULT 1,

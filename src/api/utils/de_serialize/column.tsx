@@ -1,3 +1,4 @@
+import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
 import { CellContentTypeComponents } from "@datagrid/Editor"
 import { isCellContentType } from "@datagrid/Editor/type-management"
 import { EMailFormatter } from "@datagrid/Formatter/formatters/EMailFormatter"
@@ -40,20 +41,12 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
  * @returns {Column}
  */
 export const deserialize = (col: Column.Serialized): Column.Deserialized => {
-    /**
-     * To understand this condition see {@link MetaColumnProps._kind}
-     */
-    const formatter = col._kind === "standard" ? col.formatter : col._kind
+    const Column = new ColumnUtility(col)
 
     return {
         ...col,
-        editor: isCellContentType(col.editor)
-            ? CellContentTypeComponents[col.editor]
-            : undefined,
-        formatter:
-            col.editor === "email"
-                ? EMailFormatter
-                : FormatterComponentMap[formatter], // TODO: quick hack, find a better solution
+        editor: Column.getEditor(),
+        formatter: Column.getFormatter(),
         summaryFormatter: undefined, // currently not supported
         groupFormatter: undefined, // currently not supported
         colSpan: undefined, // currently not supported

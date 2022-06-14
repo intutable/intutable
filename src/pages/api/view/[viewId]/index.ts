@@ -39,7 +39,7 @@ const GET = withCatchingAPIRoute(
             getViewOptions(viewId),
             user.authCookie
         )
-        const tableData = await coreRequest<ViewData>(
+        const tableData = await coreRequest<ViewData>( // should be `ViweData.Serialized`?
             getViewData(viewId),
             user.authCookie
         )

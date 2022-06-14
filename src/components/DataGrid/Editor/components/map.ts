@@ -9,7 +9,7 @@ export const CellContentTypeComponents: {
     number: Editor.NumberEditor,
     percentage: Editor.PercentageEditor,
     currency: Editor.CurrencyEditor,
-    boolean: Editor.BooleanEditor,
+    boolean: Editor.StringEditor, // TODO: delete this editor as it is not used, only the formatter
     date: Editor.DateEditor,
     datetime: Editor.DateEditor,
     time: Editor.DateEditor,

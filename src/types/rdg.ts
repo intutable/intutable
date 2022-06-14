@@ -9,7 +9,10 @@ import type {
     ViewInfo,
 } from "@intutable/lazy-views"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
-import type { Column as ReactDataGrid_Column } from "react-data-grid"
+import {
+    CalculatedColumn,
+    Column as ReactDataGrid_Column,
+} from "react-data-grid"
 import { project_management } from "./type-annotations/project-management"
 
 // #################################################################
@@ -121,6 +124,10 @@ export type MetaColumnProps = {
      *
      */
     _kind: "standard" | "link" | "lookup"
+    /**
+     * // TODO: add
+     */
+    // _cellContentType: CellContentType
 }
 
 /**
@@ -218,13 +225,12 @@ type SerializedColumn = MetaColumnProps & {
      * __Warning__: This type is customized for serialization (see below).
      *
      * __Note__: the orignal type requires a component.
-     * This component is set based on the given string by
-     * {@type {Formatter}} during deserialization in {@link deserialize}.
+     * This component is set based on the given string during deserialization in {@link deserialize}.
      *
      * __Note__: The formatter component is a HOC ({@link https://reactjs.org/docs/higher-order-components.html})
      * that can be extended by a component defined by {@link MetaColumnProps._kind}.
      */
-    formatter: Formatter
+    formatter: Exclude<CellContentType, "link"> | MetaColumnProps["_kind"]
     /**
      * @property {(undefined | null)} [summaryFormatter]
      *
