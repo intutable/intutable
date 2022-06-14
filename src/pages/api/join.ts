@@ -5,7 +5,7 @@ import {
     getViewInfo,
     JoinDescriptor,
     selectable,
-    tableId as mkViewId,
+    viewId,
     ViewInfo,
     ColumnInfo,
 } from "@intutable/lazy-views"
@@ -29,8 +29,8 @@ import { addColumnToFilterViews } from "utils/backend/views"
  * @tutorial
  * ```
  * - Body: {
- *   mkViewId: {@type number} The ID of the view in which to create the link.
- *   foreignViewId {@type number} The ID of the view to which the link points.
+ *   tableId: {@type number} The ID of the table in which to create the link.
+ *   foreignViewId {@type number} The ID of the table to which the link points.
  * }
  * ```
  */
@@ -41,7 +41,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     }
     const user = req.session.user!
 
-    const viewInfo = await coreRequest<ViewInfo>(
+    const tableInfo = await coreRequest<ViewInfo>(
         getViewInfo(tableId),
         user.authCookie
     )
@@ -49,29 +49,29 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     // create foreign key column
     const fkColumn = await coreRequest<PM_Column>(
         createColumnInTable(
-            selectable.getId(viewInfo.source),
-            makeForeignKeyName(viewInfo),
+            selectable.getId(tableInfo.source),
+            makeForeignKeyName(tableInfo),
             ColumnType.integer
         ),
         user.authCookie
     )
 
-    const foreignViewInfo = await coreRequest<ViewInfo>(
+    const foreignTableInfo = await coreRequest<ViewInfo>(
         getViewInfo(foreignTableId),
         user.authCookie
     )
 
-    const foreignIdColumn = foreignViewInfo.columns.find(
+    const foreignIdColumn = foreignTableInfo.columns.find(
         c => c.name === project_management_constants.UID_KEY
     )!
-    const primaryColumn = foreignViewInfo.columns.find(
+    const primaryColumn = foreignTableInfo.columns.find(
         c => c.attributes.userPrimary! === 1
     )!
     const displayName = (primaryColumn.attributes.displayName ||
         primaryColumn.name) as string
     const join = await coreRequest<JoinDescriptor>(
         addJoinToView(tableId, {
-            foreignSource: mkViewId(foreignTableId),
+            foreignSource: viewId(foreignTableId),
             on: [fkColumn.id, "=", foreignIdColumn.id],
             columns: [],
         }),
