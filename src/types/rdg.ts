@@ -125,9 +125,10 @@ export type MetaColumnProps = {
      */
     _kind: "standard" | "link" | "lookup"
     /**
-     * // TODO: add
+     * In addition to {@link SerializedColumn.editor} and {@link SerializedColumn.formatter},
+     * this explicitly sets the type.
      */
-    // _cellContentType: CellContentType
+    _cellContentType: CellContentType
 }
 
 /**
@@ -230,7 +231,7 @@ type SerializedColumn = MetaColumnProps & {
      * __Note__: The formatter component is a HOC ({@link https://reactjs.org/docs/higher-order-components.html})
      * that can be extended by a component defined by {@link MetaColumnProps._kind}.
      */
-    formatter: Exclude<CellContentType, "link"> | MetaColumnProps["_kind"]
+    formatter?: CellContentType | null
     /**
      * @property {(undefined | null)} [summaryFormatter]
      *
@@ -413,7 +414,7 @@ type SerializedColumn = MetaColumnProps & {
 export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
     _kind: "standard",
     width: undefined,
-    formatter: "standard",
+    formatter: "string",
     editor: "string",
     editable: true,
     frozen: false,

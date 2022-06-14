@@ -32,20 +32,22 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
         date.getMonth() + 1
     }-${date.getFullYear()}`
 
-    // TODO: uncomment when `_cellContentType is usable`
-    // const emailColumns = useMemo(
-    //     () =>
-    //         viewData?.columns
-    //             .filter(col => isAppColumn(col) === false)
-    //             .filter(col => col._cellContentType === "email")
-    //             .map(col => col._id),
-    //     [viewData?.columns]
-    // )
+    const emailColumns: number[] | null = useMemo(
+        () =>
+            viewData
+                ? viewData.columns
+                      .filter(col => isAppColumn(col) === false)
+                      .filter(col => col._cellContentType === "email")
+                      .map(col => col._id!)
+                : null,
+        [viewData]
+    )
 
     if (
         (col &&
             Object.prototype.hasOwnProperty.call(col, "attributes") &&
-            col.attributes.editor === "email") === false
+            col.attributes.editor === "email") === false ||
+        viewData == null
     )
         return null
 
@@ -65,9 +67,7 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
                             view!.name
                         } ${localDateFormat}`,
                         format: "csv",
-                        columns: [
-                            /*emailColumns*/
-                        ],
+                        columns: emailColumns || [],
                         options: {
                             csvOptions: {
                                 header: false,

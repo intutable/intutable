@@ -16,6 +16,11 @@ export type CellContentTypeComponentDescriptor = {
 export const ColumnKindComponents: {
     [key in MetaColumnProps["_kind"]]: FormatterComponent
 } = {
+    /**
+     * Default, won't be used directly from this object.
+     * But from {@link CellContentTypeComponents}.
+     * @legacy
+     */
     standard: StandardFormatter,
     link: LinkColumnFormatter,
     lookup: StandardFormatter,
@@ -25,21 +30,54 @@ export const ColumnKindComponents: {
 export const CellContentTypeComponents: {
     [key in CellContentType]: CellContentTypeComponentDescriptor
 } = {
-    string: { editor: Editor.StringEditor, formatter: StandardFormatter },
-    number: { editor: Editor.NumberEditor, formatter: StandardFormatter },
+    string: {
+        editor: Editor.StringEditor,
+        formatter: ColumnKindComponents.standard,
+    },
+    number: {
+        editor: Editor.NumberEditor,
+        formatter: ColumnKindComponents.standard,
+    },
     percentage: {
         editor: Editor.PercentageEditor,
-        formatter: StandardFormatter,
+        formatter: ColumnKindComponents.standard,
     },
-    currency: { editor: Editor.CurrencyEditor, formatter: StandardFormatter },
+    currency: {
+        editor: Editor.CurrencyEditor,
+        formatter: ColumnKindComponents.standard,
+    },
     boolean: { editor: null, formatter: BooleanFormatter },
-    date: { editor: Editor.DateEditor, formatter: StandardFormatter },
-    datetime: { editor: Editor.DateEditor, formatter: StandardFormatter },
-    time: { editor: Editor.DateEditor, formatter: StandardFormatter },
-    avatar: { editor: Editor.AvatarEditor, formatter: StandardFormatter },
-    hyperlink: { editor: Editor.StringEditor, formatter: StandardFormatter },
+    date: {
+        editor: Editor.DateEditor,
+        formatter: ColumnKindComponents.standard,
+    },
+    datetime: {
+        editor: Editor.DateEditor,
+        formatter: ColumnKindComponents.standard,
+    },
+    time: {
+        editor: Editor.DateEditor,
+        formatter: ColumnKindComponents.standard,
+    },
+    avatar: {
+        editor: Editor.AvatarEditor,
+        formatter: ColumnKindComponents.standard,
+    },
+    hyperlink: {
+        editor: Editor.StringEditor,
+        formatter: ColumnKindComponents.standard,
+    },
     email: { editor: Editor.StringEditor, formatter: EMailFormatter },
-    select: { editor: Editor.SelectEditor, formatter: StandardFormatter },
-    multiSelect: { editor: Editor.SelectEditor, formatter: StandardFormatter },
-    complex: { editor: Editor.ComplexEditor, formatter: StandardFormatter },
+    select: {
+        editor: Editor.SelectEditor,
+        formatter: ColumnKindComponents.standard,
+    },
+    multiSelect: {
+        editor: Editor.SelectEditor,
+        formatter: ColumnKindComponents.standard,
+    },
+    complex: {
+        editor: Editor.ComplexEditor,
+        formatter: ColumnKindComponents.standard,
+    },
 }
