@@ -39,7 +39,7 @@ const CellContentTypeDisplayName: {
     datetime: "Datum & Zeit",
     time: "Zeit",
     avatar: "Avatar",
-    link: "Link",
+    hyperlink: "Hyperlink",
     email: "E-Mail",
     select: "Auswahlliste",
     multiSelect: "Auswahlliste",

@@ -24,7 +24,7 @@ export const FormatterComponentMap: {
     datetime: StandardFormatter,
     time: StandardFormatter,
     avatar: StandardFormatter,
-    // link: StandardFormatter, // TODO: rename the types from MetaColumnProps["_kind"]
+    hyperlink: StandardFormatter,
     email: EMailFormatter,
     select: StandardFormatter,
     multiSelect: StandardFormatter,
