@@ -15,7 +15,7 @@ import {
  * • `datetime` is stored as a date e.g. `24.11.2021 17:00` (dd.mm.yyyy hh:mm 24h format)
  * • `time` is stored as a string that represents a time without a date e.g. `17:00` (hh:mm 24h format)
  * • `avatar` is stored as a complex object containing an image
- * • `link` is stored as a string which represents a link
+ * • `hyperlink` is stored as a string which represents a link
  * • `email` is stored as a string which represents an email address
  * • `select` is stored as an array of strings which represents a selectable list of options (only one option can be selected)
  * • `multiSelect` is stored as an array of strings which represents a selectable list of options (multiple options can be selected)
@@ -31,7 +31,7 @@ type CellContentTypeMap = {
     datetime: Date
     time: Date
     avatar: Avatar
-    link: string
+    hyperlink: string
     email: string
     select: string[]
     multiSelect: string[]
@@ -48,7 +48,7 @@ export const Runtime_CellContentType = [
     "datetime",
     "time",
     "avatar",
-    "link",
+    "hyperlink",
     "email",
     "select",
     "multiSelect",

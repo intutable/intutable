@@ -3,7 +3,7 @@ import { EditorComponent } from "../types/EditorComponent"
 import * as Editor from "./editors"
 
 export const CellContentTypeComponents: {
-    [key in CellContentType]: EditorComponent
+    [key in CellContentType]: EditorComponent | null | undefined
 } = {
     string: Editor.StringEditor,
     number: Editor.NumberEditor,
@@ -14,8 +14,8 @@ export const CellContentTypeComponents: {
     datetime: Editor.DateEditor,
     time: Editor.DateEditor,
     avatar: Editor.AvatarEditor,
-    link: Editor.LinkEditor,
-    email: Editor.EMailEditor,
+    hyperlink: Editor.StringEditor,
+    email: Editor.StringEditor,
     select: Editor.SelectEditor,
     multiSelect: Editor.SelectEditor,
     complex: Editor.ComplexEditor,
