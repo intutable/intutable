@@ -34,7 +34,11 @@ export type DeserializedTableData = Table<Column, Row>
 
 export namespace TableData {
     export type Deserialized = DeserializedTableData
-    export type Serialized = SerializedTableData
+    /**
+     * @deprecated
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export type Serialized = any
 }
 
 // #################################################################
