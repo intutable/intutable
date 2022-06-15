@@ -18,7 +18,7 @@ import { addColumnToFilterViews } from "utils/backend/views"
  * @tutorial
  * ```
  * - Body: {
- *     viewId: {@type {number}}
+ *     tableId: {@type {number}}
  *     joinId: {@type {number}}
  * }
  * ```
@@ -45,6 +45,10 @@ const POST = withCatchingAPIRoute(
         const foreignColumn = foreignViewInfo.columns.find(
             c => c.id === parentColumnId
         )!
+
+        console.log(parentColumnId)
+        console.dir(foreignViewInfo.columns)
+        console.dir(foreignColumn)
 
         // determine props
         const displayName =
