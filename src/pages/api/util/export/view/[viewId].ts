@@ -74,6 +74,7 @@ export const toCSV = async (data: Obj[], csvOptions?: CSVExportOptions) =>
     await parseAsync(data, {
         header: csvOptions?.header === true,
         includeEmptyRows: csvOptions?.includeEmptyRows === true,
+        withBOM: true,
     })
 
 /**
