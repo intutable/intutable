@@ -59,11 +59,10 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const [options, setOptions] = useState<Column.Serialized>({
         _id: -1,
         _kind: "standard",
+        _cellContentType: "string",
         key: "",
         name: "",
         editable: true,
-        editor: "string",
-        formatter: "standard",
     })
     const [valid, setValid] = useState(false)
 
@@ -107,14 +106,10 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             <Select
                                 labelId="addcol-select-type"
                                 label="Typ"
-                                value={options.editor}
+                                value={options._cellContentType}
                                 onChange={e => {
                                     setOption(
-                                        "editor",
-                                        e.target.value as CellContentType
-                                    )
-                                    setOption(
-                                        "formatter",
+                                        "_cellContentType",
                                         e.target.value as CellContentType
                                     )
                                 }}

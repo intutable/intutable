@@ -28,13 +28,19 @@ type Table<COL, ROW> = {
 export type TableData = Table<SerializedColumn, SerializedRow>
 /**
  * @deprecated no GUI components directly display table data, only
+ * @legacy
  * {@link ViewData}
  */
 export type DeserializedTableData = Table<Column, Row>
 
 export namespace TableData {
     export type Deserialized = DeserializedTableData
-    export type Serialized = SerializedTableData
+    /**
+     * @deprecated
+     * @legacy
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export type Serialized = any
 }
 
 // #################################################################
@@ -217,7 +223,7 @@ type SerializedColumn = MetaColumnProps & {
      */
     summaryCellClass?: string | null
     /**
-     * @property {(Formatter)} formatter Formatter to be used to render the cell content ({@default standard}).
+     * @property {(Formatter | undefined | null)} [formatter] Formatter to be used to render the cell content ({@default standard}).
      *
      * See the orignal type here: {@link Column.formatter}.
      *
@@ -231,7 +237,7 @@ type SerializedColumn = MetaColumnProps & {
      * __Note__: The formatter component is a HOC ({@link https://reactjs.org/docs/higher-order-components.html})
      * that can be extended by a component defined by {@link MetaColumnProps._kind}.
      */
-    formatter?: CellContentType | null
+    // formatter?: CellContentType | null // inferred in deserialization by _cellContentType
     /**
      * @property {(undefined | null)} [summaryFormatter]
      *
@@ -325,7 +331,7 @@ type SerializedColumn = MetaColumnProps & {
      */
     sortDescendingFirst?: boolean | null
     /**
-     * @property {(CellContentType)} editor Editor to be rendered when cell of column is being edited. If set, then the column is automatically set to be editable.
+     * @property {(CellContentType | undefined | null)} [editor] Editor to be rendered when cell of column is being edited. If set, then the column is automatically set to be editable.
      *
      * See the orignal type here: {@link Column.editor}.
      *
@@ -337,7 +343,7 @@ type SerializedColumn = MetaColumnProps & {
      * This component is set based on the given string by
      * {@type {CellContentType}} during deserialization in {@link deserialize}.
      */
-    editor: CellContentType
+    // editor?: CellContentType | null // inferred in deserialization by _cellContentType
     editorOptions?: null | {
         /**
          * @property {(boolean | undefined | null)} [renderFormatter=false] ({@default false}).
@@ -413,9 +419,8 @@ type SerializedColumn = MetaColumnProps & {
  */
 export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
     _kind: "standard",
+    _cellContentType: "string",
     width: undefined,
-    formatter: "string",
-    editor: "string",
     editable: true,
     frozen: false,
     resizable: true,
@@ -430,11 +435,12 @@ export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
 
 type DatabaseColumnAttributes = {
     _kind: string
+    _cellContentType: string
     userPrimary: 0 | 1
     displayName: string
     editable?: 1 | 0 | null
-    editor: string
-    formatter: string
+    // editor: string
+    // formatter: string
     width?: string | null
     minWidth?: string | null
     maxWidth?: string | null

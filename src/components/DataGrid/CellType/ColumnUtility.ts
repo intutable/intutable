@@ -83,32 +83,28 @@ export class ColumnUtility {
     }
 
     public getEditor(): EditorComponent | undefined | null {
-        const { editor } = this.column
+        const { _cellContentType } = this.column
 
-        if (!editor) return editor
-
-        if (isCellContentType(editor) === false)
+        if (isCellContentType(_cellContentType) === false)
             throw RangeError(
-                `${editor} is not a valid serialized value for an editor`
+                `${_cellContentType} is not a valid serialized value for an editor`
             )
 
-        return CellContentTypeComponents[editor].editor
+        return CellContentTypeComponents[_cellContentType].editor
     }
 
     public getFormatter(): FormatterComponent | undefined | null {
-        const { formatter, _kind } = this.column
+        const { _cellContentType, _kind } = this.column
 
         // special treatment when the kind is not 'standard'
         if (_kind !== "standard") return ColumnKindComponents[_kind]
 
-        if (!formatter) return formatter
-
-        if (isCellContentType(formatter) === false)
+        if (isCellContentType(_cellContentType) === false)
             throw RangeError(
-                `${formatter} is not a valid serialized value for an formatter`
+                `${_cellContentType} is not a valid serialized value for an formatter`
             )
 
         // otherwise choose the formatter actually by the value of this property
-        return CellContentTypeComponents[formatter].formatter
+        return CellContentTypeComponents[_cellContentType].formatter
     }
 }

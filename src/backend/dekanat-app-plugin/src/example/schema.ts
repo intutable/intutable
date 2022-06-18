@@ -41,8 +41,7 @@ export const PERSONEN: TableSpec = {
             },
             attributes: {
                 displayName: "ID",
-                editor: "number",
-                formatter: "number",
+                _cellContentType: "number",
             },
         },
         {
@@ -53,8 +52,7 @@ export const PERSONEN: TableSpec = {
             attributes: {
                 displayName: "Nachname",
                 userPrimary: 1,
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
         {
@@ -64,8 +62,7 @@ export const PERSONEN: TableSpec = {
             },
             attributes: {
                 displayName: "Vorname",
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
         {
@@ -75,8 +72,7 @@ export const PERSONEN: TableSpec = {
             },
             attributes: {
                 displayName: "Titel",
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
         {
@@ -86,8 +82,7 @@ export const PERSONEN: TableSpec = {
             },
             attributes: {
                 displayName: "Stellung",
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
     ],
@@ -168,8 +163,7 @@ export const ORGANE: TableSpec = {
             },
             attributes: {
                 displayName: "ID",
-                editor: "number",
-                formatter: "number",
+                _cellContentType: "number",
             },
         },
         {
@@ -180,8 +174,7 @@ export const ORGANE: TableSpec = {
             attributes: {
                 displayName: "Name",
                 userPrimary: 1,
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
         {
@@ -191,8 +184,7 @@ export const ORGANE: TableSpec = {
             },
             attributes: {
                 displayName: "Kürzel",
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
         {
@@ -202,8 +194,7 @@ export const ORGANE: TableSpec = {
             },
             attributes: {
                 displayName: "Typ",
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
         {
@@ -213,8 +204,7 @@ export const ORGANE: TableSpec = {
             },
             attributes: {
                 displayName: "FK/Math/Inf",
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
     ],
@@ -308,8 +298,7 @@ export const ROLLEN = {
             attributes: {
                 displayName: "ID",
                 editable: 1,
-                editor: "number",
-                formatter: null,
+                _cellContentType: "number",
             },
         },
         {
@@ -322,8 +311,7 @@ export const ROLLEN = {
                 displayName: "Rolle",
                 userPrimary: 1,
                 editable: 1,
-                editor: "string",
-                formatter: "string",
+                _cellContentType: "string",
             },
         },
     ],
@@ -341,9 +329,8 @@ export const ROLLEN = {
                     attributes: {
                         displayName: "Nachname",
                         editable: 0,
-                        editor: null,
-                        formatter: "linkColumn",
                         _kind: "link",
+                        _cellContentType: "string",
                     },
                 },
             ],
@@ -361,9 +348,8 @@ export const ROLLEN = {
                     attributes: {
                         displayName: "Organ",
                         editable: 0,
-                        editor: null,
-                        formatter: "linkColumn",
                         _kind: "link",
+                        _cellContentType: "string",
                     },
                 },
             ],
