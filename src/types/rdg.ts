@@ -125,9 +125,10 @@ export type MetaColumnProps = {
      * - `standard`: ignore this, only use whatever is defined in {@link FormatterComponentMap} in `standard` derived from {@link Formatter}.
      * - `link`: use {@link LinkColumnFormatter}
      * - `lookup`: use {@link LookupColumnFormatter}
+     * - `index`
      *
      */
-    _kind: "standard" | "link" | "lookup"
+    _kind: "standard" | "link" | "lookup" | "index"
     /**
      * // TODO: add
      */

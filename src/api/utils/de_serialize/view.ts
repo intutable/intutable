@@ -41,6 +41,8 @@ export const deserialize = (view: ViewData.Serialized): ViewData => {
     // add rdg index column
     const rdgIndexCol: Column = {
         name: "Index",
+        _kind: "index",
+        _cellContentType: "number",
         key: PLACEHOLDER.ROW_INDEX_KEY,
         editable: false,
         resizable: true,
