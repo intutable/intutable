@@ -10,8 +10,8 @@ import {
 } from "@intutable/database/dist/column"
 import { insert, select } from "@intutable/database/dist/requests"
 import {
-    types as lv_types,
-    requests as lv_req,
+    types as lvt,
+    requests as lvr,
     selectable,
 } from "@intutable/lazy-views/"
 
@@ -51,6 +51,7 @@ export async function init(plugins: PluginLoader) {
     core.listenForRequests(req.CHANNEL)
         .on(req.addColumnToTable.name, addColumnToTable_)
         .on(req.addColumnToViews.name, addColumnToFilterViews_)
+        .on(req.removeColumnFromTable.name, removeColumnFromTable_)
 }
 
 async function getAdminId(): Promise<number | null> {
@@ -108,9 +109,7 @@ async function configureColumnAttributes(): Promise<void> {
         },
     ]
     await Promise.all(
-        customColumns.map(c =>
-            core.events.request(lv_req.addColumnAttribute(c))
-        )
+        customColumns.map(c => core.events.request(lvr.addColumnAttribute(c)))
     )
 }
 
@@ -123,14 +122,14 @@ async function addColumnToTable_({
     return addColumnToTable(tableId, column, joinId, createInViews)
 }
 async function addColumnToTable(
-    tableId: lv_types.ViewDescriptor["id"],
-    column: lv_types.ColumnSpecifier,
+    tableId: lvt.ViewDescriptor["id"],
+    column: lvt.ColumnSpecifier,
     joinId: number | null = null,
     createInViews: boolean = true
-): Promise<lv_types.ColumnInfo> {
+): Promise<lvt.ColumnInfo> {
     const tableColumn = (await core.events.request(
-        lv_req.addColumnToView(tableId, column, joinId)
-    )) as lv_types.ColumnInfo
+        lvr.addColumnToView(tableId, column, joinId)
+    )) as lvt.ColumnInfo
     if (createInViews)
         await addColumnToFilterViews(tableId, {
             parentColumnId: tableColumn.id,
@@ -146,15 +145,46 @@ async function addColumnToFilterViews_({
     return addColumnToFilterViews(tableId, column)
 }
 async function addColumnToFilterViews(
-    tableId: lv_types.ViewDescriptor["id"],
-    column: lv_types.ColumnSpecifier
-): Promise<lv_types.ColumnInfo[]> {
+    tableId: lvt.ViewDescriptor["id"],
+    column: lvt.ColumnSpecifier
+): Promise<lvt.ColumnInfo[]> {
     const filterViews = (await core.events.request(
-        lv_req.listViews(selectable.viewId(tableId))
-    )) as lv_types.ViewDescriptor[]
+        lvr.listViews(selectable.viewId(tableId))
+    )) as lvt.ViewDescriptor[]
     return Promise.all(
         filterViews.map(v =>
-            core.events.request(lv_req.addColumnToView(v.id, column))
+            core.events.request(lvr.addColumnToView(v.id, column))
         )
     )
+}
+
+async function removeColumnFromTable_({
+    tableId,
+    columnId,
+}: CoreRequest): Promise<CoreResponse> {
+    return removeColumnFromTable(tableId, columnId)
+}
+async function removeColumnFromTable(
+    tableId: lvt.ViewDescriptor["id"],
+    columnId: lvt.ColumnInfo["id"]
+): Promise<void> {
+    // remove from all views
+    const views = (await core.events.request(
+        lvr.listViews(selectable.viewId(tableId))
+    )) as lvt.ViewDescriptor[]
+    await Promise.all(
+        views.map(async v => {
+            const info = (await core.events.request(
+                lvr.getViewInfo(v.id)
+            )) as lvt.ViewInfo
+            const viewColumn = info.columns.find(
+                c => c.parentColumnId === columnId
+            )
+            if (viewColumn)
+                await core.events.request(
+                    lvr.removeColumnFromView(viewColumn.id)
+                )
+        })
+    )
+    await core.events.request(lvr.removeColumnFromView(columnId))
 }
