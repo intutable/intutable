@@ -3,6 +3,7 @@ import type { Row, TableData } from "types"
 import { Column as ColumnParser } from "."
 
 export const parse = (view: ViewData): TableData.Serialized => {
+    const indexColumn = view.columns.find(c => c.attributes._kind === "index")!
     return {
         metadata: {
             descriptor: view.descriptor,
@@ -13,6 +14,9 @@ export const parse = (view: ViewData): TableData.Serialized => {
         columns: view.columns
             .filter(col => !ColumnParser.isInternalColumn(col))
             .map(ColumnParser.parse),
-        rows: view.rows as Row[],
+        rows: view.rows.map(r => ({
+            ...r,
+            __rowIndex__: r[indexColumn.key] as number,
+        })) as Row[],
     }
 }

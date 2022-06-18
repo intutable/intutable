@@ -5,6 +5,7 @@ import { ViewHookOptions, useView } from "hooks/useView"
 import { Column, Row } from "types"
 import { project_management_constants } from "types/type-annotations/project-management"
 import { useColumn } from "./useColumn"
+import { APIContextProvider } from "context/APIContext"
 
 /**
  * ### useRow hook.
@@ -55,10 +56,14 @@ export const useRow = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: put `asTable` into the corresponding api route
-    const createRow = async (): Promise<void> => {
+    const createRow = async (atIndex?: number): Promise<void> => {
         await fetcher({
             url: "/api/row",
-            body: { table: asTable(table!.metadata.source).table, values: {} },
+            body: {
+                table: asTable(table!.metadata.source).table,
+                values: {},
+                atIndex,
+            },
         })
 
         await mutateTable()

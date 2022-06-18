@@ -1,3 +1,4 @@
+import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
 import { LoadingButton } from "@mui/lab"
 import {
     Button,
@@ -19,7 +20,7 @@ import {
     Typography,
 } from "@mui/material"
 import { fetcher } from "api"
-import { isAppColumn } from "api/utils/de_serialize/column"
+
 import { useSelectedRows } from "context/SelectedRowsContext"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
@@ -225,7 +226,10 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                             input={<OutlinedInput label="Format" />}
                         >
                             {viewData?.columns
-                                .filter(col => isAppColumn(col) === false)
+                                .filter(
+                                    col =>
+                                        ColumnUtility.isAppColumn(col) === false
+                                )
                                 .map((col, i) => (
                                     <MenuItem key={i} value={col._id}>
                                         {col.name}

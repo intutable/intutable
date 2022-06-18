@@ -1,5 +1,14 @@
-import { deleteRow, insert, update } from "@intutable/database/dist/requests"
-import { TableDescriptor } from "@intutable/project-management/dist/types"
+import {
+    deleteRow,
+    insert,
+    select,
+    update,
+} from "@intutable/database/dist/requests"
+import { getTableData } from "@intutable/project-management/dist/requests"
+import {
+    TableDescriptor,
+    TableData,
+} from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
@@ -20,16 +29,49 @@ import { project_management_constants } from "types/type-annotations/project-man
  * ```
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
-    const { table, values } = req.body as {
+    const { table, values, atIndex } = req.body as {
         table: TableDescriptor
         values: Obj
+        atIndex?: number
+    }
+    const user = req.session.user!
+
+    const oldData = await coreRequest<TableData>(
+        getTableData(table.id),
+        user.authCookie
+    )
+
+    console.log("at index:", atIndex)
+
+    // BUG: does not work properly
+    let newValues: Obj
+    if (atIndex === undefined || atIndex === oldData.rows.length)
+        newValues = { ...values, index: oldData.rows.length }
+    else {
+        newValues = { ...values, index: atIndex }
+        const shiftedRows = oldData.rows.slice(atIndex).map((row: Row) => ({
+            _id: row._id,
+            index: (row.index as number) + 1,
+        }))
+        Promise.all(
+            shiftedRows.map(
+                async (row: Obj) =>
+                    coreRequest(
+                        update(table.key, {
+                            condition: ["_id", row._id],
+                            update: { index: row.index },
+                        })
+                    ),
+                user.authCookie
+            )
+        )
     }
 
     // create row in database
     const rowId = await coreRequest<
         typeof project_management_constants.UID_KEY
     >(
-        insert(table.key, values, [project_management_constants.UID_KEY]),
+        insert(table.key, newValues, [project_management_constants.UID_KEY]),
         req.session.user!.authCookie
     )
 
@@ -85,12 +127,28 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
         table: TableDescriptor
         condition: unknown[]
     }
+    const user = req.session.user!
 
-    await coreRequest(
-        deleteRow(table.key, condition),
-        req.session.user!.authCookie
+    await coreRequest(deleteRow(table.key, condition), user.authCookie)
+    // shift indices
+    const newData = await coreRequest<TableData>(
+        getTableData(table.id),
+        user.authCookie
     )
-
+    const newIndices: { _id: number; index: number }[] = newData.rows
+        .sort()
+        .map((row: Row, newIndex: number) => ({
+            _id: row._id as number,
+            index: newIndex,
+        }))
+    await Promise.all(
+        newIndices.map(async ({ _id, index }) =>
+            update(table.key, {
+                update: { index: index },
+                condition: ["_id", _id],
+            })
+        )
+    )
     res.status(200).json({})
 })
 

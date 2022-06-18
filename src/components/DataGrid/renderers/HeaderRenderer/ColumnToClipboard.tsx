@@ -37,21 +37,20 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
             .filter(e => e != null)
 
         // consider row selection
-        // TODO: uncomment once either rows are deserialized or serialized ones have indices
-        // if (
-        //     headerRendererProps.allRowsSelected === false &&
-        //     selectedRows.size > 0
-        // ) {
-        //     values = data!.rows
-        //         .map(row => {
-        //             if (
-        //                 row[col!.key] != null &&
-        //                 selectedRows.has(row.__rowIndex__)
-        //             )
-        //                 return row
-        //         })
-        //         .filter(e => e != null)
-        // }
+        if (
+            headerRendererProps.allRowsSelected === false &&
+            selectedRows.size > 0
+        ) {
+            values = data!.rows
+                .map(row => {
+                    if (
+                        row[col!.key] != null &&
+                        selectedRows.has(row.__rowIndex__)
+                    )
+                        return row
+                })
+                .filter(e => e != null)
+        }
 
         // filter invalid emails
         if (col?.attributes.editor === "email")

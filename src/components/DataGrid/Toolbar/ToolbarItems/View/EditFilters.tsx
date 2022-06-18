@@ -27,7 +27,7 @@ import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
 import { defaultViewName } from "@backend/defaults"
 import { TableColumn } from "types/rdg"
-import { isAppColumn } from "api/utils/de_serialize/column"
+import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
 import { useAPI } from "context/APIContext"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
@@ -82,7 +82,9 @@ export const EditFilters: React.FC = () => {
             </Button>
             <FilterEditor
                 anchorEl={anchorEl}
-                columns={tableData.columns.filter(c => !isAppColumn(c))}
+                columns={tableData.columns.filter(
+                    c => !ColumnUtility.isAppColumn(c)
+                )}
                 activeFilters={viewData.filters as SimpleFilter[]}
                 onHandleCloseEditor={handleCloseEditor}
                 onUpdateFilters={handleUpdateFilters}
