@@ -17,9 +17,8 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
     ...col,
     _id: col._id!,
     _kind: col._kind!,
+    _cellContentType: "string",
     name: col.name as string,
-    editor: "string", // TODO: must be inferred somehow, but atm it only can have this default value
-    formatter: "standard", // TODO: must be inferred somehow, but atm it only can have this default value
     summaryFormatter: undefined, // currently not supported
     groupFormatter: undefined, // currently not supported
     editable: col.editable as boolean | undefined | null,

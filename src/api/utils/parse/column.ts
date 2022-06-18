@@ -7,6 +7,7 @@ import { project_management_constants } from "types/type-annotations/project-man
 export const parse = (column: ColumnInfo): Column.Serialized => ({
     _id: column.id,
     _kind: column.attributes._kind,
+    _cellContentType: column.attributes._cellContentType,
     name: column.attributes.displayName,
     key: column.key,
     width: isNumber(column.attributes.width), // this only ensures that stringified numbers will be parsed, nothing more
@@ -15,7 +16,6 @@ export const parse = (column: ColumnInfo): Column.Serialized => ({
     cellClass: column.attributes.cellClass,
     headerCellClass: column.attributes.headerCellClass,
     summaryCellClass: column.attributes.summaryCellClass,
-    formatter: column.attributes.formatter,
     summaryFormatter: column.attributes.summaryFormatter,
     groupFormatter: column.attributes.groupFormatter,
     editable:
@@ -39,7 +39,6 @@ export const parse = (column: ColumnInfo): Column.Serialized => ({
         column.attributes.sortDescendingFirst == null
             ? column.attributes.sortDescendingFirst
             : Boolean(column.attributes.sortDescendingFirst),
-    editor: column.attributes.editor,
     editorOptions: {
         renderFormatter:
             column.attributes.renderFormatter == null
