@@ -36,20 +36,20 @@ const POST = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        const viewInfo = await coreRequest<ViewInfo>(
+        const tableInfo = await coreRequest<ViewInfo>(
             getViewInfo(tableId),
             user.authCookie
         )
         const baseTableInfo = await coreRequest<TableInfo>(
-            getTableInfo(asTable(viewInfo.source).table.id),
+            getTableInfo(asTable(tableInfo.source).table.id),
             user.authCookie
         )
 
-        const join = viewInfo.joins.find(j => j.id === joinId)!
+        const join = tableInfo.joins.find(j => j.id === joinId)!
         const fkColumn = baseTableInfo.columns.find(c => c.id === join.on[0])!
 
         await coreRequest(
-            update(asTable(viewInfo.source).table.key, {
+            update(asTable(tableInfo.source).table.key, {
                 condition: [project_management_constants.UID_KEY, rowId],
                 update: { [fkColumn.name]: value },
             }),

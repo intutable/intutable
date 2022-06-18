@@ -1,21 +1,14 @@
-import {
-    ColumnInfo,
-    ViewDescriptor,
-    getViewData,
-    ViewInfo,
-} from "@intutable/lazy-views"
-import { getProjects } from "@intutable/project-management/dist/requests"
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { ColumnInfo, getViewData, ViewDescriptor } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import { Column, Row, ViewData } from "types"
-import { parseAsync } from "json2csv"
-import Obj from "types/Obj"
 import fs from "fs-extra"
+import { parseAsync } from "json2csv"
 import path from "path"
 import tmp from "tmp"
+import { Column, Row, ViewData } from "types"
+import Obj from "types/Obj"
 import { isValidMailAddress } from "utils/isValidMailAddress"
 
 const capitalizeFirstLetter = (string: string) =>
@@ -81,6 +74,7 @@ export const toCSV = async (data: Obj[], csvOptions?: CSVExportOptions) =>
     await parseAsync(data, {
         header: csvOptions?.header === true,
         includeEmptyRows: csvOptions?.includeEmptyRows === true,
+        withBOM: true,
     })
 
 /**
