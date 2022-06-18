@@ -160,13 +160,16 @@ const DELETE = withCatchingAPIRoute(
                 removeColumn(column.parentColumnId),
                 user.authCookie
             )
-        else if (column.attributes.formatter === "linkColumn") {
+        else if (column.attributes._kind === "link") {
             // if column is a link column, we need to do some more work:
             const info = await coreRequest<ViewInfo>(
                 getViewInfo(tableId),
                 user.authCookie
             )
-            // delete foreign key column
+            // delete any lookup columns
+            // TODO
+
+            // delete foreign key column in table
             const join = info.joins.find(j => j.id === column.joinId)!
             const fkColumnId = join.on[0]
             await coreRequest(removeColumn(fkColumnId), user.authCookie)

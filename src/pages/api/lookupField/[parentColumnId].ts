@@ -11,7 +11,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import { lookupColumnAttributes } from "@backend/defaults"
-import { addColumnToFilterViews } from "utils/backend/views"
+import { addColumnToTable } from "@backend/requests"
 
 /**
  * Add a lookup field from a linked table.
@@ -55,20 +55,13 @@ const POST = withCatchingAPIRoute(
             foreignColumn.attributes.displayName || foreignColumn.name
         const attributes = lookupColumnAttributes(displayName)
 
-        // add to table view
+        // add to table and views
         const newColumn = await coreRequest<ColumnInfo>(
-            addColumnToView(
+            addColumnToTable(
                 tableId,
                 { parentColumnId: parentColumnId, attributes },
                 joinId
             ),
-            user.authCookie
-        )
-
-        // add to filter views
-        await addColumnToFilterViews(
-            tableId,
-            { parentColumnId: newColumn.id, attributes },
             user.authCookie
         )
 

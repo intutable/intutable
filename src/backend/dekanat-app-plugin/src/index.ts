@@ -2,14 +2,20 @@
  * This dummy plugin allows us to run initialization (config, example data)
  * on starting up the core.
  */
-import { PluginLoader } from "@intutable/core"
+import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import {
     Column,
     ColumnType,
     ColumnOption,
 } from "@intutable/database/dist/column"
 import { insert, select } from "@intutable/database/dist/requests"
-import { requests as v_req } from "@intutable/lazy-views/"
+import {
+    types as lv_types,
+    requests as lv_req,
+    selectable,
+} from "@intutable/lazy-views/"
+
+import * as req from "./requests"
 
 import { createExampleSchema, insertExampleData } from "./example/load"
 
@@ -41,6 +47,10 @@ export async function init(plugins: PluginLoader) {
             await insertExampleData(core)
         } else console.log("skipped creating example schema")
     }
+
+    core.listenForRequests(req.CHANNEL)
+        .on(req.addColumnToTable.name, addColumnToTable_)
+        .on(req.addColumnToViews.name, addColumnToFilterViews_)
 }
 
 async function getAdminId(): Promise<number | null> {
@@ -98,6 +108,53 @@ async function configureColumnAttributes(): Promise<void> {
         },
     ]
     await Promise.all(
-        customColumns.map(c => core.events.request(v_req.addColumnAttribute(c)))
+        customColumns.map(c =>
+            core.events.request(lv_req.addColumnAttribute(c))
+        )
+    )
+}
+
+async function addColumnToTable_({
+    tableId,
+    column,
+    joinId,
+    createInViews,
+}: CoreRequest): Promise<CoreResponse> {
+    return addColumnToTable(tableId, column, joinId, createInViews)
+}
+async function addColumnToTable(
+    tableId: lv_types.ViewDescriptor["id"],
+    column: lv_types.ColumnSpecifier,
+    joinId: number | null = null,
+    createInViews: boolean = true
+): Promise<lv_types.ColumnInfo> {
+    const tableColumn = (await core.events.request(
+        lv_req.addColumnToView(tableId, column, joinId)
+    )) as lv_types.ColumnInfo
+    if (createInViews)
+        await addColumnToFilterViews(tableId, {
+            parentColumnId: tableColumn.id,
+            attributes: tableColumn.attributes,
+        })
+    return tableColumn
+}
+
+async function addColumnToFilterViews_({
+    tableId,
+    column,
+}: CoreRequest): Promise<CoreResponse> {
+    return addColumnToFilterViews(tableId, column)
+}
+async function addColumnToFilterViews(
+    tableId: lv_types.ViewDescriptor["id"],
+    column: lv_types.ColumnSpecifier
+): Promise<lv_types.ColumnInfo[]> {
+    const filterViews = (await core.events.request(
+        lv_req.listViews(selectable.viewId(tableId))
+    )) as lv_types.ViewDescriptor[]
+    return Promise.all(
+        filterViews.map(v =>
+            core.events.request(lv_req.addColumnToView(v.id, column))
+        )
     )
 }

@@ -1,5 +1,4 @@
 import {
-    addColumnToView,
     asTable,
     ColumnInfo as View_Column,
     getViewOptions,
@@ -13,7 +12,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import { Column } from "types"
-import { addColumnToFilterViews } from "utils/backend/views"
+import { addColumnToTable } from "@backend/requests"
 
 /**
  * Add a column to a table.
@@ -43,19 +42,12 @@ const POST = withCatchingAPIRoute(
             user.authCookie
         )
 
-        // add column to table view
+        // add column to table and filter views
         const tableViewColumn = await coreRequest<View_Column>(
-            addColumnToView(
+            addColumnToTable(
                 tableId,
                 Parser.Column.deparse(column, tableColumn.id)
             ),
-            user.authCookie
-        )
-
-        // add column to each filter view
-        await addColumnToFilterViews(
-            tableId,
-            Parser.Column.deparse(column, tableViewColumn.id),
             user.authCookie
         )
 

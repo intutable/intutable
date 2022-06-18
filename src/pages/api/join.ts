@@ -1,13 +1,11 @@
 import { ColumnType } from "@intutable/database/dist/column"
 import {
     addJoinToView,
-    addColumnToView,
     getViewInfo,
     JoinDescriptor,
     selectable,
     viewId,
     ViewInfo,
-    ColumnInfo,
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
@@ -18,7 +16,7 @@ import { withSessionRoute } from "auth"
 import { project_management_constants } from "types/type-annotations/project-management"
 import makeForeignKeyName from "utils/makeForeignKeyName"
 import { linkColumnAttributes } from "@backend/defaults"
-import { addColumnToFilterViews } from "utils/backend/views"
+import { addColumnToTable } from "@backend/requests"
 
 /**
  * Add a link from one table view to another. The target table will be
@@ -80,18 +78,13 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 
     const attributes = linkColumnAttributes(displayName)
 
-    const linkColumn = await coreRequest<ColumnInfo>(
-        addColumnToView(
+    // create representative link column
+    await coreRequest(
+        addColumnToTable(
             tableId,
             { parentColumnId: primaryColumn.id, attributes },
             join.id
         ),
-        user.authCookie
-    )
-
-    await addColumnToFilterViews(
-        tableId,
-        { parentColumnId: linkColumn.id, attributes },
         user.authCookie
     )
 

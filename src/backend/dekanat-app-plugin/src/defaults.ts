@@ -15,7 +15,7 @@ export function emptyRowOptions(): RowOptions {
     return {
         conditions: [],
         groupColumns: [],
-        sortColumns: []
+        sortColumns: [],
     }
 }
 
@@ -29,9 +29,7 @@ export function defaultRowOptions(
      * a table or a view. */
     columns: ParentColumnDescriptor[]
 ): RowOptions {
-    const idColumn = columns.find(
-        c => c.name === UID_KEY
-    )!
+    const idColumn = columns.find(c => c.name === UID_KEY)!
     return {
         conditions: [],
         groupColumns: [],
@@ -44,14 +42,14 @@ export function defaultRowOptions(
     }
 }
 
-export function defaultViewName(){
+export function defaultViewName() {
     return "Standard"
 }
 
 export function standardColumnAttributes(
     displayName: string,
     userPrimary?: boolean
-){
+) {
     return toSQL({
         _kind: "standard",
         ...(userPrimary !== undefined && { userPrimary }),
@@ -62,26 +60,22 @@ export function standardColumnAttributes(
     })
 }
 
-export function linkColumnAttributes(
-    displayName: string
-) {
+export function linkColumnAttributes(displayName: string) {
     return toSQL({
         _kind: "link",
         displayName,
-        editable: 1,
-        editor: "string",
-        formatter: "link"
+        editable: 0,
+        editor: null,
+        formatter: "link",
     })
 }
 
-export function lookupColumnAttributes(
-    displayName: string
-) {
+export function lookupColumnAttributes(displayName: string) {
     return toSQL({
         _kind: "lookup",
         displayName,
         editable: 0,
-        editor: "string",
-        formatter: "lookup"
+        editor: null,
+        formatter: "lookup",
     })
 }
