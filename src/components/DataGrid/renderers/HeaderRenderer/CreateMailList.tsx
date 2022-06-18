@@ -46,7 +46,7 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
     if (
         (col &&
             Object.prototype.hasOwnProperty.call(col, "attributes") &&
-            col.attributes.editor === "email") === false ||
+            col.attributes._cellContentType === "email") === false ||
         viewData == null
     )
         return null
