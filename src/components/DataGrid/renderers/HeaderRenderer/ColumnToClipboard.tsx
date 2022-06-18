@@ -41,7 +41,8 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
             headerRendererProps.allRowsSelected === false &&
             selectedRows.size > 0
         ) {
-            values = data!.rows
+            // BUG: does not work
+            values = viewData!.rows
                 .map(row => {
                     if (
                         row[col!.key] != null &&
