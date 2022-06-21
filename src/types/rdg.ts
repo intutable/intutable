@@ -25,7 +25,7 @@ type Table<COL, ROW> = {
     rows: ROW[]
 }
 
-export type TableData = Table<SerializedColumn, SerializedRow>
+export type TableData = Table<SerializedColumn, Row>
 /**
  * @deprecated no GUI components directly display table data, only
  * @legacy
@@ -58,7 +58,7 @@ type View<COL, ROW> = {
 
 export type ViewData = View<Column, Row>
 
-type SerializedViewData = View<SerializedColumn, SerializedRow>
+type SerializedViewData = View<SerializedColumn, Row>
 
 export namespace ViewData {
     export type Serialized = SerializedViewData
@@ -69,17 +69,8 @@ export namespace ViewData {
 // #################################################################
 
 export type Row = project_management.UID & {
-    readonly [PLACEHOLDER.ROW_INDEX_KEY]: number
+    __rowIndex__: number
     [key: string]: unknown
-}
-
-type SerializedRow = project_management.UID & {
-    [key: string]: unknown
-}
-
-export namespace Row {
-    export type Serialized = SerializedRow
-    export type Deserialized = Row
 }
 
 // #################################################################
@@ -127,9 +118,10 @@ export type MetaColumnProps = {
      * - `standard`: ignore this, only use whatever is defined in {@link FormatterComponentMap} in `standard` derived from {@link Formatter}.
      * - `link`: use {@link LinkColumnFormatter}
      * - `lookup`: use {@link LookupColumnFormatter}
+     * - `index`
      *
      */
-    _kind: "standard" | "link" | "lookup"
+    _kind: "standard" | "link" | "lookup" | "index"
     /**
      * In addition to {@link SerializedColumn.editor} and {@link SerializedColumn.formatter},
      * this explicitly sets the type.
@@ -469,4 +461,4 @@ export namespace Column {
 }
 
 export type TableColumn = Column.Serialized
-export type TableRow = Row.Serialized
+export type TableRow = Row

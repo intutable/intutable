@@ -4,8 +4,10 @@ import {
 } from "@datagrid/Editor/type-management"
 import { EditorComponent } from "@datagrid/Editor/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Formatter"
+import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import { Column, MetaColumnProps } from "types"
 import { CellContentTypeComponents, ColumnKindComponents } from "./map"
+import { headerRenderer } from "@datagrid/renderers"
 
 /**
  * // TODO: this flexbility could be a potential error cause.
@@ -75,11 +77,24 @@ import { CellContentTypeComponents, ColumnKindComponents } from "./map"
 export class ColumnUtility {
     constructor(public readonly column: Column.Serialized) {}
 
+    // get column(): Column.Serialized {}
+
     public getKind(): MetaColumnProps["_kind"] {
         return this.column._kind
     }
     public getCellContentType(): CellContentType {
         return this.column._cellContentType
+    }
+
+    public isEditable(): boolean | null | undefined {
+        const { _cellContentType, _kind, editable } = this.column
+
+        // index columns are not editable, at least no by the editable
+        if (_kind === "index") return false
+
+        // TODO: further checking here, e.g. should link and lookup columns be editable??
+
+        return editable
     }
 
     public getEditor(): EditorComponent | undefined | null {
@@ -106,5 +121,31 @@ export class ColumnUtility {
 
         // otherwise choose the formatter actually by the value of this property
         return CellContentTypeComponents[_cellContentType].formatter
+    }
+
+    public getHeaderRenderer(): Column["headerRenderer"] {
+        // for now no actions on index columns
+        if (this.column._kind === "index") return null
+
+        return headerRenderer
+    }
+
+    // static deserialize(column: Column.Serialized): Column { }
+    // public deserialize(): Column { }
+
+    // static serialize(column: Column): Column.Serialized { }
+    // public serialize(): Column.Serialized { }
+
+    /**
+     * Identifies columns which are not part of the real object data, but rather
+     * control elements specific to this GUI, such as the row index column and
+     * selector checkbox.
+     */
+    static isAppColumn(
+        column: Column.Serialized | Column.Deserialized
+    ): boolean {
+        return (
+            column.key === PLACEHOLDER.COL_SELECTOR || column._kind === "index"
+        )
     }
 }

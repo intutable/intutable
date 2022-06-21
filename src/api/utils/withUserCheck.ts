@@ -9,7 +9,12 @@ import { makeError } from "../../utils/error-handling/utils/makeError"
  */
 export const checkUser = (user: User | undefined): User => {
     if (user && user.isLoggedIn) return user
-    throw new Error("Could not get the user from session!")
+    throw new RangeError("Could not get the user from session!")
+}
+
+export const checkAuthCookie = (user: User | undefined): string => {
+    if (user && user.authCookie) return user.authCookie
+    throw new RangeError("Could not get the auth cookie from session!")
 }
 
 /**
@@ -23,6 +28,7 @@ export const withUserCheck =
     (req: NextApiRequest, res: NextApiResponse) => {
         try {
             checkUser(req.session.user)
+            checkAuthCookie(req.session.user)
 
             return handler(req, res)
         } catch (e) {

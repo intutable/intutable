@@ -27,10 +27,9 @@ const rowOverClassname = (themeMode: PaletteMode) => css`
 const _RowRenderer = (props: RowRendererProps<Row>) => {
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
-    const { deleteRow, onRowReorder } = useRow()
+    const { deleteRow, onRowReorder, createRow } = useRow()
 
     // draggable
-
     const [{ isDragging }, drag] = useDrag({
         type: "ROW_DRAG",
         item: { index: props.rowIdx },
@@ -65,6 +64,7 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleDeleteRow = useCallback(
         async (index: number, row: Row) => {
             try {
@@ -77,15 +77,17 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
         [deleteRow, enqueueSnackbar]
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleCreateRow = useCallback((atIndex: number) => {
-        // try {
-        //     handleCloseContextMenu()
-        //     // TODO: shift rows
-        // } catch (error) {
-        //     enqueueSnackbar("Es konnte keine Zeile eingefügt werden.")
-        // }
-    }, [])
+    const handleCreateRow = useCallback(
+        async (atIndex: number) => {
+            try {
+                await createRow(atIndex)
+                handleCloseContextMenu()
+            } catch (error) {
+                enqueueSnackbar("Es konnte keine Zeile eingefügt werden.")
+            }
+        },
+        [createRow, enqueueSnackbar]
+    )
 
     return (
         <>

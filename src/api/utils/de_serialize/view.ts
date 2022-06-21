@@ -9,7 +9,7 @@ import * as Util from "."
  */
 export const serialize = (view: ViewData): ViewData.Serialized => {
     // serializes each row
-    const rows: Row.Serialized[] = view.rows.map(Util.Row.serialize)
+    const rows: Row[] = view.rows.map(Util.Row.serialize)
 
     // serialize each column
     const columns: Column.Serialized[] = view.columns.map(Util.Column.serialize)
@@ -39,15 +39,17 @@ export const deserialize = (view: ViewData.Serialized): ViewData => {
     const columns: Column[] = view.columns.map(Util.Column.deserialize)
 
     // add rdg index column
-    const rdgIndexCol: Column = {
-        name: "Index",
-        key: PLACEHOLDER.ROW_INDEX_KEY,
-        editable: false,
-        resizable: true,
-        sortable: true,
-        width: 80,
-    }
-    columns.unshift(rdgIndexCol)
+    // const rdgIndexCol: Column = {
+    //     name: "Index",
+    //     _kind: "index",
+    //     _cellContentType: "number",
+    //     key: PLACEHOLDER.ROW_INDEX_KEY,
+    //     editable: false,
+    //     resizable: true,
+    //     sortable: true,
+    //     width: 80,
+    // }
+    // columns.unshift(rdgIndexCol)
 
     // add a selector column
     columns.unshift(SelectColumn)

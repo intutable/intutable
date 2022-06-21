@@ -46,10 +46,6 @@ const POST = withCatchingAPIRoute(
             c => c.id === parentColumnId
         )!
 
-        console.log(parentColumnId)
-        console.dir(foreignViewInfo.columns)
-        console.dir(foreignColumn)
-
         // determine props
         const displayName =
             foreignColumn.attributes.displayName || foreignColumn.name
