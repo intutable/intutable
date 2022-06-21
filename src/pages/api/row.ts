@@ -45,7 +45,6 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         user.authCookie
     )
 
-    // BUG: does not work properly
     let newRow: Obj
     if (atIndex == null || atIndex === oldData.rows.length)
         newRow = { ...rowToInsert, index: oldData.rows.length }
@@ -57,16 +56,6 @@ const POST = withCatchingAPIRoute(async (req, res) => {
                 _id: row._id,
                 index: (row.index as number) + 1,
             }))
-
-        // for await (const row of shiftedRows) {
-        //     await coreRequest(
-        //         update(table.key, {
-        //             condition: ["_id", row._id],
-        //             update: { index: row.index },
-        //         }),
-        //         user.authCookie
-        //     )
-        // }
 
         await Promise.all(
             shiftedRows.map(
@@ -150,18 +139,28 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
         getTableData(table.id),
         user.authCookie
     )
-    const newIndices: { _id: number; index: number }[] = newData.rows
-        .sort()
+    const rows = newData.rows as Row[]
+    const newIndices: {
+        _id: number
+        index: number
+    }[] = rows
+        .sort((a, b) => ((a.index as number) > (b.index as number) ? 1 : -1))
         .map((row: Row, newIndex: number) => ({
             _id: row._id as number,
+            oldIndex: row.index as number,
             index: newIndex,
         }))
+        .filter(row => row.oldIndex !== row.index)
+
     await Promise.all(
         newIndices.map(async ({ _id, index }) =>
-            update(table.key, {
-                update: { index: index },
-                condition: ["_id", _id],
-            })
+            coreRequest(
+                update(table.key, {
+                    update: { index: index },
+                    condition: ["_id", _id],
+                }),
+                user.authCookie
+            )
         )
     )
     res.status(200).json({})
