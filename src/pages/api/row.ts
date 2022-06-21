@@ -1,9 +1,4 @@
-import {
-    deleteRow,
-    insert,
-    select,
-    update,
-} from "@intutable/database/dist/requests"
+import { deleteRow, insert, update } from "@intutable/database/dist/requests"
 import { getTableData } from "@intutable/project-management/dist/requests"
 import {
     TableDescriptor,
@@ -16,6 +11,17 @@ import { withSessionRoute } from "auth"
 import { Row } from "types"
 import Obj from "types/Obj"
 import { project_management_constants } from "types/type-annotations/project-management"
+
+// Intermediate type representing a row whose index is to be changed.
+type IndexChange = {
+    _id: number
+    index: number
+    oldIndex: number
+}
+
+// compare two rows by index
+const byIndex = (a: Obj, b: Obj) =>
+    (a.index as number) > (b.index as number) ? 1 : -1
 
 /**
  * Create a new row with some starting values. Ensuring that the types of
@@ -51,9 +57,11 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     else {
         newRow = { ...rowToInsert, index: atIndex }
         const shiftedRows = (oldData.rows as Row[])
+            .sort(byIndex)
             .slice(atIndex)
             .map((row: Row) => ({
-                _id: row._id,
+                _id: row._id as number,
+                oldIndex: row.index as number,
                 index: (row.index as number) + 1,
             }))
 
@@ -140,11 +148,8 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
         user.authCookie
     )
     const rows = newData.rows as Row[]
-    const newIndices: {
-        _id: number
-        index: number
-    }[] = rows
-        .sort((a, b) => ((a.index as number) > (b.index as number) ? 1 : -1))
+    const newIndices: IndexChange[] = rows
+        .sort(byIndex)
         .map((row: Row, newIndex: number) => ({
             _id: row._id as number,
             oldIndex: row.index as number,
