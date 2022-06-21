@@ -31,10 +31,14 @@ export const coreRequest = async <T = unknown>(
     authCookie?: NextApiRequest | string
 ): Promise<T> => {
     const { channel, method, ...req } = request
+
+    if (authCookie == null) throw new RangeError("AuthCookie is not defined!")
+
     const cookie =
         typeof authCookie === "string"
             ? authCookie
-            : authCookie!.cookies[AUTH_COOKIE_KEY]
+            : authCookie.cookies[AUTH_COOKIE_KEY]
+
     return fetch(CORE_ENDPOINT + "/request/" + channel + "/" + method, {
         method: "post",
         headers: {

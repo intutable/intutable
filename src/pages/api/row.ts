@@ -29,7 +29,11 @@ import { project_management_constants } from "types/type-annotations/project-man
  * ```
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
-    const { table, values, atIndex } = req.body as {
+    const {
+        table,
+        values: rowToInsert,
+        atIndex,
+    } = req.body as {
         table: TableDescriptor
         values: Obj
         atIndex?: number
@@ -41,28 +45,39 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         user.authCookie
     )
 
-    console.log("at index:", atIndex)
-
     // BUG: does not work properly
-    let newValues: Obj
-    if (atIndex === undefined || atIndex === oldData.rows.length)
-        newValues = { ...values, index: oldData.rows.length }
+    let newRow: Obj
+    if (atIndex == null || atIndex === oldData.rows.length)
+        newRow = { ...rowToInsert, index: oldData.rows.length }
     else {
-        newValues = { ...values, index: atIndex }
-        const shiftedRows = oldData.rows.slice(atIndex).map((row: Row) => ({
-            _id: row._id,
-            index: (row.index as number) + 1,
-        }))
-        Promise.all(
+        newRow = { ...rowToInsert, index: atIndex }
+        const shiftedRows = (oldData.rows as Row[])
+            .slice(atIndex)
+            .map((row: Row) => ({
+                _id: row._id,
+                index: (row.index as number) + 1,
+            }))
+
+        // for await (const row of shiftedRows) {
+        //     await coreRequest(
+        //         update(table.key, {
+        //             condition: ["_id", row._id],
+        //             update: { index: row.index },
+        //         }),
+        //         user.authCookie
+        //     )
+        // }
+
+        await Promise.all(
             shiftedRows.map(
                 async (row: Obj) =>
-                    coreRequest(
+                    await coreRequest(
                         update(table.key, {
                             condition: ["_id", row._id],
                             update: { index: row.index },
-                        })
-                    ),
-                user.authCookie
+                        }),
+                        user.authCookie
+                    )
             )
         )
     }
@@ -71,8 +86,8 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const rowId = await coreRequest<
         typeof project_management_constants.UID_KEY
     >(
-        insert(table.key, newValues, [project_management_constants.UID_KEY]),
-        req.session.user!.authCookie
+        insert(table.key, newRow, [project_management_constants.UID_KEY]),
+        user.authCookie
     )
 
     res.status(200).send(rowId)
