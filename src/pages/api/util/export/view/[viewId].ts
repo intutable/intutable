@@ -59,8 +59,9 @@ const intersectRows = (columns: Column.Serialized[], rows: Row[]) =>
             const key = capitalizeFirstLetter(col.name)
 
             // hack for email type: filter out every invalid address
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cellType = (col as any).attributes.editor
+            const cellType =
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ((col as any).attributes as Column.SQL)._cellContentType
             if (cellType === "email") {
                 if (isValidMailAddress(value) === false) {
                     intersection[key] = ""
