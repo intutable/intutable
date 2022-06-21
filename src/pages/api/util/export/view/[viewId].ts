@@ -42,11 +42,15 @@ export type ExportViewRequestBody = {
     format: "csv" | "json" | "xlsx" | "xml"
     columns: ColumnInfo["id"][]
     options?: {
+        /**
+         * indices of rows to include in the export
+         */
+        rowSelection?: number[]
         csvOptions?: CSVExportOptions
     }
 }
 
-const intersectRows = (columns: Column.Serialized[], rows: Row.Serialized[]) =>
+const intersectRows = (columns: Column.Serialized[], rows: Row[]) =>
     rows.map(row => {
         const intersection: Obj = {}
 
@@ -55,8 +59,9 @@ const intersectRows = (columns: Column.Serialized[], rows: Row.Serialized[]) =>
             const key = capitalizeFirstLetter(col.name)
 
             // hack for email type: filter out every invalid address
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cellType = (col as any).attributes.editor
+            const cellType =
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ((col as any).attributes as Column.SQL)._cellContentType
             if (cellType === "email") {
                 if (isValidMailAddress(value) === false) {
                     intersection[key] = ""
@@ -102,7 +107,29 @@ const POST = withCatchingAPIRoute(
             columns.includes((col as unknown as Column & { id: number }).id)
         )
 
-        const data = intersectRows(cols, viewData.rows)
+        let rows: ViewData.Serialized["rows"] = viewData.rows
+
+        // row selection
+        if (options?.rowSelection != null && options.rowSelection.length > 0) {
+            // find the index column where the information about the indices are stored,
+            // because the indices of each row are not accessible in the viewData
+            // due to prefixes of the keys
+            const indexColumn = viewData.columns.find(
+                (c: Obj) => (c.attributes as Column.SQL)._kind === "index"
+            )!
+            // and remap to the actual rows
+            rows = rows.map(row => ({
+                ...row,
+                __rowIndex__: row[indexColumn.key] as number,
+            }))
+
+            // filter out the rows that are not selected
+            rows = rows.filter(row =>
+                options.rowSelection!.includes(row.__rowIndex__)
+            )
+        }
+
+        const data = intersectRows(cols, rows)
         const csv = await toCSV(data, options?.csvOptions)
 
         const filename = fileName + ".csv"

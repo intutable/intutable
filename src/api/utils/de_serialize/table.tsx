@@ -20,7 +20,7 @@ export const serialize = (
     // Note: this is not used yet
 
     // serializes each row
-    const rows: Row.Serialized[] = table.rows.map(Util.Row.serialize)
+    const rows: Row[] = table.rows.map(Util.Row.serialize)
 
     // serialize each column
     const columns: Column.Serialized[] = table.columns.map(
@@ -51,17 +51,6 @@ export const deserialize = (
 
     // deserialize each column
     const columns: Column[] = table.columns.map(Util.Column.deserialize)
-
-    // add rdg indice column
-    const rdgIndexCol: Column = {
-        name: "Index",
-        key: PLACEHOLDER.ROW_INDEX_KEY,
-        editable: false,
-        resizable: true,
-        sortable: true,
-        width: 80,
-    }
-    columns.unshift(rdgIndexCol)
 
     // add a selector column
     columns.unshift(SelectColumn)

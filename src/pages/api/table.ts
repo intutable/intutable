@@ -6,6 +6,7 @@ import {
     getViewInfo,
     ViewInfo,
     ViewDescriptor,
+    ColumnSpecifier,
 } from "@intutable/lazy-views"
 import {
     createTableInProject,
@@ -27,6 +28,7 @@ import {
     defaultRowOptions,
     defaultViewName,
     standardColumnAttributes,
+    indexColumnAttributes,
 } from "@backend/defaults"
 
 /**
@@ -63,6 +65,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     // create table in project-management with primary "name" column
     const table = await coreRequest<TableDescriptor>(
         createTableInProject(user.id, projectId, internalName, [
+            { name: "index", type: ColumnType.integer, options: [] },
             { name: "name", type: ColumnType.string, options: [] },
         ]),
         user.authCookie
@@ -73,13 +76,15 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         getColumnsFromTable(table.id),
         user.authCookie
     )
-    const columnSpecs = baseColumns.map(c => ({
-        parentColumnId: c.id,
-        attributes:
-            c.name === "name"
-                ? standardColumnAttributes("Name", true)
-                : standardColumnAttributes("ID"),
-    }))
+    const columnSpecs = baseColumns.map(c => {
+        const makeColumnAttributes =
+            defaultColumnAttributeMap[c.name] ||
+            (() => ({} as ColumnSpecifier["attributes"]))
+        return {
+            parentColumnId: c.id,
+            attributes: makeColumnAttributes(),
+        }
+    })
 
     // create table view
     const tableView = await coreRequest<ViewDescriptor>(
@@ -124,3 +129,12 @@ export default withSessionRoute(
         }
     })
 )
+
+const defaultColumnAttributeMap: Record<
+    string,
+    () => ColumnSpecifier["attributes"]
+> = {
+    _id: () => standardColumnAttributes("ID"),
+    index: indexColumnAttributes,
+    name: () => standardColumnAttributes("Name", true),
+}

@@ -1,11 +1,13 @@
-import { CellContentTypeComponents } from "@datagrid/Editor/components/map"
 import {
     CellContentType,
     isCellContentType,
 } from "@datagrid/Editor/type-management"
 import { EditorComponent } from "@datagrid/Editor/types/EditorComponent"
-import { FormatterComponent, FormatterComponentMap } from "@datagrid/Formatter"
-import { Column } from "types"
+import { FormatterComponent } from "@datagrid/Formatter"
+import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
+import { Column, MetaColumnProps } from "types"
+import { CellContentTypeComponents, ColumnKindComponents } from "./map"
+import { headerRenderer } from "@datagrid/renderers"
 
 /**
  * // TODO: this flexbility could be a potential error cause.
@@ -66,24 +68,84 @@ import { Column } from "types"
  *
  * But the formatter does more. Things complelty independent of its type. E.g. when the kind is 'lookup' and
  * the cursor needs to be special in order to pick values or some mechanics for selecting multiple cells.
+ *
+ * #### Explicit Type
+ *
+ * Because the editor and formatter can be nullish a new prop
+ * explicitly sets this prop (see {@link MetaColumnProps._cellContentType}).
  */
 export class ColumnUtility {
     constructor(public readonly column: Column.Serialized) {}
 
-    public getEditor(): EditorComponent | undefined | null {
-        const { editor } = this.column
-        return isCellContentType(editor)
-            ? CellContentTypeComponents[editor]
-            : undefined
+    // get column(): Column.Serialized {}
+
+    public getKind(): MetaColumnProps["_kind"] {
+        return this.column._kind
+    }
+    public getCellContentType(): CellContentType {
+        return this.column._cellContentType
     }
 
-    public getFormatter(): FormatterComponent {
-        const { formatter, _kind } = this.column
+    public isEditable(): boolean | null | undefined {
+        const { _cellContentType, _kind, editable } = this.column
+
+        // index columns are not editable, at least no by the editable
+        if (_kind === "index") return false
+
+        // TODO: further checking here, e.g. should link and lookup columns be editable??
+
+        return editable
+    }
+
+    public getEditor(): EditorComponent | undefined | null {
+        const { _cellContentType } = this.column
+
+        if (isCellContentType(_cellContentType) === false)
+            throw RangeError(
+                `${_cellContentType} is not a valid serialized value for an editor`
+            )
+
+        return CellContentTypeComponents[_cellContentType].editor
+    }
+
+    public getFormatter(): FormatterComponent | undefined | null {
+        const { _cellContentType, _kind } = this.column
 
         // special treatment when the kind is not 'standard'
-        if (_kind !== "standard") return FormatterComponentMap[_kind]
+        if (_kind !== "standard") return ColumnKindComponents[_kind]
+
+        if (isCellContentType(_cellContentType) === false)
+            throw RangeError(
+                `${_cellContentType} is not a valid serialized value for an formatter`
+            )
 
         // otherwise choose the formatter actually by the value of this property
-        return FormatterComponentMap[formatter]
+        return CellContentTypeComponents[_cellContentType].formatter
+    }
+
+    public getHeaderRenderer(): Column["headerRenderer"] {
+        // for now no actions on index columns
+        if (this.column._kind === "index") return null
+
+        return headerRenderer
+    }
+
+    // static deserialize(column: Column.Serialized): Column { }
+    // public deserialize(): Column { }
+
+    // static serialize(column: Column): Column.Serialized { }
+    // public serialize(): Column.Serialized { }
+
+    /**
+     * Identifies columns which are not part of the real object data, but rather
+     * control elements specific to this GUI, such as the row index column and
+     * selector checkbox.
+     */
+    static isAppColumn(
+        column: Column.Serialized | Column.Deserialized
+    ): boolean {
+        return (
+            column.key === PLACEHOLDER.COL_SELECTOR || column._kind === "index"
+        )
     }
 }
