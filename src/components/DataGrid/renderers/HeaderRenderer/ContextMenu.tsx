@@ -19,7 +19,7 @@ import { Row } from "types"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
 import { AddLookup } from "./AddLookup"
-import { ColumnAttributesSettings } from "./ColumnAttributesSettings"
+import { ColumnAttributesWindow } from "./ColumnAttributesWindow"
 import { ColumnToClipboard } from "./ColumnToClipboard"
 import { CreateMailList } from "./CreateMailList"
 
@@ -138,7 +138,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                     <ListItemText>Umbenennen</ListItemText>
                 </MenuItem>
 
-                <ColumnAttributesSettings
+                <ColumnAttributesWindow
                     headerRendererProps={headerRendererProps}
                     onCloseContextMenu={closeContextMenu}
                 />

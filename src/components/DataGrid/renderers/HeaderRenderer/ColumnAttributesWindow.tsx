@@ -18,7 +18,35 @@ import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useState, useMemo } from "react"
 import { HeaderRendererProps } from "react-data-grid"
-import { Row, ViewData } from "types"
+import { Column, Row, ViewData } from "types"
+
+type AttributeProps = {
+    label: string
+    value: string
+}
+
+const Attribute: React.FC<AttributeProps> = props => {
+    const theme = useTheme()
+    const { label, value } = props
+    return (
+        <Stack>
+            <Typography variant="body1" sx={{ mt: 1.5 }}>
+                {value}
+            </Typography>
+            <Typography
+                variant="caption"
+                sx={{
+                    mt: -0.5,
+                    fontStyle: "italic",
+                    color: theme.palette.grey[700],
+                    fontSize: "60%",
+                }}
+            >
+                {label}
+            </Typography>
+        </Stack>
+    )
+}
 
 type ModalProps = {
     open: boolean
@@ -28,7 +56,6 @@ type ModalProps = {
 
 const Modal: React.FC<ModalProps> = props => {
     const { open, onClose, headerRendererProps } = props
-    const theme = useTheme()
 
     const { data: view } = useView()
     const column = useMemo(
@@ -36,45 +63,26 @@ const Modal: React.FC<ModalProps> = props => {
             view
                 ? (view.columns.find(
                       c => c._id! === headerRendererProps.column._id
-                  ) as unknown as ViewData.Serialized)
+                  ) as unknown as Column)
                 : null,
         [headerRendererProps.column._id, view]
     )
 
     if (column == null) return null
 
-    console.log(column)
-
     return (
         <Dialog open={open} onClose={() => onClose()}>
             <DialogTitle>Spalten-Eigenschaften</DialogTitle>
             <DialogContent>
-                <Stack
-                    sx={{
-                        overflow: "scroll",
-                        pl: 1,
-                        pt: 1,
-                    }}
-                >
-                    {Object.entries(column).map(([key, value], i) => (
-                        <Stack key={i}>
-                            <Typography variant="body1" sx={{ mt: 1.5 }}>
-                                {value as string}
-                            </Typography>
-                            <Typography
-                                variant="caption"
-                                sx={{
-                                    mt: -0.5,
-                                    fontStyle: "italic",
-                                    color: theme.palette.grey[700],
-                                    fontSize: "60%",
-                                }}
-                            >
-                                {key}
-                            </Typography>
-                        </Stack>
-                    ))}
-                </Stack>
+                <Attribute label={"Name"} value={column.name as string} />
+                <Attribute
+                    label={"Spalten-Typ"}
+                    value={column._kind as string}
+                />
+                <Attribute
+                    label={"Zellen-Typ"}
+                    value={column._cellContentType as string}
+                />
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => onClose()}>Schließen</Button>
@@ -83,13 +91,13 @@ const Modal: React.FC<ModalProps> = props => {
     )
 }
 
-export type ColumnAttributesSettingsProps = {
+export type ColumnAttributesWindowProps = {
     headerRendererProps: HeaderRendererProps<Row>
     onCloseContextMenu: () => void
 }
 
-export const ColumnAttributesSettings: React.FC<
-    ColumnAttributesSettingsProps
+export const ColumnAttributesWindow: React.FC<
+    ColumnAttributesWindowProps
 > = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openModal = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
