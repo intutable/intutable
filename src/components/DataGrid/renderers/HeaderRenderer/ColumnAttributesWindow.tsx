@@ -83,6 +83,10 @@ const Modal: React.FC<ModalProps> = props => {
                     label={"Zellen-Typ"}
                     value={column._cellContentType as string}
                 />
+                <Attribute
+                    label={"Editierbar"}
+                    value={column.editable ? "Ja" : "Nein"}
+                />
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => onClose()}>Schließen</Button>
