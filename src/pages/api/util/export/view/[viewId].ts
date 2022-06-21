@@ -127,7 +127,6 @@ const POST = withCatchingAPIRoute(
             rows = rows.filter(row =>
                 options.rowSelection!.includes(row.__rowIndex__)
             )
-            console.log(rows)
         }
 
         const data = intersectRows(cols, rows)
