@@ -3,7 +3,8 @@ import useSWR, { unstable_serialize } from "swr"
 import { ViewData } from "types"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { APIContextProvider } from "context/APIContext"
 import { ViewDescriptor, Condition as Filter } from "@intutable/lazy-views"
 import { fetcher } from "api/fetcher"
 

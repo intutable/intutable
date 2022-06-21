@@ -19,6 +19,7 @@ import { Row } from "types"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
 import { AddLookup } from "./AddLookup"
+import { ColumnAttributesWindow } from "./ColumnAttributesWindow"
 import { ColumnToClipboard } from "./ColumnToClipboard"
 import { CreateMailList } from "./CreateMailList"
 
@@ -42,13 +43,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
     const { renameColumn, deleteColumn } = useColumn()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const handleOpenContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         setAnchorEL(e.currentTarget)
     }
-    const handleCloseContextMenu = () => setAnchorEL(null)
+    const closeContextMenu = () => setAnchorEL(null)
 
-    const handleToggleHeaderSearchField = () => {
+    const toggleHeaderSearchbar = () => {
         if (headerOpen) closeSearchField()
         else openSearchField()
     }
@@ -58,7 +59,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
             const name = prompt("Gib einen neuen Namen für diese Spalte ein:")
             if (!name) return
             await renameColumn(headerRendererProps.column, prepareName(name))
-            handleCloseContextMenu()
+            closeContextMenu()
         } catch (error) {
             const err = makeError(error)
             snackError(
@@ -76,7 +77,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
             )
             if (!confirmed) return
             await deleteColumn(headerRendererProps.column)
-            handleCloseContextMenu()
+            closeContextMenu()
         } catch (error) {
             const errMsg =
                 (error as Record<string, string>).error === "deleteUserPrimary"
@@ -88,11 +89,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
 
     return (
         <>
-            <IconButton
-                onClick={handleOpenContextMenu}
-                size="small"
-                edge="start"
-            >
+            <IconButton onClick={openContextMenu} size="small" edge="start">
                 <MoreVertIcon
                     sx={{
                         fontSize: "80%",
@@ -106,7 +103,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                 open={anchorEL != null}
                 anchorEl={anchorEL}
                 keepMounted={true}
-                onClose={handleCloseContextMenu}
+                onClose={closeContextMenu}
                 PaperProps={{
                     sx: {
                         boxShadow: theme.shadows[1],
@@ -116,7 +113,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                 <AddLookup
                     colInfo={col}
                     foreignTable={foreignTable}
-                    onCloseContextMenu={handleCloseContextMenu}
+                    onCloseContextMenu={closeContextMenu}
                     headerRendererProps={headerRendererProps}
                 />
 
@@ -130,7 +127,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                     headerRendererProps={headerRendererProps}
                 />
 
-                <MenuItem onClick={handleToggleHeaderSearchField}>
+                <MenuItem onClick={toggleHeaderSearchbar}>
                     <ListItemIcon>
                         {headerOpen ? <Check /> : <SearchIcon />}
                     </ListItemIcon>
@@ -141,9 +138,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                     <ListItemText>Umbenennen</ListItemText>
                 </MenuItem>
 
-                <MenuItem disabled>
-                    <ListItemText>Eigenschaften</ListItemText>
-                </MenuItem>
+                <ColumnAttributesWindow
+                    headerRendererProps={headerRendererProps}
+                    onCloseContextMenu={closeContextMenu}
+                />
 
                 <MenuItem
                     onClick={handleDeleteColumn}
