@@ -28,7 +28,7 @@ import {
     CSVExportOptions,
     ExportViewRequestBody,
 } from "pages/api/util/export/view/[viewId]"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
 
@@ -65,6 +65,20 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
     const resetState = () =>
         setState(props.options?.initialState || inistalState)
 
+    // update selected Rows in state
+    // Note: apply the selected Rows in the fetch … better for performance
+    useEffect(() => {
+        if (selectedRows.size > 0) {
+            setState(prev => ({
+                ...prev,
+                options: {
+                    ...prev.options,
+                    rowSelection: Array.from(selectedRows),
+                },
+            }))
+        }
+    }, [selectedRows])
+
     const valid = useMemo(
         () => state.fileName.length > 0 && state.columns.length > 0,
         [state]
@@ -91,7 +105,6 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
             })
             setFile(csv)
         } catch (error) {
-            console.log(error)
             snackError("Export fehlgeschlagen.")
             props.onClose()
         } finally {
