@@ -1,5 +1,9 @@
 import { deleteRow, insert, update } from "@intutable/database/dist/requests"
-import { TableDescriptor } from "@intutable/project-management/dist/types"
+import { getTableData } from "@intutable/project-management/dist/requests"
+import {
+    TableDescriptor,
+    TableData,
+} from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
@@ -7,6 +11,17 @@ import { withSessionRoute } from "auth"
 import { Row } from "types"
 import Obj from "types/Obj"
 import { project_management_constants } from "types/type-annotations/project-management"
+
+// Intermediate type representing a row whose index is to be changed.
+type IndexChange = {
+    _id: number
+    index: number
+    oldIndex: number
+}
+
+// compare two rows by index
+const byIndex = (a: Obj, b: Obj) =>
+    (a.index as number) > (b.index as number) ? 1 : -1
 
 /**
  * Create a new row with some starting values. Ensuring that the types of
@@ -20,17 +35,56 @@ import { project_management_constants } from "types/type-annotations/project-man
  * ```
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
-    const { table, values } = req.body as {
+    const {
+        table,
+        values: rowToInsert,
+        atIndex,
+    } = req.body as {
         table: TableDescriptor
         values: Obj
+        atIndex?: number
+    }
+    const user = req.session.user!
+
+    const oldData = await coreRequest<TableData>(
+        getTableData(table.id),
+        user.authCookie
+    )
+
+    let newRow: Obj
+    if (atIndex == null || atIndex === oldData.rows.length)
+        newRow = { ...rowToInsert, index: oldData.rows.length }
+    else {
+        newRow = { ...rowToInsert, index: atIndex }
+        const shiftedRows = (oldData.rows as Row[])
+            .sort(byIndex)
+            .slice(atIndex)
+            .map((row: Row) => ({
+                _id: row._id as number,
+                oldIndex: row.index as number,
+                index: (row.index as number) + 1,
+            }))
+
+        await Promise.all(
+            shiftedRows.map(
+                async (row: Obj) =>
+                    await coreRequest(
+                        update(table.key, {
+                            condition: ["_id", row._id],
+                            update: { index: row.index },
+                        }),
+                        user.authCookie
+                    )
+            )
+        )
     }
 
     // create row in database
     const rowId = await coreRequest<
         typeof project_management_constants.UID_KEY
     >(
-        insert(table.key, values, [project_management_constants.UID_KEY]),
-        req.session.user!.authCookie
+        insert(table.key, newRow, [project_management_constants.UID_KEY]),
+        user.authCookie
     )
 
     res.status(200).send(rowId)
@@ -85,12 +139,35 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
         table: TableDescriptor
         condition: unknown[]
     }
+    const user = req.session.user!
 
-    await coreRequest(
-        deleteRow(table.key, condition),
-        req.session.user!.authCookie
+    await coreRequest(deleteRow(table.key, condition), user.authCookie)
+    // shift indices
+    const newData = await coreRequest<TableData>(
+        getTableData(table.id),
+        user.authCookie
     )
+    const rows = newData.rows as Row[]
+    const newIndices: IndexChange[] = rows
+        .sort(byIndex)
+        .map((row: Row, newIndex: number) => ({
+            _id: row._id as number,
+            oldIndex: row.index as number,
+            index: newIndex,
+        }))
+        .filter(row => row.oldIndex !== row.index)
 
+    await Promise.all(
+        newIndices.map(async ({ _id, index }) =>
+            coreRequest(
+                update(table.key, {
+                    update: { index: index },
+                    condition: ["_id", _id],
+                }),
+                user.authCookie
+            )
+        )
+    )
     res.status(200).json({})
 })
 

@@ -127,7 +127,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
 
                 <Box>
                     <Tooltip title="Filter">
-                        <IconButton size="small" edge="end">
+                        <IconButton size="small" edge="end" disabled>
                             <FilterAltIcon
                                 sx={{
                                     fontSize: "80%",
