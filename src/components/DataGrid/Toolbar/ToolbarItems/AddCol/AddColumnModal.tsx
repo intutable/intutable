@@ -3,6 +3,7 @@ import type { Column } from "types"
 import {
     CellContentType,
     Runtime_CellContentType,
+    CellContentTypeDisplayName,
 } from "@datagrid/Editor/types/CellContentType"
 import {
     Box,
@@ -27,24 +28,6 @@ import {
 import sanitizeName from "utils/sanitizeName"
 import HelpIcon from "@mui/icons-material/Help"
 
-const CellContentTypeDisplayName: {
-    [key in CellContentType]: string
-} = {
-    string: "Freitexteingabe (String)",
-    number: "Dezimalzahlen",
-    percentage: "Prozent",
-    currency: "Währung",
-    boolean: "Boolescher Wert / Checkbox",
-    date: "Datum",
-    datetime: "Datum & Zeit",
-    time: "Zeit",
-    avatar: "Avatar",
-    hyperlink: "Hyperlink",
-    email: "E-Mail",
-    select: "Auswahlliste",
-    multiSelect: "Auswahlliste",
-    complex: "Komplexer Typ",
-} as const
 
 type AddColumnModalProps = {
     open: boolean
