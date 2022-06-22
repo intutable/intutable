@@ -11,7 +11,11 @@ import {
     ViewDescriptor,
 } from "@intutable/lazy-views/dist/types"
 
-import { indexColumnAttributes } from "../defaults"
+import {
+    standardColumnAttributes,
+    indexColumnAttributes,
+    linkColumnAttributes,
+} from "../defaults"
 
 export const PK_COLUMN = "_id"
 
@@ -41,10 +45,7 @@ export const PERSONEN: TableSpec = {
                 type: ColumnType.increments,
                 options: [ColumnOption.primary],
             },
-            attributes: {
-                displayName: "ID",
-                _cellContentType: "number",
-            },
+            attributes: standardColumnAttributes("ID", "number"),
         },
         {
             baseColumn: {
@@ -59,41 +60,28 @@ export const PERSONEN: TableSpec = {
                 name: "nachname",
                 type: ColumnType.string,
             },
-            attributes: {
-                displayName: "Nachname",
-                userPrimary: 1,
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("Nachname", "string", true),
         },
         {
             baseColumn: {
                 name: "vorname",
                 type: ColumnType.string,
             },
-            attributes: {
-                displayName: "Vorname",
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("Vorname", "string"),
         },
         {
             baseColumn: {
                 name: "titel",
                 type: ColumnType.string,
             },
-            attributes: {
-                displayName: "Titel",
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("Titel", "string"),
         },
         {
             baseColumn: {
                 name: "stellung",
                 type: ColumnType.string,
             },
-            attributes: {
-                displayName: "Stellung",
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("Stellung", "string"),
         },
     ],
     joins: [],
@@ -181,10 +169,7 @@ export const ORGANE: TableSpec = {
                 type: ColumnType.increments,
                 options: [ColumnOption.primary],
             },
-            attributes: {
-                displayName: "ID",
-                _cellContentType: "number",
-            },
+            attributes: standardColumnAttributes("ID", "number"),
         },
         {
             baseColumn: {
@@ -199,41 +184,28 @@ export const ORGANE: TableSpec = {
                 name: "name",
                 type: ColumnType.text,
             },
-            attributes: {
-                displayName: "Name",
-                userPrimary: 1,
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("Name", "string", true),
         },
         {
             baseColumn: {
                 name: "kuerzel",
                 type: ColumnType.text,
             },
-            attributes: {
-                displayName: "Kürzel",
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("Kürzel", "string"),
         },
         {
             baseColumn: {
                 name: "typ",
                 type: ColumnType.text,
             },
-            attributes: {
-                displayName: "Typ",
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("Typ", "string"),
         },
         {
             baseColumn: {
                 name: "fk_math_inf",
                 type: ColumnType.text,
             },
-            attributes: {
-                displayName: "FK/Math/Inf",
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("FK/Math/Inf", "string"),
         },
     ],
     joins: [],
@@ -335,11 +307,7 @@ export const ROLLEN = {
                 type: ColumnType.increments,
                 options: [ColumnOption.primary],
             },
-            attributes: {
-                displayName: "ID",
-                editable: 1,
-                _cellContentType: "number",
-            },
+            attributes: standardColumnAttributes("ID", "number"),
         },
         {
             baseColumn: {
@@ -355,12 +323,7 @@ export const ROLLEN = {
                 type: ColumnType.string,
                 options: [ColumnOption.nullable],
             },
-            attributes: {
-                displayName: "Rolle",
-                userPrimary: 1,
-                editable: 1,
-                _cellContentType: "string",
-            },
+            attributes: standardColumnAttributes("Rolle", "string", true),
         },
     ],
     joins: [
@@ -374,12 +337,7 @@ export const ROLLEN = {
             linkColumns: [
                 {
                     name: "nachname",
-                    attributes: {
-                        displayName: "Nachname",
-                        editable: 0,
-                        _kind: "link",
-                        _cellContentType: "string",
-                    },
+                    attributes: linkColumnAttributes("Nachname"),
                 },
             ],
         },
@@ -393,12 +351,7 @@ export const ROLLEN = {
             linkColumns: [
                 {
                     name: "name",
-                    attributes: {
-                        displayName: "Organ",
-                        editable: 0,
-                        _kind: "link",
-                        _cellContentType: "string",
-                    },
+                    attributes: linkColumnAttributes("Organ"),
                 },
             ],
         },
