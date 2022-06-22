@@ -11,8 +11,11 @@ import { coreRequest, Parser } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import { Column } from "types"
+import sanitizeName from "utils/sanitizeName"
+
+import { StandardColumnSpecifier } from "@backend/types"
 import { addColumnToTable } from "@backend/requests"
+import { standardColumnAttributes } from "@backend/defaults"
 
 /**
  * Add a column to a table.
@@ -27,7 +30,7 @@ import { addColumnToTable } from "@backend/requests"
 const POST = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
         const { column } = req.body as {
-            column: Column.Serialized
+            column: StandardColumnSpecifier
         }
         const user = req.session.user!
 
@@ -36,18 +39,22 @@ const POST = withCatchingAPIRoute(
             user.authCookie
         )
 
+        const key = sanitizeName(column.name)
         // add column in project-management
         const tableColumn = await coreRequest<PM_Column>(
-            createColumnInTable(asTable(options.source).id, column.key),
+            createColumnInTable(asTable(options.source).id, key),
             user.authCookie
         )
 
         // add column to table and filter views
         const tableViewColumn = await coreRequest<View_Column>(
-            addColumnToTable(
-                tableId,
-                Parser.Column.deparse(column, tableColumn.id)
-            ),
+            addColumnToTable(tableId, {
+                parentColumnId: tableColumn.id,
+                attributes: standardColumnAttributes(
+                    column.name,
+                    column._cellContentType
+                ),
+            }),
             user.authCookie
         )
 

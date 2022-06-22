@@ -5,6 +5,7 @@ import {
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
 import { toSQL } from "./attributes"
+import { CellContentType } from "../../../components/DataGrid/Editor/types/CellContentType"
 
 export const UID_KEY = "_id"
 export const INDEX_KEY = "index"
@@ -49,6 +50,7 @@ export function defaultViewName() {
 
 export function standardColumnAttributes(
     displayName: string,
+    contentType: CellContentType,
     userPrimary?: boolean
 ) {
     return toSQL({
@@ -56,7 +58,7 @@ export function standardColumnAttributes(
         ...(userPrimary !== undefined && { userPrimary }),
         displayName,
         editable: 1,
-        _cellContentType: "string",
+        _cellContentType: contentType,
     })
 }
 
@@ -69,12 +71,15 @@ export function linkColumnAttributes(displayName: string) {
     })
 }
 
-export function lookupColumnAttributes(displayName: string) {
+export function lookupColumnAttributes(
+    displayName: string,
+    contentType: CellContentType
+) {
     return toSQL({
         _kind: "lookup",
         displayName,
         editable: 0,
-        _cellContentType: "string",
+        _cellContentType: contentType,
     })
 }
 

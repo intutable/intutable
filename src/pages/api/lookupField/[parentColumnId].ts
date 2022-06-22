@@ -1,5 +1,4 @@
 import {
-    addColumnToView,
     asView,
     ColumnInfo,
     getViewInfo,
@@ -49,7 +48,9 @@ const POST = withCatchingAPIRoute(
         // determine props
         const displayName =
             foreignColumn.attributes.displayName || foreignColumn.name
-        const attributes = lookupColumnAttributes(displayName)
+        const contentType =
+            foreignColumn.attributes._cellContentType || "string"
+        const attributes = lookupColumnAttributes(displayName, contentType)
 
         // add to table and views
         const newColumn = await coreRequest<ColumnInfo>(

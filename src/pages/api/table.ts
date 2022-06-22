@@ -134,7 +134,7 @@ const defaultColumnAttributeMap: Record<
     string,
     () => ColumnSpecifier["attributes"]
 > = {
-    _id: () => standardColumnAttributes("ID"),
+    _id: () => standardColumnAttributes("ID", "number"),
     index: indexColumnAttributes,
-    name: () => standardColumnAttributes("Name", true),
+    name: () => standardColumnAttributes("Name", "string", true),
 }
