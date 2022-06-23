@@ -55,6 +55,25 @@ export const Runtime_CellContentType = [
     "complex",
 ] as const
 
+export const CellContentTypeDisplayName: {
+    [key in CellContentType]: string
+} = {
+    string: "Freitexteingabe (String)",
+    number: "Dezimalzahlen",
+    percentage: "Prozent",
+    currency: "Währung",
+    boolean: "Boolescher Wert / Checkbox",
+    date: "Datum",
+    datetime: "Datum & Zeit",
+    time: "Zeit",
+    avatar: "Avatar",
+    hyperlink: "Hyperlink",
+    email: "E-Mail",
+    select: "Auswahlliste",
+    multiSelect: "Auswahlliste",
+    complex: "Komplexer Typ",
+} as const
+
 /**
  * Types that can be used in a cell.
  */

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react"
-import type { Column } from "types"
 import {
     CellContentType,
     Runtime_CellContentType,
+    CellContentTypeDisplayName,
 } from "@datagrid/Editor/types/CellContentType"
 import {
     Box,
@@ -24,56 +24,33 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import sanitizeName from "utils/sanitizeName"
 import HelpIcon from "@mui/icons-material/Help"
-
-const CellContentTypeDisplayName: {
-    [key in CellContentType]: string
-} = {
-    string: "Freitexteingabe (String)",
-    number: "Dezimalzahlen",
-    percentage: "Prozent",
-    currency: "Währung",
-    boolean: "Boolescher Wert / Checkbox",
-    date: "Datum",
-    datetime: "Datum & Zeit",
-    time: "Zeit",
-    avatar: "Avatar",
-    hyperlink: "Hyperlink",
-    email: "E-Mail",
-    select: "Auswahlliste",
-    multiSelect: "Auswahlliste",
-    complex: "Komplexer Typ",
-} as const
+import { StandardColumnSpecifier } from "@backend/types"
 
 type AddColumnModalProps = {
     open: boolean
     onClose: () => void
-    onHandleCreateColumn: (column: Column.Serialized) => Promise<void>
+    onHandleCreateColumn: (column: StandardColumnSpecifier) => Promise<void>
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const theme = useTheme()
 
     const [moreOptionsActive, setMoreOptionsActive] = useState(false)
-    const [options, setOptions] = useState<Column.Serialized>({
-        _id: -1,
-        _kind: "standard",
-        _cellContentType: "string",
-        key: "",
+    const [options, setOptions] = useState<StandardColumnSpecifier>({
         name: "",
+        _cellContentType: "string",
         editable: true,
     })
     const [valid, setValid] = useState(false)
 
     useEffect(() => {
         if (options.name.length > 0) setValid(true)
-        setOption("key", sanitizeName(options.name))
     }, [options.name])
 
-    const setOption = <T extends keyof Column.Serialized>(
+    const setOption = <T extends keyof StandardColumnSpecifier>(
         option: T,
-        value: Column.Serialized[T]
+        value: StandardColumnSpecifier[T]
     ) => {
         setOptions(prev => ({
             ...prev,

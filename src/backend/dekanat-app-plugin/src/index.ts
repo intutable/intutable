@@ -2,14 +2,23 @@
  * This dummy plugin allows us to run initialization (config, example data)
  * on starting up the core.
  */
-import { PluginLoader } from "@intutable/core"
+import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import {
     Column,
     ColumnType,
     ColumnOption,
 } from "@intutable/database/dist/column"
 import { insert, select } from "@intutable/database/dist/requests"
-import { requests as v_req } from "@intutable/lazy-views/"
+import { removeColumn } from "@intutable/project-management/dist/requests"
+import {
+    types as lvt,
+    requests as lvr,
+    selectable,
+} from "@intutable/lazy-views/"
+
+import * as req from "./requests"
+
+import { error } from "./internal/error"
 
 import { createExampleSchema, insertExampleData } from "./example/load"
 
@@ -41,6 +50,11 @@ export async function init(plugins: PluginLoader) {
             await insertExampleData(core)
         } else console.log("skipped creating example schema")
     }
+
+    core.listenForRequests(req.CHANNEL)
+        .on(req.addColumnToTable.name, addColumnToTable_)
+        .on(req.addColumnToViews.name, addColumnToFilterViews_)
+        .on(req.removeColumnFromTable.name, removeColumnFromTable_)
 }
 
 async function getAdminId(): Promise<number | null> {
@@ -98,6 +112,163 @@ async function configureColumnAttributes(): Promise<void> {
         },
     ]
     await Promise.all(
-        customColumns.map(c => core.events.request(v_req.addColumnAttribute(c)))
+        customColumns.map(c => core.events.request(lvr.addColumnAttribute(c)))
+    )
+}
+
+async function addColumnToTable_({
+    tableId,
+    column,
+    joinId,
+    createInViews,
+}: CoreRequest): Promise<CoreResponse> {
+    return addColumnToTable(tableId, column, joinId, createInViews)
+}
+async function addColumnToTable(
+    tableId: lvt.ViewDescriptor["id"],
+    column: lvt.ColumnSpecifier,
+    joinId: number | null = null,
+    createInViews: boolean = true
+): Promise<lvt.ColumnInfo> {
+    const tableColumn = (await core.events.request(
+        lvr.addColumnToView(tableId, column, joinId)
+    )) as lvt.ColumnInfo
+    if (createInViews)
+        await addColumnToFilterViews(tableId, {
+            parentColumnId: tableColumn.id,
+            attributes: tableColumn.attributes,
+        })
+    return tableColumn
+}
+
+async function addColumnToFilterViews_({
+    tableId,
+    column,
+}: CoreRequest): Promise<CoreResponse> {
+    return addColumnToFilterViews(tableId, column)
+}
+async function addColumnToFilterViews(
+    tableId: lvt.ViewDescriptor["id"],
+    column: lvt.ColumnSpecifier
+): Promise<lvt.ColumnInfo[]> {
+    const filterViews = (await core.events.request(
+        lvr.listViews(selectable.viewId(tableId))
+    )) as lvt.ViewDescriptor[]
+    return Promise.all(
+        filterViews.map(v =>
+            core.events.request(lvr.addColumnToView(v.id, column))
+        )
+    )
+}
+
+async function removeColumnFromTable_({
+    tableId,
+    columnId,
+}: CoreRequest): Promise<CoreResponse> {
+    return removeColumnFromTable(tableId, columnId)
+}
+async function removeColumnFromTable(
+    tableId: lvt.ViewDescriptor["id"],
+    columnId: lvt.ColumnInfo["id"]
+) {
+    const options = (await core.events.request(
+        lvr.getViewOptions(tableId)
+    )) as lvt.ViewOptions
+
+    if (!selectable.isTable(options.source))
+        return error(
+            "removeColumnFromTable",
+            `view #${tableId} is a filter view, not a table`
+        )
+    const column = (await core.events.request(
+        lvr.getColumnInfo(columnId)
+    )) as lvt.ColumnInfo
+
+    const kind = column.attributes._kind
+    switch (kind) {
+        case "standard":
+            await removeStandardColumn(tableId, column)
+            break
+        case "link":
+            await removeLinkColumn(tableId, column)
+            break
+        case "lookup":
+            await removeLookupColumn(tableId, columnId)
+            break
+        default:
+            return error(
+                "removeColumnFromTable",
+                `column #${columnId} has unknown kind ${kind}`
+            )
+    }
+    return { message: `removed ${kind} column #${columnId}` }
+}
+
+async function removeLinkColumn(
+    tableId: number,
+    column: lvt.ColumnInfo
+): Promise<void> {
+    const info = (await core.events.request(
+        lvr.getViewInfo(tableId)
+    )) as lvt.ViewInfo
+    const join = info.joins.find(j => j.id === column.joinId)
+    if (!join)
+        return error(
+            "removeColumnFromTable",
+            `column belongs to join ${column.joinId}, but no such join found`
+        )
+    // remove lookup columns
+    const lookupColumns = info.columns.filter(
+        c => c.joinId === join.id && c.attributes._kind === "lookup"
+    )
+    await Promise.all(
+        lookupColumns.map(async c => removeColumnFromTable(tableId, c.id))
+    )
+    // remove link column
+    await removeColumnFromViews(tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(column.id))
+    // remove join and FK column
+    await core.events.request(lvr.removeJoinFromView(join.id))
+    const fkColumnId = join.on[0]
+    await core.events.request(removeColumn(fkColumnId))
+}
+
+async function removeStandardColumn(
+    tableId: number,
+    column: lvt.ColumnInfo
+): Promise<void> {
+    await removeColumnFromViews(tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(column.id))
+    await core.events.request(removeColumn(column.parentColumnId))
+}
+
+async function removeLookupColumn(
+    tableId: number,
+    columnId: number
+): Promise<void> {
+    await removeColumnFromViews(tableId, columnId)
+    await core.events.request(lvr.removeColumnFromView(columnId))
+}
+
+async function removeColumnFromViews(
+    tableId: number,
+    parentColumnId: number
+): Promise<void> {
+    const views = (await core.events.request(
+        lvr.listViews(selectable.viewId(tableId))
+    )) as lvt.ViewDescriptor[]
+    await Promise.all(
+        views.map(async v => {
+            const info = (await core.events.request(
+                lvr.getViewInfo(v.id)
+            )) as lvt.ViewInfo
+            const viewColumn = info.columns.find(
+                c => c.parentColumnId === parentColumnId
+            )
+            if (viewColumn)
+                await core.events.request(
+                    lvr.removeColumnFromView(viewColumn.id)
+                )
+        })
     )
 }
