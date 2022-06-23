@@ -18,6 +18,8 @@ import {
 
 import * as req from "./requests"
 
+import { error } from "./internal/error"
+
 import { createExampleSchema, insertExampleData } from "./example/load"
 
 let core: PluginLoader
@@ -169,6 +171,15 @@ async function removeColumnFromTable(
     tableId: lvt.ViewDescriptor["id"],
     columnId: lvt.ColumnInfo["id"]
 ) {
+    const options = (await core.events.request(
+        lvr.getViewOptions(tableId)
+    )) as lvt.ViewOptions
+
+    if (!selectable.isTable(options.source))
+        return error(
+            "removeColumnFromTable",
+            `view #${tableId} is a filter view, not a table`
+        )
     const column = (await core.events.request(
         lvr.getColumnInfo(columnId)
     )) as lvt.ColumnInfo
@@ -185,10 +196,10 @@ async function removeColumnFromTable(
             await removeLookupColumn(tableId, columnId)
             break
         default:
-            return Promise.reject({
-                method: "removeColumnFromTable",
-                message: `column #${columnId} has unknown kind ${kind}`,
-            })
+            return error(
+                "removeColumnFromTable",
+                `column #${columnId} has unknown kind ${kind}`
+            )
     }
     return { message: `removed ${kind} column #${columnId}` }
 }
@@ -202,12 +213,10 @@ async function removeLinkColumn(
     )) as lvt.ViewInfo
     const join = info.joins.find(j => j.id === column.joinId)
     if (!join)
-        return Promise.reject({
-            method: "removeColumnFromTable",
-            message:
-                `column belongs to join ${column.joinId}, but no such` +
-                " join found",
-        })
+        return error(
+            "removeColumnFromTable",
+            `column belongs to join ${column.joinId}, but no such join found`
+        )
     // remove lookup columns
     const lookupColumns = info.columns.filter(
         c => c.joinId === join.id && c.attributes._kind === "lookup"
