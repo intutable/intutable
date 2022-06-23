@@ -9,6 +9,7 @@ import {
     ColumnOption,
 } from "@intutable/database/dist/column"
 import { insert, select } from "@intutable/database/dist/requests"
+import { removeColumn } from "@intutable/project-management/dist/requests"
 import {
     types as lvt,
     requests as lvr,
@@ -167,8 +168,83 @@ async function removeColumnFromTable_({
 async function removeColumnFromTable(
     tableId: lvt.ViewDescriptor["id"],
     columnId: lvt.ColumnInfo["id"]
+) {
+    const column = (await core.events.request(
+        lvr.getColumnInfo(columnId)
+    )) as lvt.ColumnInfo
+
+    const kind = column.attributes._kind
+    switch (kind) {
+        case "standard":
+            await removeStandardColumn(tableId, column)
+            break
+        case "link":
+            await removeLinkColumn(tableId, column)
+            break
+        case "lookup":
+            await removeLookupColumn(tableId, columnId)
+            break
+        default:
+            return Promise.reject({
+                method: "removeColumnFromTable",
+                message: `column #${columnId} has unknown kind ${kind}`,
+            })
+    }
+    return { message: `removed ${kind} column #${columnId}` }
+}
+
+async function removeLinkColumn(
+    tableId: number,
+    column: lvt.ColumnInfo
 ): Promise<void> {
-    // remove from all views
+    const info = (await core.events.request(
+        lvr.getViewInfo(tableId)
+    )) as lvt.ViewInfo
+    const join = info.joins.find(j => j.id === column.joinId)
+    if (!join)
+        return Promise.reject({
+            method: "removeColumnFromTable",
+            message:
+                `column belongs to join ${column.joinId}, but no such` +
+                " join found",
+        })
+    // remove lookup columns
+    const lookupColumns = info.columns.filter(
+        c => c.joinId === join.id && c.attributes._kind === "lookup"
+    )
+    await Promise.all(
+        lookupColumns.map(async c => removeColumnFromTable(tableId, c.id))
+    )
+    // remove link column
+    await removeColumnFromViews(tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(column.id))
+    // remove join and FK column
+    await core.events.request(lvr.removeJoinFromView(join.id))
+    const fkColumnId = join.on[0]
+    await core.events.request(removeColumn(fkColumnId))
+}
+
+async function removeStandardColumn(
+    tableId: number,
+    column: lvt.ColumnInfo
+): Promise<void> {
+    await removeColumnFromViews(tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(column.id))
+    await core.events.request(removeColumn(column.parentColumnId))
+}
+
+async function removeLookupColumn(
+    tableId: number,
+    columnId: number
+): Promise<void> {
+    await removeColumnFromViews(tableId, columnId)
+    await core.events.request(lvr.removeColumnFromView(columnId))
+}
+
+async function removeColumnFromViews(
+    tableId: number,
+    parentColumnId: number
+): Promise<void> {
     const views = (await core.events.request(
         lvr.listViews(selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
@@ -178,7 +254,7 @@ async function removeColumnFromTable(
                 lvr.getViewInfo(v.id)
             )) as lvt.ViewInfo
             const viewColumn = info.columns.find(
-                c => c.parentColumnId === columnId
+                c => c.parentColumnId === parentColumnId
             )
             if (viewColumn)
                 await core.events.request(
@@ -186,5 +262,4 @@ async function removeColumnFromTable(
                 )
         })
     )
-    await core.events.request(lvr.removeColumnFromView(columnId))
 }

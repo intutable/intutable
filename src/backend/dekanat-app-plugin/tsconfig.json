@@ -9,10 +9,7 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "baseUrl": "../../",
-        "paths": {
-            "@datagrid/*": ["components/DataGrid/*"]
-        },
+        "baseUrl": ".",
         "allowJs": true,
         "checkJs": true,
         "outDir": "./dist"

@@ -5,7 +5,7 @@ import {
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
 import { toSQL } from "./attributes"
-import { CellContentType } from "../../../components/DataGrid/Editor/types/CellContentType"
+import { CellContentType } from "./types"
 
 export const UID_KEY = "_id"
 export const INDEX_KEY = "index"
