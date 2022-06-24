@@ -1,4 +1,5 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
+import { useAPI } from "./APIContext"
 
 export type SelectedRowsContextProps = {
     selectedRows: ReadonlySet<number>
@@ -21,6 +22,12 @@ export const SelectedRowsContextProvider: React.FC<{
     const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
         () => new Set()
     )
+
+    const resetSelectedRows = () => setSelectedRows(() => new Set())
+
+    // resets row selection on table change
+    const { table } = useAPI()
+    useEffect(() => resetSelectedRows(), [table])
 
     return (
         <SelectedRowsContext.Provider
