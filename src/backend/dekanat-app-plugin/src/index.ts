@@ -171,18 +171,22 @@ async function removeColumnFromTable(
     tableId: lvt.ViewDescriptor["id"],
     columnId: lvt.ColumnInfo["id"]
 ) {
-    const options = (await core.events.request(
-        lvr.getViewOptions(tableId)
-    )) as lvt.ViewOptions
+    const tableInfo = (await core.events.request(
+        lvr.getViewInfo(tableId)
+    )) as lvt.ViewInfo
 
-    if (!selectable.isTable(options.source))
+    if (!selectable.isTable(tableInfo.source))
         return error(
             "removeColumnFromTable",
             `view #${tableId} is a filter view, not a table`
         )
-    const column = (await core.events.request(
-        lvr.getColumnInfo(columnId)
-    )) as lvt.ColumnInfo
+
+    const column = tableInfo.columns.find(c => c.id === columnId)
+    if (!column)
+        return error(
+            "removeColumnFromTable",
+            `view #${tableId} has no column with ID ${columnId}`
+        )
 
     const kind = column.attributes._kind
     switch (kind) {
@@ -201,6 +205,20 @@ async function removeColumnFromTable(
                 `column #${columnId} has unknown kind ${kind}`
             )
     }
+
+    // shift indices on remaining columns
+    const remainingColumns = tableInfo.columns
+        .filter(c => c.attributes.index > column.attributes.index)
+        .map(c => ({
+            id: c.id,
+            update: { index: c.attributes.index - 1 },
+        }))
+    await Promise.all(
+        remainingColumns.map(async c =>
+            changeTableColumnAttributes(tableId, c.id, c.update)
+        )
+    )
+
     return { message: `removed ${kind} column #${columnId}` }
 }
 
@@ -270,5 +288,43 @@ async function removeColumnFromViews(
                     lvr.removeColumnFromView(viewColumn.id)
                 )
         })
+    )
+}
+
+async function changeTableColumnAttributes(
+    tableId: number,
+    columnId: number,
+    attributes: Partial<lvt.ColumnInfo["attributes"]>,
+    changeInViews: boolean = true
+): Promise<void> {
+    await core.events.request(lvr.changeColumnAttributes(columnId, attributes))
+    if (changeInViews)
+        return changeColumnAttributesInViews(tableId, columnId, attributes)
+}
+
+async function changeColumnAttributesInViews(
+    tableId: number,
+    columnId: number,
+    attributes: Partial<lvt.ColumnInfo["attributes"]>
+): Promise<void> {
+    const views = (await core.events.request(
+        lvr.listViews(selectable.viewId(tableId))
+    )) as lvt.ViewDescriptor[]
+    const viewColumns = await Promise.all(
+        views.map(async v => {
+            const info = (await core.events.request(
+                lvr.getViewInfo(v.id)
+            )) as lvt.ViewInfo
+            const viewColumn = info.columns.find(
+                c => c.parentColumnId === columnId
+            )
+            return viewColumn || null
+        })
+    )
+
+    await Promise.all(
+        viewColumns.map(async c =>
+            core.events.request(lvr.changeColumnAttributes(c.id, attributes))
+        )
     )
 }

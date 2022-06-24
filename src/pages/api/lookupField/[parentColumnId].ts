@@ -30,18 +30,18 @@ const POST = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        const viewInfo = await coreRequest<ViewInfo>(
+        const tableInfo = await coreRequest<ViewInfo>(
             getViewInfo(tableId),
             user.authCookie
         )
 
         // find the column
-        const join = viewInfo.joins.find(j => j.id === joinId)!
-        const foreignViewInfo = await coreRequest<ViewInfo>(
+        const join = tableInfo.joins.find(j => j.id === joinId)!
+        const foreignTableInfo = await coreRequest<ViewInfo>(
             getViewInfo(asView(join.foreignSource).id),
             user.authCookie
         )
-        const foreignColumn = foreignViewInfo.columns.find(
+        const foreignColumn = foreignTableInfo.columns.find(
             c => c.id === parentColumnId
         )!
 
@@ -50,7 +50,12 @@ const POST = withCatchingAPIRoute(
             foreignColumn.attributes.displayName || foreignColumn.name
         const contentType =
             foreignColumn.attributes._cellContentType || "string"
-        const attributes = lookupColumnAttributes(displayName, contentType)
+        const columnIndex = tableInfo.columns.length
+        const attributes = lookupColumnAttributes(
+            displayName,
+            contentType,
+            columnIndex
+        )
 
         // add to table and views
         const newColumn = await coreRequest<ColumnInfo>(

@@ -51,21 +51,24 @@ export function defaultViewName() {
 export function standardColumnAttributes(
     displayName: string,
     contentType: CellContentType,
+    index?: number,
     userPrimary?: boolean
 ) {
     return toSQL({
         _kind: "standard",
         ...(userPrimary !== undefined && { userPrimary }),
         displayName,
+        index,
         editable: 1,
         _cellContentType: contentType,
     })
 }
 
-export function linkColumnAttributes(displayName: string) {
+export function linkColumnAttributes(displayName: string, index?: number) {
     return toSQL({
         _kind: "link",
         displayName,
+        index,
         editable: 1,
         _cellContentType: "string",
     })
@@ -73,21 +76,24 @@ export function linkColumnAttributes(displayName: string) {
 
 export function lookupColumnAttributes(
     displayName: string,
-    contentType: CellContentType
+    contentType: CellContentType,
+    index?: number
 ) {
     return toSQL({
         _kind: "lookup",
         displayName,
+        index,
         editable: 0,
         _cellContentType: contentType,
     })
 }
 
-export function indexColumnAttributes() {
+export function indexColumnAttributes(index?: number) {
     return toSQL({
         displayName: "Index",
         _kind: "index",
         _cellContentType: "number",
+        index,
         editable: false,
         resizable: true,
         sortable: true,

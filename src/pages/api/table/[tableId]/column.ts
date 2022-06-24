@@ -47,12 +47,19 @@ const POST = withCatchingAPIRoute(
         )
 
         // add column to table and filter views
+        const columnIndex =
+            options.columnOptions.columns.length +
+            options.columnOptions.joins.reduce(
+                (acc, j) => acc + j.columns.length,
+                0
+            )
         const tableViewColumn = await coreRequest<View_Column>(
             addColumnToTable(tableId, {
                 parentColumnId: tableColumn.id,
                 attributes: standardColumnAttributes(
                     column.name,
-                    column._cellContentType
+                    column._cellContentType,
+                    columnIndex
                 ),
             }),
             user.authCookie
