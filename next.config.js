@@ -11,7 +11,9 @@ module.exports = withBundleAnalyzer({
         // the project has ESLint errors.
         ignoreDuringBuilds: true,
     },
+    compiler: { removeConsole: true },
     // experimental: {
     //     concurrentFeatures: true,
-    // }, // breaks the app
+    // }, // BUG: breaks the app
+    // productionBrowserSourceMaps: true,
 })
