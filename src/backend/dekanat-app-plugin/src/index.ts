@@ -17,7 +17,7 @@ import {
 } from "@intutable/lazy-views/"
 
 import * as req from "./requests"
-
+import { A } from "./attributes"
 import { error } from "./internal/error"
 
 import { createExampleSchema, insertExampleData } from "./example/load"
@@ -207,11 +207,12 @@ async function removeColumnFromTable(
     }
 
     // shift indices on remaining columns
+    const indexKey = A.COLUMN_INDEX.key
     const remainingColumns = tableInfo.columns
-        .filter(c => c.attributes.index > column.attributes.index)
+        .filter(c => c.attributes[indexKey] > column.attributes[indexKey])
         .map(c => ({
             id: c.id,
-            update: { index: c.attributes.index - 1 },
+            update: { [indexKey]: c.attributes[indexKey] - 1 },
         }))
     await Promise.all(
         remainingColumns.map(async c =>

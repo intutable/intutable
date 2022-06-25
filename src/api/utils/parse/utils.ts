@@ -1,4 +1,7 @@
 import { types as lv } from "@intutable/lazy-views"
 
+const indexKey = "__columnIndex__"
 export const byIndex = (a: lv.ColumnInfo, b: lv.ColumnInfo) =>
-    (a.attributes.index as number) > (b.attributes.index as number) ? 1 : -1
+    (a.attributes[indexKey] as number) > (b.attributes[indexKey] as number)
+        ? 1
+        : -1

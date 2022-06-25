@@ -1,5 +1,4 @@
 import type { CellContentType } from "@datagrid/Editor/types/CellContentType"
-import { Formatter } from "@datagrid/Formatter/formatters"
 import type {
     ColumnInfo,
     Condition as Filter,
@@ -8,11 +7,7 @@ import type {
     ViewDescriptor,
     ViewInfo,
 } from "@intutable/lazy-views"
-import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
-import {
-    CalculatedColumn,
-    Column as ReactDataGrid_Column,
-} from "react-data-grid"
+import { Column as ReactDataGrid_Column } from "react-data-grid"
 import { project_management } from "./type-annotations/project-management"
 
 // #################################################################
@@ -127,6 +122,11 @@ export type MetaColumnProps = {
      * this explicitly sets the type.
      */
     _cellContentType: CellContentType
+    /**
+     * @property {number | null} __columnIndex__ ordering position of the
+     * column.
+     */
+    __columnIndex__: number | null
 }
 
 /**
@@ -412,6 +412,7 @@ type SerializedColumn = MetaColumnProps & {
 export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
     _kind: "standard",
     _cellContentType: "string",
+    __columnIndex__: null,
     width: undefined,
     editable: true,
     frozen: false,
@@ -428,6 +429,7 @@ export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
 type DatabaseColumnAttributes = {
     _kind: string
     _cellContentType: string
+    __columnIndex__: number | null
     userPrimary: 0 | 1
     displayName: string
     editable?: 1 | 0 | null

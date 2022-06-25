@@ -1,11 +1,5 @@
 import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
-import { CellContentTypeComponents } from "@datagrid/Editor"
-import { isCellContentType } from "@datagrid/Editor/type-management"
-import { EMailFormatter } from "@datagrid/Formatter/formatters/EMailFormatter"
-import { FormatterComponentMap } from "@datagrid/Formatter/formatters/map"
-import { headerRenderer } from "@datagrid/renderers"
 import { Column } from "types"
-import { PLACEHOLDER } from "./PLACEHOLDER_KEYS"
 
 /**
  * Serializes a single Column.
@@ -18,6 +12,7 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
     _id: col._id!,
     _kind: col._kind!,
     _cellContentType: "string",
+    __columnIndex__: col.__columnIndex__!,
     name: col.name as string,
     summaryFormatter: undefined, // currently not supported
     groupFormatter: undefined, // currently not supported
