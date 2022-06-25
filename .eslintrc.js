@@ -18,6 +18,12 @@ module.exports = {
         "no-console": process.env.NODE_ENV === "production" ? "error" : "warn",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "error",
+        "no-restricted-imports": [
+            process.env.NODE_ENV === "production" ? "error" : "warn",
+            {
+                patterns: ["@mui/*/*/*", "!@mui/material/test-utils/*"],
+            },
+        ],
     },
     extends: [
         "next/core-web-vitals",
