@@ -78,6 +78,7 @@ CREATE TABLE view_columns(
     "_cellContentType" TEXT NOT NULL,
     "displayName" TEXT NULL,
     -- various RDG props
+    "__columnIndex__" INTEGER NULL,
     editable INTEGER DEFAULT 1,
     editor TEXT NULL,
     formatter TEXT NUll,

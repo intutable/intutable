@@ -1,6 +1,7 @@
 import { ViewData } from "@intutable/lazy-views"
 import type { Row, TableData } from "types"
 import { Column as ColumnParser } from "."
+import { byIndex } from "./utils"
 
 export const parse = (view: ViewData): TableData.Serialized => {
     const indexColumn = view.columns.find(c => c.attributes._kind === "index")!
@@ -12,6 +13,7 @@ export const parse = (view: ViewData): TableData.Serialized => {
             columns: view.columns,
         },
         columns: view.columns
+            .sort(byIndex)
             .filter(col => !ColumnParser.isInternalColumn(col))
             .map(ColumnParser.parse),
         rows: view.rows.map(r => ({

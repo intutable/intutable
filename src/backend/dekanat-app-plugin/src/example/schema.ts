@@ -45,7 +45,7 @@ export const PERSONEN: TableSpec = {
                 type: ColumnType.increments,
                 options: [ColumnOption.primary],
             },
-            attributes: standardColumnAttributes("ID", "number"),
+            attributes: standardColumnAttributes("ID", "number", 0),
         },
         {
             baseColumn: {
@@ -53,35 +53,35 @@ export const PERSONEN: TableSpec = {
                 type: ColumnType.integer,
                 options: [],
             },
-            attributes: indexColumnAttributes(),
+            attributes: indexColumnAttributes(1),
         },
         {
             baseColumn: {
                 name: "nachname",
                 type: ColumnType.string,
             },
-            attributes: standardColumnAttributes("Nachname", "string", true),
+            attributes: standardColumnAttributes("Nachname", "string", 2, true),
         },
         {
             baseColumn: {
                 name: "vorname",
                 type: ColumnType.string,
             },
-            attributes: standardColumnAttributes("Vorname", "string"),
+            attributes: standardColumnAttributes("Vorname", "string", 3),
         },
         {
             baseColumn: {
                 name: "titel",
                 type: ColumnType.string,
             },
-            attributes: standardColumnAttributes("Titel", "string"),
+            attributes: standardColumnAttributes("Titel", "string", 4),
         },
         {
             baseColumn: {
                 name: "stellung",
                 type: ColumnType.string,
             },
-            attributes: standardColumnAttributes("Stellung", "string"),
+            attributes: standardColumnAttributes("Stellung", "string", 5),
         },
     ],
     joins: [],
@@ -169,7 +169,7 @@ export const ORGANE: TableSpec = {
                 type: ColumnType.increments,
                 options: [ColumnOption.primary],
             },
-            attributes: standardColumnAttributes("ID", "number"),
+            attributes: standardColumnAttributes("ID", "number", 0),
         },
         {
             baseColumn: {
@@ -177,35 +177,35 @@ export const ORGANE: TableSpec = {
                 type: ColumnType.integer,
                 options: [],
             },
-            attributes: indexColumnAttributes(),
+            attributes: indexColumnAttributes(1),
         },
         {
             baseColumn: {
                 name: "name",
                 type: ColumnType.text,
             },
-            attributes: standardColumnAttributes("Name", "string", true),
+            attributes: standardColumnAttributes("Name", "string", 2, true),
         },
         {
             baseColumn: {
                 name: "kuerzel",
                 type: ColumnType.text,
             },
-            attributes: standardColumnAttributes("Kürzel", "string"),
+            attributes: standardColumnAttributes("Kürzel", "string", 3),
         },
         {
             baseColumn: {
                 name: "typ",
                 type: ColumnType.text,
             },
-            attributes: standardColumnAttributes("Typ", "string"),
+            attributes: standardColumnAttributes("Typ", "string", 4),
         },
         {
             baseColumn: {
                 name: "fk_math_inf",
                 type: ColumnType.text,
             },
-            attributes: standardColumnAttributes("FK/Math/Inf", "string"),
+            attributes: standardColumnAttributes("FK/Math/Inf", "string", 5),
         },
     ],
     joins: [],
@@ -307,7 +307,7 @@ export const ROLLEN = {
                 type: ColumnType.increments,
                 options: [ColumnOption.primary],
             },
-            attributes: standardColumnAttributes("ID", "number"),
+            attributes: standardColumnAttributes("ID", "number", 0),
         },
         {
             baseColumn: {
@@ -315,7 +315,7 @@ export const ROLLEN = {
                 type: ColumnType.integer,
                 options: [],
             },
-            attributes: indexColumnAttributes(),
+            attributes: indexColumnAttributes(1),
         },
         {
             baseColumn: {
@@ -323,7 +323,7 @@ export const ROLLEN = {
                 type: ColumnType.string,
                 options: [ColumnOption.nullable],
             },
-            attributes: standardColumnAttributes("Rolle", "string", true),
+            attributes: standardColumnAttributes("Rolle", "string", 2, true),
         },
     ],
     joins: [
@@ -337,7 +337,7 @@ export const ROLLEN = {
             linkColumns: [
                 {
                     name: "nachname",
-                    attributes: linkColumnAttributes("Nachname"),
+                    attributes: linkColumnAttributes("Nachname", 3),
                 },
             ],
         },
@@ -351,7 +351,7 @@ export const ROLLEN = {
             linkColumns: [
                 {
                     name: "name",
-                    attributes: linkColumnAttributes("Organ"),
+                    attributes: linkColumnAttributes("Organ", 4),
                 },
             ],
         },

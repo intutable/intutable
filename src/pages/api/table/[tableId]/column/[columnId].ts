@@ -1,12 +1,10 @@
-import { removeColumn } from "@intutable/project-management/dist/requests"
 import {
     changeColumnAttributes,
     ColumnInfo,
+    getColumnInfo,
     getViewInfo,
     listViews,
     viewId,
-    removeColumnFromView,
-    removeJoinFromView,
     ViewDescriptor,
     ViewInfo,
 } from "@intutable/lazy-views"
@@ -118,18 +116,17 @@ const DELETE = withCatchingAPIRoute(
     ) => {
         const user = req.session.user!
 
-        const tableView = await coreRequest<ViewInfo>(
-            getViewInfo(tableId),
+        const column = await coreRequest<ColumnInfo>(
+            getColumnInfo(columnId),
             user.authCookie
         )
-        const column = tableView.columns.find(c => c.id === columnId)
 
         if (!column) throw Error("columnNotFound")
         if (column.attributes.userPrimary)
             // cannot delete the primary column
             throw Error("deleteUserPrimary")
 
-        const log = await coreRequest(
+        await coreRequest(
             removeColumnFromTable(tableId, columnId),
             user.authCookie
         )

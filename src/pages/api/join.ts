@@ -76,7 +76,8 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         user.authCookie
     )
 
-    const attributes = linkColumnAttributes(displayName)
+    const columnIndex = tableInfo.columns.length
+    const attributes = linkColumnAttributes(displayName, columnIndex)
 
     // create representative link column
     await coreRequest(

@@ -8,6 +8,7 @@ export const parse = (column: ColumnInfo): Column.Serialized => ({
     _id: column.id,
     _kind: column.attributes._kind,
     _cellContentType: column.attributes._cellContentType,
+    __columnIndex__: column.attributes.__columnIndex__,
     name: column.attributes.displayName,
     key: column.key,
     width: isNumber(column.attributes.width), // this only ensures that stringified numbers will be parsed, nothing more

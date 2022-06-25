@@ -4,7 +4,7 @@ import {
     RowOptions,
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
-import { toSQL } from "./attributes"
+import { toSQL, A } from "./attributes"
 import { CellContentType } from "./types"
 
 export const UID_KEY = "_id"
@@ -51,21 +51,27 @@ export function defaultViewName() {
 export function standardColumnAttributes(
     displayName: string,
     contentType: CellContentType,
+    columnIndex?: number,
     userPrimary?: boolean
 ) {
     return toSQL({
         _kind: "standard",
         ...(userPrimary !== undefined && { userPrimary }),
         displayName,
+        [A.COLUMN_INDEX.key]: columnIndex,
         editable: 1,
         _cellContentType: contentType,
     })
 }
 
-export function linkColumnAttributes(displayName: string) {
+export function linkColumnAttributes(
+    displayName: string,
+    columnIndex?: number
+) {
     return toSQL({
         _kind: "link",
         displayName,
+        [A.COLUMN_INDEX.key]: columnIndex,
         editable: 1,
         _cellContentType: "string",
     })
@@ -73,21 +79,24 @@ export function linkColumnAttributes(displayName: string) {
 
 export function lookupColumnAttributes(
     displayName: string,
-    contentType: CellContentType
+    contentType: CellContentType,
+    columnIndex?: number
 ) {
     return toSQL({
         _kind: "lookup",
         displayName,
+        [A.COLUMN_INDEX.key]: columnIndex,
         editable: 0,
         _cellContentType: contentType,
     })
 }
 
-export function indexColumnAttributes() {
+export function indexColumnAttributes(columnIndex?: number) {
     return toSQL({
         displayName: "Index",
         _kind: "index",
         _cellContentType: "number",
+        [A.COLUMN_INDEX.key]: columnIndex,
         editable: false,
         resizable: true,
         sortable: true,
