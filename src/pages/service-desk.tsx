@@ -1,22 +1,19 @@
-import Title from "components/Head/Title"
-import {
-    Avatar,
-    Box,
-    Divider,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Typography,
-    useTheme,
-} from "@mui/material"
+import MetaTitle from "components/MetaTitle"
+import Avatar from "@mui/material/Avatar"
+import Divider from "@mui/material/Divider"
+import List from "@mui/material/List"
+import ListItem from "@mui/material/ListItem"
+import ListItemAvatar from "@mui/material/ListItemAvatar"
+import ListItemText from "@mui/material/ListItemText"
+import Typography from "@mui/material/Typography"
+import { useTheme } from "@mui/material"
 import type { NextPage } from "next"
 
 const ServiceDesk: NextPage = () => {
     const theme = useTheme()
     return (
         <>
-            <Title title="Service Desk" />
+            <MetaTitle title="Service Desk" />
             <Typography variant={"h4"}>Service Desk</Typography>
             <Divider />
 

@@ -1,14 +1,14 @@
-import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
-import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
-import { RowRenderer } from "@datagrid/renderers"
-import Toolbar from "@datagrid/Toolbar/Toolbar"
-import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
+import LoadingSkeleton from "components/Data Grid/LoadingSkeleton"
+import NoRowsFallback from "components/Data Grid/NoRowsFallback/NoRowsFallback"
+import { RowRenderer } from "components/Data Grid/renderers"
+import Toolbar from "components/Data Grid/Toolbar/Toolbar"
+import * as ToolbarItem from "components/Data Grid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Grid, Box, Button, Typography, useTheme } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import Title from "components/Head/Title"
+import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
@@ -33,7 +33,7 @@ import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 import { useThemeToggler } from "pages/_app"
-import { DetailedRowView } from "@datagrid/Detail Window/DetailedRowView"
+import { DetailedRowView } from "components/Data Grid/Detail Window/DetailedRowView"
 import {
     SelectedRowsContextProvider,
     useSelectedRows,
@@ -110,7 +110,7 @@ const TablePage: React.FC = () => {
 
     return (
         <>
-            <Title title={project!.name} />
+            <MetaTitle title={project!.name} />
             <Typography
                 sx={{
                     mb: theme.spacing(4),

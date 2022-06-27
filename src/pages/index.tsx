@@ -1,6 +1,6 @@
 import { Divider, Typography } from "@mui/material"
 import { useUser } from "auth"
-import Title from "components/Head/Title"
+import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
 import type { NextPage } from "next"
 
@@ -9,7 +9,7 @@ const Home: NextPage = () => {
 
     return (
         <>
-            <Title title="Startseite" />
+            <MetaTitle title="Startseite" />
             <Typography variant={"h4"}>Startseite</Typography>
             <Divider />
             <Typography sx={{ mt: 2 }}>

@@ -40,3 +40,5 @@ export const StyledInputBase = styled(InputBase)(({ theme }) => ({
         },
     },
 }))
+
+export default Search

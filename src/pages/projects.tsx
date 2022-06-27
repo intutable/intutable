@@ -1,25 +1,23 @@
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
-import {
-    Box,
-    Card,
-    CardContent,
-    CircularProgress,
-    Grid,
-    Menu,
-    MenuItem,
-    Typography,
-    useTheme,
-} from "@mui/material"
+import { useTheme } from "@mui/material"
+import Box from "@mui/material/Box"
+import Card from "@mui/material/Card"
+import CardContent from "@mui/material/CardContent"
+import CircularProgress from "@mui/material/CircularProgress"
+import Grid from "@mui/material/Grid"
+import Menu from "@mui/material/Menu"
+import MenuItem from "@mui/material/MenuItem"
+import Typography from "@mui/material/Typography"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import Title from "components/Head/Title"
+import MetaTitle from "components/MetaTitle"
 import { useProjects, useProjectsConfig } from "hooks/useProjects"
 import { useSnacki } from "hooks/useSnacki"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
-import { SWRConfig, unstable_serialize } from "swr"
+import { SWRConfig } from "swr"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
 import { withSSRCatch } from "utils/withSSRCatch"
@@ -233,7 +231,7 @@ const ProjectList: React.FC = () => {
 
     return (
         <>
-            <Title title="Projekte" />
+            <MetaTitle title="Projekte" />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
                 Deine Projekte
             </Typography>

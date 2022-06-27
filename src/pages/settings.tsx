@@ -1,21 +1,18 @@
 import FlashlightOffIcon from "@mui/icons-material/FlashlightOff"
 import FlashlightOnIcon from "@mui/icons-material/FlashlightOn"
 import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices"
-import {
-    Box,
-    Divider,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    ListSubheader,
-    Switch,
-    TextField,
-    Tooltip,
-    Typography,
-} from "@mui/material"
-import Title from "components/Head/Title"
-import ThemeSwitch from "components/ThemeSwitch/ThemeSwitch"
+import ListItem from "@mui/material/ListItem"
+import ListItemIcon from "@mui/material/ListItemIcon"
+import ListItemText from "@mui/material/ListItemText"
+import ListSubheader from "@mui/material/ListSubheader"
+import Switch from "@mui/material/Switch"
+import TextField from "@mui/material/TextField"
+import Tooltip from "@mui/material/Tooltip"
+import Typography from "@mui/material/Typography"
+import Divider from "@mui/material/Divider"
+import List from "@mui/material/List"
+import MetaTitle from "components/MetaTitle"
+import ThemeSwitch from "components/ThemeSwitch"
 import type { NextPage } from "next"
 import { useThemeToggler } from "pages/_app"
 import RememberMeIcon from "@mui/icons-material/RememberMe"
@@ -78,7 +75,7 @@ const Settings: NextPage = () => {
 
     return (
         <>
-            <Title title="Einstellungen" />
+            <MetaTitle title="Einstellungen" />
             <Typography variant={"h4"}>Einstellungen</Typography>
             <Divider />
 

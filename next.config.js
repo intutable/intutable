@@ -6,10 +6,15 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 module.exports = withBundleAnalyzer({
     reactStrictMode: true,
     swcMinify: true,
+    compress: true,
+    serverRuntimeConfig: {
+        ironAuthSecret: process.env.IRON_AUTH_SECRET,
+    },
+    // publicRuntimeConfig: {},
     eslint: {
-        // Warning: This allows production builds to successfully complete even if
+        // Warning: This allows production builds to successfully complete if set to 'true' even if
         // the project has ESLint errors.
-        ignoreDuringBuilds: true,
+        ignoreDuringBuilds: false,
     },
     // experimental: {
     //     concurrentFeatures: true,

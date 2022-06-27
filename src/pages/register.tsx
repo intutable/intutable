@@ -1,6 +1,6 @@
-import Title from "components/Head/Title"
-import { Paper } from "components/LoginOutRegister/Paper"
-import { Box } from "@mui/material"
+import MetaTitle from "components/MetaTitle"
+import { LoginRegisterPaper } from "components/LoginRegisterPaper"
+import Box from "@mui/material/Box"
 import type { NextPage } from "next"
 import React from "react"
 
@@ -11,7 +11,7 @@ const Register: NextPage = () => {
 
     return (
         <>
-            <Title title="Registrieren" />
+            <MetaTitle title="Registrieren" />
             <Box
                 sx={{
                     width: "100%",
@@ -21,12 +21,12 @@ const Register: NextPage = () => {
                     alignItems: "center",
                 }}
             >
-                <Paper
+                <LoginRegisterPaper
                     mode="register"
                     handleAction={handleRegister}
                     disabled
                     loading={false}
-                ></Paper>
+                ></LoginRegisterPaper>
             </Box>
         </>
     )
