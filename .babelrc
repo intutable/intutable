@@ -5,6 +5,5 @@
             "babel-plugin-direct-import",
             { "modules": ["@mui/material", "@mui/icons-material"] }
         ]
-    ],
-    "ignore": ["node_modules", "public"]
+    ]
 }

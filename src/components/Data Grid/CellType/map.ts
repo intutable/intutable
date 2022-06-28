@@ -24,7 +24,7 @@ export const ColumnKindComponents: {
     standard: StandardFormatter,
     link: LinkColumnFormatter,
     lookup: StandardFormatter,
-    // "index": ?
+    index: StandardFormatter,
 }
 
 export const CellContentTypeComponents: {
