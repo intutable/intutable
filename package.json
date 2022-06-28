@@ -54,6 +54,7 @@
         "typescript": "^4.6.3"
     },
     "devDependencies": {
+        "@mui/codemod": "^5.8.5",
         "@next/bundle-analyzer": "^12.0.10",
         "@types/cors": "^2.8.12",
         "@types/fs-extra": "^9.0.13",
