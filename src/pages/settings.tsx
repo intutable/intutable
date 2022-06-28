@@ -1,16 +1,18 @@
 import FlashlightOffIcon from "@mui/icons-material/FlashlightOff"
 import FlashlightOnIcon from "@mui/icons-material/FlashlightOn"
 import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices"
-import ListItem from "@mui/material/ListItem"
-import ListItemIcon from "@mui/material/ListItemIcon"
-import ListItemText from "@mui/material/ListItemText"
-import ListSubheader from "@mui/material/ListSubheader"
-import Switch from "@mui/material/Switch"
-import TextField from "@mui/material/TextField"
-import Tooltip from "@mui/material/Tooltip"
-import Typography from "@mui/material/Typography"
-import Divider from "@mui/material/Divider"
-import List from "@mui/material/List"
+import {
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    ListSubheader,
+    Switch,
+    TextField,
+    Tooltip,
+    Typography,
+    Divider,
+    List,
+} from "@mui/material"
 import MetaTitle from "components/MetaTitle"
 import ThemeSwitch from "components/ThemeSwitch"
 import type { NextPage } from "next"

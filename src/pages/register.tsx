@@ -1,6 +1,6 @@
 import MetaTitle from "components/MetaTitle"
 import { LoginRegisterPaper } from "components/LoginRegisterPaper"
-import Box from "@mui/material/Box"
+import { Box } from "@mui/material"
 import type { NextPage } from "next"
 import React from "react"
 

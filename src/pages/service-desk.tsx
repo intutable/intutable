@@ -1,12 +1,14 @@
 import MetaTitle from "components/MetaTitle"
-import Avatar from "@mui/material/Avatar"
-import Divider from "@mui/material/Divider"
-import List from "@mui/material/List"
-import ListItem from "@mui/material/ListItem"
-import ListItemAvatar from "@mui/material/ListItemAvatar"
-import ListItemText from "@mui/material/ListItemText"
-import Typography from "@mui/material/Typography"
-import { useTheme } from "@mui/material"
+import {
+    useTheme,
+    Avatar,
+    Divider,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    Typography,
+} from "@mui/material"
 import type { NextPage } from "next"
 
 const ServiceDesk: NextPage = () => {

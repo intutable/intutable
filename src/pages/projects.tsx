@@ -1,14 +1,16 @@
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
-import { useTheme } from "@mui/material"
-import Box from "@mui/material/Box"
-import Card from "@mui/material/Card"
-import CardContent from "@mui/material/CardContent"
-import CircularProgress from "@mui/material/CircularProgress"
-import Grid from "@mui/material/Grid"
-import Menu from "@mui/material/Menu"
-import MenuItem from "@mui/material/MenuItem"
-import Typography from "@mui/material/Typography"
+import {
+    useTheme,
+    Box,
+    Card,
+    CardContent,
+    CircularProgress,
+    Grid,
+    Menu,
+    MenuItem,
+    Typography,
+} from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import MetaTitle from "components/MetaTitle"
