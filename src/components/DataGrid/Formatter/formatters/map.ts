@@ -14,6 +14,7 @@ export const FormatterComponentMap: {
     standard: StandardFormatter,
     link: LinkColumnFormatter,
     lookup: StandardFormatter,
+    index: StandardFormatter,
     /** derived from {@link Column.Serialized.formatter} */
     string: StandardFormatter,
     number: StandardFormatter,
