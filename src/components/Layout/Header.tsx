@@ -11,7 +11,7 @@ import {
 } from "@mui/material"
 import { useUser } from "auth"
 import Link from "components/Link"
-import { Avatar } from "components/LoginOutRegister"
+import Avatar from "components/Layout/Avatar"
 import React, { useState } from "react"
 import Drawer from "./Drawer"
 import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar"
