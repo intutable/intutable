@@ -10,8 +10,8 @@ import {
     Menu,
     MenuItem,
     Typography,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import MetaTitle from "components/MetaTitle"

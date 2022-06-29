@@ -1,24 +1,19 @@
-import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views/dist/types"
-import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Button,
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    List,
     ListItemText,
     MenuItem,
     Stack,
     Typography,
-    useTheme,
 } from "@mui/material"
-import { useSnacki } from "hooks/useSnacki"
+import { useTheme } from "@mui/material/styles"
 import { useView } from "hooks/useView"
-import React, { useState, useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
-import { Column, Row, ViewData } from "types"
+import { Column, Row } from "types"
 
 type AttributeProps = {
     label: string

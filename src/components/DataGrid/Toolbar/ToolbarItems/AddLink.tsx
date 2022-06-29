@@ -14,8 +14,8 @@ import {
     ListItemButton,
     ListItemText,
     Tooltip,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { useAPI } from "context"
 import { useTable } from "hooks/useTable"

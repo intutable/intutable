@@ -10,7 +10,6 @@ import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import {
-    useTheme,
     Button,
     Popper,
     Paper,
@@ -22,7 +21,7 @@ import {
     Box,
     Typography,
 } from "@mui/material"
-
+import { useTheme } from "@mui/material/styles"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
 import { defaultViewName } from "@backend/defaults"

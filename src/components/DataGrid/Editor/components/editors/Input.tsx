@@ -1,7 +1,14 @@
 import { InputUnstyled, UseInputProps } from "@mui/base"
-import { styled } from "@mui/material"
+import { styled } from "@mui/material/styles"
 import React from "react"
 
+/**
+ * @link https://mui.com/system/styled/
+ */
+
+/**
+ *
+ */
 const StyledInputElement = styled("input")`
     width: 100%;
     font-size: 1rem;

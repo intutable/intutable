@@ -1,6 +1,6 @@
 import MetaTitle from "components/MetaTitle"
+import { useTheme } from "@mui/material/styles"
 import {
-    useTheme,
     Avatar,
     Divider,
     List,

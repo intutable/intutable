@@ -5,9 +5,9 @@ import {
     Stack,
     Typography,
     Button,
-    useTheme,
     CircularProgress,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import Image from "next/image"
 import BGImage from "public/login-bg.jpg"
 import Link, { CombinedLinkProps } from "components/Link"

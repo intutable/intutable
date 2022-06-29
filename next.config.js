@@ -12,13 +12,18 @@ module.exports = withBundleAnalyzer({
     },
     // publicRuntimeConfig: {},
     eslint: {
-        // Warning: This allows production builds to successfully complete if set to 'true' even if
-        // the project has ESLint errors.
         ignoreDuringBuilds: true,
     },
     compiler: { removeConsole: true },
-    // experimental: {
-    //     concurrentFeatures: true,
-    // }, // BUG: breaks the app
-    // productionBrowserSourceMaps: true,
+    experimental: {
+        // should improve the mui imports but does not work yet
+        // modularizeImports: {
+        //     "@mui/material/?(((\\w*)?/?)*)": {
+        //         transform: "@mui/material/{{ matches.[1] }}/{{member}}",
+        //     },
+        //     "@mui/icons-material/?(((\\w*)?/?)*)": {
+        //         transform: "@mui/icons-material/{{ matches.[1] }}/{{member}}",
+        //     },
+        // },
+    },
 })

@@ -7,8 +7,8 @@ import {
     Stack,
     Toolbar,
     Typography,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useUser } from "auth"
 import Link from "components/Link"
 import Avatar from "components/Layout/Avatar"

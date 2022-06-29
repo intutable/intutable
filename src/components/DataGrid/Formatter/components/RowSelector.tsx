@@ -11,8 +11,8 @@ import {
     ListItem,
     ListItemButton,
     ListItemText,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { RowPreview, useLink } from "hooks/useLink"
 import { useTable } from "hooks/useTable"

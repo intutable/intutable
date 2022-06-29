@@ -1,6 +1,7 @@
 import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import LookupIcon from "@mui/icons-material/ManageSearch"
-import { ListItemIcon, ListItemText, MenuItem, useTheme } from "@mui/material"
+import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api/fetcher"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
