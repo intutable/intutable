@@ -5,7 +5,7 @@
     "scripts": {
         "build": "npm run build:core && next build",
         "dev": "npm run start:db & npm run build:core && node ./src/backend/startup/dist dev",
-        "start": "node ./src/backend/startup/dist start",
+        "start": "npm run start:db & npm run build:core && node ./src/backend/startup/dist start",
         "build:core": "cd src/backend/startup && tsc && cd ../dekanat-app-plugin && tsc && cd ../../..",
         "start:core": "node ./src/backend/startup/dist/core",
         "build:db": "cd database/ && docker-compose build --pull",
