@@ -7,7 +7,7 @@ const { serverRuntimeConfig } = getConfig()
 
 export const sessionOptions: IronSessionOptions = {
     password: serverRuntimeConfig.ironAuthSecret,
-    cookieName: process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY as string,
+    cookieName: process.env.NEXT_PUBLIC_AUTH_COOKIE_NAME as string,
     // ttl: 3600,
     cookieOptions: {
         // httpOnly: false,
