@@ -2,7 +2,7 @@ import { NextApiRequest } from "next"
 import Obj from "types/Obj"
 import { ErrorLike } from "utils/error-handling/ErrorLike"
 const CORE_ENDPOINT = process.env.NEXT_PUBLIC_CORE_ENDPOINT_URL!
-const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY!
+const AUTH_COOKIE_KEY = process.env.NEXT_PUBLIC_AUTH_COOKIE_NAME!
 
 export class CoreRequestError extends Error {
     public readonly status: number
