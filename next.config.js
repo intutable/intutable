@@ -5,7 +5,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 /** @type {import('next').NextConfig} */
 module.exports = withBundleAnalyzer({
     reactStrictMode: true,
-    swcMinify: true,
+    // swcMinify: true, // experimental – does not work
     eslint: {
         // Warning: This allows production builds to successfully complete even if
         // the project has ESLint errors.

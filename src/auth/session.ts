@@ -5,7 +5,7 @@ import type { User } from "types/User"
 
 export const sessionOptions: IronSessionOptions = {
     password: "6RAw0qN^H=?9G~TtWC2A,,n3-T%,zM*-Q]iZ~L8#", // TODO: store this in encrypted env file
-    cookieName: process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY as string,
+    cookieName: process.env.NEXT_PUBLIC_AUTH_COOKIE_NAME as string,
     // ttl: 3600,
     cookieOptions: {
         // httpOnly: false,
