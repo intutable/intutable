@@ -86,7 +86,7 @@ const Header = () => {
                                     Dekanatsverwaltung
                                 </Typography>
                             </Link>
-                            {user?.isLoggedIn && (
+                            {/* {user?.isLoggedIn && (
                                 <Search>
                                     <SearchIconWrapper>
                                         <SearchIcon />
@@ -96,7 +96,7 @@ const Header = () => {
                                         inputProps={{ "aria-label": "search" }}
                                     />
                                 </Search>
-                            )}
+                            )} */}
                         </Stack>
                     </Box>
                     <Avatar />
