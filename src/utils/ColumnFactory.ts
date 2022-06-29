@@ -1,12 +1,15 @@
-import { Column } from "types"
+import { Column, Row } from "types"
 
-export type InterdependentAtributes = "editor" | "_kind" | "formatter"
+export type InterdependentAttributes = "_kind"
+// export type InterdependentAttributes = "editor" | "_kind" | "formatter"
 export type ReadonlyAttributes = "_id"
 
 export type SettableAttributes = keyof Exclude<
     Column.Serialized,
-    InterdependentAtributes | ReadonlyAttributes
+    InterdependentAttributes | ReadonlyAttributes
 >
+
+export type DefaultColumnOptions<T> = {}
 
 /**
  * Our version of the default props for some properties of {@link SerializedColumn}.
@@ -14,8 +17,6 @@ export type SettableAttributes = keyof Exclude<
 export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
     _kind: "standard",
     width: undefined,
-    formatter: "standard",
-    editor: "string",
     editable: true,
     frozen: false,
     resizable: true,
@@ -39,13 +40,15 @@ export class ColumnFactory {
     constructor() {}
 
     static DefaultColumn(): Exclude<Column.Serialized, "_id"> {
-        return {}
+        throw Error("not defined")
     }
 
     // TODO: use this in rdg
-    static DefaultColumnOptions(): DefaultColumnOptions<Row> {}
+    static DefaultColumnOptions(): DefaultColumnOptions<Row> {
+        return {}
+    }
 
-    setInterdependentAttribute<T extends InterdependentAtributes>(
+    setInterdependentAttribute<T extends InterdependentAttributes>(
         attribute: T,
         value: Column.Serialized[T]
     ) {

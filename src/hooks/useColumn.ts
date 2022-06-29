@@ -3,10 +3,15 @@ import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column } from "types"
+import { StandardColumnSpecifier } from "@backend/types"
+
+export type { StandardColumnSpecifier } from "@backend/types"
 
 /**
- * Get the Column Info {@type {ColumnInfo}} for a specific column
- * @param {Column} forColumn
+ * Get the Column Info {@type {ColumnInfo}} for a column. Pass in a RDG column
+ * (only has RDG-relevant metadata) to get its full metadata.
+ * @param {ColumnInfo[]} columns the meta columns of the table
+ * @param {Column} forColumn the RDG column.
  * @returns {ColumnInfo}
  *
  * @deprecated
@@ -56,7 +61,9 @@ export const useColumn = (
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    const createColumn = async (column: Column.Serialized): Promise<void> => {
+    const createColumn = async (
+        column: StandardColumnSpecifier
+    ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         await fetcher({
             url: `/api/table/${tableId}/column`,

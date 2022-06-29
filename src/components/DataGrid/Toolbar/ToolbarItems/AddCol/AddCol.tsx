@@ -1,10 +1,9 @@
-import { Column } from "types"
 import AddIcon from "@mui/icons-material/ViewColumn"
 import { Button } from "@mui/material"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
 import { AddColumnModal } from "./AddColumnModal"
-import { useColumn } from "hooks/useColumn"
+import { StandardColumnSpecifier, useColumn } from "hooks/useColumn"
 
 /**
  * Toolbar Item for adding cols to the data grid.
@@ -21,7 +20,7 @@ const AddCol: React.FC = () => {
 
     const { createColumn } = useColumn()
 
-    const handleCreateColumn = async (col: Column.Serialized) => {
+    const handleCreateColumn = async (col: StandardColumnSpecifier) => {
         try {
             await createColumn(col)
         } catch (error) {
