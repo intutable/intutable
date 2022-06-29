@@ -1,14 +1,13 @@
-import Title from "components/Head/Title"
+import MetaTitle from "components/MetaTitle"
+import { useTheme } from "@mui/material/styles"
 import {
     Avatar,
-    Box,
     Divider,
     List,
     ListItem,
     ListItemAvatar,
     ListItemText,
     Typography,
-    useTheme,
 } from "@mui/material"
 import type { NextPage } from "next"
 
@@ -16,7 +15,7 @@ const ServiceDesk: NextPage = () => {
     const theme = useTheme()
     return (
         <>
-            <Title title="Service Desk" />
+            <MetaTitle title="Service Desk" />
             <Typography variant={"h4"}>Service Desk</Typography>
             <Divider />
 

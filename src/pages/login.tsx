@@ -1,9 +1,9 @@
 import { Box, TextField, Typography } from "@mui/material"
-import { SxProps, Theme } from "@mui/system"
+import { SxProps, Theme } from "@mui/material"
 import { fetcher } from "api"
 import { useUser } from "auth/useUser"
-import Title from "components/Head/Title"
-import { Paper } from "components/LoginOutRegister/Paper"
+import MetaTitle from "components/MetaTitle"
+import { LoginRegisterPaper } from "components/LoginRegisterPaper"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
@@ -104,7 +104,7 @@ const Login: NextPage = () => {
 
     return (
         <>
-            <Title title="Anmelden" />
+            <MetaTitle title="Anmelden" />
             <Box
                 onKeyPress={handleEnter}
                 sx={{
@@ -115,7 +115,7 @@ const Login: NextPage = () => {
                     alignItems: "center",
                 }}
             >
-                <Paper
+                <LoginRegisterPaper
                     mode="login"
                     handleAction={handleLogin}
                     loading={false}
@@ -166,7 +166,7 @@ const Login: NextPage = () => {
                             {error.message}
                         </Typography>
                     )}
-                </Paper>
+                </LoginRegisterPaper>
             </Box>
         </>
     )

@@ -1,14 +1,15 @@
-import LoadingSkeleton from "@datagrid/LoadingSkeleton/LoadingSkeleton"
+import LoadingSkeleton from "@datagrid/LoadingSkeleton"
 import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
 import { RowRenderer } from "@datagrid/renderers"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Grid, Box, Button, Typography, useTheme } from "@mui/material"
+import { Grid, Box, Button, Typography } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import Title from "components/Head/Title"
+import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
@@ -110,7 +111,7 @@ const TablePage: React.FC = () => {
 
     return (
         <>
-            <Title title={project!.name} />
+            <MetaTitle title={project!.name} />
             <Typography
                 sx={{
                     mb: theme.spacing(4),

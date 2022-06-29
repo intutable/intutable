@@ -17,8 +17,8 @@ import {
     ListItemIcon,
     ListItemText,
     Toolbar,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { CSSObject, styled, Theme } from "@mui/material/styles"
 import { useUser } from "auth"
 import { useRouter } from "next/router"

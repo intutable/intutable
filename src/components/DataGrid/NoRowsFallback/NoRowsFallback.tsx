@@ -1,4 +1,5 @@
-import { Box, Typography, useTheme } from "@mui/material"
+import { Box, Typography } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import WarningIcon from "@mui/icons-material/Warning"
 
 const NoRowsFallback = () => {

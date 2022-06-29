@@ -1,5 +1,6 @@
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
+import { useTheme } from "@mui/material/styles"
 import {
     Box,
     Card,
@@ -9,17 +10,16 @@ import {
     Menu,
     MenuItem,
     Typography,
-    useTheme,
 } from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import Title from "components/Head/Title"
+import MetaTitle from "components/MetaTitle"
 import { useProjects, useProjectsConfig } from "hooks/useProjects"
 import { useSnacki } from "hooks/useSnacki"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
-import { SWRConfig, unstable_serialize } from "swr"
+import { SWRConfig } from "swr"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
 import { withSSRCatch } from "utils/withSSRCatch"
@@ -233,7 +233,7 @@ const ProjectList: React.FC = () => {
 
     return (
         <>
-            <Title title="Projekte" />
+            <MetaTitle title="Projekte" />
             <Typography variant="h5" sx={{ mb: theme.spacing(4) }}>
                 Deine Projekte
             </Typography>

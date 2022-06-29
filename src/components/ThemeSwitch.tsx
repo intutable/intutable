@@ -1,5 +1,6 @@
-import { styled, Switch } from "@mui/material"
+import { Switch } from "@mui/material"
 import { THEME_MODE_STORAGE_KEY, useThemeToggler } from "pages/_app"
+import { styled } from "@mui/material/styles"
 import React from "react"
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({

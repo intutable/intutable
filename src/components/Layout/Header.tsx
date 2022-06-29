@@ -7,11 +7,11 @@ import {
     Stack,
     Toolbar,
     Typography,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useUser } from "auth"
 import Link from "components/Link"
-import { Avatar } from "components/LoginOutRegister"
+import Avatar from "components/Layout/Avatar"
 import React, { useState } from "react"
 import Drawer from "./Drawer"
 import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar"
@@ -86,7 +86,7 @@ const Header = () => {
                                     Dekanatsverwaltung
                                 </Typography>
                             </Link>
-                            {user?.isLoggedIn && (
+                            {/* {user?.isLoggedIn && (
                                 <Search>
                                     <SearchIconWrapper>
                                         <SearchIcon />
@@ -96,7 +96,7 @@ const Header = () => {
                                         inputProps={{ "aria-label": "search" }}
                                     />
                                 </Search>
-                            )}
+                            )} */}
                         </Stack>
                     </Box>
                     <Avatar />

@@ -69,3 +69,5 @@ export const EMailFormatter: FormatterComponent = props => {
         </Box>
     )
 }
+
+export default EMailFormatter

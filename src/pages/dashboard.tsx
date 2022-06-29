@@ -1,11 +1,11 @@
 import { Divider, Typography } from "@mui/material"
-import Title from "components/Head/Title"
+import MetaTitle from "components/MetaTitle"
 import type { NextPage } from "next"
 
 const Dashboard: NextPage = () => {
     return (
         <>
-            <Title title="Dashboard" />
+            <MetaTitle title="Dashboard" />
             <Typography variant={"h4"}>Dashboard</Typography>
             <Divider />
         </>

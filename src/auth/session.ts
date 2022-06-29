@@ -2,9 +2,11 @@
 
 import type { IronSessionOptions } from "iron-session"
 import type { User } from "types/User"
+import getConfig from "next/config"
+const { serverRuntimeConfig } = getConfig()
 
 export const sessionOptions: IronSessionOptions = {
-    password: "6RAw0qN^H=?9G~TtWC2A,,n3-T%,zM*-Q]iZ~L8#", // TODO: store this in encrypted env file
+    password: serverRuntimeConfig.ironAuthSecret,
     cookieName: process.env.NEXT_PUBLIC_AUTH_COOKIE_KEY as string,
     // ttl: 3600,
     cookieOptions: {

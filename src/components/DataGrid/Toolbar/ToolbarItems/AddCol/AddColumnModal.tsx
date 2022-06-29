@@ -22,8 +22,8 @@ import {
     TextField,
     Tooltip,
     Typography,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import HelpIcon from "@mui/icons-material/Help"
 import { StandardColumnSpecifier } from "@backend/types"
 

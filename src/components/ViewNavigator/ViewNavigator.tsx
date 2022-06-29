@@ -13,8 +13,8 @@ import {
     List,
     TextField,
     Typography,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useAPI } from "context/APIContext"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"

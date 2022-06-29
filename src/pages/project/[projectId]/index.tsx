@@ -10,11 +10,11 @@ import {
     Menu,
     MenuItem,
     Typography,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import Title from "components/Head/Title"
+import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables, useTablesConfig } from "hooks/useTables"
@@ -242,7 +242,7 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
 
     return (
         <>
-            <Title title="Projekte" />
+            <MetaTitle title="Projekte" />
             <Typography
                 sx={{
                     mb: theme.spacing(4),

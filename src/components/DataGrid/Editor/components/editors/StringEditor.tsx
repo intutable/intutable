@@ -27,3 +27,5 @@ export const StringEditor: EditorComponent = props => {
         />
     )
 }
+
+export default StringEditor

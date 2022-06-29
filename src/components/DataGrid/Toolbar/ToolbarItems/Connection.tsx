@@ -1,5 +1,6 @@
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord"
-import { Box, Typography, useTheme } from "@mui/material"
+import { Box, Typography } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 
 const useConnectionStatusColor = (status: ConnectionStatus) => {
     const theme = useTheme()

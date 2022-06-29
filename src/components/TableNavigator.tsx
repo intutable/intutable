@@ -1,4 +1,5 @@
-import { ToggleButton, ToggleButtonGroup, useTheme } from "@mui/material"
+import { ToggleButton, ToggleButtonGroup } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useAPI } from "context"
 import { useTables } from "hooks/useTables"
 import { useRouter } from "next/router"
@@ -42,3 +43,4 @@ export const TableNavigator: React.FC = () => {
         </>
     )
 }
+export default TableNavigator
