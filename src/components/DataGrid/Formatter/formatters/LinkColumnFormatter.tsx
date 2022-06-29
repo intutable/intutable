@@ -1,4 +1,4 @@
-import { FormatterComponent } from "components/Data Grid/Formatter"
+import { FormatterComponent } from "@datagrid/Formatter"
 import { getId } from "@intutable/lazy-views/dist/selectable"
 import { Box, Stack, Tooltip } from "@mui/material"
 import { fetcher } from "api"

@@ -1,12 +1,12 @@
 import {
     isConvertable,
     IsConvertableResponse,
-} from "components/Data Grid/Editor/type-management"
+} from "@datagrid/Editor/type-management"
 import {
     CellContentType,
     isCellContentType,
     Runtime_CellContentType,
-} from "components/Data Grid/Editor/types/CellContentType"
+} from "@datagrid/Editor/types/CellContentType"
 import {
     Box,
     Button,

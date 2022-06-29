@@ -1,4 +1,4 @@
-import { FormatterComponent } from "components/Data Grid/Formatter"
+import { FormatterComponent } from "@datagrid/Formatter"
 import { Box, IconButton, Tooltip } from "@mui/material"
 import { Row } from "types"
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"

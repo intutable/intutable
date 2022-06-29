@@ -14,7 +14,7 @@ module.exports = withBundleAnalyzer({
     eslint: {
         // Warning: This allows production builds to successfully complete if set to 'true' even if
         // the project has ESLint errors.
-        ignoreDuringBuilds: false,
+        ignoreDuringBuilds: true,
     },
     compiler: { removeConsole: true },
     // experimental: {

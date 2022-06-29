@@ -1,13 +1,13 @@
 import {
     CellContentType,
     isCellContentType,
-} from "components/Data Grid/Editor/type-management"
-import { EditorComponent } from "components/Data Grid/Editor/types/EditorComponent"
-import { FormatterComponent } from "components/Data Grid/Formatter"
+} from "@datagrid/Editor/type-management"
+import { EditorComponent } from "@datagrid/Editor/types/EditorComponent"
+import { FormatterComponent } from "@datagrid/Formatter"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import { Column, MetaColumnProps } from "types"
 import { CellContentTypeComponents, ColumnKindComponents } from "./map"
-import { headerRenderer } from "components/Data Grid/renderers"
+import { headerRenderer } from "@datagrid/renderers"
 
 /**
  * // TODO: this flexbility could be a potential error cause.

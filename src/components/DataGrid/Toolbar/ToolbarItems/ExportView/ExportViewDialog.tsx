@@ -1,4 +1,4 @@
-import { ColumnUtility } from "components/Data Grid/CellType/ColumnUtility"
+import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
 import { LoadingButton } from "@mui/lab"
 import {
     Button,

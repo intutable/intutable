@@ -3,7 +3,7 @@ import {
     CellContentType,
     Runtime_CellContentType,
     CellContentTypeDisplayName,
-} from "components/Data Grid/Editor/types/CellContentType"
+} from "@datagrid/Editor/types/CellContentType"
 import {
     Box,
     Button,

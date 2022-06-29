@@ -1,4 +1,4 @@
-import { CellContentType } from "components/Data Grid/Editor/type-management"
+import { CellContentType } from "@datagrid/Editor/type-management"
 import { MetaColumnProps } from "types"
 import { FormatterComponent } from ".."
 import { Formatter } from "../formatters"
