@@ -5,7 +5,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 /** @type {import('next').NextConfig} */
 module.exports = withBundleAnalyzer({
     reactStrictMode: true,
-    compress: true,
+    // compress: true,
     serverRuntimeConfig: {
         ironAuthSecret: process.env.IRON_AUTH_SECRET,
     },
