@@ -73,6 +73,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
      * elements in `props.activeFilters`. This is also why we close the
      * editor when the current view changes.
      */
+    // TODO: rename: `unsavedFilters`
     const [wipFilters, setWipFilters] = useState<(WipFilter | null)[]>(
         props.activeFilters.length > 0
             ? new Array(props.activeFilters.length).fill(null)
