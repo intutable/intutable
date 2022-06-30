@@ -18,7 +18,7 @@ main()
  */
 async function main() {
     await waitForDatabase().catch(e => crash<Core>(e))
-    const events: EventSystem = new EventSystem(true) // debug mode
+    const events: EventSystem = new EventSystem(false) // debug mode
     await Core.create(PLUGIN_PATHS, events).catch(e => crash<Core>(e))
 }
 
