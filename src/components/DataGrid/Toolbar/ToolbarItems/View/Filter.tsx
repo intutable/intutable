@@ -1,28 +1,33 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
 import DeleteIcon from "@mui/icons-material/Delete"
-import {
-    useTheme,
-    Select,
-    MenuItem,
-    TextField,
-    IconButton,
-    Box,
-} from "@mui/material"
+import { Select, MenuItem, TextField, IconButton, Box } from "@mui/material"
 import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
 import { TableColumn } from "types/rdg"
-import { WipFilter, isValidFilter, filterEquals } from "./FilterWindow"
+
+export type PartialFilter = Partial<SimpleFilter>
+
+export const filterEquals = (f1: PartialFilter, f2: PartialFilter) =>
+    f1.left?.parentColumnId === f2.left?.parentColumnId &&
+    f1.operator === f2.operator &&
+    f1.right === f2.right
+
+export const isValidFilter = (filter: PartialFilter): filter is SimpleFilter =>
+    filter.left !== undefined &&
+    filter.operator !== undefined &&
+    filter.right !== undefined &&
+    filter.right !== ""
 
 /**
  * An editor component for one single filter. The total filter consists
  * of the logical conjunction of these.
  */
-type SingleFilterProps = {
+type FilterListItemProps = {
     /** When the user clicks "create new filter", a new filter with no data
      * in any of the input fields is generated. Also, a filter may have some
      * of its fields set, but not enough to send to the back-end yet, so we
      * can't just represent it with `null` or something.
      */
-    filter: WipFilter
+    filter: PartialFilter
     /** TEMP TableColumn is currently not usable for this task. */
     columns: TableColumn[]
     onHandleDelete: () => Promise<void>
@@ -32,17 +37,17 @@ type SingleFilterProps = {
      * the parent component to commit the current filter to the back-end.
      */
     onCommit: (newFilter: SimpleFilter) => Promise<void>
-    onBecomeInvalid: (partialFilter: WipFilter) => Promise<void>
+    onBecomeInvalid: (partialFilter: PartialFilter) => Promise<void>
 }
+
 /**
  * A single, basic filter of the form <column> <operator> <value>.
  */
-export const SingleFilter: React.FC<SingleFilterProps> = props => {
+export const FilterListItem: React.FC<FilterListItemProps> = props => {
     const COMMIT_TIMEOUT = 500
 
     const { columns, filter, onCommit, onBecomeInvalid } = props
 
-    const theme = useTheme()
     const [column, setColumn] = useState<number | string>(
         filter.left?.parentColumnId || ""
     )
@@ -55,7 +60,7 @@ export const SingleFilter: React.FC<SingleFilterProps> = props => {
      * The current state of the filter in progress. Required for our
      * dynamic updating behavior below.
      */
-    const filterState = useRef<WipFilter>()
+    const filterState = useRef<PartialFilter>()
 
     /**
      * The filter is committed automatically as the user enters data,
@@ -82,7 +87,7 @@ export const SingleFilter: React.FC<SingleFilterProps> = props => {
         const columnSpec = leftColumn
             ? { parentColumnId: leftColumn._id, joinId: null }
             : undefined
-        const newFilter: WipFilter = {
+        const newFilter: PartialFilter = {
             left: columnSpec,
             operator: operator,
             right: operator === "LIKE" ? "%" + value + "%" : value,

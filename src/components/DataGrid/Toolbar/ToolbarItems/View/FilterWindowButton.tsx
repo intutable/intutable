@@ -13,7 +13,8 @@ import { FilterWindow } from "./FilterWindow"
 /**
  * Button to open the filter editor
  */
-
+// has a looooot of re-renders, in particular reloading the view, but not the
+// table? weird.
 export const FilterWindowButton: React.FC = () => {
     const { snackInfo, snackError } = useSnacki()
 

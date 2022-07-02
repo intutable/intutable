@@ -1,9 +1,3 @@
-/**
- * TODO: find a good place for isValidFilter, decide which component should
- * be deciding when to commit.
- * give singlefilter only one commit function, let parent component decide if
- * it's valid or not.
- */
 import React, { useState, useEffect, useRef } from "react"
 import CloseIcon from "@mui/icons-material/Close"
 import AddBoxIcon from "@mui/icons-material/AddBox"
@@ -20,41 +14,56 @@ import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
 import { TableColumn } from "types/rdg"
 import { useAPI } from "context/APIContext"
-import { SingleFilter } from "./Filter"
+import { PartialFilter, FilterListItem, isValidFilter } from "./Filter"
 
 type FilterWindowProps = {
     anchorEl: Element | null
-    /** The columns to choose the left operand from. */
+    /** The columns the user can choose the left operand from. */
     columns: TableColumn[]
     /**
-     * The real filters currently limiting the displayed data. The actual
-     * set of individual filter editors is computed from this plus some
-     * "in progress" condition editors.
+     * The real filters, from the back-end, currently constraining the
+     * data being displayed.
      */
     activeFilters: SimpleFilter[]
     onHandleCloseEditor: () => void
     /**
-     * While the user edits the filters through a set of input components,
-     * we do not want every change immediately being sent to the server.
-     * When a change should be committed, the condition editor in question
-     * will call a function that updates the filters on the current view.
+     * Callback for saving filters (write to back-end)
      */
     onUpdateFilters: (newFilters: SimpleFilter[]) => Promise<void>
 }
 
-export type WipFilter = Partial<SimpleFilter>
+/**
+ * There are no IDs on the filters, so this component has to manage them.
+ * This type pairs a filter (or an incomplete filter, or...) with a key.
+ */
+type KeyedFilter<F> = {
+    key: number | string
+    filter: F
+}
 
 /**
- * We want the user to be able to save and apply filters without the
- * incomplete ones they are also editing to be deleted on each re-render.
- * To this end, we keep a list of "WIP filters" that stores filters which
- * cannot be committed to the view yet. If the view's "active" filters change,
- * the new array is merged with the WIP filters.
+ * A placeholder: either an incomplete filter that the `FilterWindow` keeps
+ * track of because it can't be saved to the DB, or a placeholder for a
+ * full-fledged filter that comes from the back-end.
+ */
+type FilterPlaceholder = KeyedFilter<PartialFilter | null>
+/**
+ * A filter that is (possibly) not yet saved.
+ */
+type UnsavedFilter = KeyedFilter<PartialFilter>
+
+const isUnsaved = (p: FilterPlaceholder): p is UnsavedFilter =>
+    p.filter !== null
+const isPlaceholder = (p: FilterPlaceholder): p is KeyedFilter<null> =>
+    p.filter === null
+
+/**
+ * A pop-up window with a list of filters to apply to the data being shown.
  */
 export const FilterWindow: React.FC<FilterWindowProps> = props => {
     /**
-     * If the view changes, our wip-nulls ~ active filters invariant
-     * (see {@link wipFilters} cannot be maintained, so close the editor.
+     * `Popper` does not work with `ClickAwayListener`, so we hacked this to
+     * close the editor window whenever the user switches views.
      */
     const { view } = useAPI()
     const viewRef = useRef<ViewDescriptor | null>()
@@ -67,81 +76,126 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
     }, [view, prevView, props])
 
     /**
-     * The trick is that `wipFilters` is as long as there are filters in total,
-     * and the active filters' positions are kept free with `null`.
-     * important invariant: the number of nulls in `wipFilters` <= number of
-     * elements in `props.activeFilters`. This is also why we close the
-     * editor when the current view changes.
+     * The filters have no IDs or anything, so we need to supply our own keys.
+     * Using a ref ensures they stay consistent as long as the window is open.
      */
-    // TODO: rename: `unsavedFilters`
-    const [wipFilters, setWipFilters] = useState<(WipFilter | null)[]>(
-        props.activeFilters.length > 0
-            ? new Array(props.activeFilters.length).fill(null)
-            : [newEmptyWipFilter()]
-    )
-    const [filters, setFilters] = useState<WipFilter[]>([])
+    const nextKey = useRef<number>(0)
+    const getNextKey = () => {
+        const key = nextKey.current
+        nextKey.current = nextKey.current + 1
+        return key
+    }
+    const newUnsavedFilter = (): FilterPlaceholder => ({
+        key: getNextKey(),
+        filter: {
+            operator: FILTER_OPERATORS[0].raw,
+        },
+    })
+    /**
+     * We want the user to be able to save and apply filters without the
+     * incomplete ones they are also editing to be deleted on each re-render
+     * (which happens whenever an active filter changes).
+     * To this end, we keep a list of "placeholders" that stores both
+     * "unsaved" filters which cannot be committed to the view yet, and
+     * ones that are already active. The spots of saved/active filters are
+     * remembered with a {@link FilterPlaceholder} that has a null in it.
+     * important invariant: number of nulls in
+     * {@link filterPlaceholders} <= number of elements in
+     * {@link props.activeFilters}`.
+     */
+    const [filterPlaceholders, setFilterPlaceholders] = useState<
+        FilterPlaceholder[]
+    >(() => initPlaceholders(props.activeFilters))
+    const initPlaceholders = (activeFilters: SimpleFilter[]) => {
+        if (activeFilters.length > 0)
+            return props.activeFilters.map(_ => ({
+                key: getNextKey(),
+                filter: null,
+            }))
+        else return [newUnsavedFilter()]
+    }
 
     /**
-     * Merge {@link wipFilters} with the active filters from the back-end
-     * to get set of filters to display.
+     * {@link filterPlaceholders} but with all the null slots filled with
+     * active filters from the back-end. We need this for rendering, but all
+     * the logic uses {@link filterPlaceholders}
+     */
+    const [unsavedFilters, setUnsavedFilters] = useState<UnsavedFilter[]>([])
+
+    /**
+     * Merge {@link filterPlaceholders} with the active/saved filters from the
+     * back-end to get set of filters to display.
      */
     useEffect(() => {
-        if (!props.activeFilters || !wipFilters) return
+        if (!props.activeFilters || !filterPlaceholders) return
 
-        const displayFilters = new Array(wipFilters.length)
-        for (let aIndex = 0, wIndex = 0; wIndex < wipFilters.length; wIndex++) {
-            if (wipFilters[wIndex] === null) {
-                displayFilters[wIndex] = props.activeFilters[aIndex]
+        const displayFilters = new Array(filterPlaceholders.length)
+        for (
+            let aIndex = 0, wIndex = 0;
+            wIndex < filterPlaceholders.length;
+            wIndex++
+        ) {
+            if (!isUnsaved(filterPlaceholders[wIndex])) {
+                displayFilters[wIndex] = {
+                    key: filterPlaceholders[wIndex].key,
+                    filter: props.activeFilters[aIndex],
+                }
                 aIndex++
             } else {
-                displayFilters[wIndex] = wipFilters[wIndex]
+                displayFilters[wIndex] = filterPlaceholders[wIndex]
             }
         }
-        setFilters(displayFilters)
-    }, [props.activeFilters, wipFilters])
+        setUnsavedFilters(displayFilters)
+    }, [props.activeFilters, filterPlaceholders])
 
     const handleAddFilter = () =>
-        setWipFilters(prev => prev.concat(newEmptyWipFilter()))
+        setFilterPlaceholders(prev => prev.concat(newUnsavedFilter()))
 
     /**
-     * Delete a filter - if it's a WIP filter, just remove the GUI component,
+     * Delete a filter - if it's unsaved filter, just remove the GUI component,
      * otherwise, we have to talk to the back-end.
      */
-    const handleDeleteFilter = async (index: number): Promise<void> => {
-        if (!filters) return
-        // if it's a WIP filter, just delete that
-        if (wipFilters[index] !== null)
-            setWipFilters(prev => arrayRemove(prev, index))
+    const handleDeleteFilter = async (key: number | string): Promise<void> => {
+        const index = filterPlaceholders.findIndex(f => f.key === key)!
+        if (!unsavedFilters) return
+        else if (isUnsaved(filterPlaceholders[index]))
+            setFilterPlaceholders(prev => arrayRemove(prev, index))
         else {
             // find index within the active filters:
             const aIndex =
-                wipFilters.slice(0, index + 1).filter(f => f === null).length -
-                1
-            setWipFilters(prev => arrayRemove(prev, index))
+                filterPlaceholders.slice(0, index + 1).filter(isPlaceholder)
+                    .length - 1
+            setFilterPlaceholders(prev => arrayRemove(prev, index))
             const newFilters = arrayRemove(props.activeFilters, aIndex)
             return props.onUpdateFilters(newFilters)
         }
     }
 
+    const assignFilter = <F1, F2>(
+        old: KeyedFilter<F1>,
+        filter: F2
+    ): KeyedFilter<F2> => ({
+        key: old.key,
+        filter,
+    })
     /**
-     * If (e.g.) the user deletes the text of a filter's "value" field, then
-     * it should be disabled, but without the GUI component being deleted
-     * altogether. This callback handles that event.
+     * If a filter becomes invalid, e.g. if the user deletes the text of
+     * its "value" field, then it becomes an unsaved filter.
      */
     const handleFilterBecomeInvalid = async (
-        index: number,
-        incomplete: WipFilter
+        key: number | string,
+        incomplete: PartialFilter
     ): Promise<void> => {
-        // if it was a WIP filter already, just leave it
-        if (!filters) return
-        if (wipFilters[index] !== null) return
+        const index = filterPlaceholders.findIndex(f => f.key === key)
+        if (!unsavedFilters) return
+        else if (isUnsaved(filterPlaceholders[index])) return
         else {
             const aIndex =
-                wipFilters.slice(0, index + 1).filter(f => f === null).length -
-                1
-            setWipFilters(prev => {
+                filterPlaceholders.slice(0, index + 1).filter(isPlaceholder)
+                    .length - 1
+            setFilterPlaceholders(prev => {
                 const copy = [...prev]
-                copy[index] = incomplete
+                copy[index] = assignFilter(copy[index], incomplete)
                 return copy
             })
             const newFilters = arrayRemove(props.activeFilters, aIndex)
@@ -149,18 +203,22 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         }
     }
 
+    /** Save a complete filter to the back-end. */
     const handleCommitFilter = async (
-        index: number,
+        key: number | string,
         newFilter: SimpleFilter
     ): Promise<void> => {
-        if (!filters) return
-        const filterCopy = [...filters]
-        filterCopy[index] = newFilter
-        const newFilters = filterCopy.filter(isValidFilter) as SimpleFilter[]
+        const index = filterPlaceholders.findIndex(f => f.key === key)
+        if (!unsavedFilters) return
+        const filterCopy = [...unsavedFilters]
+        filterCopy[index] = assignFilter(filterCopy[index], newFilter)
+        const newFilters = filterCopy
+            .map(unsaved => unsaved.filter)
+            .filter(isValidFilter)
         await props.onUpdateFilters(newFilters)
-        setWipFilters(prev => {
+        setFilterPlaceholders(prev => {
             const copy = [...prev]
-            copy[index] = null
+            copy[index] = assignFilter(copy[index], null)
             return copy
         })
     }
@@ -180,16 +238,18 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                             <CloseIcon />
                         </IconButton>
                     </Box>
-                    {filters &&
-                        filters.map((f, i) => (
-                            <SingleFilter
-                                key={i}
+                    {unsavedFilters &&
+                        unsavedFilters.map(f => (
+                            <FilterListItem
+                                key={f.key}
                                 columns={props.columns}
-                                filter={f}
-                                onHandleDelete={() => handleDeleteFilter(i)}
-                                onCommit={f => handleCommitFilter(i, f)}
-                                onBecomeInvalid={f =>
-                                    handleFilterBecomeInvalid(i, f)
+                                filter={f.filter}
+                                onHandleDelete={() => handleDeleteFilter(f.key)}
+                                onCommit={value =>
+                                    handleCommitFilter(f.key, value)
+                                }
+                                onBecomeInvalid={value =>
+                                    handleFilterBecomeInvalid(f.key, value)
                                 }
                             />
                         ))}
@@ -208,20 +268,8 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
     )
 }
 
-const newEmptyWipFilter = (): WipFilter => ({
-    operator: FILTER_OPERATORS[0].raw,
-})
-
-export const isValidFilter = (filter: WipFilter): filter is SimpleFilter =>
-    filter.left !== undefined &&
-    filter.operator !== undefined &&
-    filter.right !== undefined &&
-    filter.right !== ""
-
-const arrayRemove = <A,>(a: Array<A>, i: number): Array<A> =>
-    a.slice(0, i).concat(...a.slice(i + 1))
-
-export const filterEquals = (f1: WipFilter, f2: WipFilter) =>
-    f1.left?.parentColumnId === f2.left?.parentColumnId &&
-    f1.operator === f2.operator &&
-    f1.right === f2.right
+const arrayRemove = <A,>(a: Array<A>, i: number): Array<A> => {
+    if (i < 0 || i >= a.length)
+        throw TypeError(`arrayRemove: index out of bounds`)
+    else return a.slice(0, i).concat(...a.slice(i + 1))
+}
