@@ -113,7 +113,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         else return [newUnsavedFilter()]
     }
     const [filterPlaceholders, setFilterPlaceholders] = useState<
-    FilterPlaceholder[]
+        FilterPlaceholder[]
     >(() => initPlaceholders(props.activeFilters))
 
     /**
