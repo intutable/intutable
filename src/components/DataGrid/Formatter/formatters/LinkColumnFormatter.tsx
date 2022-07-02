@@ -114,3 +114,4 @@ const _LinkColumnFormatter: FormatterComponent = props => {
 }
 
 export const LinkColumnFormatter = React.memo(_LinkColumnFormatter)
+export default LinkColumnFormatter

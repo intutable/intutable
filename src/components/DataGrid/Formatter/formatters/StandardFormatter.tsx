@@ -10,3 +10,5 @@ export const StandardFormatter: FormatterComponent = props => {
 
     return <Box>{content}</Box>
 }
+
+export default StandardFormatter

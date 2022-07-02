@@ -65,3 +65,5 @@ export const DetailedViewModal: React.FC<DetailedViewModalProps> = props => {
         </Dialog>
     )
 }
+
+export default DetailedViewModal

@@ -91,6 +91,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
             operator: FILTER_OPERATORS[0].raw,
         },
     })
+
     /**
      * We want the user to be able to save and apply filters without the
      * incomplete ones they are also editing to be deleted on each re-render
@@ -103,9 +104,6 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
      * {@link filterPlaceholders} <= number of elements in
      * {@link props.activeFilters}`.
      */
-    const [filterPlaceholders, setFilterPlaceholders] = useState<
-        FilterPlaceholder[]
-    >(() => initPlaceholders(props.activeFilters))
     const initPlaceholders = (activeFilters: SimpleFilter[]) => {
         if (activeFilters.length > 0)
             return props.activeFilters.map(_ => ({
@@ -114,6 +112,9 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
             }))
         else return [newUnsavedFilter()]
     }
+    const [filterPlaceholders, setFilterPlaceholders] = useState<
+    FilterPlaceholder[]
+    >(() => initPlaceholders(props.activeFilters))
 
     /**
      * {@link filterPlaceholders} but with all the null slots filled with

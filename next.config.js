@@ -5,15 +5,25 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 /** @type {import('next').NextConfig} */
 module.exports = withBundleAnalyzer({
     reactStrictMode: true,
+    // compress: true,
+    serverRuntimeConfig: {
+        ironAuthSecret: process.env.IRON_AUTH_SECRET,
+    },
+    // publicRuntimeConfig: {},
     // swcMinify: true, // experimental – does not work
     eslint: {
-        // Warning: This allows production builds to successfully complete even if
-        // the project has ESLint errors.
         ignoreDuringBuilds: true,
     },
     compiler: { removeConsole: false },
     // experimental: {
-    //     concurrentFeatures: true,
-    // }, // BUG: breaks the app
-    // productionBrowserSourceMaps: true,
+    // should improve the mui imports but does not work yet
+    // modularizeImports: {
+    //     "@mui/material/?(((\\w*)?/?)*)": {
+    //         transform: "@mui/material/{{ matches.[1] }}/{{member}}",
+    //     },
+    //     "@mui/icons-material/?(((\\w*)?/?)*)": {
+    //         transform: "@mui/icons-material/{{ matches.[1] }}/{{member}}",
+    //     },
+    // },
+    // },
 })

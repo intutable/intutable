@@ -38,3 +38,5 @@ export const BooleanFormatter: FormatterComponent = props => {
         </Box>
     )
 }
+
+export default BooleanFormatter

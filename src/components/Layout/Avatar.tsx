@@ -6,8 +6,8 @@ import {
     Menu,
     MenuItem,
     Stack,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { useUser } from "auth/useUser"
 import { useRouter } from "next/router"
@@ -122,3 +122,5 @@ export const Avatar: React.FC = () => {
         </>
     )
 }
+
+export default Avatar

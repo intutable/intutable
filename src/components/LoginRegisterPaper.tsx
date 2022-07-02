@@ -5,9 +5,9 @@ import {
     Stack,
     Typography,
     Button,
-    useTheme,
     CircularProgress,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import Image from "next/image"
 import BGImage from "public/login-bg.jpg"
 import Link, { CombinedLinkProps } from "components/Link"
@@ -20,7 +20,7 @@ type PaperProps = {
     children?: React.ReactNode
 }
 
-export const Paper: React.FC<PaperProps> = props => {
+export const LoginRegisterPaper: React.FC<PaperProps> = props => {
     const theme = useTheme()
     const linkStyle: CombinedLinkProps["muiLinkProps"] = {
         sx: {

@@ -1,5 +1,6 @@
 import { css } from "@emotion/css"
-import { Menu, MenuItem, PaletteMode, useTheme } from "@mui/material"
+import { Menu, MenuItem, PaletteMode } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import clsx from "clsx"
 import { useRow } from "hooks/useRow"
 import { useSnackbar } from "notistack"

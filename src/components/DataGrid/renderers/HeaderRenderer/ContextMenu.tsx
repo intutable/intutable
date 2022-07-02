@@ -8,8 +8,8 @@ import {
     ListItemText,
     Menu,
     MenuItem,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useHeaderSearchField } from "context"
 import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"

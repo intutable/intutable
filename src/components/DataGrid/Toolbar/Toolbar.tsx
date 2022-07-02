@@ -1,4 +1,5 @@
-import { Divider, Toolbar as MUIToolbar, useTheme } from "@mui/material"
+import { Divider, Toolbar as MUIToolbar } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { Box } from "@mui/system"
 import React from "react"
 

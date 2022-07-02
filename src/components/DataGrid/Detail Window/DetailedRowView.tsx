@@ -6,8 +6,8 @@ import {
     Stack,
     Tooltip,
     Typography,
-    useTheme,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useMemo } from "react"
@@ -142,3 +142,5 @@ export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
         </Box>
     )
 }
+
+export default DetailedRowView

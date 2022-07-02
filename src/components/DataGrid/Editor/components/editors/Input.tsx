@@ -1,7 +1,14 @@
-import { InputUnstyled, UseInputProps } from "@mui/base"
-import { styled } from "@mui/material"
+import { InputUnstyled, InputUnstyledProps } from "@mui/base"
+import { styled } from "@mui/material/styles"
 import React from "react"
 
+/**
+ * @link https://mui.com/system/styled/
+ */
+
+/**
+ *
+ */
 const StyledInputElement = styled("input")`
     width: 100%;
     font-size: 1rem;
@@ -19,13 +26,13 @@ const StyledInputElement = styled("input")`
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type InputProps = {
-    props: UseInputProps & { onEnter?: () => void }
+    props: InputUnstyledProps & { onEnter?: () => void }
     ref: React.Ref<HTMLInputElement> | undefined
 }
 
 export const Input = React.forwardRef(
     (
-        props: UseInputProps & {
+        props: InputUnstyledProps & {
             onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
         },
         ref: React.Ref<HTMLInputElement> | undefined
@@ -39,3 +46,5 @@ export const Input = React.forwardRef(
     )
 )
 Input.displayName = "Input"
+
+export default Input

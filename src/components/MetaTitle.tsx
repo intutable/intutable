@@ -22,7 +22,7 @@ type TitleProps = {
  * @param {TitleProps} param
  * @returns
  */
-const Title: React.FC<TitleProps> = ({
+const MetaTitle: React.FC<TitleProps> = ({
     title,
     prefix,
     suffix = "| Fakultät für Mathematik und Informatik",
@@ -35,4 +35,4 @@ const Title: React.FC<TitleProps> = ({
     </Head>
 )
 
-export default Title
+export default MetaTitle

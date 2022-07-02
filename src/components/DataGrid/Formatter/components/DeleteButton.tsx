@@ -18,3 +18,5 @@ export const DeleteButton: React.FC<DeleteButtonProps> = props => {
         </Box>
     )
 }
+
+export default DeleteButton
