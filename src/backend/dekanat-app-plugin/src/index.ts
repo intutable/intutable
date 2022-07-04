@@ -171,7 +171,7 @@ async function removeColumnFromTable(
     tableId: lvt.ViewDescriptor["id"],
     columnId: lvt.ColumnInfo["id"]
 ) {
-    const tableInfo = (await core.events.request(
+    let tableInfo = (await core.events.request(
         lvr.getViewInfo(tableId)
     )) as lvt.ViewInfo
 
@@ -207,16 +207,17 @@ async function removeColumnFromTable(
     }
 
     // shift indices on remaining columns
+    // in case of links, more columns than the one specified may have
+    // disappeared, so we need to refresh.
+    tableInfo = (await core.events.request(
+        lvr.getViewInfo(tableId)
+    )) as lvt.ViewInfo
     const indexKey = A.COLUMN_INDEX.key
-    const remainingColumns = tableInfo.columns
-        .filter(c => c.attributes[indexKey] > column.attributes[indexKey])
-        .map(c => ({
-            id: c.id,
-            update: { [indexKey]: c.attributes[indexKey] - 1 },
-        }))
+    const columnUpdates = getColumnIndexUpdates(tableInfo.columns)
+
     await Promise.all(
-        remainingColumns.map(async c =>
-            changeTableColumnAttributes(tableId, c.id, c.update)
+        columnUpdates.map(async c =>
+            changeTableColumnAttributes(tableId, c.id, { [indexKey]: c.index })
         )
     )
 
@@ -231,6 +232,7 @@ async function removeLinkColumn(
         lvr.getViewInfo(tableId)
     )) as lvt.ViewInfo
     const join = info.joins.find(j => j.id === column.joinId)
+
     if (!join)
         return error(
             "removeColumnFromTable",
@@ -240,6 +242,7 @@ async function removeLinkColumn(
     const lookupColumns = info.columns.filter(
         c => c.joinId === join.id && c.attributes._kind === "lookup"
     )
+
     await Promise.all(
         lookupColumns.map(async c => removeColumnFromTable(tableId, c.id))
     )
@@ -290,6 +293,23 @@ async function removeColumnFromViews(
                 )
         })
     )
+}
+
+/**
+ * Given a list of columns, return a list of columns whose index is wrong
+ * and the new index it they should have.
+ */
+function getColumnIndexUpdates(
+    columns: lvt.ColumnInfo[]
+): { id: number, index: number }[] {
+    const indexKey = A.COLUMN_INDEX.key
+    return columns
+        .map((c, index) => ({ column: c, index }))
+        .filter(pair => pair.column.attributes[indexKey] !== pair.index)
+        .map(pair => ({
+            id: pair.column.id,
+            index: pair.index
+        }))
 }
 
 async function changeTableColumnAttributes(

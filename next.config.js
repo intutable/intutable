@@ -14,7 +14,7 @@ module.exports = withBundleAnalyzer({
     eslint: {
         ignoreDuringBuilds: true,
     },
-    compiler: { removeConsole: true },
+    compiler: { removeConsole: false },
     // experimental: {
     // should improve the mui imports but does not work yet
     // modularizeImports: {
