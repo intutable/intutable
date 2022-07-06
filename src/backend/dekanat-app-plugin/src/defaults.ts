@@ -9,6 +9,8 @@ import { CellContentType } from "./types"
 
 export const UID_KEY = "_id"
 export const INDEX_KEY = "index"
+/** Minimum width of a column. */
+export const COLUMN_MIN_WIDTH=128
 
 /**
  * Blank row options - no filters, no grouping, no sorting.
@@ -61,6 +63,7 @@ export function standardColumnAttributes(
         [A.COLUMN_INDEX.key]: columnIndex,
         editable: 1,
         _cellContentType: contentType,
+        minWidth: COLUMN_MIN_WIDTH,
     })
 }
 
@@ -74,6 +77,7 @@ export function linkColumnAttributes(
         [A.COLUMN_INDEX.key]: columnIndex,
         editable: 1,
         _cellContentType: "string",
+        minWidth: COLUMN_MIN_WIDTH,
     })
 }
 
@@ -88,6 +92,7 @@ export function lookupColumnAttributes(
         [A.COLUMN_INDEX.key]: columnIndex,
         editable: 0,
         _cellContentType: contentType,
+        minWidth: COLUMN_MIN_WIDTH,
     })
 }
 
