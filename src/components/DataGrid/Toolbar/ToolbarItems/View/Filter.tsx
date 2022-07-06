@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
 import DeleteIcon from "@mui/icons-material/Delete"
 import { Select, MenuItem, TextField, IconButton, Box } from "@mui/material"
-import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
+import {
+    SimpleFilter,
+    FILTER_OPERATORS,
+    LIKE_PATTERN_ESCAPE_CHARS,
+} from "@backend/condition"
 import { TableColumn } from "types/rdg"
 
 export type PartialFilter = Partial<SimpleFilter>
@@ -54,7 +58,9 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
     const [operator, setOperator] = useState<string>(
         filter.operator || FILTER_OPERATORS[0].raw
     )
-    const [value, setValue] = useState<string>(filter.right?.toString() || "")
+    const [value, setValue] = useState<string>(() =>
+        prepareFilterValue(filter.right)
+    )
     const [readyForCommit, setReadyForCommit] = useState<boolean>(true)
     /**
      * The current state of the filter in progress. Required for our
@@ -90,7 +96,7 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
         const newFilter: PartialFilter = {
             left: columnSpec,
             operator: operator,
-            right: operator === "LIKE" ? "%" + value + "%" : value,
+            right: operator === "LIKE" ? packContainsValue(value) : value,
         }
         return newFilter
     }, [column, operator, columns, value])
@@ -168,4 +174,51 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
             </IconButton>
         </Box>
     )
+}
+
+const prepareFilterValue = (value: SimpleFilter["right"] | undefined): string =>
+    value ? unpackContainsValue(value.toString()) : ""
+
+/** Convert the value a user enters in a `contains` condition to database-ready
+ * format (by adding percent symbols).
+ */
+const packContainsValue = (value: string): string =>
+    "%" +
+    value
+        .split("")
+        .map(c => (LIKE_PATTERN_ESCAPE_CHARS.includes(c) ? "\\" + c : c))
+        .join("") +
+    "%"
+
+/**
+ * Parse the SQL `LIKE` pattern into a format without format and escape chars.
+ */
+const unpackContainsValue = (value: string): string => {
+    let acc: string = ""
+    let lastWasBackslash: boolean = false
+    const pos = 0
+    for (let char of value.split("").slice(1, -1)) {
+        if (!lastWasBackslash && char === "\\") {
+            // saw a first backslash
+            lastWasBackslash = true
+        } else if (
+            lastWasBackslash &&
+            LIKE_PATTERN_ESCAPE_CHARS.includes(char)
+        ) {
+            // saw a backslash, now seeing \ % _
+            lastWasBackslash = false
+            acc = acc.concat(char)
+        } else if (lastWasBackslash)
+            // saw backslash, but not seeing an escapeable character after
+            throw Error(
+                `unpackContainsValue: unescaped \\ at ` + `position ${pos}`
+            )
+        else if (LIKE_PATTERN_ESCAPE_CHARS.includes(char))
+            // seeing escapeable character without a backslash before it
+            throw Error(
+                `unpackContainsValue: unescaped ${char} at ` + `position ${pos}`
+            )
+        else acc = acc.concat(char)
+    }
+    return acc
 }

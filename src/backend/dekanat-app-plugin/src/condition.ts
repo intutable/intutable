@@ -2,8 +2,10 @@ import * as c from "@intutable/lazy-views/dist/condition"
 import { ParentColumnSpecifier } from "@intutable/lazy-views"
 
 export type LeftOperand = Exclude<c.Operand, c.Literal | c.Subquery>
-export type RightOperand =
-    Exclude<c.Operand, ParentColumnSpecifier | c.Subquery>
+export type RightOperand = Exclude<
+    c.Operand,
+    ParentColumnSpecifier | c.Subquery
+>
 
 export type Filter = SimpleFilter | NotFilter | AndFilter | OrFilter
 
@@ -41,3 +43,4 @@ export const FILTER_OPERATORS: FilterOperator[] = [
     { raw: "LIKE", pretty: "contains" },
 ]
 
+export const LIKE_PATTERN_ESCAPE_CHARS = ["%", "_", "\\"]
