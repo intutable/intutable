@@ -194,10 +194,10 @@ const packContainsValue = (value: string): string =>
  * Parse the SQL `LIKE` pattern into a format without format and escape chars.
  */
 const unpackContainsValue = (value: string): string => {
-    let acc: string = ""
-    let lastWasBackslash: boolean = false
+    let acc = ""
+    let lastWasBackslash = false
     const pos = 0
-    for (let char of value.split("").slice(1, -1)) {
+    for (const char of value.split("").slice(1, -1)) {
         if (!lastWasBackslash && char === "\\") {
             // saw a first backslash
             lastWasBackslash = true
