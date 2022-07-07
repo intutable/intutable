@@ -65,6 +65,7 @@ const ThemeSwitch: React.FC = () => {
 
     return (
         <MaterialUISwitch
+            disabled
             checked={getTheme() === "dark"}
             onChange={handleSwitch}
         />
