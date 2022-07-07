@@ -24,36 +24,42 @@ export const THEME_MODE_STORAGE_KEY = "__USER_THEME_PREFERENCE__"
 const MyApp = (props: AppProps) => {
     const { Component, pageProps } = props
 
-    const systemPreferredThemeMode: PaletteMode = useMediaQuery(
-        "(prefers-color-scheme: dark)"
-    )
-        ? "dark"
-        : "light"
+    // const systemPreferredThemeMode: PaletteMode = useMediaQuery(
+    //     "(prefers-color-scheme: dark)"
+    // )
+    //     ? "dark"
+    //     : "light"
 
-    const [themeMode, setThemeMode] = useState<PaletteMode>(
-        systemPreferredThemeMode
-    )
+    // const [themeMode, setThemeMode] = useState<PaletteMode>(
+    //     systemPreferredThemeMode
+    // )
+    const themeMode = "light"
 
-    useEffect(() => {
-        const userPreferredThemeMode = localStorage.getItem(
-            THEME_MODE_STORAGE_KEY
-        )
-        setThemeMode(
-            (userPreferredThemeMode as PaletteMode) || systemPreferredThemeMode
-        )
-    }, [systemPreferredThemeMode])
+    // useEffect(() => {
+    //     const userPreferredThemeMode = localStorage.getItem(
+    //         THEME_MODE_STORAGE_KEY
+    //     )
+    //     setThemeMode(
+    //         (userPreferredThemeMode as PaletteMode) || systemPreferredThemeMode
+    //     )
+    // }, [systemPreferredThemeMode])
 
-    const colorMode = useMemo(
-        () => ({
-            toggleColorMode: () => {
-                setThemeMode((prevMode: PaletteMode) =>
-                    prevMode === "light" ? "dark" : "light"
-                )
-            },
-            getTheme: () => themeMode,
-        }),
-        [themeMode]
-    )
+    // const colorMode = useMemo(
+    //     () => ({
+    //         toggleColorMode: () => {
+    //             setThemeMode((prevMode: PaletteMode) =>
+    //                 prevMode === "light" ? "dark" : "light"
+    //             )
+    //         },
+    //         getTheme: () => themeMode,
+    //     }),
+    //     [themeMode]
+    // )
+
+    const colorMode = {
+        toggleColorMode: () => {},
+        getTheme: (): PaletteMode => "light",
+    }
 
     const theme = useMemo(
         () => createTheme((() => getDesignToken(themeMode))()),
