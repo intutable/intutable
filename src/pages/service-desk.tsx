@@ -3,6 +3,9 @@ import { useTheme } from "@mui/material/styles"
 import MetaTitle from "components/MetaTitle"
 import { ReleaseList } from "components/Release Notes/ReleaseList"
 import type { NextPage } from "next"
+import { supportedFeatures } from "public/supportedFeatures"
+import SupportedFeatures from "components/Wiki/SupportedFeatures"
+import Link from "components/Link"
 
 const ServiceDesk: NextPage = () => {
     const theme = useTheme()
@@ -43,8 +46,8 @@ const ServiceDesk: NextPage = () => {
                             color: theme.palette.text.secondary,
                         }}
                     >
-                        Safari wird zzt. als Browser nicht vollständig
-                        unterstützt. Wir empfehlen Google Chrome.
+                        Einige Browser (u.a. Safari) werden zzt. nicht
+                        vollständig unterstützt. Wir empfehlen Google Chrome.
                     </Typography>
                 </li>
                 <li>
@@ -57,6 +60,29 @@ const ServiceDesk: NextPage = () => {
                     </Typography>
                 </li>
             </ul>
+
+            {/* Wiki */}
+            <Typography variant={"h5"} sx={{ mt: 20 }}>
+                Wiki
+            </Typography>
+            <Divider />
+            <ul>
+                <li>
+                    <Typography
+                        sx={{
+                            color: theme.palette.text.secondary,
+                        }}
+                    >
+                        Wirf einen Blick in's <Link href="/wiki/">Wiki</Link> .
+                    </Typography>
+                </li>
+            </ul>
+
+            {/* Features */}
+            <Typography variant={"h5"} sx={{ mt: 20 }}>
+                Features
+            </Typography>
+            <SupportedFeatures features={supportedFeatures} />
 
             {/* Versionsverlauf */}
             <Typography variant={"h5"} sx={{ mt: 20 }}>

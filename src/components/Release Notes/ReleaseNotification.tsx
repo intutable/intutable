@@ -1,20 +1,35 @@
-import { Box, Button, Chip, Typography } from "@mui/material"
-import MetaTitle from "components/MetaTitle"
+import { Box, Typography } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import Link from "components/Link"
-import { VersionTag } from "types/VersionTag"
+import { releases } from "public/releases"
 import { ReleaseProps } from "./Release"
+const byDate = (a: ReleaseProps, b: ReleaseProps) =>
+    b.date.getTime() - a.date.getTime()
+const getLatestRelease = (releases: ReleaseProps[]) => releases.sort(byDate)[0]
 
-export const ReleaseNotification: React.FC<ReleaseProps> = props => {
+export const ReleaseNotification: React.FC = () => {
+    const latestRelease = getLatestRelease(releases)
+    const theme = useTheme()
+
+    if (releases.length === 0) return null
+
     return (
-        <Box>
-            <Typography>Release of {props.version}</Typography>
-            {props.prerelease && (
-                <Chip label={<Typography>Prerelease</Typography>} />
-            )}
-            <Typography>{props.date.toLocaleDateString()}</Typography>
+        <Box
+            sx={{
+                borderRadius: theme.shape.borderRadius,
+                p: theme.spacing(2),
+            }}
+        >
+            <Typography>Eine neue Version ist verfügbar!</Typography>
+            <Typography>
+                Schau dir die Release-Notes{" "}
+                <Link href={`/release/${latestRelease.version}`}>hier</Link> an.
+            </Typography>
 
-            <Typography variant="h5">{props.title}</Typography>
-            <Box>{props.teaser}</Box>
+            <Typography>
+                {latestRelease.title} wurde am{" "}
+                {latestRelease.date.toLocaleDateString()} veröffentlicht
+            </Typography>
         </Box>
     )
 }

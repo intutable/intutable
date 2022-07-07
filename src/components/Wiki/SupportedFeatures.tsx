@@ -10,6 +10,7 @@ import {
     Typography,
     IconButton,
     Tooltip,
+    Stack,
 } from "@mui/material"
 import Link from "components/Link"
 import { VersionTag } from "types/VersionTag"
@@ -17,23 +18,34 @@ import InfoIcon from "@mui/icons-material/Info"
 import SupportedIcon from "@mui/icons-material/CheckCircleRounded"
 import UnsupportedIcon from "@mui/icons-material/Dangerous"
 import InDevelopmentIcon from "@mui/icons-material/Settings"
-const getIcon = (support: Feature["support"]): React.ReactNode =>
+import InTestingIcon from "@mui/icons-material/Biotech"
+const getIconTooltip = (support: Feature["support"]): string =>
+    support === "supported"
+        ? "Unterstützt"
+        : support === "unsupported"
+        ? "Nicht unterstützt"
+        : support === "in-testing"
+        ? "In Testphase"
+        : "In Entwicklung"
+const getIcon = (support: Feature["support"]): JSX.Element =>
     support === "supported" ? (
-        <SupportedIcon />
+        <SupportedIcon fontSize="small" color="success" />
     ) : support === "unsupported" ? (
-        <UnsupportedIcon />
+        <UnsupportedIcon fontSize="small" color="error" />
+    ) : support === "in-testing" ? (
+        <InTestingIcon fontSize="small" color="warning" />
     ) : (
-        <InDevelopmentIcon />
+        <InDevelopmentIcon fontSize="small" color="info" />
     )
 
 export type Feature = {
     name: string
     infoText: string
-    support: "supported" | "unsupported" | "in-development"
+    support: "supported" | "unsupported" | "in-development" | "in-testing"
     /**
-     * since when this feature is supported
+     * since when this feature is supported or current release notes with important changes
      */
-    release: VersionTag
+    release?: VersionTag
 }
 
 export type SupportedFeaturesProps = {
@@ -46,27 +58,43 @@ export const SupportedFeatures: React.FC<SupportedFeaturesProps> = props => {
             <Table>
                 <TableHead>
                     <TableRow>
-                        <TableCell>Feature</TableCell>
-                        <TableCell>Support</TableCell>
-                        <TableCell>Release</TableCell>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Release-Notes</TableCell>
                     </TableRow>
                     <TableBody>
                         {props.features.map(feature => (
                             <TableRow key={feature.name}>
                                 <TableCell>
-                                    <Typography>{feature.name}</Typography>
+                                    <Stack
+                                        direction="row"
+                                        sx={{
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Typography>{feature.name}</Typography>
+                                        {feature.infoText &&
+                                            feature.infoText.length > 0 && (
+                                                <Tooltip
+                                                    arrow
+                                                    placement="right"
+                                                    title={feature.infoText}
+                                                >
+                                                    <IconButton size="small">
+                                                        <InfoIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
+                                    </Stack>
+                                </TableCell>
+                                <TableCell>
                                     <Tooltip
                                         arrow
                                         placement="right"
-                                        title={feature.infoText}
+                                        title={getIconTooltip(feature.support)}
                                     >
-                                        <IconButton>
-                                            <InfoIcon />
-                                        </IconButton>
+                                        {getIcon(feature.support)}
                                     </Tooltip>
-                                </TableCell>
-                                <TableCell>
-                                    {getIcon(feature.support)}
                                 </TableCell>
                                 <TableCell>
                                     <Link href={`/release/${feature.release}`}>
@@ -79,7 +107,10 @@ export const SupportedFeatures: React.FC<SupportedFeaturesProps> = props => {
                 </TableHead>
                 <TableFooter>
                     <TableRow>
-                        <TableCell>Footer</TableCell>
+                        <TableCell>
+                            Übersicht des Status der Implementierung der
+                            Features{" "}
+                        </TableCell>
                     </TableRow>
                 </TableFooter>
             </Table>
