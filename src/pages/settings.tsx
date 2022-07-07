@@ -105,7 +105,7 @@ const Settings: NextPage = () => {
                     />
                     <ThemeSwitch />
                 </ListItem>
-                <ListItem>
+                {/* <ListItem>
                     <ListIconWithTooltip tooltip="Platzhalter">
                         <MiscellaneousServicesIcon />
                     </ListIconWithTooltip>
@@ -114,7 +114,7 @@ const Settings: NextPage = () => {
                         primary="Sonstiges"
                     />
                     <Switch />
-                </ListItem>
+                </ListItem> */}
             </List>
 
             {user?.isLoggedIn && (
@@ -136,6 +136,7 @@ const Settings: NextPage = () => {
                         />
                         <Switch
                             checked={accountSettings.rememberMe}
+                            disabled
                             onChange={e =>
                                 updateAccountSettings(
                                     "rememberMe",
@@ -154,6 +155,7 @@ const Settings: NextPage = () => {
                                 primary="Session-Dauer"
                             />
                             <TextField
+                                disabled
                                 type="number"
                                 value={accountSettings.sessionDuration}
                                 onChange={e => {}}
