@@ -1,8 +1,7 @@
 import { Typography } from "@mui/material"
 import MetaTitle from "components/MetaTitle"
-import WikiTree from "components/Wiki/Wiki"
+import WikiTree from "components/Wiki/WikiTree"
 import type { NextPage } from "next"
-import { docs } from "public/wikidocs"
 
 const Wiki: NextPage = () => {
     return (
@@ -10,7 +9,7 @@ const Wiki: NextPage = () => {
             <MetaTitle title="Startseite" />
             <Typography variant={"h4"}>Wiki</Typography>
 
-            <WikiTree nodes={docs} />
+            <WikiTree />
         </>
     )
 }

@@ -29,4 +29,10 @@ Given **x**.**y**.**z** (MAJOR.MINOR.PATCH):
 -   **y** -> new but backwards compatible features (starting at e.g. changing a button or adding one); code changes without visual effect to the user (e.g. performance improvments, cleaning code or rewriting code etc.)
 -   **z** -> backwards comptabile bug fixes
 
-**Note**: Prerelease like Alphas and Betas must conform [semver specifications](https://semver.org/#spec-item-11).
+**Note**: Prereleases like Alphas and Betas must be conform with [semver specifications](https://semver.org/#spec-item-11).
+
+Since those tags like `-alpha.1` are only syntactically specified by semver, the semantics are up to the user. Our »TypeScript Template Literal Type« `VersionTag` defines three tags:
+
+-   **-alpha** or **-alpha.n** (where `n` is a number) ->
+-   **-beta** or **-beta.n** (where `n` is a number) ->
+-   **-rc** or **-rc.n** (where `n` is a number) -> `rc` means »release candidate«

@@ -17,10 +17,18 @@ export const ReleaseNotification: React.FC = () => {
         <Box
             sx={{
                 borderRadius: theme.shape.borderRadius,
-                p: theme.spacing(2),
+                p: theme.spacing(3),
+                bgcolor: theme.palette.grey[100],
+                display: "inline-block",
             }}
         >
-            <Typography>Eine neue Version ist verfügbar!</Typography>
+            <Typography
+                sx={{
+                    mb: theme.spacing(2),
+                }}
+            >
+                Eine neue Version ist verfügbar!
+            </Typography>
             <Typography>
                 Schau dir die Release-Notes{" "}
                 <Link href={`/release/${latestRelease.version}`}>hier</Link> an.

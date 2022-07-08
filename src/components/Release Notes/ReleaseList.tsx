@@ -6,7 +6,7 @@ import {
     ListItemText,
 } from "@mui/material"
 import { useRouter } from "next/router"
-import { MONTHS } from "utils/date"
+import { localeDateString, MONTHS } from "utils/date"
 import { ReleaseProps } from "./Release"
 import { releases } from "public/releases"
 const byDate = (a: ReleaseProps, b: ReleaseProps) =>
@@ -37,10 +37,7 @@ const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({
     index,
 }) => {
     const router = useRouter()
-    const dateString = `${MONTHS[props.date.getMonth()].slice(
-        0,
-        3
-    )} ${props.date.getDate()}, ${props.date.getFullYear()}`
+
     return (
         <ListItem
             onClick={() => router.push("/release/" + props.version)}
@@ -54,7 +51,10 @@ const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({
             <ListItemAvatar>
                 <Avatar>{index}</Avatar>
             </ListItemAvatar>
-            <ListItemText primary={props.title} secondary={dateString} />
+            <ListItemText
+                primary={props.title}
+                secondary={localeDateString(props.date)}
+            />
         </ListItem>
     )
 }

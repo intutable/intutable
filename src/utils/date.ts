@@ -12,3 +12,9 @@ export const MONTHS = [
     "November",
     "Dezember",
 ] as const
+
+export const localeDateString = (date: Date) =>
+    `${MONTHS[date.getMonth()].slice(
+        0,
+        3
+    )} ${date.getDate()}, ${date.getFullYear()}`

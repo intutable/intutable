@@ -7,9 +7,10 @@ import {
 } from "./TreeView"
 import { Box } from "@mui/material"
 import Link from "components/Link"
-import { isWikiNode, WikiNode, WikiTree } from "./types"
+import { isWikiNode, WikiNode, WikiTree as WikiTreeType } from "./types"
+import { docs as nodes } from "public/wikidocs"
 
-const buildTree = (nodes: WikiTree, depth = 0) =>
+const buildTree = (nodes: WikiTreeType, depth = 0) =>
     nodes.map((node, i) =>
         isWikiNode(node) ? (
             <StyledTreeItem
@@ -28,11 +29,7 @@ const buildTree = (nodes: WikiTree, depth = 0) =>
         )
     )
 
-export type WikiProps = {
-    nodes: WikiTree
-}
-
-export const Wiki: React.FC<WikiProps> = props => {
+export const WikiTree: React.FC = () => {
     return (
         <Box>
             <TreeView
@@ -48,10 +45,10 @@ export const Wiki: React.FC<WikiProps> = props => {
                     overflowY: "auto",
                 }}
             >
-                {buildTree(props.nodes)}
+                {buildTree(nodes)}
             </TreeView>
         </Box>
     )
 }
 
-export default Wiki
+export default WikiTree
