@@ -14,7 +14,7 @@ export const releases: ReleaseProps[] = [
         prerelease: true,
         title: "MVP Juni",
         date: new Date("06/09/2022"),
-        teaser: "Zweite Präsentation der App",
+        teaser: "Zweite Präsentation der App.",
         description: "",
     },
     {

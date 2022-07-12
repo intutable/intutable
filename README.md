@@ -35,4 +35,4 @@ Since those tags like `-alpha.1` are only syntactically specified by semver, the
 
 -   **-alpha** or **-alpha.n** (where `n` is a number) ->
 -   **-beta** or **-beta.n** (where `n` is a number) ->
--   **-rc** or **-rc.n** (where `n` is a number) -> `rc` means »release candidate«
+-   **-rc** or **-rc.n** (where `n` is a number) ->

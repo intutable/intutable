@@ -1,4 +1,4 @@
-import { Divider, Typography } from "@mui/material"
+import { Box, Divider, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import MetaTitle from "components/MetaTitle"
 import { ReleaseList } from "components/Release Notes/ReleaseList"
@@ -24,7 +24,19 @@ const ServiceDesk: NextPage = () => {
                 <li>
                     <Typography>
                         Bugs oder Feature-Requests können mit einer
-                        detaillierten Beschreibung an diese{" "}
+                        <Tooltip
+                            title="Die Beschreibung sollte Angaben wie die Seite, auf der es zu einem Fehler kam, beinhalten, welche Aktionen im Detail ausgeführt wurden etc."
+                            arrow
+                        >
+                            <Box
+                                sx={{
+                                    textDecoration: "dotted",
+                                }}
+                            >
+                                detaillierten
+                            </Box>
+                        </Tooltip>{" "}
+                        Beschreibung an diese{" "}
                         <a href="mailto:contact-project+intutable-dekanat-app-30881788-issue-@incoming.gitlab.com">
                             E-Mail
                         </a>{" "}
@@ -73,7 +85,8 @@ const ServiceDesk: NextPage = () => {
                             color: theme.palette.text.secondary,
                         }}
                     >
-                        Wirf einen Blick in's <Link href="/wiki/">Wiki</Link> .
+                        Wirf einen Blick in&apos;s{" "}
+                        <Link href="/wiki/">Wiki</Link> .
                     </Typography>
                 </li>
             </ul>
