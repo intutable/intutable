@@ -54,16 +54,20 @@ export const FilterWindowButton: React.FC = () => {
     return (
         <>
             <Tooltip
-                title={viewData.descriptor.name === defaultViewName()
-                     ? CANNOT_EDIT_DEFAULT_VIEW_MESSAGE
-                     : "Filter einstellen"}
+                title={
+                    viewData.descriptor.name === defaultViewName()
+                        ? CANNOT_EDIT_DEFAULT_VIEW_MESSAGE
+                        : "Filter einstellen"
+                }
                 enterDelay={1000}
             >
                 <span>
                     <Button
                         startIcon={<FilterListIcon />}
                         onClick={toggleEditor}
-                        disabled={viewData.descriptor.name === defaultViewName()}
+                        disabled={
+                            viewData.descriptor.name === defaultViewName()
+                        }
                     >
                         Filter
                     </Button>
