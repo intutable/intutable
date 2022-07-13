@@ -32,24 +32,22 @@ export async function init(plugins: PluginLoader) {
     // in init.sql until db supports default values
     // await configureColumnAttributes()
 
-    // for dev mode, create some custom data
-    if (process.env["npm_lifecycle_event"] === "dev") {
-        const maybeAdminId = await getAdminId()
-        if (maybeAdminId === null) {
-            adminId = await createAdmin()
-            console.log("set up admin user")
-        } else {
-            adminId = maybeAdminId
-            console.log("admin user already present")
-        }
-
-        // testing data
-        if (maybeAdminId === null) {
-            console.log("creating and populating example schema")
-            await createExampleSchema(core, adminId)
-            await insertExampleData(core)
-        } else console.log("skipped creating example schema")
+    // create some custom data
+    const maybeAdminId = await getAdminId()
+    if (maybeAdminId === null) {
+        adminId = await createAdmin()
+        console.log("set up admin user")
+    } else {
+        adminId = maybeAdminId
+        console.log("admin user already present")
     }
+
+    // testing data
+    if (maybeAdminId === null) {
+        console.log("creating and populating example schema")
+        await createExampleSchema(core, adminId)
+        await insertExampleData(core)
+    } else console.log("skipped creating example schema")
 
     core.listenForRequests(req.CHANNEL)
         .on(req.addColumnToTable.name, addColumnToTable_)
