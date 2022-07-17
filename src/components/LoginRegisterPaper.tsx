@@ -195,7 +195,8 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                             </Typography>
                             <Button
                                 variant="contained"
-                                onClick={() => alert("not implemented yet")}
+                                onClick={() => {}}
+                                disabled
                             >
                                 Uni-Zugang
                             </Button>
