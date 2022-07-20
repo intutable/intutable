@@ -1,4 +1,4 @@
-import VisibilityIcon from "@mui/icons-material/Visibility"
+import ViewNavIcon from "@mui/icons-material/FeaturedPlayList"
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff"
 import { IconButton, Tooltip } from "@mui/material"
 import React from "react"
@@ -16,7 +16,11 @@ export const Views: React.FC<ViewsProps> = props => {
             enterDelay={1000}
         >
             <IconButton onClick={props.handleClick} color="primary">
-                {props.open ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                {props.open ? (
+                    <ViewNavIcon />
+                ) : (
+                    <ViewNavIcon color="disabled" />
+                )}
             </IconButton>
         </Tooltip>
     )

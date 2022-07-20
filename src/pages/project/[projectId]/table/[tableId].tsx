@@ -100,13 +100,20 @@ const TablePage: React.FC = () => {
         await updateRow(col, getRowId(changedRow), changedRow[col.key])
     }
 
-    const tableSize =
-        viewNavOpen && detailedViewOpen
-            ? 8
-            : viewNavOpen != detailedViewOpen
-            ? 10
-            : 12
-
+    const tableSize = {
+        xs:
+            viewNavOpen && detailedViewOpen
+                ? 8
+                : viewNavOpen != detailedViewOpen
+                ? 10
+                : 12,
+        xl:
+            viewNavOpen && detailedViewOpen
+                ? 10
+                : viewNavOpen != detailedViewOpen
+                ? 11
+                : 12,
+    }
     if (tableList == null || data == null) return <LoadingSkeleton />
 
     return (
@@ -139,12 +146,12 @@ const TablePage: React.FC = () => {
                 <>
                     <Grid container spacing={2}>
                         {viewNavOpen && (
-                            <Grid item xs={2}>
+                            <Grid item xs={2} xl={1}>
                                 <ViewNavigator open={viewNavOpen} />
                             </Grid>
                         )}
 
-                        <Grid item xs={tableSize}>
+                        <Grid item xs={tableSize.xs} xl={tableSize.xl}>
                             <Box>
                                 <Toolbar position="top">
                                     <ToolbarItem.Views
@@ -200,7 +207,7 @@ const TablePage: React.FC = () => {
                         </Grid>
 
                         {detailedViewOpen && (
-                            <Grid item xs={2}>
+                            <Grid item xs={2} xl={1}>
                                 <DetailedRowView
                                     data={detailedViewData || undefined}
                                     open={detailedViewOpen}

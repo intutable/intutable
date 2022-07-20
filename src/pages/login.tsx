@@ -39,7 +39,7 @@ const Login: NextPage = () => {
     )
 
     const { mutateUser } = useUser({
-        redirectTo: "/",
+        redirectTo: "/projects",
         redirectIfFound: true,
     })
 
