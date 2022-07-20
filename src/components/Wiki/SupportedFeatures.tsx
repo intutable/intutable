@@ -17,7 +17,7 @@ import { VersionTag } from "types/VersionTag"
 import InfoIcon from "@mui/icons-material/Info"
 import SupportedIcon from "@mui/icons-material/CheckCircleRounded"
 import UnsupportedIcon from "@mui/icons-material/Dangerous"
-import InDevelopmentIcon from "@mui/icons-material/Settings"
+import InDevelopmentIcon from "@mui/icons-material/PrecisionManufacturing"
 import InTestingIcon from "@mui/icons-material/Biotech"
 const getIconTooltip = (support: Feature["support"]): string =>
     support === "supported"
@@ -62,55 +62,53 @@ export const SupportedFeatures: React.FC<SupportedFeaturesProps> = props => {
                         <TableCell>Status</TableCell>
                         <TableCell>Release-Notes</TableCell>
                     </TableRow>
-                    <TableBody>
-                        {props.features.map(feature => (
-                            <TableRow key={feature.name}>
-                                <TableCell>
-                                    <Stack
-                                        direction="row"
-                                        sx={{
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <Typography>{feature.name}</Typography>
-                                        {feature.infoText &&
-                                            feature.infoText.length > 0 && (
-                                                <Tooltip
-                                                    arrow
-                                                    placement="right"
-                                                    title={feature.infoText}
-                                                >
-                                                    <IconButton size="small">
-                                                        <InfoIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
-                                    </Stack>
-                                </TableCell>
-                                <TableCell>
-                                    <Tooltip
-                                        arrow
-                                        placement="right"
-                                        title={getIconTooltip(feature.support)}
-                                    >
-                                        {getIcon(feature.support)}
-                                    </Tooltip>
-                                </TableCell>
-                                <TableCell>
-                                    <Link href={`/release/${feature.release}`}>
-                                        {feature.release}
-                                    </Link>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
                 </TableHead>
+                <TableBody>
+                    {props.features.map(feature => (
+                        <TableRow key={feature.name}>
+                            <TableCell>
+                                <Stack
+                                    direction="row"
+                                    sx={{
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Typography>{feature.name}</Typography>
+                                    {feature.infoText &&
+                                        feature.infoText.length > 0 && (
+                                            <Tooltip
+                                                arrow
+                                                placement="right"
+                                                title={feature.infoText}
+                                            >
+                                                <IconButton size="small">
+                                                    <InfoIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                </Stack>
+                            </TableCell>
+                            <TableCell>
+                                <Tooltip
+                                    arrow
+                                    placement="right"
+                                    title={getIconTooltip(feature.support)}
+                                >
+                                    {getIcon(feature.support)}
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell>
+                                <Link href={`/release/${feature.release}`}>
+                                    {feature.release}
+                                </Link>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+
                 <TableFooter>
                     <TableRow>
-                        <TableCell>
-                            Übersicht des Status der Implementierung der
-                            Features{" "}
-                        </TableCell>
+                        <TableCell>Übersicht über die Features</TableCell>
                     </TableRow>
                 </TableFooter>
             </Table>

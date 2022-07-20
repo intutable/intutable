@@ -74,7 +74,7 @@ const ServiceDesk: NextPage = () => {
             </ul>
 
             {/* Wiki */}
-            <Typography variant={"h5"} sx={{ mt: 20 }}>
+            {/* <Typography variant={"h5"} sx={{ mt: 20 }}>
                 Wiki
             </Typography>
             <Divider />
@@ -89,7 +89,7 @@ const ServiceDesk: NextPage = () => {
                         <Link href="/wiki/">Wiki</Link> .
                     </Typography>
                 </li>
-            </ul>
+            </ul> */}
 
             {/* Features */}
             <Typography variant={"h5"} sx={{ mt: 20 }}>
