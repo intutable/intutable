@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
 import DeleteIcon from "@mui/icons-material/Delete"
 import { Select, MenuItem, TextField, IconButton, Box } from "@mui/material"
-import * as f from "@backend/condition"
+import * as f from "@backend/filter"
 import { TableColumn } from "types/rdg"
 
 export type PartialFilter = Omit<f.SimpleFilter, "left" | "right"> &
@@ -90,26 +90,7 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
 
     const assembleFilter = useCallback(() => {
         const leftColumn = columns.find(c => c._id === column)
-        const columnSpec: f.LeftOperand | undefined = leftColumn
-            ? {
-                  kind: f.OperandKind.Column,
-                  column: {
-                      parentColumnId: leftColumn._id,
-                      joinId: null,
-                  },
-              }
-            : undefined
-        const right: f.RightOperand = {
-            kind: f.OperandKind.Literal,
-            value: operator === "LIKE" ? f.packContainsValue(value) : value,
-        }
-        const newFilter: PartialFilter = {
-            kind: f.ConditionKind.Infix,
-            left: columnSpec,
-            operator: operator,
-            right,
-        }
-        return newFilter
+        return assemblePartialSimpleFilter(leftColumn, operator, value)
     }, [column, operator, columns, value])
 
     /** See {@link commit} */
@@ -195,4 +176,31 @@ const prepareFilterValue = (
     else if (operator === "LIKE")
         return f.unpackContainsValue(right.value.toString())
     else return right.value.toString()
+}
+
+const assemblePartialSimpleFilter = (
+    leftColumn: TableColumn | undefined,
+    operator: f.FilterOperator,
+    value: string
+) => {
+    const columnSpec: f.LeftOperand | undefined = leftColumn
+        ? {
+              kind: f.OperandKind.Column,
+              column: {
+                  parentColumnId: leftColumn._id,
+                  joinId: null,
+              },
+          }
+        : undefined
+    const right: f.RightOperand = {
+        kind: f.OperandKind.Literal,
+        value: operator === "LIKE" ? f.packContainsValue(value) : value,
+    }
+    const newFilter: PartialFilter = {
+        kind: f.ConditionKind.Infix,
+        left: columnSpec,
+        operator: operator,
+        right,
+    }
+    return newFilter
 }
