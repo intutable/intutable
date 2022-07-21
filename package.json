@@ -29,7 +29,7 @@
         "@intutable/database": "^1.3.0",
         "@intutable/http": "^0.1.5",
         "@intutable/http-cors": "^0.1.0",
-        "@intutable/lazy-views": "^3.0.2",
+        "@intutable/lazy-views": "^4.0.0-single-connection",
         "@intutable/project-management": "0.4.10",
         "@intutable/user-authentication": "^0.1.3",
         "@mui/base": "^5.0.0-alpha.76",

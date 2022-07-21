@@ -11,7 +11,11 @@ import {
 } from "@mui/material"
 
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
-import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
+import {
+    ConditionKind,
+    SimpleFilter,
+    FILTER_OPERATORS_LIST,
+} from "@backend/condition"
 import { TableColumn } from "types/rdg"
 import { useAPI } from "context/APIContext"
 import { PartialFilter, FilterListItem, isValidFilter } from "./Filter"
@@ -43,7 +47,7 @@ type KeyedFilter<F> = {
 
 /**
  * A placeholder: either an incomplete filter that the `FilterWindow` keeps
- * track of because it can't be saved to the DB, or a placeholder for a
+ * track of because it can't be saved to the DB, or a (null) placeholder for a
  * full-fledged filter that comes from the back-end.
  */
 type FilterPlaceholder = KeyedFilter<PartialFilter | null>
@@ -88,7 +92,8 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
     const newUnsavedFilter = (): FilterPlaceholder => ({
         key: getNextKey(),
         filter: {
-            operator: FILTER_OPERATORS[0].raw,
+            kind: ConditionKind.Infix,
+            operator: FILTER_OPERATORS_LIST[0].raw,
         },
     })
 
@@ -106,7 +111,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
      */
     const initPlaceholders = (activeFilters: SimpleFilter[]) => {
         if (activeFilters.length > 0)
-            return props.activeFilters.map(_ => ({
+            return props.activeFilters.map(() => ({
                 key: getNextKey(),
                 filter: null,
             }))

@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
 import DeleteIcon from "@mui/icons-material/Delete"
 import { Select, MenuItem, TextField, IconButton, Box } from "@mui/material"
-import {
-    SimpleFilter,
-    FILTER_OPERATORS,
-    LIKE_PATTERN_ESCAPE_CHARS,
-} from "@backend/condition"
+import * as f from "@backend/condition"
 import { TableColumn } from "types/rdg"
 
-export type PartialFilter = Partial<SimpleFilter>
+export type PartialFilter = Omit<f.SimpleFilter, "left" | "right"> &
+    Partial<Pick<f.SimpleFilter, "left" | "right">>
 
 export const filterEquals = (f1: PartialFilter, f2: PartialFilter) =>
-    f1.left?.parentColumnId === f2.left?.parentColumnId &&
+    f1.left?.column.parentColumnId === f2.left?.column.parentColumnId &&
+    f1.left?.column.joinId === f2.left?.column.joinId &&
     f1.operator === f2.operator &&
-    f1.right === f2.right
+    f1.right?.value === f2.right?.value
 
-export const isValidFilter = (filter: PartialFilter): filter is SimpleFilter =>
+export const isValidFilter = (
+    filter: PartialFilter
+): filter is f.SimpleFilter =>
     filter.left !== undefined &&
     filter.operator !== undefined &&
     filter.right !== undefined &&
-    filter.right !== ""
+    filter.right.value !== ""
 
 /**
  * An editor component for one single filter. The total filter consists
@@ -40,7 +40,7 @@ type FilterListItemProps = {
      * excessive updates), the editor calls its `onCommitFilter` prop, asking
      * the parent component to commit the current filter to the back-end.
      */
-    onCommit: (newFilter: SimpleFilter) => Promise<void>
+    onCommit: (newFilter: f.SimpleFilter) => Promise<void>
     onBecomeInvalid: (partialFilter: PartialFilter) => Promise<void>
 }
 
@@ -53,13 +53,13 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
     const { columns, filter, onCommit, onBecomeInvalid } = props
 
     const [column, setColumn] = useState<number | string>(
-        filter.left?.parentColumnId || ""
+        filter.left?.column.parentColumnId || ""
     )
-    const [operator, setOperator] = useState<string>(
-        filter.operator || FILTER_OPERATORS[0].raw
+    const [operator, setOperator] = useState<f.FilterOperator>(
+        filter.operator || "="
     )
     const [value, setValue] = useState<string>(() =>
-        prepareFilterValue(filter.right)
+        prepareFilterValue(filter.operator, filter.right)
     )
     const [readyForCommit, setReadyForCommit] = useState<boolean>(true)
     /**
@@ -90,13 +90,24 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
 
     const assembleFilter = useCallback(() => {
         const leftColumn = columns.find(c => c._id === column)
-        const columnSpec = leftColumn
-            ? { parentColumnId: leftColumn._id, joinId: null }
+        const columnSpec: f.LeftOperand | undefined = leftColumn
+            ? {
+                  kind: f.OperandKind.Column,
+                  column: {
+                      parentColumnId: leftColumn._id,
+                      joinId: null,
+                  },
+              }
             : undefined
+        const right: f.RightOperand = {
+            kind: f.OperandKind.Literal,
+            value: operator === "LIKE" ? f.packContainsValue(value) : value,
+        }
         const newFilter: PartialFilter = {
+            kind: f.ConditionKind.Infix,
             left: columnSpec,
             operator: operator,
-            right: operator === "LIKE" ? packContainsValue(value) : value,
+            right,
         }
         return newFilter
     }, [column, operator, columns, value])
@@ -139,14 +150,14 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
             <Select
                 value={operator}
                 onChange={e => {
-                    setOperator(e.target.value)
+                    setOperator(e.target.value as f.FilterOperator)
                 }}
                 sx={{
                     mr: 1,
                 }}
                 size="small"
             >
-                {FILTER_OPERATORS.map(op => (
+                {f.FILTER_OPERATORS_LIST.map(op => (
                     <MenuItem key={op.raw} value={op.raw}>
                         {op.pretty}
                     </MenuItem>
@@ -176,49 +187,12 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
     )
 }
 
-const prepareFilterValue = (value: SimpleFilter["right"] | undefined): string =>
-    value ? unpackContainsValue(value.toString()) : ""
-
-/** Convert the value a user enters in a `contains` condition to database-ready
- * format (by adding percent symbols).
- */
-const packContainsValue = (value: string): string =>
-    "%" +
-    value
-        .split("")
-        .map(c => (LIKE_PATTERN_ESCAPE_CHARS.includes(c) ? "\\" + c : c))
-        .join("") +
-    "%"
-
-/**
- * Parse the SQL `LIKE` pattern into a format without format and escape chars.
- */
-const unpackContainsValue = (value: string): string => {
-    let acc = ""
-    let lastWasBackslash = false
-    const pos = 0
-    for (const char of value.split("").slice(1, -1)) {
-        if (!lastWasBackslash && char === "\\") {
-            // saw a first backslash
-            lastWasBackslash = true
-        } else if (
-            lastWasBackslash &&
-            LIKE_PATTERN_ESCAPE_CHARS.includes(char)
-        ) {
-            // saw a backslash, now seeing \ % _
-            lastWasBackslash = false
-            acc = acc.concat(char)
-        } else if (lastWasBackslash)
-            // saw backslash, but not seeing an escapeable character after
-            throw Error(
-                `unpackContainsValue: unescaped \\ at ` + `position ${pos}`
-            )
-        else if (LIKE_PATTERN_ESCAPE_CHARS.includes(char))
-            // seeing escapeable character without a backslash before it
-            throw Error(
-                `unpackContainsValue: unescaped ${char} at ` + `position ${pos}`
-            )
-        else acc = acc.concat(char)
-    }
-    return acc
+const prepareFilterValue = (
+    operator: f.SimpleFilter["operator"] | undefined,
+    right: f.SimpleFilter["right"] | undefined
+): string => {
+    if (!right) return ""
+    else if (operator === "LIKE")
+        return f.unpackContainsValue(right.value.toString())
+    else return right.value.toString()
 }
