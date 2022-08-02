@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import { Button, Tooltip } from "@mui/material"
-import { SimpleFilter } from "@backend/condition"
+import { SimpleFilter } from "types/filter"
 import { defaultViewName } from "@backend/defaults"
 import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
 import { useTable } from "hooks/useTable"
@@ -79,7 +79,7 @@ export const FilterWindowButton: React.FC = () => {
                     columns={tableData.columns.filter(
                         c => !ColumnUtility.isAppColumn(c)
                     )}
-                    activeFilters={viewData.filters as SimpleFilter[]}
+                    activeFilters={viewData.filters}
                     onHandleCloseEditor={closeEditor}
                     onUpdateFilters={handleUpdateFilters}
                 />

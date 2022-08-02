@@ -1,5 +1,4 @@
 import {
-    Condition,
     ViewDescriptor,
     ViewOptions,
     getViewOptions,
@@ -12,6 +11,8 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { defaultViewName } from "@backend/defaults"
+import { SimpleFilter } from "types/filter"
+import { Filter } from "api/utils/parse"
 
 /**
  * PATCH/update the name of a single view.
@@ -31,7 +32,7 @@ const PATCH = withCatchingAPIRoute(
         viewId: ViewDescriptor["id"]
     ) => {
         const { filters } = req.body as {
-            filters: Condition[]
+            filters: SimpleFilter[]
         }
         const user = req.session.user!
 
@@ -45,7 +46,7 @@ const PATCH = withCatchingAPIRoute(
 
         const newRowOptions = {
             ...options.rowOptions,
-            conditions: filters,
+            conditions: filters.map(Filter.deparse),
         }
 
         await coreRequest(

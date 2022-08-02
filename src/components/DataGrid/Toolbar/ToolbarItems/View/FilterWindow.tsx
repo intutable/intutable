@@ -15,7 +15,7 @@ import {
     ConditionKind,
     SimpleFilter,
     FILTER_OPERATORS_LIST,
-} from "@backend/filter"
+} from "types/filter"
 import { TableColumn } from "types/rdg"
 import { useAPI } from "context/APIContext"
 import { PartialFilter, FilterListItem, isValidFilter } from "./Filter"

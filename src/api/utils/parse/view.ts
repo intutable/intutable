@@ -1,6 +1,6 @@
 import { ViewOptions, ViewData as RawViewData } from "@intutable/lazy-views"
 import type { Row, ViewData } from "types"
-import { Column as ColumnParser } from "."
+import { Column as ColumnParser, Filter as FilterParser } from "."
 import { byIndex } from "./utils"
 
 export const parse = (
@@ -10,7 +10,7 @@ export const parse = (
     return {
         descriptor: view.descriptor,
         metaColumns: view.columns,
-        filters: options.rowOptions.conditions,
+        filters: options.rowOptions.conditions.map(FilterParser.parse),
         sortColumns: options.rowOptions.sortColumns,
         groupColumns: options.rowOptions.groupColumns,
         columns: view.columns

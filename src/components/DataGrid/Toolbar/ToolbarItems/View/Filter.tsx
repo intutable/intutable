@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
 import DeleteIcon from "@mui/icons-material/Delete"
 import { Select, MenuItem, TextField, IconButton, Box } from "@mui/material"
-import * as f from "@backend/filter"
+import * as f from "types/filter"
 import { TableColumn } from "types/rdg"
 
 export type PartialFilter = Omit<f.SimpleFilter, "left" | "right"> &
@@ -58,9 +58,10 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
     const [operator, setOperator] = useState<f.FilterOperator>(
         filter.operator || "="
     )
-    const [value, setValue] = useState<string>(() =>
-        prepareFilterValue(filter.operator, filter.right)
+    const [value, setValue] = useState<string>(
+        filter.right?.value.toString() || ""
     )
+
     const [readyForCommit, setReadyForCommit] = useState<boolean>(true)
     /**
      * The current state of the filter in progress. Required for our
@@ -168,21 +169,11 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
     )
 }
 
-const prepareFilterValue = (
-    operator: f.SimpleFilter["operator"] | undefined,
-    right: f.SimpleFilter["right"] | undefined
-): string => {
-    if (!right) return ""
-    else if (operator === "LIKE")
-        return f.unpackContainsValue(right.value.toString())
-    else return right.value.toString()
-}
-
 const assemblePartialSimpleFilter = (
     leftColumn: TableColumn | undefined,
     operator: f.FilterOperator,
     value: string
-) => {
+): PartialFilter => {
     const columnSpec: f.LeftOperand | undefined = leftColumn
         ? {
               kind: f.OperandKind.Column,
@@ -194,7 +185,7 @@ const assemblePartialSimpleFilter = (
         : undefined
     const right: f.RightOperand = {
         kind: f.OperandKind.Literal,
-        value: operator === "LIKE" ? f.packContainsValue(value) : value,
+        value,
     }
     const newFilter: PartialFilter = {
         kind: f.ConditionKind.Infix,

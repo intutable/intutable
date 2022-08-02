@@ -4,8 +4,8 @@ import { ViewData } from "types"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { APIContextProvider } from "context/APIContext"
-import { ViewDescriptor, Condition as Filter } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@intutable/lazy-views"
+import { SimpleFilter } from "types/filter"
 import { fetcher } from "api/fetcher"
 
 export type ViewHookOptions = {
@@ -53,7 +53,7 @@ export const useView = (options?: ViewHookOptions) => {
      * wholesale. Incremental updates do not work as long as there are no
      * IDs or similar.
      */
-    const updateFilters = async (filters: Filter[]): Promise<void> => {
+    const updateFilters = async (filters: SimpleFilter[]): Promise<void> => {
         if (!currentView) return
         await fetcher({
             url: `/api/view/${currentView.id}/filters`,
