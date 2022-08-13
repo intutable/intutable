@@ -1,15 +1,11 @@
-import MetaTitle from "components/MetaTitle"
+import { Box, Divider, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import {
-    Avatar,
-    Divider,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Typography,
-} from "@mui/material"
+import MetaTitle from "components/MetaTitle"
+import { ReleaseList } from "components/Release Notes/ReleaseList"
 import type { NextPage } from "next"
+import { supportedFeatures } from "public/supportedFeatures"
+import SupportedFeatures from "components/Wiki/SupportedFeatures"
+import Link from "components/Link"
 
 const ServiceDesk: NextPage = () => {
     const theme = useTheme()
@@ -28,12 +24,24 @@ const ServiceDesk: NextPage = () => {
                 <li>
                     <Typography>
                         Bugs oder Feature-Requests können mit einer
-                        detaillierten Beschreibung an diese{" "}
+                        <Tooltip
+                            title="Die Beschreibung sollte Angaben wie die Seite, auf der es zu einem Fehler kam, beinhalten, welche Aktionen im Detail ausgeführt wurden etc."
+                            arrow
+                        >
+                            <Box
+                                sx={{
+                                    textDecoration: "dotted",
+                                }}
+                            >
+                                detaillierten
+                            </Box>
+                        </Tooltip>{" "}
+                        Beschreibung an diese{" "}
                         <a href="mailto:contact-project+intutable-dekanat-app-30881788-issue-@incoming.gitlab.com">
                             E-Mail
                         </a>{" "}
                         gesendet werden. Die Entwickler erhalten eine Nachricht
-                        und kümmern sich darum.
+                        und werden das Problem so schnell wie möglich lösen.
                     </Typography>
                 </li>
             </ul>
@@ -50,8 +58,8 @@ const ServiceDesk: NextPage = () => {
                             color: theme.palette.text.secondary,
                         }}
                     >
-                        Safari wird zzt. als Browser nicht vollständig
-                        unterstützt. Wir empfehlen Google Chrome.
+                        Einige Browser (u.a. Safari) werden zzt. nicht
+                        vollständig unterstützt. Wir empfehlen Google Chrome.
                     </Typography>
                 </li>
                 <li>
@@ -65,31 +73,37 @@ const ServiceDesk: NextPage = () => {
                 </li>
             </ul>
 
+            {/* Wiki */}
+            {/* <Typography variant={"h5"} sx={{ mt: 20 }}>
+                Wiki
+            </Typography>
+            <Divider />
+            <ul>
+                <li>
+                    <Typography
+                        sx={{
+                            color: theme.palette.text.secondary,
+                        }}
+                    >
+                        Wirf einen Blick in&apos;s{" "}
+                        <Link href="/wiki/">Wiki</Link> .
+                    </Typography>
+                </li>
+            </ul> */}
+
+            {/* Features */}
+            <Typography variant={"h5"} sx={{ mt: 20 }}>
+                Features
+            </Typography>
+            <SupportedFeatures features={supportedFeatures} />
+
             {/* Versionsverlauf */}
             <Typography variant={"h5"} sx={{ mt: 20 }}>
                 Versionsverlauf
             </Typography>
             <Divider />
-            <List
-                sx={{
-                    width: "100%",
-                    maxWidth: 360,
-                    bgcolor: "background.paper",
-                }}
-            >
-                <ListItem>
-                    <ListItemAvatar>
-                        <Avatar>2</Avatar>
-                    </ListItemAvatar>
-                    <ListItemText primary="MVP" secondary="Jun 9, 2022" />
-                </ListItem>
-                <ListItem>
-                    <ListItemAvatar>
-                        <Avatar>1</Avatar>
-                    </ListItemAvatar>
-                    <ListItemText primary="MVP" secondary="Apr 7, 2022" />
-                </ListItem>
-            </List>
+
+            <ReleaseList />
         </>
     )
 }
