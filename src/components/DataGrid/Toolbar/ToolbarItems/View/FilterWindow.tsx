@@ -14,11 +14,13 @@ import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import {
     ConditionKind,
     SimpleFilter,
+    PartialSimpleFilter,
     FILTER_OPERATORS_LIST,
 } from "types/filter"
+import { isValidFilter } from "utils/filter"
 import { TableColumn } from "types/rdg"
 import { useAPI } from "context/APIContext"
-import { PartialFilter, FilterListItem, isValidFilter } from "./Filter"
+import { SimpleFilterEditor } from "./SimpleFilter"
 
 type FilterWindowProps = {
     anchorEl: Element | null
@@ -50,11 +52,11 @@ type KeyedFilter<F> = {
  * track of because it can't be saved to the DB, or a (null) placeholder for a
  * full-fledged filter that comes from the back-end.
  */
-type FilterPlaceholder = KeyedFilter<PartialFilter | null>
+type FilterPlaceholder = KeyedFilter<PartialSimpleFilter | null>
 /**
  * A filter that is (possibly) not yet saved.
  */
-type UnsavedFilter = KeyedFilter<PartialFilter>
+type UnsavedFilter = KeyedFilter<PartialSimpleFilter>
 
 const isUnsaved = (p: FilterPlaceholder): p is UnsavedFilter =>
     p.filter !== null
@@ -190,7 +192,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
      */
     const handleFilterBecomeInvalid = async (
         key: number | string,
-        incomplete: PartialFilter
+        incomplete: PartialSimpleFilter
     ): Promise<void> => {
         const index = filterPlaceholders.findIndex(f => f.key === key)
         if (!unsavedFilters) return
@@ -246,7 +248,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                     </Box>
                     {unsavedFilters &&
                         unsavedFilters.map(f => (
-                            <FilterListItem
+                            <SimpleFilterEditor
                                 key={f.key}
                                 columns={props.columns}
                                 filter={f.filter}

@@ -1,6 +1,7 @@
 /**
- * This module defines a limited subset of the view plugin's condition type
- * for use in the GUI.
+ * This module defines the type {@link MkFilter} as a limited subset of the
+ * view plugin's condition type for use in the GUI. A Filter restricts
+ * the set of rows shown, much like a WHERE clause in SQL.
  */
 import * as c from "@intutable/lazy-views/dist/condition"
 
@@ -9,6 +10,17 @@ export {
     OperandKind,
 } from "@intutable/lazy-views/dist/condition"
 export type { Column, Literal } from "@intutable/lazy-views/dist/condition"
+
+/**
+ * A filter  - may be any boolean combination of {@link SimpleFilter}s.
+ */
+export type MkFilter<Infix extends c.IsInfixCondition>
+    = Infix
+    | c.MkAndCondition<MkFilter<Infix>>
+    | c.MkOrCondition<MkFilter<Infix>>
+    | c.MkNotCondition<MkFilter<Infix>>
+
+export type Filter = MkFilter<SimpleFilter>
 
 /**
  * A primitive infix-type (column = value, column < value, etc.) filter.
@@ -74,7 +86,3 @@ export const FILTER_OPERATORS_LIST: OperatorDescriptor[] =
     (Object.getOwnPropertyNames(FILTER_OPERATORS) as FilterOperator[]).map(
         name => ({ ...(FILTER_OPERATORS[name]), raw: name })
     )
-
-export function isFilterOperator(o: string): o is FilterOperator {
-    return Object.getOwnPropertyNames(FILTER_OPERATORS).includes(o)
-}

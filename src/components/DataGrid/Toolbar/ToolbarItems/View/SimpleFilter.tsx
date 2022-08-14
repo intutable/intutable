@@ -1,37 +1,30 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
 import DeleteIcon from "@mui/icons-material/Delete"
 import { Select, MenuItem, TextField, IconButton, Box } from "@mui/material"
-import * as f from "types/filter"
+import {
+    FILTER_OPERATORS_LIST,
+    FilterOperator,
+    OperandKind,
+    ConditionKind,
+    SimpleFilter,
+    PartialSimpleFilter,
+    LeftOperand,
+    RightOperand,
+} from "types/filter"
+import * as f from "utils/filter"
 import { TableColumn } from "types/rdg"
-
-export type PartialFilter = Omit<f.SimpleFilter, "left" | "right"> &
-    Partial<Pick<f.SimpleFilter, "left" | "right">>
-
-export const filterEquals = (f1: PartialFilter, f2: PartialFilter) =>
-    f1.left?.column.parentColumnId === f2.left?.column.parentColumnId &&
-    f1.left?.column.joinId === f2.left?.column.joinId &&
-    f1.operator === f2.operator &&
-    f1.right?.value === f2.right?.value
-
-export const isValidFilter = (
-    filter: PartialFilter
-): filter is f.SimpleFilter =>
-    filter.left !== undefined &&
-    filter.operator !== undefined &&
-    filter.right !== undefined &&
-    filter.right.value !== ""
 
 /**
  * An editor component for one single filter. The total filter consists
  * of the logical conjunction of these.
  */
-type FilterListItemProps = {
+type SimpleFilterEditorProps = {
     /** When the user clicks "create new filter", a new filter with no data
      * in any of the input fields is generated. Also, a filter may have some
      * of its fields set, but not enough to send to the back-end yet, so we
      * can't just represent it with `null` or something.
      */
-    filter: PartialFilter
+    filter: PartialSimpleFilter
     /** TEMP TableColumn is currently not usable for this task. */
     columns: TableColumn[]
     onHandleDelete: () => Promise<void>
@@ -40,14 +33,14 @@ type FilterListItemProps = {
      * excessive updates), the editor calls its `onCommitFilter` prop, asking
      * the parent component to commit the current filter to the back-end.
      */
-    onCommit: (newFilter: f.SimpleFilter) => Promise<void>
-    onBecomeInvalid: (partialFilter: PartialFilter) => Promise<void>
+    onCommit: (newFilter: SimpleFilter) => Promise<void>
+    onBecomeInvalid: (partialFilter: PartialSimpleFilter) => Promise<void>
 }
 
 /**
  * A single, basic filter of the form <column> <operator> <value>.
  */
-export const FilterListItem: React.FC<FilterListItemProps> = props => {
+export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
     const COMMIT_TIMEOUT = 500
 
     const { columns, filter, onCommit, onBecomeInvalid } = props
@@ -55,7 +48,7 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
     const [column, setColumn] = useState<number | string>(
         filter.left?.column.parentColumnId || ""
     )
-    const [operator, setOperator] = useState<f.FilterOperator>(
+    const [operator, setOperator] = useState<FilterOperator>(
         filter.operator || "="
     )
     const [value, setValue] = useState<string>(
@@ -67,7 +60,7 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
      * The current state of the filter in progress. Required for our
      * dynamic updating behavior below.
      */
-    const filterState = useRef<PartialFilter>()
+    const filterState = useRef<PartialSimpleFilter>()
 
     /**
      * The filter is committed automatically as the user enters data,
@@ -81,11 +74,11 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
 
         setTimeout(async () => {
             const newFilter = filterState.current!
-            if (isValidFilter(newFilter)) await onCommit(newFilter)
+            if (f.isValidFilter(newFilter)) await onCommit(newFilter)
             else await onBecomeInvalid(newFilter)
             setReadyForCommit(true)
         }, COMMIT_TIMEOUT)
-        if (isValidFilter(currentFilter)) await onCommit(currentFilter)
+        if (f.isValidFilter(currentFilter)) await onCommit(currentFilter)
         else await onBecomeInvalid(currentFilter)
     }, [onCommit, onBecomeInvalid])
 
@@ -97,7 +90,10 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
     /** See {@link commit} */
     useEffect(() => {
         const newFilter = assembleFilter()
-        if (filterState.current && filterEquals(filterState.current, newFilter))
+        if (
+            filterState.current &&
+            f.partialFilterEquals(filterState.current, newFilter)
+        )
             return
         filterState.current = newFilter
         if (readyForCommit) commit()
@@ -132,14 +128,14 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
             <Select
                 value={operator}
                 onChange={e => {
-                    setOperator(e.target.value as f.FilterOperator)
+                    setOperator(e.target.value as FilterOperator)
                 }}
                 sx={{
                     mr: 1,
                 }}
                 size="small"
             >
-                {f.FILTER_OPERATORS_LIST.map(op => (
+                {FILTER_OPERATORS_LIST.map(op => (
                     <MenuItem key={op.raw} value={op.raw}>
                         {op.pretty}
                     </MenuItem>
@@ -171,24 +167,24 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
 
 const assemblePartialSimpleFilter = (
     leftColumn: TableColumn | undefined,
-    operator: f.FilterOperator,
+    operator: FilterOperator,
     value: string
-): PartialFilter => {
-    const columnSpec: f.LeftOperand | undefined = leftColumn
+): PartialSimpleFilter => {
+    const columnSpec: LeftOperand | undefined = leftColumn
         ? {
-              kind: f.OperandKind.Column,
+              kind: OperandKind.Column,
               column: {
                   parentColumnId: leftColumn._id,
                   joinId: null,
               },
           }
         : undefined
-    const right: f.RightOperand = {
-        kind: f.OperandKind.Literal,
+    const right: RightOperand = {
+        kind: OperandKind.Literal,
         value,
     }
-    const newFilter: PartialFilter = {
-        kind: f.ConditionKind.Infix,
+    const newFilter: PartialSimpleFilter = {
+        kind: ConditionKind.Infix,
         left: columnSpec,
         operator: operator,
         right,

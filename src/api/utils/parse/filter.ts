@@ -1,6 +1,6 @@
 import type {
     InfixCondition,
-    Condition
+    Condition,
 } from "@intutable/lazy-views/dist/condition"
 import {
     ConditionKind,
@@ -8,15 +8,13 @@ import {
     mapCondition,
 } from "@intutable/lazy-views/dist/condition"
 import type { SimpleFilter } from "types/filter"
-import { isFilterOperator } from "types/filter"
-
+import { isFilterOperator } from "utils/filter"
 
 /**
  * The (string) `contains` operator uses SQL `LIKE` under the hood,
  * which requires a pattern string, so we need to convert back and forth.
  */
 export const LIKE_PATTERN_ESCAPE_CHARS = ["%", "_", "\\"]
-
 
 /** Don't look, just a placeholdey hack - we're gonna change the simplefilter
  type a whole lot soon */
@@ -27,40 +25,44 @@ export const parse = (c: Condition): SimpleFilter => {
 }
 
 const parseFilter = (c: InfixCondition): SimpleFilter => {
-    if(c.left.kind !== OperandKind.Column ||
+    if (
+        c.left.kind !== OperandKind.Column ||
         c.right.kind !== OperandKind.Literal ||
-        !isFilterOperator(c.operator))
-        throw TypeError(`expected condition of type <column> - <filterOperator>`
-            + ` - <string>, got: ${JSON.stringify(c)}`)
-    else return {
-        kind: c.kind,
-        left: c.left,
-        operator: c.operator,
-        right: {
-            ...c.right,
-            value: (c.operator === "LIKE" &&
-                typeof(c.right.value) === "string")
-                ? unpackContainsValue(c.right.value)
-                : c.right.value
+        !isFilterOperator(c.operator)
+    )
+        throw TypeError(
+            `expected condition of type <column> - <filterOperator>` +
+                ` - <string>, got: ${JSON.stringify(c)}`
+        )
+    else
+        return {
+            kind: c.kind,
+            left: c.left,
+            operator: c.operator,
+            right: {
+                ...c.right,
+                value:
+                    c.operator === "LIKE" && typeof c.right.value === "string"
+                        ? unpackContainsValue(c.right.value)
+                        : c.right.value,
+            },
         }
-    }
 }
 
 /** Convert a filter from the lazy-views plugin to one the frontend can use. */
 export const deparse = (f: SimpleFilter): Condition =>
     mapCondition(deparseFilter, f)
 
-const deparseFilter = (f: SimpleFilter): InfixCondition =>
-    ({
-        ...f,
-        right: {
-            ...f.right,
-            value: (f.operator === "LIKE" &&
-                typeof (f.right.value) === "string")
+const deparseFilter = (f: SimpleFilter): InfixCondition => ({
+    ...f,
+    right: {
+        ...f.right,
+        value:
+            f.operator === "LIKE" && typeof f.right.value === "string"
                 ? packContainsValue(f.right.value)
-                : f.right.value
-        }
-    })
+                : f.right.value,
+    },
+})
 
 /**
  * Convert the value a user enters in a `contains` condition to an SQL
