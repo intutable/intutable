@@ -1,4 +1,4 @@
-import { FormatterComponent } from "@datagrid/Formatter"
+import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
 import { getId } from "@intutable/lazy-views/dist/selectable"
 import { Box, Stack, Tooltip } from "@mui/material"
 import { fetcher } from "api"
@@ -10,8 +10,8 @@ import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
 import React, { useCallback, useMemo, useState } from "react"
 import { Row } from "types"
-import { DeleteButton } from "../components/DeleteButton"
-import { RowSelector } from "../components/RowSelector"
+import { DeleteButton } from "./components/DeleteButton"
+import { RowSelector } from "./components/RowSelector"
 
 const _LinkColumnFormatter: FormatterComponent = props => {
     const { row, column } = props

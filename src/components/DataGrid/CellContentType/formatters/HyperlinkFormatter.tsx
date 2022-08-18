@@ -1,9 +1,8 @@
-import { FormatterComponent } from "@datagrid/Formatter"
+import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
 import { Box, IconButton, Tooltip } from "@mui/material"
 import { Row } from "types"
-import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
-import { isValidURL } from "utils/isValidURL"
+import { isValidURL } from "@datagrid/CellContentType/validators/isValidURL"
 import LinkIcon from "@mui/icons-material/Attachment"
 
 export const HyperlinkFormatter: FormatterComponent = props => {
