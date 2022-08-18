@@ -4,7 +4,7 @@ import {
 } from "@datagrid/CellContentType/type_converter"
 import { EditorComponent } from "@datagrid/CellContentType/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
-import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
+import { PLACEHOLDER } from "api/utils/SerDes/PLACEHOLDER_KEYS"
 import { Column, MetaColumnProps } from "types"
 import {
     CellContentTypeComponents,

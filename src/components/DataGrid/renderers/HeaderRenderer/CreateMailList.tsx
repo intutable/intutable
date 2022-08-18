@@ -1,7 +1,7 @@
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import DownloadingIcon from "@mui/icons-material/Downloading"
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
-import { isAppColumn } from "api/utils/de_serialize/column"
+import { isAppColumn } from "api/utils/SerDes/column"
 import { useAPI } from "context"
 import { useView } from "hooks/useView"
 import React, { useMemo, useState } from "react"

@@ -1,4 +1,4 @@
-import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
+import { PLACEHOLDER } from "api/utils/SerDes/PLACEHOLDER_KEYS"
 import { SelectColumn } from "react-data-grid"
 import { Column, Row, TableData } from "types"
 import * as Util from "."

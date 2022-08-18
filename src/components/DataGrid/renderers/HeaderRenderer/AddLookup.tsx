@@ -21,7 +21,7 @@ import {
     ListItem,
     ListItemButton,
 } from "@mui/material"
-import { isAppColumn } from "api/utils/de_serialize/column"
+import { isAppColumn } from "api/utils/SerDes/column"
 import { useLink } from "hooks/useLink"
 import { TableColumn } from "types"
 
