@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
-import DeleteIcon from "@mui/icons-material/Delete"
-import { Select, MenuItem, TextField, IconButton, Box } from "@mui/material"
+import { IconButton } from "@mui/material"
+import FormatIndentIncreaseIcon from "@mui/icons-material/FormatIndentIncrease"
+import { Select, MenuItem, TextField, Box } from "@mui/material"
 import {
+    ConditionKind,
     FILTER_OPERATORS_LIST,
     FilterOperator,
     OperandKind,
-    ConditionKind,
-    SimpleFilter,
-    PartialSimpleFilter,
     LeftOperand,
     RightOperand,
+    PartialSimpleFilter,
 } from "types/filter"
-import * as f from "utils/filter"
+import { partialFilterEquals } from "utils/filter"
 import { TableColumn } from "types/rdg"
 
 /**
- * An editor component for one single filter. The total filter consists
- * of the logical conjunction of these.
+ * An editor component for one single, primitive filter. The filter applied
+ * to the data consist of a boolean combination of these.
  */
 type SimpleFilterEditorProps = {
     /** When the user clicks "create new filter", a new filter with no data
@@ -25,25 +25,16 @@ type SimpleFilterEditorProps = {
      * can't just represent it with `null` or something.
      */
     filter: PartialSimpleFilter
-    /** TEMP TableColumn is currently not usable for this task. */
     columns: TableColumn[]
-    onHandleDelete: () => Promise<void>
-    /**
-     * When the data have been sufficiently set (plus a timer to avoid
-     * excessive updates), the editor calls its `onCommitFilter` prop, asking
-     * the parent component to commit the current filter to the back-end.
-     */
-    onCommit: (newFilter: SimpleFilter) => Promise<void>
-    onBecomeInvalid: (partialFilter: PartialSimpleFilter) => Promise<void>
+    onPromote: (filter: PartialSimpleFilter) => Promise<void>
+    onChange: (newFilter: PartialSimpleFilter) => Promise<void>
 }
 
 /**
  * A single, basic filter of the form <column> <operator> <value>.
  */
 export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
-    const COMMIT_TIMEOUT = 500
-
-    const { columns, filter, onCommit, onBecomeInvalid } = props
+    const { columns, filter, onPromote, onChange } = props
 
     const [column, setColumn] = useState<number | string>(
         filter.left?.column.parentColumnId || ""
@@ -55,49 +46,27 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
         filter.right?.value.toString() || ""
     )
 
-    const [readyForCommit, setReadyForCommit] = useState<boolean>(true)
     /**
      * The current state of the filter in progress. Required for our
      * dynamic updating behavior below.
      */
     const filterState = useRef<PartialSimpleFilter>()
 
-    /**
-     * The filter is committed automatically as the user enters data,
-     * so we set a timer to prevent excessive fetching. After the timer expires,
-     * the data are re-committed one last time.
-     */
-    const commit = useCallback(async () => {
-        setReadyForCommit(false)
-        const currentFilter = filterState.current
-        if (!currentFilter) return
-
-        setTimeout(async () => {
-            const newFilter = filterState.current!
-            if (f.isValidFilter(newFilter)) await onCommit(newFilter)
-            else await onBecomeInvalid(newFilter)
-            setReadyForCommit(true)
-        }, COMMIT_TIMEOUT)
-        if (f.isValidFilter(currentFilter)) await onCommit(currentFilter)
-        else await onBecomeInvalid(currentFilter)
-    }, [onCommit, onBecomeInvalid])
-
     const assembleFilter = useCallback(() => {
         const leftColumn = columns.find(c => c._id === column)
         return assemblePartialSimpleFilter(leftColumn, operator, value)
     }, [column, operator, columns, value])
 
-    /** See {@link commit} */
     useEffect(() => {
         const newFilter = assembleFilter()
         if (
             filterState.current &&
-            f.partialFilterEquals(filterState.current, newFilter)
+            partialFilterEquals(filterState.current, newFilter)
         )
             return
         filterState.current = newFilter
-        if (readyForCommit) commit()
-    }, [column, operator, value, assembleFilter, readyForCommit, commit])
+        onChange(newFilter)
+    }, [column, operator, value, assembleFilter, onChange])
 
     return (
         <Box
@@ -153,13 +122,9 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
             />
             <IconButton
                 sx={{ verticalAlign: "revert" }}
-                onClick={props.onHandleDelete}
+                onClick={() => onPromote(filter)}
             >
-                <DeleteIcon
-                    sx={{
-                        fontSize: "80%",
-                    }}
-                />
+                <FormatIndentIncreaseIcon sx={{ fontSize: "80%" }} />
             </IconButton>
         </Box>
     )

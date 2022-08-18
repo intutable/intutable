@@ -23,7 +23,7 @@ export const where = (
     left: c.ParentColumnSpecifier,
     operator: FilterOperator,
     right: c.Literal["value"]
-): Filter => ({
+): SimpleFilter => ({
     kind: c.ConditionKind.Infix,
     left: { kind: c.OperandKind.Column, column: left },
     operator,
@@ -38,7 +38,7 @@ export const wherePartial = (
     left: c.ParentColumnSpecifier | undefined,
     operator: FilterOperator,
     right: c.Literal["value"] | undefined
-): PartialFilter => ({
+): PartialSimpleFilter => ({
     kind: c.ConditionKind.Infix,
     ...(left && { left: { kind: c.OperandKind.Column, column: left }}),
     operator,
@@ -126,3 +126,19 @@ export const isValidFilter = (
     filter.operator !== undefined &&
     filter.right !== undefined &&
     filter.right.value !== ""
+
+/**
+ * When the current set of filters is saved, but there are also some
+ * incomplete ones still in progress, we do not want re-loading from the
+ * back-end to clobber the unsaved filters. To prevent this, we check if
+ * the current set of filters could have come from the set saved in the
+ * back-end by adding unfinished ones and, if so, no update of the GUI happens.
+ * for example, <and(filter x, partial filter y)> is equivalent to <filter x>
+ * The code could strictly function without this, however it serves as 
+ * a sanity check of what's in the GUI whenever the back-end filters are
+ * updated.
+ */
+export const isEquivalentToCompleteFilter = (
+    partial: PartialFilter,
+    complete: Filter
+): boolean => true

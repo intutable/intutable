@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react"
 import CloseIcon from "@mui/icons-material/Close"
+import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import {
     Popper,
@@ -11,15 +12,18 @@ import {
 } from "@mui/material"
 
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { TableColumn } from "types/rdg"
 import {
     ConditionKind,
+    Filter,
     SimpleFilter,
+    PartialFilter,
     PartialSimpleFilter,
     FILTER_OPERATORS_LIST,
 } from "types/filter"
-import { isValidFilter } from "utils/filter"
-import { TableColumn } from "types/rdg"
+import { wherePartial, or } from "utils/filter"
 import { useAPI } from "context/APIContext"
+import { FilterEditor } from "./Filter"
 import { SimpleFilterEditor } from "./SimpleFilter"
 
 type FilterWindowProps = {
@@ -42,26 +46,10 @@ type FilterWindowProps = {
  * There are no IDs on the filters, so this component has to manage them.
  * This type pairs a filter (or an incomplete filter, or...) with a key.
  */
-type KeyedFilter<F> = {
-    key: number | string
-    filter: F
+type KeyedFilter = {
+    key: string | number
+    filter: PartialFilter
 }
-
-/**
- * A placeholder: either an incomplete filter that the `FilterWindow` keeps
- * track of because it can't be saved to the DB, or a (null) placeholder for a
- * full-fledged filter that comes from the back-end.
- */
-type FilterPlaceholder = KeyedFilter<PartialSimpleFilter | null>
-/**
- * A filter that is (possibly) not yet saved.
- */
-type UnsavedFilter = KeyedFilter<PartialSimpleFilter>
-
-const isUnsaved = (p: FilterPlaceholder): p is UnsavedFilter =>
-    p.filter !== null
-const isPlaceholder = (p: FilterPlaceholder): p is KeyedFilter<null> =>
-    p.filter === null
 
 /**
  * A pop-up window with a list of filters to apply to the data being shown.
@@ -69,7 +57,7 @@ const isPlaceholder = (p: FilterPlaceholder): p is KeyedFilter<null> =>
 export const FilterWindow: React.FC<FilterWindowProps> = props => {
     /**
      * `Popper` does not work with `ClickAwayListener`, so we hacked this to
-     * close the editor window whenever the user switches views.
+     * at least close the editor window whenever the user switches views.
      */
     const { view } = useAPI()
     const viewRef = useRef<ViewDescriptor | null>()
@@ -91,7 +79,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         nextKey.current = nextKey.current + 1
         return key
     }
-    const newUnsavedFilter = (): FilterPlaceholder => ({
+    const newUnsavedFilter = (): KeyedFilter => ({
         key: getNextKey(),
         filter: {
             kind: ConditionKind.Infix,
@@ -99,136 +87,43 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         },
     })
 
-    /**
-     * We want the user to be able to save and apply filters without the
-     * incomplete ones they are also editing to be deleted on each re-render
-     * (which happens whenever an active filter changes).
-     * To this end, we keep a list of "placeholders" that stores both
-     * "unsaved" filters which cannot be committed to the view yet, and
-     * ones that are already active. The spots of saved/active filters are
-     * remembered with a {@link FilterPlaceholder} that has a null in it.
-     * important invariant: number of nulls in
-     * {@link filterPlaceholders} <= number of elements in
-     * {@link props.activeFilters}`.
-     */
-    const initPlaceholders = (activeFilters: SimpleFilter[]) => {
-        if (activeFilters.length > 0)
-            return props.activeFilters.map(() => ({
-                key: getNextKey(),
-                filter: null,
-            }))
-        else return [newUnsavedFilter()]
+    // todo: create from stuff that backend delivers instead
+    const setupInitialFilters = (filters: SimpleFilter[]): KeyedFilter[] => {
+        return [newUnsavedFilter()]
     }
-    const [filterPlaceholders, setFilterPlaceholders] = useState<
-        FilterPlaceholder[]
-    >(() => initPlaceholders(props.activeFilters))
 
-    /**
-     * {@link filterPlaceholders} but with all the null slots filled with
-     * active filters from the back-end. We need this for rendering, but all
-     * the logic uses {@link filterPlaceholders}
-     */
-    const [unsavedFilters, setUnsavedFilters] = useState<UnsavedFilter[]>([])
-
-    /**
-     * Merge {@link filterPlaceholders} with the active/saved filters from the
-     * back-end to get set of filters to display.
-     */
-    useEffect(() => {
-        if (!props.activeFilters || !filterPlaceholders) return
-
-        const displayFilters = new Array(filterPlaceholders.length)
-        for (
-            let aIndex = 0, wIndex = 0;
-            wIndex < filterPlaceholders.length;
-            wIndex++
-        ) {
-            if (!isUnsaved(filterPlaceholders[wIndex])) {
-                displayFilters[wIndex] = {
-                    key: filterPlaceholders[wIndex].key,
-                    filter: props.activeFilters[aIndex],
-                }
-                aIndex++
-            } else {
-                displayFilters[wIndex] = filterPlaceholders[wIndex]
-            }
-        }
-        setUnsavedFilters(displayFilters)
-    }, [props.activeFilters, filterPlaceholders])
+    const [filters, setFilters] = useState<KeyedFilter[]>(() =>
+        setupInitialFilters(props.activeFilters)
+    )
 
     const handleAddFilter = () =>
-        setFilterPlaceholders(prev => prev.concat(newUnsavedFilter()))
+        setFilters(prev => prev.concat(newUnsavedFilter()))
 
-    /**
-     * Delete a filter - if it's unsaved filter, just remove the GUI component,
-     * otherwise, we have to talk to the back-end.
-     */
     const handleDeleteFilter = async (key: number | string): Promise<void> => {
-        const index = filterPlaceholders.findIndex(f => f.key === key)!
-        if (!unsavedFilters) return
-        else if (isUnsaved(filterPlaceholders[index]))
-            setFilterPlaceholders(prev => arrayRemove(prev, index))
-        else {
-            // find index within the active filters:
-            const aIndex =
-                filterPlaceholders.slice(0, index + 1).filter(isPlaceholder)
-                    .length - 1
-            setFilterPlaceholders(prev => arrayRemove(prev, index))
-            const newFilters = arrayRemove(props.activeFilters, aIndex)
-            return props.onUpdateFilters(newFilters)
-        }
+        const index = filters.findIndex(f => f.key === key)
+        if (index !== -1) setFilters(prev => arrayRemove(prev, index))
     }
 
-    const assignFilter = <F1, F2>(
-        old: KeyedFilter<F1>,
-        filter: F2
-    ): KeyedFilter<F2> => ({
-        key: old.key,
-        filter,
-    })
-    /**
-     * If a filter becomes invalid, e.g. if the user deletes the text of
-     * its "value" field, then it becomes an unsaved filter.
-     */
-    const handleFilterBecomeInvalid = async (
+    const handlePromoteFilter = async (
         key: number | string,
-        incomplete: PartialSimpleFilter
+        filter: PartialSimpleFilter
+    ) => {
+        return handleChangeFilter(
+            key,
+            or(filter, wherePartial(undefined, "=", undefined))
+        )
+    }
+    const handleChangeFilter = async (
+        key: number | string,
+        newFilter: PartialFilter
     ): Promise<void> => {
-        const index = filterPlaceholders.findIndex(f => f.key === key)
-        if (!unsavedFilters) return
-        else if (isUnsaved(filterPlaceholders[index])) return
-        else {
-            const aIndex =
-                filterPlaceholders.slice(0, index + 1).filter(isPlaceholder)
-                    .length - 1
-            setFilterPlaceholders(prev => {
-                const copy = [...prev]
-                copy[index] = assignFilter(copy[index], incomplete)
-                return copy
+        const index = filters.findIndex(f => f.key === key)
+        if (index !== -1)
+            setFilters(prev => {
+                const newFilters = [...prev]
+                newFilters[index] = { key, filter: newFilter }
+                return newFilters
             })
-            const newFilters = arrayRemove(props.activeFilters, aIndex)
-            return props.onUpdateFilters(newFilters)
-        }
-    }
-
-    /** Save a complete filter to the back-end. */
-    const handleCommitFilter = async (
-        key: number | string,
-        newFilter: SimpleFilter
-    ): Promise<void> => {
-        const index = filterPlaceholders.findIndex(f => f.key === key)
-        if (!unsavedFilters) return
-        const filterCopy = [...unsavedFilters]
-        filterCopy[index] = assignFilter(filterCopy[index], newFilter)
-        const newFilters = filterCopy
-            .map(unsaved => unsaved.filter)
-            .filter(isValidFilter)
-        await props.onUpdateFilters(newFilters)
-        setFilterPlaceholders(prev => {
-            const copy = [...prev]
-            copy[index] = assignFilter(copy[index], null)
-            return copy
-        })
     }
 
     return (
@@ -246,20 +141,41 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                             <CloseIcon />
                         </IconButton>
                     </Box>
-                    {unsavedFilters &&
-                        unsavedFilters.map(f => (
-                            <SimpleFilterEditor
-                                key={f.key}
-                                columns={props.columns}
-                                filter={f.filter}
-                                onHandleDelete={() => handleDeleteFilter(f.key)}
-                                onCommit={value =>
-                                    handleCommitFilter(f.key, value)
-                                }
-                                onBecomeInvalid={value =>
-                                    handleFilterBecomeInvalid(f.key, value)
-                                }
-                            />
+                    {filters &&
+                        filters.map(f => (
+                            <>
+                                {f.filter.kind === ConditionKind.Infix ? (
+                                    <SimpleFilterEditor
+                                        key={f.key}
+                                        columns={props.columns}
+                                        filter={f.filter}
+                                        onPromote={async filter =>
+                                            handlePromoteFilter(f.key, filter)
+                                        }
+                                        onChange={async filter =>
+                                            handleChangeFilter(f.key, filter)
+                                        }
+                                    />
+                                ) : (
+                                    <FilterEditor
+                                        key={f.key}
+                                        columns={props.columns}
+                                        filter={f.filter}
+                                        onDemote={async filter =>
+                                            handleChangeFilter(f.key, filter)
+                                        }
+                                        onChange={async filter =>
+                                            handleChangeFilter(f.key, filter)
+                                        }
+                                    />
+                                )}
+                                <IconButton
+                                    sx={{ verticalAlign: "revert" }}
+                                    onClick={() => handleDeleteFilter(f.key)}
+                                >
+                                    <DeleteIcon sx={{ fontSize: "80%" }} />
+                                </IconButton>
+                            </>
                         ))}
                     <IconButton
                         onClick={handleAddFilter}
