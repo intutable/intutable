@@ -2,7 +2,7 @@ import {
     Currency,
     Percentage,
     Avatar,
-} from "@datagrid/Editor/type-management/utility-classes"
+} from "@datagrid/CellContentType/type_converter/utility-classes"
 
 /**
  * Different types of editors.
@@ -59,7 +59,7 @@ export const CellContentTypeDisplayName: {
     [key in CellContentType]: string
 } = {
     string: "Freitexteingabe (String)",
-    number: "Dezimalzahlen",
+    number: "Ganzzahlen und Dezimalzahlen",
     percentage: "Prozent",
     currency: "Währung",
     boolean: "Boolescher Wert / Checkbox",

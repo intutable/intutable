@@ -3,7 +3,7 @@ import {
     CellContentType,
     Runtime_CellContentType,
     CellContentTypeDisplayName,
-} from "@datagrid/Editor/types/CellContentType"
+} from "@datagrid/CellContentType/types/CellContentType"
 import {
     Box,
     Button,
@@ -91,13 +91,19 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                     )
                                 }}
                             >
-                                {Runtime_CellContentType.map((type, i) => (
+                                {Runtime_CellContentType.map(type => (
                                     <MenuItem
-                                        key={i}
+                                        key={type}
                                         value={type}
                                         disabled={
                                             type !== "string" &&
-                                            type !== "email"
+                                            type !== "email" &&
+                                            type !== "number" &&
+                                            type !== "percentage" &&
+                                            type !== "currency" &&
+                                            type !== "boolean" &&
+                                            type !== "time" &&
+                                            type !== "hyperlink"
                                         }
                                     >
                                         {CellContentTypeDisplayName[type]}

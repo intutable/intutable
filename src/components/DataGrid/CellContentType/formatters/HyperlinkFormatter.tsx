@@ -2,10 +2,11 @@ import { FormatterComponent } from "@datagrid/Formatter"
 import { Box, IconButton, Tooltip } from "@mui/material"
 import { Row } from "types"
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
-import { isValidMailAddress } from "utils/isValidMailAddress"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
+import { isValidURL } from "utils/isValidURL"
+import LinkIcon from "@mui/icons-material/Attachment"
 
-export const EMailFormatter: FormatterComponent = props => {
+export const HyperlinkFormatter: FormatterComponent = props => {
     const { row, column } = props
 
     const key = column.key as keyof Row
@@ -24,15 +25,15 @@ export const EMailFormatter: FormatterComponent = props => {
                 whiteSpace: "nowrap",
             }}
         >
-            {isValidMailAddress(content) ? (
-                // case: valid mail
+            {isValidURL(content) ? (
+                // case: valid url
                 <Tooltip title={content!} arrow placement="top">
                     <IconButton
                         size="small"
-                        href={`mailto:${content}`}
+                        onClick={() => open(content)}
                         color="success"
                     >
-                        <MarkEmailReadIcon
+                        <LinkIcon
                             sx={{
                                 fontSize: "90%",
                             }}
@@ -40,7 +41,7 @@ export const EMailFormatter: FormatterComponent = props => {
                     </IconButton>
                 </Tooltip>
             ) : (
-                // case: invalid mail, will be ignored when e.g. generating a mail list, but the input gets saved
+                // case: invalid url, will be ignored when e.g. generating a url list, but the input gets saved
                 <>
                     <Box
                         sx={{
@@ -52,7 +53,7 @@ export const EMailFormatter: FormatterComponent = props => {
                         {content}
                     </Box>
                     <Tooltip
-                        title="Dies ist keine gültige E-Mail-Adresse und wird bei Aktionen für diesen Typen ignoriert."
+                        title="Dies ist keine gültige URL und wird bei Aktionen für diesen Typen ignoriert."
                         arrow
                         placement="right"
                     >
@@ -70,4 +71,4 @@ export const EMailFormatter: FormatterComponent = props => {
     )
 }
 
-export default EMailFormatter
+export default HyperlinkFormatter

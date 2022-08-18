@@ -1,12 +1,15 @@
 import {
     CellContentType,
     isCellContentType,
-} from "@datagrid/Editor/type-management"
-import { EditorComponent } from "@datagrid/Editor/types/EditorComponent"
-import { FormatterComponent } from "@datagrid/Formatter"
+} from "@datagrid/CellContentType/type_converter"
+import { EditorComponent } from "@datagrid/CellContentType/types/EditorComponent"
+import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
 import { PLACEHOLDER } from "api/utils/de_serialize/PLACEHOLDER_KEYS"
 import { Column, MetaColumnProps } from "types"
-import { CellContentTypeComponents, ColumnKindComponents } from "./map"
+import {
+    CellContentTypeComponents,
+    ColumnKindComponents,
+} from "@datagrid/CellContentType/map"
 import { headerRenderer } from "@datagrid/renderers"
 
 /**
@@ -91,6 +94,10 @@ export class ColumnUtility {
 
         // index columns are not editable, at least no by the editable
         if (_kind === "index") return false
+
+        // some types don't have an editor and should not be editable
+        if (CellContentTypeComponents[_cellContentType].editor == null)
+            return false
 
         // TODO: further checking here, e.g. should link and lookup columns be editable??
 

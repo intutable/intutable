@@ -1,4 +1,4 @@
-import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
+import { ColumnUtility } from "@datagrid/CellContentType/ColumnUtility"
 import { Column } from "types"
 
 /**

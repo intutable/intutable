@@ -6,26 +6,13 @@ import { withSessionRoute } from "auth"
 import fs from "fs-extra"
 import { parseAsync } from "json2csv"
 import path from "path"
-import tmp from "tmp"
 import { Column, Row, ViewData } from "types"
 import Obj from "types/Obj"
-import { isValidMailAddress } from "utils/isValidMailAddress"
-
-const capitalizeFirstLetter = (string: string) =>
-    string.charAt(0).toUpperCase() + string.slice(1)
-
-export class TmpDir {
-    public readonly path: string
-    private removeCallback: () => void
-    constructor() {
-        const dir = tmp.dirSync({ unsafeCleanup: true })
-        this.path = dir.name
-        this.removeCallback = dir.removeCallback
-    }
-    delete() {
-        this.removeCallback()
-    }
-}
+import { isValidMailAddress } from "@datagrid/CellContentType/validators/isValidMailAddress"
+import { capitalizeFirstLetter } from "utils/capitalizeFirstLetter"
+import { TmpDir } from "utils/TmpDir"
+import { CellContentTypeComponents } from "@datagrid/CellContentType/map"
+import { CellContentType } from "@datagrid/CellContentType/type_converter"
 
 export type AnyArray = (string | number | boolean)[]
 
@@ -58,12 +45,15 @@ const intersectRows = (columns: Column.Serialized[], rows: Row[]) =>
             const value = row[col.key]
             const key = capitalizeFirstLetter(col.name)
 
-            // hack for email type: filter out every invalid address
             const cellType =
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ((col as any).attributes as Column.SQL)._cellContentType
-            if (cellType === "email") {
-                if (isValidMailAddress(value) === false) {
+                ((col as any).attributes as Column.SQL)
+                    ._cellContentType as CellContentType
+            // if a type has a validator, use it to validate the value
+            // in case the value is not valid, ignore it
+            if (CellContentTypeComponents[cellType].validator != null) {
+                const isValid = CellContentTypeComponents[cellType].validator!
+                if (isValid(value) === false) {
                     intersection[key] = ""
                     return
                 }
@@ -96,6 +86,7 @@ const POST = withCatchingAPIRoute(
             req.body
         ) as ExportViewRequestBody
 
+        // currently only csv is supported
         if (format !== "csv") throw new Error(`Unsupported format: ${format}`)
 
         const viewData = await coreRequest<ViewData.Serialized>(
@@ -103,13 +94,14 @@ const POST = withCatchingAPIRoute(
             user.authCookie
         )
 
+        // only use the specified columns
         const cols: Column.Serialized[] = viewData.columns.filter(col =>
             columns.includes((col as unknown as Column & { id: number }).id)
         )
 
         let rows: ViewData.Serialized["rows"] = viewData.rows
 
-        // row selection
+        // only use the selected rows, if specified
         if (options?.rowSelection != null && options.rowSelection.length > 0) {
             // find the index column where the information about the indices are stored,
             // because the indices of each row are not accessible in the viewData
@@ -129,9 +121,10 @@ const POST = withCatchingAPIRoute(
             )
         }
 
-        const data = intersectRows(cols, rows)
+        const data = intersectRows(cols, rows) // <-- this is where the magic happens
         const csv = await toCSV(data, options?.csvOptions)
 
+        // create the file
         const filename = fileName + ".csv"
         const dir = new TmpDir()
         const csvFile = path.join(dir.path, filename)
@@ -148,6 +141,7 @@ const POST = withCatchingAPIRoute(
             readStream.pipe(res)
             readStream.on("end", resolve)
         })
+
         dir.delete()
     }
 )

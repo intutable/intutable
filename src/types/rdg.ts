@@ -1,4 +1,4 @@
-import type { CellContentType } from "@datagrid/Editor/types/CellContentType"
+import type { CellContentType } from "@datagrid/CellContentType/types/CellContentType"
 import type {
     ColumnInfo,
     Condition as Filter,

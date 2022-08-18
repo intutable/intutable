@@ -12,7 +12,7 @@ import React from "react"
 const StyledInputElement = styled("input")`
     width: 100%;
     font-size: 1rem;
-    font-family: IBM Plex Sans, sans-serif;
+    font-family: Roboto, sans-serif;
     font-weight: 400;
     line-height: 1.4375em;
     background: transparent;
@@ -24,24 +24,18 @@ const StyledInputElement = styled("input")`
     }
 `
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type InputProps = {
-    props: InputUnstyledProps & { onEnter?: () => void }
-    ref: React.Ref<HTMLInputElement> | undefined
-}
-
 export const Input = React.forwardRef(
     (
         props: InputUnstyledProps & {
             onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
         },
-        ref: React.Ref<HTMLInputElement> | undefined
+        ref?: React.Ref<HTMLInputElement>
     ) => (
         <InputUnstyled
             components={{ Input: StyledInputElement }}
-            {...props}
-            ref={ref}
+            ref={ref || props.ref}
             onKeyDown={props.onKeyDown}
+            {...props}
         />
     )
 )
