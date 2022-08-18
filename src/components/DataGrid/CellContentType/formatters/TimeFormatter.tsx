@@ -1,37 +1,47 @@
 import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
 import { Box } from "@mui/material"
-import { Row } from "types"
-import * as React from "react"
-import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 import { TimePicker } from "@mui/x-date-pickers/TimePicker"
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker"
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker"
-import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker"
 import deLocale from "date-fns/locale/de"
-import Input from "@datagrid/CellContentType/inputs/Input"
+import { useState } from "react"
+import { Row } from "types"
+import { isValidTime } from "../validators/isValidTime"
 
 export const TimeFormatter: FormatterComponent = props => {
     const { row, column } = props
 
+    /**
+     * MUIs Time Picker component requires a `value`.
+     * This can either be a Date object or null.
+     *
+     * null will be displayed as a placeholder "hh:mm"
+     */
+
     const key = column.key as keyof Row
-    const isEmpty = row[key] == null || row[key] === ""
-    const content =
-        isEmpty || isNaN(row[key] as number)
-            ? null
-            : Date.parse(row[key] as string)
-    console.log("content:", content)
+    const isValid = isValidTime(Number.parseInt(row[key] as string))
+    const [content, setContent] = useState<Date | null>(
+        isValid ? new Date(Number.parseInt(row[key] as string)) : null
+    )
 
     const handleChange = (date: Date | null) => {
-        const isValid = date instanceof Date && !isNaN(date.getTime())
-        const deleted = isEmpty === false && date == null
-        if (date == null || isValid === false) return
-        console.log("new value", date)
+        if (date === null) return erase()
+        if (isValidTime(date) === false) return
+
+        // BUG: do not update when the user is still editing the input
+
         props.onRowChange({
             ...row,
-            [key]: date.getTime(),
+            [key]: date.getTime().toString(),
+        })
+    }
+
+    // erases the content and sets the value to default (=> nothing)
+    const erase = () => {
+        props.onRowChange({
+            ...row,
+            [key]: "",
         })
     }
 
@@ -42,40 +52,53 @@ export const TimeFormatter: FormatterComponent = props => {
                 height: "100%",
             }}
         >
-            {content == null ? (
-                <Box onClick={() => {}}>/</Box>
-            ) : (
-                <LocalizationProvider
-                    dateAdapter={AdapterDateFns}
-                    adapterLocale={deLocale}
-                >
-                    <TimePicker
-                        value={content}
-                        onChange={handleChange}
-                        ampm={false}
-                        renderInput={params => {
-                            // return <Input
-                            const { inputRef, inputProps, InputProps } = params
-
-                            // return (
-                            //     <Input
-                            //         value={content}
-                            //         endAdornment={InputProps?.endAdornment}
-                            //         ref={inputRef}
-                            //         {...inputProps}
-                            //     />
-                            // )
-
-                            return <TextField {...params} />
-                        }}
-                        componentsProps={{
-                            actionBar: {
-                                actions: ["clear", "accept"],
-                            },
-                        }}
-                    />
-                </LocalizationProvider>
-            )}
+            <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={deLocale}
+                localeText={{
+                    openPreviousView: "Stunde setzen",
+                    openNextView: "Minuten setzen",
+                    clearButtonLabel: "Löschen",
+                    cancelButtonLabel: "Abbrechen",
+                    okButtonLabel: "OK",
+                    todayButtonLabel: "Jetzt",
+                    // start: "Start",
+                    // end: "Ende",
+                }}
+            >
+                <TimePicker
+                    showToolbar
+                    value={content}
+                    onChange={date => setContent(date)} // only update the state, but do not update the actual db (only on blur – see below)
+                    onAccept={handleChange} // update the db
+                    ampm={false}
+                    renderInput={params => (
+                        <TextField
+                            {...params}
+                            onBlur={() => handleChange(content)} // now actually update the db
+                            size="small"
+                            variant="standard"
+                            fullWidth
+                            sx={{
+                                m: 0,
+                                mt: 0.5,
+                                p: 0,
+                                height: "100%",
+                                maxHeight: "100%",
+                            }}
+                            InputProps={{
+                                disableUnderline: true,
+                                ...params.InputProps,
+                            }}
+                        />
+                    )}
+                    componentsProps={{
+                        actionBar: {
+                            actions: ["clear", "today", "accept"],
+                        },
+                    }}
+                />
+            </LocalizationProvider>
         </Box>
     )
 }
