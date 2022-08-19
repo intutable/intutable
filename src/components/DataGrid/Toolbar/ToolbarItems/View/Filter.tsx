@@ -124,8 +124,6 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
             })
     }
 
-    console.log(JSON.stringify(filter))
-
     return (
         <Box
             sx={{
@@ -136,7 +134,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                 alignContent: "center",
             }}
         >
-            <Select defaultValue={filter.kind} onChange={handleChangeKind}>
+            <Select value={filter.kind ?? Not} onChange={handleChangeKind}>
                 <MenuItem key={Not} value={Not}>
                     NOT
                 </MenuItem>

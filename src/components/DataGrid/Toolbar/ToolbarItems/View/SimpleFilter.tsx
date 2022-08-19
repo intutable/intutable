@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useCallback, useRef } from "react"
+import React from "react"
 import { IconButton } from "@mui/material"
 import FormatIndentIncreaseIcon from "@mui/icons-material/FormatIndentIncrease"
-import { Select, MenuItem, TextField, Box } from "@mui/material"
 import {
-    ConditionKind,
+    Select,
+    SelectChangeEvent,
+    MenuItem,
+    TextField,
+    Box,
+} from "@mui/material"
+import {
     FILTER_OPERATORS_LIST,
     FilterOperator,
+    Column,
     OperandKind,
-    LeftOperand,
-    RightOperand,
     PartialSimpleFilter,
 } from "types/filter"
-import { partialFilterEquals } from "utils/filter"
 import { TableColumn } from "types/rdg"
 
 /**
@@ -36,37 +39,36 @@ type SimpleFilterEditorProps = {
 export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
     const { columns, filter, onPromote, onChange } = props
 
-    const [column, setColumn] = useState<number | string>(
-        filter.left?.column.parentColumnId || ""
-    )
-    const [operator, setOperator] = useState<FilterOperator>(
-        filter.operator || "="
-    )
-    const [value, setValue] = useState<string>(
-        filter.right?.value.toString() || ""
-    )
+    const getColumn = (columnId: number | string) => {
+        const column = columns.find(c => c._id === columnId)
+        return column ? { parentColumnId: column._id, joinId: null } : undefined
+    }
 
-    /**
-     * The current state of the filter in progress. Required for our
-     * dynamic updating behavior below.
-     */
-    const filterState = useRef<PartialSimpleFilter>()
-
-    const assembleFilter = useCallback(() => {
-        const leftColumn = columns.find(c => c._id === column)
-        return assemblePartialSimpleFilter(leftColumn, operator, value)
-    }, [column, operator, columns, value])
-
-    useEffect(() => {
-        const newFilter = assembleFilter()
-        if (
-            filterState.current &&
-            partialFilterEquals(filterState.current, newFilter)
-        )
-            return
-        filterState.current = newFilter
-        onChange(newFilter)
-    }, [column, operator, value, assembleFilter, onChange])
+    const handleChangeColumn = (e: SelectChangeEvent<number | string>) => {
+        // apparently TSC cant understand the typing of the elvis operator
+        const newColumnSpec = getColumn(e.target.value)
+        let newColumn: Column | undefined
+        if (newColumnSpec)
+            newColumn = {
+                kind: OperandKind.Column,
+                column: newColumnSpec,
+            }
+        else newColumn = undefined
+        onChange({
+            ...filter,
+            left: newColumn,
+        })
+    }
+    const handleChangeOperator = (e: SelectChangeEvent<FilterOperator>) =>
+        onChange({
+            ...filter,
+            operator: e.target.value as FilterOperator,
+        })
+    const handleChangeValue = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+        onChange({
+            ...filter,
+            right: { kind: OperandKind.Literal, value: e.target.value },
+        })
 
     return (
         <Box
@@ -79,10 +81,8 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
             }}
         >
             <Select
-                value={column}
-                onChange={e => {
-                    setColumn(e.target.value)
-                }}
+                value={filter.left?.column.parentColumnId ?? ""}
+                onChange={handleChangeColumn}
                 sx={{
                     mr: 1,
                 }}
@@ -95,10 +95,8 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
                 ))}
             </Select>
             <Select
-                value={operator}
-                onChange={e => {
-                    setOperator(e.target.value as FilterOperator)
-                }}
+                value={filter.operator ?? ""}
+                onChange={handleChangeOperator}
                 sx={{
                     mr: 1,
                 }}
@@ -112,10 +110,8 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
             </Select>
             <TextField
                 size="small"
-                value={value}
-                onChange={e => {
-                    setValue(e.target.value)
-                }}
+                value={filter.right?.value ?? ""}
+                onChange={handleChangeValue}
                 sx={{
                     mr: 1,
                 }}
@@ -128,31 +124,4 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
             </IconButton>
         </Box>
     )
-}
-
-const assemblePartialSimpleFilter = (
-    leftColumn: TableColumn | undefined,
-    operator: FilterOperator,
-    value: string
-): PartialSimpleFilter => {
-    const columnSpec: LeftOperand | undefined = leftColumn
-        ? {
-              kind: OperandKind.Column,
-              column: {
-                  parentColumnId: leftColumn._id,
-                  joinId: null,
-              },
-          }
-        : undefined
-    const right: RightOperand = {
-        kind: OperandKind.Literal,
-        value,
-    }
-    const newFilter: PartialSimpleFilter = {
-        kind: ConditionKind.Infix,
-        left: columnSpec,
-        operator: operator,
-        right,
-    }
-    return newFilter
 }
