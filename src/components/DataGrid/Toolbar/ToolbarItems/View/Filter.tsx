@@ -134,7 +134,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                 alignContent: "center",
             }}
         >
-            <Select value={filter.kind ?? Not} onChange={handleChangeKind}>
+            <Select value={filter.kind ?? And} onChange={handleChangeKind}>
                 <MenuItem key={Not} value={Not}>
                     NOT
                 </MenuItem>

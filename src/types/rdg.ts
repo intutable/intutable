@@ -6,7 +6,7 @@ import type {
     ViewDescriptor,
     ViewInfo,
 } from "@intutable/lazy-views"
-import type { SimpleFilter } from "./filter"
+import type { Filter } from "./filter"
 import { Column as ReactDataGrid_Column } from "react-data-grid"
 import { project_management } from "./type-annotations/project-management"
 
@@ -44,7 +44,7 @@ export namespace TableData {
 type View<COL, ROW> = {
     descriptor: ViewDescriptor
     metaColumns: ColumnInfo[]
-    filters: SimpleFilter[]
+    filters: Filter[]
     sortColumns: SortColumn[]
     groupColumns: GroupColumn[]
     columns: COL[]

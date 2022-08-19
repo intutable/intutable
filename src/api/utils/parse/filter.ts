@@ -7,8 +7,8 @@ import {
     OperandKind,
     mapCondition,
 } from "@intutable/lazy-views/dist/condition"
-import type { SimpleFilter } from "types/filter"
-import { isFilterOperator } from "utils/filter"
+import type { Filter, SimpleFilter } from "types/filter"
+import { isFilterOperator, not, and, or } from "utils/filter"
 
 /**
  * The (string) `contains` operator uses SQL `LIKE` under the hood,
@@ -18,13 +18,25 @@ export const LIKE_PATTERN_ESCAPE_CHARS = ["%", "_", "\\"]
 
 /** Don't look, just a placeholdey hack - we're gonna change the simplefilter
  type a whole lot soon */
-export const parse = (c: Condition): SimpleFilter => {
-    if (c.kind !== ConditionKind.Infix)
-        throw TypeError("currently only supporting basic conditions")
-    else return parseFilter(c)
+export const parse = (c: Condition): Filter => {
+    switch (c.kind) {
+        case ConditionKind.Not:
+            return not(parse(c.condition))
+        case ConditionKind.And:
+            return and(parse(c.left), parse(c.right))
+        case ConditionKind.Or:
+            return or(parse(c.left), parse(c.right))
+        case ConditionKind.Infix:
+            return parseSimpleFilter(c)
+        case ConditionKind.Boolean:
+            throw TypeError(
+                `{$parse.name}: Filter type may not contain any` +
+                    ` trivial boolean conditions`
+            )
+    }
 }
 
-const parseFilter = (c: InfixCondition): SimpleFilter => {
+const parseSimpleFilter = (c: InfixCondition): SimpleFilter => {
     if (
         c.left.kind !== OperandKind.Column ||
         c.right.kind !== OperandKind.Literal ||
@@ -50,10 +62,10 @@ const parseFilter = (c: InfixCondition): SimpleFilter => {
 }
 
 /** Convert a filter from the lazy-views plugin to one the frontend can use. */
-export const deparse = (f: SimpleFilter): Condition =>
-    mapCondition(deparseFilter, f)
+export const deparse = (f: Filter): Condition =>
+    mapCondition(deparseSimpleFilter, f)
 
-const deparseFilter = (f: SimpleFilter): InfixCondition => ({
+const deparseSimpleFilter = (f: SimpleFilter): InfixCondition => ({
     ...f,
     right: {
         ...f.right,

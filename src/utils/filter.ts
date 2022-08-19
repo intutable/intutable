@@ -9,6 +9,11 @@ import {
     PartialSimpleFilter,
 } from "types/filter"
 
+const Infix = c.ConditionKind.Infix
+const Not = c.ConditionKind.Not
+const And = c.ConditionKind.And
+const Or = c.ConditionKind.Or
+
 /**
  * Check if a string is a valid filter operator.
  */
@@ -24,12 +29,12 @@ export const where = (
     operator: FilterOperator,
     right: c.Literal["value"]
 ): SimpleFilter => ({
-    kind: c.ConditionKind.Infix,
+    kind: Infix,
     left: { kind: c.OperandKind.Column, column: left },
     operator,
-    right: { kind: c.OperandKind.Literal, value: right }
+    right: { kind: c.OperandKind.Literal, value: right },
 })
-    
+
 /**
  * Convenience function for making partial infix conditions without having to
  * specify all the kind discriminators.
@@ -39,20 +44,17 @@ export const wherePartial = (
     operator: FilterOperator,
     right: c.Literal["value"] | undefined
 ): PartialSimpleFilter => ({
-    kind: c.ConditionKind.Infix,
-    ...(left && { left: { kind: c.OperandKind.Column, column: left }}),
+    kind: Infix,
+    ...(left && { left: { kind: c.OperandKind.Column, column: left } }),
     operator,
-    ...(right && { right: { kind: c.OperandKind.Literal, value: right }})
+    ...(right && { right: { kind: c.OperandKind.Literal, value: right } }),
 })
 
 /** Utility function for negating a condition */
 export function not<I extends c.IsInfixCondition>(
     condition: MkFilter<I>
 ): MkFilter<I> {
-    return {
-        kind: c.ConditionKind.Not,
-        condition,
-    }
+    return { kind: Not, condition }
 }
 
 /** Utility function for making AND conditions. */
@@ -60,11 +62,7 @@ export function and<I extends c.IsInfixCondition>(
     left: MkFilter<I>,
     right: MkFilter<I>
 ): MkFilter<I> {
-    return {
-        kind: c.ConditionKind.And,
-        left,
-        right,
-    }
+    return { kind: And, left, right }
 }
 
 /** Utility function for making OR conditions. */
@@ -72,11 +70,7 @@ export function or<I extends c.IsInfixCondition>(
     left: MkFilter<I>,
     right: MkFilter<I>
 ): MkFilter<I> {
-    return {
-        kind: c.ConditionKind.Or,
-        left,
-        right,
-    }
+    return { kind: Or, left, right }
 }
 
 /**
@@ -86,22 +80,29 @@ export const partialFilterEquals = (
     f1: PartialFilter,
     f2: PartialFilter
 ): boolean => {
-    switch(f1.kind){
-        case c.ConditionKind.And:
-            return f2.kind === c.ConditionKind.And &&
+    switch (f1.kind) {
+        case And:
+            return (
+                f2.kind === c.ConditionKind.And &&
                 partialFilterEquals(f1.left, f2.left) &&
                 partialFilterEquals(f1.right, f2.right)
-        case c.ConditionKind.Or:
-            return f2.kind === c.ConditionKind.Or &&
+            )
+        case Or:
+            return (
+                f2.kind === c.ConditionKind.Or &&
                 partialFilterEquals(f1.left, f2.left) &&
                 partialFilterEquals(f1.right, f2.right)
-        case c.ConditionKind.Not:
-            return f2.kind === c.ConditionKind.Not &&
+            )
+        case Not:
+            return (
+                f2.kind === c.ConditionKind.Not &&
                 partialFilterEquals(f1.condition, f2.condition)
-        case c.ConditionKind.Infix:
-            return f2.kind === c.ConditionKind.Infix &&
+            )
+        case Infix:
+            return (
+                f2.kind === c.ConditionKind.Infix &&
                 partialSimpleFilterEquals(f1, f2)
-        default: return false
+            )
     }
 }
 /**
@@ -118,6 +119,7 @@ export const partialSimpleFilterEquals = (
 
 /**
  * Check if a {@link PartialSimpleFilter} is also a {@link SimpleFilter}
+ * (and can be applied to restrict data)
  */
 export const isValidFilter = (
     filter: PartialSimpleFilter
@@ -128,17 +130,35 @@ export const isValidFilter = (
     filter.right.value !== ""
 
 /**
- * When the current set of filters is saved, but there are also some
- * incomplete ones still in progress, we do not want re-loading from the
- * back-end to clobber the unsaved filters. To prevent this, we check if
- * the current set of filters could have come from the set saved in the
- * back-end by adding unfinished ones and, if so, no update of the GUI happens.
- * for example, <and(filter x, partial filter y)> is equivalent to <filter x>
- * The code could strictly function without this, however it serves as 
- * a sanity check of what's in the GUI whenever the back-end filters are
- * updated.
+ * Strip away all partial leaf nodes in a {@link PartialFilter}, producing a
+ * {@link Filter}. "Strip away" means treat them like identity elements as
+ * much as possible: for example, consider the filter AND(f1, f2), where
+ * f1 is valid, but f2 is not. Then, treat f2 as TRUE (identity element)
+ * and return f1.
+ * If all leaf nodes in the filter are incomplete, return null.
  */
-export const isEquivalentToCompleteFilter = (
-    partial: PartialFilter,
-    complete: Filter
-): boolean => true
+export const stripPartialFilter = (p: PartialFilter): Filter | null => {
+    switch (p.kind) {
+        case Infix:
+            if (isValidFilter(p)) return p
+            else return null
+        case Not:
+            const child = stripPartialFilter(p.condition)
+            if (child === null) return null
+            else return not(child)
+        case And:
+            const leftAnd = stripPartialFilter(p.left)
+            const rightAnd = stripPartialFilter(p.right)
+            if (leftAnd === null && rightAnd === null) return null
+            else if (leftAnd === null) return rightAnd
+            else if (rightAnd === null) return leftAnd
+            else return and(leftAnd, rightAnd)
+        case Or:
+            const leftOr = stripPartialFilter(p.left)
+            const rightOr = stripPartialFilter(p.right)
+            if (leftOr === null && rightOr === null) return null
+            else if (leftOr === null) return rightOr
+            else if (rightOr === null) return leftOr
+            else return or(leftOr, rightOr)
+    }
+}

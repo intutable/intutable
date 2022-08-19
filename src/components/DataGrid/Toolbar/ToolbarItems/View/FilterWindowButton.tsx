@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import { Button, Tooltip } from "@mui/material"
-import { SimpleFilter } from "types/filter"
+import { Filter } from "types/filter"
 import { defaultViewName } from "@backend/defaults"
 import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
 import { useTable } from "hooks/useTable"
@@ -37,7 +37,7 @@ export const FilterWindowButton: React.FC = () => {
     }
 
     const handleUpdateFilters = async (
-        newFilters: SimpleFilter[]
+        newFilters: Filter[]
     ): Promise<void> => {
         try {
             await updateFilters(newFilters)

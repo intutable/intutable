@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react"
 import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
+import SaveIcon from "@mui/icons-material/Save"
 import {
     Popper,
     Paper,
@@ -16,12 +17,15 @@ import { TableColumn } from "types/rdg"
 import {
     ConditionKind,
     Filter,
-    SimpleFilter,
     PartialFilter,
     PartialSimpleFilter,
     FILTER_OPERATORS_LIST,
 } from "types/filter"
-import { wherePartial, or } from "utils/filter"
+import {
+    wherePartial,
+    and,
+    stripPartialFilter,
+} from "utils/filter"
 import { useAPI } from "context/APIContext"
 import { FilterEditor } from "./Filter"
 import { SimpleFilterEditor } from "./SimpleFilter"
@@ -34,12 +38,12 @@ type FilterWindowProps = {
      * The real filters, from the back-end, currently constraining the
      * data being displayed.
      */
-    activeFilters: SimpleFilter[]
+    activeFilters: Filter[]
     onHandleCloseEditor: () => void
     /**
      * Callback for saving filters (write to back-end)
      */
-    onUpdateFilters: (newFilters: SimpleFilter[]) => Promise<void>
+    onUpdateFilters: (newFilters: Filter[]) => Promise<void>
 }
 
 /**
@@ -87,9 +91,13 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         },
     })
 
-    // todo: create from stuff that backend delivers instead
-    const setupInitialFilters = (filters: SimpleFilter[]): KeyedFilter[] => {
-        return [newUnsavedFilter()]
+    const setupInitialFilters = (filters: Filter[]): KeyedFilter[] => {
+        if (filters.length !== 0)
+            return filters.map(f => ({
+                key: getNextKey(),
+                filter: f,
+            }))
+        else return [newUnsavedFilter()]
     }
 
     const [filters, setFilters] = useState<KeyedFilter[]>(() =>
@@ -104,26 +112,44 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         if (index !== -1) setFilters(prev => arrayRemove(prev, index))
     }
 
+    /**
+     * Promote a {@link SimpleFilterEditor} to {@link FilterEditor}, which
+     * is a composite (AND, OR, NOT) filter.
+     */
     const handlePromoteFilter = async (
         key: number | string,
         filter: PartialSimpleFilter
     ) => {
         return handleChangeFilter(
             key,
-            or(filter, wherePartial(undefined, "=", undefined))
+            and(filter, wherePartial(undefined, "=", undefined))
         )
     }
+    /**
+     * Triggered whenever a filter changes. For now, updates the view.
+     */
     const handleChangeFilter = async (
         key: number | string,
         newFilter: PartialFilter
     ): Promise<void> => {
         const index = filters.findIndex(f => f.key === key)
-        if (index !== -1)
-            setFilters(prev => {
-                const newFilters = [...prev]
-                newFilters[index] = { key, filter: newFilter }
-                return newFilters
-            })
+        if (index === -1) return
+        setFilters(prev => {
+            const newFilters = [...prev]
+            newFilters[index] = { key, filter: newFilter }
+            return newFilters
+        })
+    }
+
+    /** Save filters to the back-end and apply them. */
+    const handleApplyFilters = () => {
+        // yes, the type checker does need this.
+        function notNull<T>(x: T | null): x is T {
+            return x !== null
+        }
+        props.onUpdateFilters(
+            filters.map(f => stripPartialFilter(f.filter)).filter(notNull)
+        )
     }
 
     return (
@@ -185,6 +211,15 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                         }}
                     >
                         <AddBoxIcon />
+                    </IconButton>
+                    <IconButton
+                        onClick={handleApplyFilters}
+                        sx={{
+                            borderRadius: "4px",
+                            mt: 2,
+                        }}
+                    >
+                        <SaveIcon />
                     </IconButton>
                 </Stack>
             </Paper>
