@@ -15,6 +15,7 @@
         "jsx": "preserve",
         "incremental": true,
         "baseUrl": "./src",
+        "experimentalDecorators": true,
         "paths": {
             "@backend/*": ["backend/dekanat-app-plugin/src/*"],
             "@datagrid/*": ["components/DataGrid/*"]
