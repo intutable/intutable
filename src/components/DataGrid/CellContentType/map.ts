@@ -48,7 +48,7 @@ export const CellContentTypeComponents: {
     boolean: { editor: null, formatter: Formatter.Boolean },
     date: {
         editor: null,
-        formatter: Formatter.Standard,
+        formatter: Formatter.Date,
     },
     datetime: {
         editor: null,

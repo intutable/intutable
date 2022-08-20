@@ -103,7 +103,8 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                             type !== "currency" &&
                                             type !== "boolean" &&
                                             type !== "time" &&
-                                            type !== "hyperlink"
+                                            type !== "hyperlink" &&
+                                            type !== "date"
                                         }
                                     >
                                         {CellContentTypeDisplayName[type]}

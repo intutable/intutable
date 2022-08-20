@@ -6,6 +6,7 @@ export { HyperlinkFormatter as Hyperlink } from "./HyperlinkFormatter"
 export { NumberFormatter as Number } from "./NumberFormatter"
 export { PercentageFormatter as Percentage } from "./PercentageFormatter"
 export { TimeFormatter as Time } from "./TimeFormatter"
+export { DateFormatter as Date } from "./DateFormatter"
 
 // Column Kinds
 export { StandardFormatter as Standard } from "./StandardFormatter"
