@@ -13,6 +13,7 @@ import { PartialFilter, PartialSimpleFilter } from "types/filter"
 import { wherePartial, and, or, not, isValidFilter } from "utils/filter"
 import { TableColumn } from "types/rdg"
 import { SimpleFilterEditor } from "./SimpleFilter"
+import { getFilterColor } from "./utils"
 
 const Infix = c.ConditionKind.Infix
 const Not = c.ConditionKind.Not
@@ -39,10 +40,11 @@ type FilterEditorProps = {
      * (e.g., one of the branches of an AND) and pass it into the callback.
      */
     onDemote: (p: PartialSimpleFilter) => Promise<void>
+    nestingDepth: number
 }
 
 export const FilterEditor: React.FC<FilterEditorProps> = props => {
-    const { filter, columns, onDemote, onChange } = props
+    const { filter, columns, onDemote, onChange, nestingDepth } = props
 
     const newFilter = () => wherePartial(undefined, "=", undefined)
 
@@ -137,19 +139,31 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                 borderRadius: "4px",
                 display: "flex",
                 alignContent: "center",
+                backgroundColor: getFilterColor(nestingDepth),
             }}
         >
-            <Select value={filter.kind ?? And} onChange={handleChangeKind}>
-                <MenuItem key={Not} value={Not}>
-                    NOT
-                </MenuItem>
-                <MenuItem key={And} value={And}>
-                    AND
-                </MenuItem>
-                <MenuItem key={Or} value={Or}>
-                    OR
-                </MenuItem>
-            </Select>
+            <Box sx={{ m: 0.5, p: 0.5 }}>
+                <Select
+                    value={filter.kind ?? And}
+                    onChange={handleChangeKind}
+                    sx={{
+                        position: "relative",
+                        left: "50%",
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
+                    }}
+                >
+                    <MenuItem key={Not} value={Not}>
+                        NOT
+                    </MenuItem>
+                    <MenuItem key={And} value={And}>
+                        AND
+                    </MenuItem>
+                    <MenuItem key={Or} value={Or}>
+                        OR
+                    </MenuItem>
+                </Select>
+            </Box>
             {filter.kind === Not ? (
                 filter.condition.kind === Infix ? (
                     <SimpleFilterEditor
@@ -157,6 +171,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                         columns={columns}
                         onPromote={handlePromoteNot}
                         onChange={f => onChange(not(f))}
+                        nestingDepth={nestingDepth}
                     />
                 ) : (
                     <FilterEditor
@@ -164,6 +179,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                         columns={columns}
                         onDemote={handleDemoteNot}
                         onChange={f => onChange(not(f))}
+                        nestingDepth={nestingDepth + 1}
                     />
                 )
             ) : (
@@ -174,6 +190,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                             columns={columns}
                             onPromote={handlePromoteLeft}
                             onChange={handleChangeLeft}
+                            nestingDepth={nestingDepth}
                         />
                     ) : (
                         <FilterEditor
@@ -181,6 +198,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                             columns={columns}
                             onDemote={handleDemoteLeft}
                             onChange={handleChangeLeft}
+                            nestingDepth={nestingDepth + 1}
                         />
                     )}
                     {filter.right.kind === Infix ? (
@@ -189,6 +207,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                             columns={columns}
                             onPromote={handlePromoteRight}
                             onChange={handleChangeRight}
+                            nestingDepth={nestingDepth}
                         />
                     ) : (
                         <FilterEditor
@@ -196,6 +215,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                             columns={columns}
                             onDemote={handleDemoteRight}
                             onChange={handleChangeRight}
+                            nestingDepth={nestingDepth + 1}
                         />
                     )}
                 </Stack>
@@ -205,7 +225,12 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                     sx={{ verticalAlign: "revert" }}
                     onClick={handleDemote}
                 >
-                    <FormatIndentDecreaseIcon sx={{ fontSize: "80%" }} />
+                    <FormatIndentDecreaseIcon
+                        sx={{
+                            fontSize: "80%",
+                            color: "#aa0000",
+                        }}
+                    />
                 </IconButton>
             )}
         </Box>

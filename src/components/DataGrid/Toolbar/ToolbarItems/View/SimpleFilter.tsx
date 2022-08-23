@@ -16,6 +16,7 @@ import {
     PartialSimpleFilter,
 } from "types/filter"
 import { TableColumn } from "types/rdg"
+import { getFilterColor } from "./utils"
 
 /**
  * An editor component for one single, primitive filter. The filter applied
@@ -31,6 +32,7 @@ type SimpleFilterEditorProps = {
     columns: TableColumn[]
     onPromote: (filter: PartialSimpleFilter) => Promise<void>
     onChange: (newFilter: PartialSimpleFilter) => Promise<void>
+    nestingDepth?: number
 }
 
 /**
@@ -78,6 +80,9 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
                 borderRadius: "4px",
                 display: "flex",
                 alignContent: "center",
+                ...(props.nestingDepth && {
+                    backgroundColor: getFilterColor(props.nestingDepth),
+                }),
             }}
         >
             <Select
@@ -120,7 +125,12 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
                 sx={{ verticalAlign: "revert" }}
                 onClick={() => onPromote(filter)}
             >
-                <FormatIndentIncreaseIcon sx={{ fontSize: "80%" }} />
+                <FormatIndentIncreaseIcon
+                    sx={{
+                        fontSize: "80%",
+                        color: "#00aa00",
+                    }}
+                />
             </IconButton>
         </Box>
     )

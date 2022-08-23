@@ -176,7 +176,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                     </Box>
                     {filters &&
                         filters.map(f => (
-                            <>
+                            <Box sx={{ display: "flex" }}>
                                 {f.filter.kind === ConditionKind.Infix ? (
                                     <SimpleFilterEditor
                                         key={f.key}
@@ -188,6 +188,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                                         onChange={async filter =>
                                             handleChangeFilter(f.key, filter)
                                         }
+                                        nestingDepth={0}
                                     />
                                 ) : (
                                     <FilterEditor
@@ -200,15 +201,19 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                                         onChange={async filter =>
                                             handleChangeFilter(f.key, filter)
                                         }
+                                        nestingDepth={0}
                                     />
                                 )}
                                 <IconButton
-                                    sx={{ verticalAlign: "revert" }}
+                                    sx={{
+                                        verticalAlign: "revert",
+                                        float: "right",
+                                    }}
                                     onClick={() => handleDeleteFilter(f.key)}
                                 >
                                     <DeleteIcon sx={{ fontSize: "80%" }} />
                                 </IconButton>
-                            </>
+                            </Box>
                         ))}
                     <IconButton
                         onClick={handleAddFilter}
