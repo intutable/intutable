@@ -74,7 +74,8 @@ export function or<I extends c.IsInfixCondition>(
 }
 
 /**
- * Compare two {@link PartialFilter}s for equality.
+ * Compare two {@link PartialFilter}s for equality. Also works with
+ * {@link Filter}, since `PartialFilter` is a supertype of `Filter`.
  */
 export const partialFilterEquals = (
     f1: PartialFilter,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
@@ -25,8 +25,10 @@ import {
     wherePartial,
     and,
     stripPartialFilter,
+    partialFilterEquals,
 } from "utils/filter"
 import { useAPI } from "context/APIContext"
+import { useUpdateTimer } from "hooks/useUpdateTimer"
 import { FilterEditor } from "./Filter"
 import { SimpleFilterEditor } from "./SimpleFilter"
 
@@ -59,6 +61,8 @@ type KeyedFilter = {
  * A pop-up window with a list of filters to apply to the data being shown.
  */
 export const FilterWindow: React.FC<FilterWindowProps> = props => {
+    const { columns, activeFilters, onHandleCloseEditor, onUpdateFilters } =
+        props
     /**
      * `Popper` does not work with `ClickAwayListener`, so we hacked this to
      * at least close the editor window whenever the user switches views.
@@ -70,13 +74,10 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
     }, [view])
     const prevView = viewRef.current
     useEffect(() => {
-        if (prevView && prevView.id !== view?.id) props.onHandleCloseEditor()
-    }, [view, prevView, props])
+        if (prevView && prevView.id !== view?.id) onHandleCloseEditor()
+    }, [view, prevView, onHandleCloseEditor])
 
-    /**
-     * The filters have no IDs or anything, so we need to supply our own keys.
-     * Using a ref ensures they stay consistent as long as the window is open.
-     */
+    /** The filters have no IDs, so we need to supply our own keys. */
     const nextKey = useRef<number>(0)
     const getNextKey = () => {
         const key = nextKey.current
@@ -91,6 +92,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         },
     })
 
+    /** The actual filters currently being displayed */
     const setupInitialFilters = (filters: Filter[]): KeyedFilter[] => {
         if (filters.length !== 0)
             return filters.map(f => ({
@@ -99,10 +101,29 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
             }))
         else return [newUnsavedFilter()]
     }
-
     const [filters, setFilters] = useState<KeyedFilter[]>(() =>
-        setupInitialFilters(props.activeFilters)
+        setupInitialFilters(activeFilters)
     )
+
+    /** Save filters to the back-end and apply them. */
+    const applyFilters = useCallback(() => {
+        onUpdateFilters(extractFilters(filters))
+        return Promise.resolve(null)
+    }, [onUpdateFilters, filters])
+    const { update } = useUpdateTimer<null>(applyFilters, 500)
+
+    useEffect(() => {
+        // if the new filters are semantically different from the old ones,
+        // apply them
+        const newActiveFilters = extractFilters(filters)
+        if (
+            activeFilters.length !== newActiveFilters.length ||
+            !(activeFilters as PartialFilter[]).every((f, i) =>
+                partialFilterEquals(f, newActiveFilters[i])
+            )
+        )
+            update()
+    }, [activeFilters, update, filters])
 
     const handleAddFilter = () =>
         setFilters(prev => prev.concat(newUnsavedFilter()))
@@ -134,22 +155,9 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
     ): Promise<void> => {
         const index = filters.findIndex(f => f.key === key)
         if (index === -1) return
-        setFilters(prev => {
-            const newFilters = [...prev]
-            newFilters[index] = { key, filter: newFilter }
-            return newFilters
-        })
-    }
-
-    /** Save filters to the back-end and apply them. */
-    const handleApplyFilters = () => {
-        // yes, the type checker does need this.
-        function notNull<T>(x: T | null): x is T {
-            return x !== null
-        }
-        props.onUpdateFilters(
-            filters.map(f => stripPartialFilter(f.filter)).filter(notNull)
-        )
+        const newFilters = [...filters]
+        newFilters[index] = { key, filter: newFilter }
+        setFilters(newFilters)
     }
 
     return (
@@ -159,7 +167,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                     <Box>
                         <Typography></Typography>
                         <IconButton
-                            onClick={props.onHandleCloseEditor}
+                            onClick={onHandleCloseEditor}
                             sx={{
                                 float: "right",
                             }}
@@ -173,7 +181,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                                 {f.filter.kind === ConditionKind.Infix ? (
                                     <SimpleFilterEditor
                                         key={f.key}
-                                        columns={props.columns}
+                                        columns={columns}
                                         filter={f.filter}
                                         onPromote={async filter =>
                                             handlePromoteFilter(f.key, filter)
@@ -185,7 +193,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                                 ) : (
                                     <FilterEditor
                                         key={f.key}
-                                        columns={props.columns}
+                                        columns={columns}
                                         filter={f.filter}
                                         onDemote={async filter =>
                                             handleChangeFilter(f.key, filter)
@@ -213,7 +221,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                         <AddBoxIcon />
                     </IconButton>
                     <IconButton
-                        onClick={handleApplyFilters}
+                        onClick={applyFilters}
                         sx={{
                             borderRadius: "4px",
                             mt: 2,
@@ -231,4 +239,12 @@ const arrayRemove = <A,>(a: Array<A>, i: number): Array<A> => {
     if (i < 0 || i >= a.length)
         throw TypeError(`arrayRemove: index out of bounds`)
     else return a.slice(0, i).concat(...a.slice(i + 1))
+}
+
+const extractFilters = (filters: KeyedFilter[]): Filter[] => {
+    // yes, the type checker does need this.
+    function notNull<T>(x: T | null): x is T {
+        return x !== null
+    }
+    return filters.map(f => stripPartialFilter(f.filter)).filter(notNull)
 }

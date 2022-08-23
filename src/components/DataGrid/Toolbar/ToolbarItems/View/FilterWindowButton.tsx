@@ -36,9 +36,7 @@ export const FilterWindowButton: React.FC = () => {
         openEditor(event)
     }
 
-    const handleUpdateFilters = async (
-        newFilters: Filter[]
-    ): Promise<void> => {
+    const handleUpdateFilters = async (newFilters: Filter[]): Promise<void> => {
         try {
             await updateFilters(newFilters)
         } catch (error) {
