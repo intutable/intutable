@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react"
 import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
-import SaveIcon from "@mui/icons-material/Save"
 import {
     Popper,
     Paper,
@@ -219,15 +218,6 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                         }}
                     >
                         <AddBoxIcon />
-                    </IconButton>
-                    <IconButton
-                        onClick={applyFilters}
-                        sx={{
-                            borderRadius: "4px",
-                            mt: 2,
-                        }}
-                    >
-                        <SaveIcon />
                     </IconButton>
                 </Stack>
             </Paper>

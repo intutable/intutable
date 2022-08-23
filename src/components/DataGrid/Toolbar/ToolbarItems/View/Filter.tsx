@@ -8,16 +8,16 @@ import {
     Stack,
 } from "@mui/material"
 import FormatIndentDecreaseIcon from "@mui/icons-material/FormatIndentDecrease"
-import { ConditionKind } from "@intutable/lazy-views/dist/condition"
+import * as c from "@intutable/lazy-views/dist/condition"
 import { PartialFilter, PartialSimpleFilter } from "types/filter"
-import { wherePartial, and, or, not } from "utils/filter"
+import { wherePartial, and, or, not, isValidFilter } from "utils/filter"
 import { TableColumn } from "types/rdg"
 import { SimpleFilterEditor } from "./SimpleFilter"
 
-const Infix = ConditionKind.Infix
-const Not = ConditionKind.Not
-const And = ConditionKind.And
-const Or = ConditionKind.Or
+const Infix = c.ConditionKind.Infix
+const Not = c.ConditionKind.Not
+const And = c.ConditionKind.And
+const Or = c.ConditionKind.Or
 
 /**
  * @prop {TableColumn[]} columns We filter by conditions of the form
@@ -46,7 +46,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
 
     const newFilter = () => wherePartial(undefined, "=", undefined)
 
-    const handleChangeKind = (e: SelectChangeEvent<ConditionKind>) => {
+    const handleChangeKind = (e: SelectChangeEvent<c.ConditionKind>) => {
         const kind = e.target.value
         if (filter.kind === kind) return
         else if (filter.kind === Not) {
@@ -71,10 +71,15 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
             return onChange({ ...filter, right: f })
     }
 
-    /** Demote this filter to a simple filter. */
-    // Todo: save some of the complex filter, instead of throwing it all out
+    /** Demote this filter to a simple filter, reverting to its left branch
+     * (unless the right one is valid and the left one isn't.)
+     */
     const handleDemote = async () => {
-        return onDemote(wherePartial(undefined, "=", undefined))
+        if (hasOnlyLeafChildren(filter)) return onDemote(salvageBranch(filter))
+        // the demote button is only shown if the filter's children are
+        // infix filters, so these are just here for the type checker.
+        else if (filter.kind === Not) return filter.condition
+        else return filter.left
     }
 
     /**
@@ -195,9 +200,38 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                     )}
                 </Stack>
             )}
-            <IconButton sx={{ verticalAlign: "revert" }} onClick={handleDemote}>
-                <FormatIndentDecreaseIcon sx={{ fontSize: "80%" }} />
-            </IconButton>
+            {hasOnlyLeafChildren(filter) && (
+                <IconButton
+                    sx={{ verticalAlign: "revert" }}
+                    onClick={handleDemote}
+                >
+                    <FormatIndentDecreaseIcon sx={{ fontSize: "80%" }} />
+                </IconButton>
+            )}
         </Box>
     )
+}
+
+type HasOnlyLeafChildren =
+    | c.MkNotCondition<PartialSimpleFilter>
+    | c.MkAndCondition<PartialSimpleFilter>
+    | c.MkOrCondition<PartialSimpleFilter>
+
+const hasOnlyLeafChildren = (
+    filter: Exclude<PartialFilter, PartialSimpleFilter>
+): filter is HasOnlyLeafChildren =>
+    (filter.kind === Not && filter.condition.kind === Infix) ||
+    (filter.kind !== Not &&
+        filter.left.kind === Infix &&
+        filter.right.kind === Infix)
+
+/**
+ * On demotion, return the "more important" branch of the filter to use
+ * as simple filter.
+ */
+const salvageBranch = (filter: HasOnlyLeafChildren): PartialSimpleFilter => {
+    if (filter.kind === Not) return filter.condition
+    else if (isValidFilter(filter.right) && !isValidFilter(filter.left))
+        return filter.right
+    else return filter.left
 }
