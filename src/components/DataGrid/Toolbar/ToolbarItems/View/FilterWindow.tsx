@@ -1,3 +1,16 @@
+/**
+ * A window for setting filters to constrain which parts of the data are shown.
+ * At the top level, there is a _list_ of filters that are combined by logical
+ * AND. The filters themselves can be either
+ * - a primitive _Infix_ filter, consisting of column, operator, and value,
+ *   e.g. column: Name, operator: "contains", value: "Institut" => show only
+ *   rows whose Name contains the substring "Institut".
+ * - a boolean combination (AND, OR, NOT) of filters.
+ * A filter that has just been created will be an Infix filter, but it can
+ * be "promoted" to a compound filter with the Promote button. Compound
+ * filters in turn can be turned back to Infix filters with the Demote button.
+ * This makes building complex filter trees simple and dynamic.
+ */
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
@@ -33,7 +46,7 @@ import { SimpleFilterEditor } from "./SimpleFilter"
 
 type FilterWindowProps = {
     anchorEl: Element | null
-    /** The columns the user can choose the left operand from. */
+    /** The columns the user can choose to filter by. */
     columns: TableColumn[]
     /**
      * The real filters, from the back-end, currently constraining the
@@ -41,20 +54,20 @@ type FilterWindowProps = {
      */
     activeFilters: Filter[]
     onHandleCloseEditor: () => void
-    /**
-     * Callback for saving filters (write to back-end)
-     */
+    /** Callback for saving filters (write to back-end) */
     onUpdateFilters: (newFilters: Filter[]) => Promise<void>
 }
 
 /**
  * There are no IDs on the filters, so this component has to manage them.
- * This type pairs a filter (or an incomplete filter, or...) with a key.
+ * This type pairs a filter with a key.
  */
 type KeyedFilter = {
     key: string | number
     filter: PartialFilter
 }
+
+const UPDATE_WAIT_TIME = 500
 
 /**
  * A pop-up window with a list of filters to apply to the data being shown.
@@ -76,7 +89,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         if (prevView && prevView.id !== view?.id) onHandleCloseEditor()
     }, [view, prevView, onHandleCloseEditor])
 
-    /** The filters have no IDs, so we need to supply our own keys. */
+    /** Attaching keys to the filters. */
     const nextKey = useRef<number>(0)
     const getNextKey = () => {
         const key = nextKey.current
@@ -91,7 +104,10 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         },
     })
 
-    /** The actual filters currently being displayed */
+    /**
+     * The actual filters currently being displayed - initially taken from
+     * the back-end, later defined by what the user enters.
+     */
     const setupInitialFilters = (filters: Filter[]): KeyedFilter[] => {
         if (filters.length !== 0)
             return filters.map(f => ({
@@ -104,16 +120,20 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         setupInitialFilters(activeFilters)
     )
 
-    /** Save filters to the back-end and apply them. */
+    /**
+     * Save filters to the back-end and apply them. Rather than a save button,
+     * we simply save whenever the user changes properties of a filter,
+     * but with a 500ms timer to prevent things from being constantly updated.
+     */
     const applyFilters = useCallback(() => {
         onUpdateFilters(extractFilters(filters))
         return Promise.resolve(null)
     }, [onUpdateFilters, filters])
-    const { update } = useUpdateTimer<null>(applyFilters, 500)
+    const { update } = useUpdateTimer<null>(applyFilters, UPDATE_WAIT_TIME)
 
     useEffect(() => {
         // if the new filters are semantically different from the old ones,
-        // apply them
+        // save and apply them.
         const newActiveFilters = extractFilters(filters)
         if (
             activeFilters.length !== newActiveFilters.length ||
@@ -132,22 +152,15 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         if (index !== -1) setFilters(prev => arrayRemove(prev, index))
     }
 
-    /**
-     * Promote a {@link SimpleFilterEditor} to {@link FilterEditor}, which
-     * is a composite (AND, OR, NOT) filter.
-     */
     const handlePromoteFilter = async (
         key: number | string,
         filter: PartialSimpleFilter
-    ) => {
-        return handleChangeFilter(
+    ) =>
+        handleChangeFilter(
             key,
             and(filter, wherePartial(undefined, "=", undefined))
         )
-    }
-    /**
-     * Triggered whenever a filter changes. For now, updates the view.
-     */
+
     const handleChangeFilter = async (
         key: number | string,
         newFilter: PartialFilter

@@ -1,3 +1,9 @@
+/**
+ * An editor component for one single, primitive filter. The filter applied
+ * to the data consist of a boolean combination of these.
+ * A Simple Filter has the form <column> <operator> <value>, e.g.:
+ * "Name contains 'Institut'" or "Age >= 18"
+ */
 import React from "react"
 import { IconButton } from "@mui/material"
 import FormatIndentIncreaseIcon from "@mui/icons-material/FormatIndentIncrease"
@@ -18,10 +24,6 @@ import {
 import { TableColumn } from "types/rdg"
 import { getFilterColor } from "./utils"
 
-/**
- * An editor component for one single, primitive filter. The filter applied
- * to the data consist of a boolean combination of these.
- */
 type SimpleFilterEditorProps = {
     /** When the user clicks "create new filter", a new filter with no data
      * in any of the input fields is generated. Also, a filter may have some
@@ -29,15 +31,22 @@ type SimpleFilterEditorProps = {
      * can't just represent it with `null` or something.
      */
     filter: PartialSimpleFilter
+    /**
+     * We filter by conditions of the form
+     * "<column x> < 100", so we need to know what columns are
+     * available in our table.
+     */
     columns: TableColumn[]
+    /** Change the filter to a {@link FilterEditor | compound filter}. */
     onPromote: (filter: PartialSimpleFilter) => Promise<void>
     onChange: (newFilter: PartialSimpleFilter) => Promise<void>
+    /**
+     * Deeply nested filters have different background colors to keep things
+     * looking a bit more orderly.
+     */
     nestingDepth?: number
 }
 
-/**
- * A single, basic filter of the form <column> <operator> <value>.
- */
 export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
     const { columns, filter, onPromote, onChange } = props
 
@@ -47,7 +56,6 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
     }
 
     const handleChangeColumn = (e: SelectChangeEvent<number | string>) => {
-        // apparently TSC cant understand the typing of the elvis operator
         const newColumnSpec = getColumn(e.target.value)
         let newColumn: Column | undefined
         if (newColumnSpec)

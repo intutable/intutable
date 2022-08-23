@@ -1,3 +1,6 @@
+/**
+ * An editor component for a nested (i.e. boolean combination) filter.
+ */
 import React from "react"
 import {
     Select,
@@ -20,26 +23,25 @@ const Not = c.ConditionKind.Not
 const And = c.ConditionKind.And
 const Or = c.ConditionKind.Or
 
-/**
- * @prop {TableColumn[]} columns We filter by conditions of the form
- * "<column x> < 100", so we need to know what columns are available.
- * @prop {(newFilter: PartialFilter) => Promise<void>} onChange What to do
- * when the filter changes
- */
 type FilterEditorProps = {
+    /**
+     * Only nested filters allowed; {@link PartialSimpleFilter}s get
+     * {@link SimpleFilterEditor | their own component}.
+     */
     filter: Exclude<PartialFilter, PartialSimpleFilter>
     /**
      * @prop {TableColumn[]} columns We filter by conditions of the form
-     * "<column x> < 100", so we need to know what columns are available.
+     * "<column x> < 100", so we need to know what columns are
+     * available in our table.
      */
     columns: TableColumn[]
     onChange: (newFilter: PartialFilter) => Promise<void>
-    /**
-     * change an inner (not top-level) filter to a {@link SimpleFilterEditor},
-     * "demoting" it. The filter will try to salvage some of the data entered
-     * (e.g., one of the branches of an AND) and pass it into the callback.
-     */
+    /** Change the filter to a {@link SimpleFilterEditor}. */
     onDemote: (p: PartialSimpleFilter) => Promise<void>
+    /**
+     * Deeply nested filters have different background colors to keep things
+     * looking a bit more orderly.
+     */
     nestingDepth: number
 }
 
@@ -48,6 +50,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
 
     const newFilter = () => wherePartial(undefined, "=", undefined)
 
+    /** Handle a change in the kind selector (AND, OR, or NOT) */
     const handleChangeKind = (e: SelectChangeEvent<c.ConditionKind>) => {
         const kind = e.target.value
         if (filter.kind === kind) return
@@ -62,6 +65,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
             else onChange(or(filter.left, filter.right))
         }
     }
+
     /** For AND and OR filters: change the left branch */
     const handleChangeLeft = async (f: PartialFilter) => {
         if (filter.kind === And || filter.kind === Or)
@@ -73,13 +77,15 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
             return onChange({ ...filter, right: f })
     }
 
-    /** Demote this filter to a simple filter, reverting to its left branch
+    /**
+     * Demote this filter to a simple filter, reverting to its left branch
      * (unless the right one is valid and the left one isn't.)
+     * To keep things tidy, the demote button is only present on filters
+     * whose children are both infix filters.
      */
     const handleDemote = async () => {
         if (hasOnlyLeafChildren(filter)) return onDemote(salvageBranch(filter))
-        // the demote button is only shown if the filter's children are
-        // infix filters, so these are just here for the type checker.
+        // these cases are just here for the type checker.
         else if (filter.kind === Not) return filter.condition
         else return filter.left
     }
@@ -112,6 +118,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                 right: and(f, newFilter()),
             })
     }
+
     /** Demote the inner filter of a NOT condition to a simple filter. */
     const handleDemoteNot = async (f: PartialSimpleFilter) => onChange(not(f))
     /** Demote the left branch of an AND or OR condition to a simple filter. */
