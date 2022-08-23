@@ -52,7 +52,8 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
 
     /** Handle a change in the kind selector (AND, OR, or NOT) */
     const handleChangeKind = (e: SelectChangeEvent<c.ConditionKind>) => {
-        const kind = e.target.value
+        let kind = e.target.value
+        if (typeof kind === "string") kind = And
         if (filter.kind === kind) return
         else if (filter.kind === Not) {
             if (kind === Infix) onChange(filter.condition)
