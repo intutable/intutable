@@ -189,10 +189,9 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                     </Box>
                     {filters &&
                         filters.map(f => (
-                            <Box sx={{ display: "flex" }}>
+                            <Box key={f.key} sx={{ display: "flex" }}>
                                 {f.filter.kind === ConditionKind.Infix ? (
                                     <SimpleFilterEditor
-                                        key={f.key}
                                         columns={columns}
                                         filter={f.filter}
                                         onPromote={async filter =>
@@ -205,7 +204,6 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                                     />
                                 ) : (
                                     <FilterEditor
-                                        key={f.key}
                                         columns={columns}
                                         filter={f.filter}
                                         onDemote={async filter =>
