@@ -1,5 +1,19 @@
-import React, { useState, useEffect, useRef } from "react"
+/**
+ * A window for setting filters to constrain which parts of the data are shown.
+ * At the top level, there is a _list_ of filters that are combined by logical
+ * AND. The filters themselves can be either
+ * - a primitive _Infix_ filter, consisting of column, operator, and value,
+ *   e.g. column: Name, operator: "contains", value: "Institut" => show only
+ *   rows whose Name contains the substring "Institut".
+ * - a boolean combination (AND, OR, NOT) of filters.
+ * A filter that has just been created will be an Infix filter, but it can
+ * be "promoted" to a compound filter with the Promote button. Compound
+ * filters in turn can be turned back to Infix filters with the Demote button.
+ * This makes building complex filter trees simple and dynamic.
+ */
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import CloseIcon from "@mui/icons-material/Close"
+import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import {
     Popper,
@@ -11,59 +25,59 @@ import {
 } from "@mui/material"
 
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
-import { SimpleFilter, FILTER_OPERATORS } from "@backend/condition"
 import { TableColumn } from "types/rdg"
+import {
+    ConditionKind,
+    Filter,
+    PartialFilter,
+    PartialSimpleFilter,
+    FILTER_OPERATORS_LIST,
+} from "types/filter"
+import {
+    wherePartial,
+    and,
+    stripPartialFilter,
+    partialFilterEquals,
+} from "utils/filter"
 import { useAPI } from "context/APIContext"
-import { PartialFilter, FilterListItem, isValidFilter } from "./Filter"
+import { useUpdateTimer } from "hooks/useUpdateTimer"
+import { FilterEditor } from "./Filter"
+import { SimpleFilterEditor } from "./SimpleFilter"
 
 type FilterWindowProps = {
     anchorEl: Element | null
-    /** The columns the user can choose the left operand from. */
+    /** The columns the user can choose to filter by. */
     columns: TableColumn[]
     /**
      * The real filters, from the back-end, currently constraining the
      * data being displayed.
      */
-    activeFilters: SimpleFilter[]
+    activeFilters: Filter[]
     onHandleCloseEditor: () => void
-    /**
-     * Callback for saving filters (write to back-end)
-     */
-    onUpdateFilters: (newFilters: SimpleFilter[]) => Promise<void>
+    /** Callback for saving filters (write to back-end) */
+    onUpdateFilters: (newFilters: Filter[]) => Promise<void>
 }
 
 /**
  * There are no IDs on the filters, so this component has to manage them.
- * This type pairs a filter (or an incomplete filter, or...) with a key.
+ * This type pairs a filter with a key.
  */
-type KeyedFilter<F> = {
-    key: number | string
-    filter: F
+type KeyedFilter = {
+    key: string | number
+    filter: PartialFilter
 }
 
-/**
- * A placeholder: either an incomplete filter that the `FilterWindow` keeps
- * track of because it can't be saved to the DB, or a placeholder for a
- * full-fledged filter that comes from the back-end.
- */
-type FilterPlaceholder = KeyedFilter<PartialFilter | null>
-/**
- * A filter that is (possibly) not yet saved.
- */
-type UnsavedFilter = KeyedFilter<PartialFilter>
-
-const isUnsaved = (p: FilterPlaceholder): p is UnsavedFilter =>
-    p.filter !== null
-const isPlaceholder = (p: FilterPlaceholder): p is KeyedFilter<null> =>
-    p.filter === null
+const UPDATE_WAIT_TIME = 500
 
 /**
  * A pop-up window with a list of filters to apply to the data being shown.
  */
 export const FilterWindow: React.FC<FilterWindowProps> = props => {
+    const { columns, activeFilters, onHandleCloseEditor, onUpdateFilters } =
+        props
     /**
      * `Popper` does not work with `ClickAwayListener`, so we hacked this to
-     * close the editor window whenever the user switches views.
+     * at least close the editor window whenever the user switches views.
      */
     const { view } = useAPI()
     const viewRef = useRef<ViewDescriptor | null>()
@@ -72,156 +86,90 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
     }, [view])
     const prevView = viewRef.current
     useEffect(() => {
-        if (prevView && prevView.id !== view?.id) props.onHandleCloseEditor()
-    }, [view, prevView, props])
+        if (prevView && prevView.id !== view?.id) onHandleCloseEditor()
+    }, [view, prevView, onHandleCloseEditor])
 
-    /**
-     * The filters have no IDs or anything, so we need to supply our own keys.
-     * Using a ref ensures they stay consistent as long as the window is open.
-     */
+    /** Attaching keys to the filters. */
     const nextKey = useRef<number>(0)
     const getNextKey = () => {
         const key = nextKey.current
         nextKey.current = nextKey.current + 1
         return key
     }
-    const newUnsavedFilter = (): FilterPlaceholder => ({
+    const newUnsavedFilter = (): KeyedFilter => ({
         key: getNextKey(),
         filter: {
-            operator: FILTER_OPERATORS[0].raw,
+            kind: ConditionKind.Infix,
+            operator: FILTER_OPERATORS_LIST[0].raw,
         },
     })
 
     /**
-     * We want the user to be able to save and apply filters without the
-     * incomplete ones they are also editing to be deleted on each re-render
-     * (which happens whenever an active filter changes).
-     * To this end, we keep a list of "placeholders" that stores both
-     * "unsaved" filters which cannot be committed to the view yet, and
-     * ones that are already active. The spots of saved/active filters are
-     * remembered with a {@link FilterPlaceholder} that has a null in it.
-     * important invariant: number of nulls in
-     * {@link filterPlaceholders} <= number of elements in
-     * {@link props.activeFilters}`.
+     * The actual filters currently being displayed - initially taken from
+     * the back-end, later defined by what the user enters.
      */
-    const initPlaceholders = (activeFilters: SimpleFilter[]) => {
-        if (activeFilters.length > 0)
-            return props.activeFilters.map(_ => ({
+    const setupInitialFilters = (filters: Filter[]): KeyedFilter[] => {
+        if (filters.length !== 0)
+            return filters.map(f => ({
                 key: getNextKey(),
-                filter: null,
+                filter: f,
             }))
         else return [newUnsavedFilter()]
     }
-    const [filterPlaceholders, setFilterPlaceholders] = useState<
-        FilterPlaceholder[]
-    >(() => initPlaceholders(props.activeFilters))
+    const [filters, setFilters] = useState<KeyedFilter[]>(() =>
+        setupInitialFilters(activeFilters)
+    )
 
     /**
-     * {@link filterPlaceholders} but with all the null slots filled with
-     * active filters from the back-end. We need this for rendering, but all
-     * the logic uses {@link filterPlaceholders}
+     * Save filters to the back-end and apply them. Rather than a save button,
+     * we simply save whenever the user changes properties of a filter,
+     * but with a 500ms timer to prevent things from being constantly updated.
      */
-    const [unsavedFilters, setUnsavedFilters] = useState<UnsavedFilter[]>([])
+    const applyFilters = useCallback(() => {
+        onUpdateFilters(extractFilters(filters))
+        return Promise.resolve(null)
+    }, [onUpdateFilters, filters])
+    const { update } = useUpdateTimer<null>(applyFilters, UPDATE_WAIT_TIME)
 
-    /**
-     * Merge {@link filterPlaceholders} with the active/saved filters from the
-     * back-end to get set of filters to display.
-     */
     useEffect(() => {
-        if (!props.activeFilters || !filterPlaceholders) return
-
-        const displayFilters = new Array(filterPlaceholders.length)
-        for (
-            let aIndex = 0, wIndex = 0;
-            wIndex < filterPlaceholders.length;
-            wIndex++
-        ) {
-            if (!isUnsaved(filterPlaceholders[wIndex])) {
-                displayFilters[wIndex] = {
-                    key: filterPlaceholders[wIndex].key,
-                    filter: props.activeFilters[aIndex],
-                }
-                aIndex++
-            } else {
-                displayFilters[wIndex] = filterPlaceholders[wIndex]
-            }
-        }
-        setUnsavedFilters(displayFilters)
-    }, [props.activeFilters, filterPlaceholders])
+        // if the new filters are semantically different from the old ones,
+        // save and apply them.
+        const newActiveFilters = extractFilters(filters)
+        if (
+            activeFilters.length !== newActiveFilters.length ||
+            !(activeFilters as PartialFilter[]).every((f, i) =>
+                partialFilterEquals(f, newActiveFilters[i])
+            )
+        )
+            update()
+    }, [activeFilters, update, filters])
 
     const handleAddFilter = () =>
-        setFilterPlaceholders(prev => prev.concat(newUnsavedFilter()))
+        setFilters(prev => prev.concat(newUnsavedFilter()))
 
-    /**
-     * Delete a filter - if it's unsaved filter, just remove the GUI component,
-     * otherwise, we have to talk to the back-end.
-     */
     const handleDeleteFilter = async (key: number | string): Promise<void> => {
-        const index = filterPlaceholders.findIndex(f => f.key === key)!
-        if (!unsavedFilters) return
-        else if (isUnsaved(filterPlaceholders[index]))
-            setFilterPlaceholders(prev => arrayRemove(prev, index))
-        else {
-            // find index within the active filters:
-            const aIndex =
-                filterPlaceholders.slice(0, index + 1).filter(isPlaceholder)
-                    .length - 1
-            setFilterPlaceholders(prev => arrayRemove(prev, index))
-            const newFilters = arrayRemove(props.activeFilters, aIndex)
-            return props.onUpdateFilters(newFilters)
-        }
+        const index = filters.findIndex(f => f.key === key)
+        if (index !== -1) setFilters(prev => arrayRemove(prev, index))
     }
 
-    const assignFilter = <F1, F2>(
-        old: KeyedFilter<F1>,
-        filter: F2
-    ): KeyedFilter<F2> => ({
-        key: old.key,
-        filter,
-    })
-    /**
-     * If a filter becomes invalid, e.g. if the user deletes the text of
-     * its "value" field, then it becomes an unsaved filter.
-     */
-    const handleFilterBecomeInvalid = async (
+    const handlePromoteFilter = async (
         key: number | string,
-        incomplete: PartialFilter
-    ): Promise<void> => {
-        const index = filterPlaceholders.findIndex(f => f.key === key)
-        if (!unsavedFilters) return
-        else if (isUnsaved(filterPlaceholders[index])) return
-        else {
-            const aIndex =
-                filterPlaceholders.slice(0, index + 1).filter(isPlaceholder)
-                    .length - 1
-            setFilterPlaceholders(prev => {
-                const copy = [...prev]
-                copy[index] = assignFilter(copy[index], incomplete)
-                return copy
-            })
-            const newFilters = arrayRemove(props.activeFilters, aIndex)
-            return props.onUpdateFilters(newFilters)
-        }
-    }
+        filter: PartialSimpleFilter
+    ) =>
+        handleChangeFilter(
+            key,
+            and(filter, wherePartial(undefined, "=", undefined))
+        )
 
-    /** Save a complete filter to the back-end. */
-    const handleCommitFilter = async (
+    const handleChangeFilter = async (
         key: number | string,
-        newFilter: SimpleFilter
+        newFilter: PartialFilter
     ): Promise<void> => {
-        const index = filterPlaceholders.findIndex(f => f.key === key)
-        if (!unsavedFilters) return
-        const filterCopy = [...unsavedFilters]
-        filterCopy[index] = assignFilter(filterCopy[index], newFilter)
-        const newFilters = filterCopy
-            .map(unsaved => unsaved.filter)
-            .filter(isValidFilter)
-        await props.onUpdateFilters(newFilters)
-        setFilterPlaceholders(prev => {
-            const copy = [...prev]
-            copy[index] = assignFilter(copy[index], null)
-            return copy
-        })
+        const index = filters.findIndex(f => f.key === key)
+        if (index === -1) return
+        const newFilters = [...filters]
+        newFilters[index] = { key, filter: newFilter }
+        setFilters(newFilters)
     }
 
     return (
@@ -231,7 +179,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                     <Box>
                         <Typography></Typography>
                         <IconButton
-                            onClick={props.onHandleCloseEditor}
+                            onClick={onHandleCloseEditor}
                             sx={{
                                 float: "right",
                             }}
@@ -239,20 +187,44 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                             <CloseIcon />
                         </IconButton>
                     </Box>
-                    {unsavedFilters &&
-                        unsavedFilters.map(f => (
-                            <FilterListItem
-                                key={f.key}
-                                columns={props.columns}
-                                filter={f.filter}
-                                onHandleDelete={() => handleDeleteFilter(f.key)}
-                                onCommit={value =>
-                                    handleCommitFilter(f.key, value)
-                                }
-                                onBecomeInvalid={value =>
-                                    handleFilterBecomeInvalid(f.key, value)
-                                }
-                            />
+                    {filters &&
+                        filters.map(f => (
+                            <Box key={f.key} sx={{ display: "flex" }}>
+                                {f.filter.kind === ConditionKind.Infix ? (
+                                    <SimpleFilterEditor
+                                        columns={columns}
+                                        filter={f.filter}
+                                        onPromote={async filter =>
+                                            handlePromoteFilter(f.key, filter)
+                                        }
+                                        onChange={async filter =>
+                                            handleChangeFilter(f.key, filter)
+                                        }
+                                        nestingDepth={0}
+                                    />
+                                ) : (
+                                    <FilterEditor
+                                        columns={columns}
+                                        filter={f.filter}
+                                        onDemote={async filter =>
+                                            handleChangeFilter(f.key, filter)
+                                        }
+                                        onChange={async filter =>
+                                            handleChangeFilter(f.key, filter)
+                                        }
+                                        nestingDepth={0}
+                                    />
+                                )}
+                                <IconButton
+                                    sx={{
+                                        verticalAlign: "revert",
+                                        float: "right",
+                                    }}
+                                    onClick={() => handleDeleteFilter(f.key)}
+                                >
+                                    <DeleteIcon sx={{ fontSize: "80%" }} />
+                                </IconButton>
+                            </Box>
                         ))}
                     <IconButton
                         onClick={handleAddFilter}
@@ -273,4 +245,12 @@ const arrayRemove = <A,>(a: Array<A>, i: number): Array<A> => {
     if (i < 0 || i >= a.length)
         throw TypeError(`arrayRemove: index out of bounds`)
     else return a.slice(0, i).concat(...a.slice(i + 1))
+}
+
+const extractFilters = (filters: KeyedFilter[]): Filter[] => {
+    // yes, the type checker does need this.
+    function notNull<T>(x: T | null): x is T {
+        return x !== null
+    }
+    return filters.map(f => stripPartialFilter(f.filter)).filter(notNull)
 }

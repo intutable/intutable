@@ -81,8 +81,15 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     if (props.open === false) return null
 
     const handleCreateView = async (name: string): Promise<void> => {
-        await createView(name)
-        mutate()
+        try {
+            const newView = await createView(name)
+            setView(newView)
+        } catch (error) {
+            const err = makeError(error)
+            if (err.message === "alreadyTaken")
+                snackError("Dieser Name wird bereits für eine Sicht verwendet!")
+            else snackError("unbekannter Fehler beim erstellen der Sicht")
+        }
     }
     const handleSelectView = async (view: ViewDescriptor): Promise<void> => {
         if (currentView?.id === view.id) return

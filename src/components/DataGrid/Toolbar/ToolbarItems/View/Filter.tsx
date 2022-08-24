@@ -1,114 +1,143 @@
-import React, { useState, useEffect, useCallback, useRef } from "react"
-import DeleteIcon from "@mui/icons-material/Delete"
-import { Select, MenuItem, TextField, IconButton, Box } from "@mui/material"
-import {
-    SimpleFilter,
-    FILTER_OPERATORS,
-    LIKE_PATTERN_ESCAPE_CHARS,
-} from "@backend/condition"
-import { TableColumn } from "types/rdg"
-
-export type PartialFilter = Partial<SimpleFilter>
-
-export const filterEquals = (f1: PartialFilter, f2: PartialFilter) =>
-    f1.left?.parentColumnId === f2.left?.parentColumnId &&
-    f1.operator === f2.operator &&
-    f1.right === f2.right
-
-export const isValidFilter = (filter: PartialFilter): filter is SimpleFilter =>
-    filter.left !== undefined &&
-    filter.operator !== undefined &&
-    filter.right !== undefined &&
-    filter.right !== ""
-
 /**
- * An editor component for one single filter. The total filter consists
- * of the logical conjunction of these.
+ * An editor component for a nested (i.e. boolean combination) filter.
  */
-type FilterListItemProps = {
-    /** When the user clicks "create new filter", a new filter with no data
-     * in any of the input fields is generated. Also, a filter may have some
-     * of its fields set, but not enough to send to the back-end yet, so we
-     * can't just represent it with `null` or something.
-     */
-    filter: PartialFilter
-    /** TEMP TableColumn is currently not usable for this task. */
-    columns: TableColumn[]
-    onHandleDelete: () => Promise<void>
+import React from "react"
+import {
+    Select,
+    SelectChangeEvent,
+    MenuItem,
+    IconButton,
+    Box,
+    Stack,
+} from "@mui/material"
+import FormatIndentDecreaseIcon from "@mui/icons-material/FormatIndentDecrease"
+import * as c from "@intutable/lazy-views/dist/condition"
+import { PartialFilter, PartialSimpleFilter } from "types/filter"
+import { wherePartial, and, or, not, isValidFilter } from "utils/filter"
+import { TableColumn } from "types/rdg"
+import { SimpleFilterEditor } from "./SimpleFilter"
+import { getFilterColor } from "./utils"
+
+const Infix = c.ConditionKind.Infix
+const Not = c.ConditionKind.Not
+const And = c.ConditionKind.And
+const Or = c.ConditionKind.Or
+
+type FilterEditorProps = {
     /**
-     * When the data have been sufficiently set (plus a timer to avoid
-     * excessive updates), the editor calls its `onCommitFilter` prop, asking
-     * the parent component to commit the current filter to the back-end.
+     * Only nested filters allowed; {@link PartialSimpleFilter}s get
+     * {@link SimpleFilterEditor | their own component}.
      */
-    onCommit: (newFilter: SimpleFilter) => Promise<void>
-    onBecomeInvalid: (partialFilter: PartialFilter) => Promise<void>
+    filter: Exclude<PartialFilter, PartialSimpleFilter>
+    /**
+     * @prop {TableColumn[]} columns We filter by conditions of the form
+     * "<column x> < 100", so we need to know what columns are
+     * available in our table.
+     */
+    columns: TableColumn[]
+    onChange: (newFilter: PartialFilter) => Promise<void>
+    /** Change the filter to a {@link SimpleFilterEditor}. */
+    onDemote: (p: PartialSimpleFilter) => Promise<void>
+    /**
+     * Deeply nested filters have different background colors to keep things
+     * looking a bit more orderly.
+     */
+    nestingDepth: number
 }
 
-/**
- * A single, basic filter of the form <column> <operator> <value>.
- */
-export const FilterListItem: React.FC<FilterListItemProps> = props => {
-    const COMMIT_TIMEOUT = 500
+export const FilterEditor: React.FC<FilterEditorProps> = props => {
+    const { filter, columns, onDemote, onChange, nestingDepth } = props
 
-    const { columns, filter, onCommit, onBecomeInvalid } = props
+    const newFilter = () => wherePartial(undefined, "=", undefined)
 
-    const [column, setColumn] = useState<number | string>(
-        filter.left?.parentColumnId || ""
-    )
-    const [operator, setOperator] = useState<string>(
-        filter.operator || FILTER_OPERATORS[0].raw
-    )
-    const [value, setValue] = useState<string>(() =>
-        prepareFilterValue(filter.right)
-    )
-    const [readyForCommit, setReadyForCommit] = useState<boolean>(true)
-    /**
-     * The current state of the filter in progress. Required for our
-     * dynamic updating behavior below.
-     */
-    const filterState = useRef<PartialFilter>()
-
-    /**
-     * The filter is committed automatically as the user enters data,
-     * so we set a timer to prevent excessive fetching. After the timer expires,
-     * the data are re-committed one last time.
-     */
-    const commit = useCallback(async () => {
-        setReadyForCommit(false)
-        const currentFilter = filterState.current
-        if (!currentFilter) return
-
-        setTimeout(async () => {
-            const newFilter = filterState.current!
-            if (isValidFilter(newFilter)) await onCommit(newFilter)
-            else await onBecomeInvalid(newFilter)
-            setReadyForCommit(true)
-        }, COMMIT_TIMEOUT)
-        if (isValidFilter(currentFilter)) await onCommit(currentFilter)
-        else await onBecomeInvalid(currentFilter)
-    }, [onCommit, onBecomeInvalid])
-
-    const assembleFilter = useCallback(() => {
-        const leftColumn = columns.find(c => c._id === column)
-        const columnSpec = leftColumn
-            ? { parentColumnId: leftColumn._id, joinId: null }
-            : undefined
-        const newFilter: PartialFilter = {
-            left: columnSpec,
-            operator: operator,
-            right: operator === "LIKE" ? packContainsValue(value) : value,
+    /** Handle a change in the kind selector (AND, OR, or NOT) */
+    const handleChangeKind = (e: SelectChangeEvent<c.ConditionKind>) => {
+        let kind = e.target.value
+        if (typeof kind === "string") kind = And
+        if (filter.kind === kind) return
+        else if (filter.kind === Not) {
+            if (kind === Infix) onChange(filter.condition)
+            else if (kind === And) onChange(and(filter.condition, newFilter()))
+            else onChange(or(filter.condition, newFilter()))
+        } else {
+            if (kind === Infix) onChange(filter.left)
+            else if (kind === Not) onChange(not(filter.left))
+            else if (kind === And) onChange(and(filter.left, filter.right))
+            else onChange(or(filter.left, filter.right))
         }
-        return newFilter
-    }, [column, operator, columns, value])
+    }
 
-    /** See {@link commit} */
-    useEffect(() => {
-        const newFilter = assembleFilter()
-        if (filterState.current && filterEquals(filterState.current, newFilter))
-            return
-        filterState.current = newFilter
-        if (readyForCommit) commit()
-    }, [column, operator, value, assembleFilter, readyForCommit, commit])
+    /** For AND and OR filters: change the left branch */
+    const handleChangeLeft = async (f: PartialFilter) => {
+        if (filter.kind === And || filter.kind === Or)
+            return onChange({ ...filter, left: f })
+    }
+    /** For AND and OR filters: change the right branch */
+    const handleChangeRight = async (f: PartialFilter) => {
+        if (filter.kind === And || filter.kind === Or)
+            return onChange({ ...filter, right: f })
+    }
+
+    /**
+     * Demote this filter to a simple filter, reverting to its left branch
+     * (unless the right one is valid and the left one isn't.)
+     * To keep things tidy, the demote button is only present on filters
+     * whose children are both infix filters.
+     */
+    const handleDemote = async () => {
+        if (hasOnlyLeafChildren(filter)) return onDemote(salvageBranch(filter))
+        // these cases are just here for the type checker.
+        else if (filter.kind === Not) return filter.condition
+        else return filter.left
+    }
+
+    /**
+     * Promote the inner filter of a NOT condition to a complex filter.
+     * The default kind is AND.
+     */
+    const handlePromoteNot = async (f: PartialSimpleFilter) =>
+        onChange(not(and(f, newFilter())))
+    /**
+     * Promote the left branch of an AND or OR condition to a complex filter.
+     * The default kind is AND.
+     */
+    const handlePromoteLeft = async (f: PartialSimpleFilter) => {
+        if (filter.kind === And || filter.kind === Or)
+            return onChange({
+                ...filter,
+                left: and(f, newFilter()),
+            })
+    }
+    /**
+     * Promote the right branch of an AND or OR condition to a complex filter.
+     * The default kind is AND.
+     */
+    const handlePromoteRight = async (f: PartialSimpleFilter) => {
+        if (filter.kind === And || filter.kind === Or)
+            return onChange({
+                ...filter,
+                right: and(f, newFilter()),
+            })
+    }
+
+    /** Demote the inner filter of a NOT condition to a simple filter. */
+    const handleDemoteNot = async (f: PartialSimpleFilter) => onChange(not(f))
+    /** Demote the left branch of an AND or OR condition to a simple filter. */
+    const handleDemoteLeft = async (f: PartialSimpleFilter) => {
+        if (filter.kind === And || filter.kind === Or)
+            return onChange({
+                ...filter,
+                left: f,
+            })
+    }
+    /** Demote the right branch of an AND or OR condition to a simple filter. */
+    const handleDemoteRight = async (f: PartialSimpleFilter) => {
+        if (filter.kind === And || filter.kind === Or)
+            return onChange({
+                ...filter,
+                right: f,
+            })
+    }
 
     return (
         <Box
@@ -118,107 +147,124 @@ export const FilterListItem: React.FC<FilterListItemProps> = props => {
                 borderRadius: "4px",
                 display: "flex",
                 alignContent: "center",
+                backgroundColor: getFilterColor(nestingDepth),
             }}
         >
-            <Select
-                value={column}
-                onChange={e => {
-                    setColumn(e.target.value)
-                }}
-                sx={{
-                    mr: 1,
-                }}
-                size="small"
-            >
-                {columns.map(c => (
-                    <MenuItem key={c._id} value={c._id}>
-                        {c.name}
-                    </MenuItem>
-                ))}
-            </Select>
-            <Select
-                value={operator}
-                onChange={e => {
-                    setOperator(e.target.value)
-                }}
-                sx={{
-                    mr: 1,
-                }}
-                size="small"
-            >
-                {FILTER_OPERATORS.map(op => (
-                    <MenuItem key={op.raw} value={op.raw}>
-                        {op.pretty}
-                    </MenuItem>
-                ))}
-            </Select>
-            <TextField
-                size="small"
-                value={value}
-                onChange={e => {
-                    setValue(e.target.value)
-                }}
-                sx={{
-                    mr: 1,
-                }}
-            />
-            <IconButton
-                sx={{ verticalAlign: "revert" }}
-                onClick={props.onHandleDelete}
-            >
-                <DeleteIcon
+            <Box sx={{ m: 0.5, p: 0.5 }}>
+                <Select
+                    value={filter.kind ?? And}
+                    onChange={handleChangeKind}
                     sx={{
-                        fontSize: "80%",
+                        position: "relative",
+                        left: "50%",
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
                     }}
-                />
-            </IconButton>
+                >
+                    <MenuItem key={Not} value={Not}>
+                        NOT
+                    </MenuItem>
+                    <MenuItem key={And} value={And}>
+                        AND
+                    </MenuItem>
+                    <MenuItem key={Or} value={Or}>
+                        OR
+                    </MenuItem>
+                </Select>
+            </Box>
+            {filter.kind === Not ? (
+                filter.condition.kind === Infix ? (
+                    <SimpleFilterEditor
+                        filter={filter.condition}
+                        columns={columns}
+                        onPromote={handlePromoteNot}
+                        onChange={f => onChange(not(f))}
+                        nestingDepth={nestingDepth}
+                    />
+                ) : (
+                    <FilterEditor
+                        filter={filter.condition}
+                        columns={columns}
+                        onDemote={handleDemoteNot}
+                        onChange={f => onChange(not(f))}
+                        nestingDepth={nestingDepth + 1}
+                    />
+                )
+            ) : (
+                <Stack spacing={1}>
+                    {filter.left.kind === Infix ? (
+                        <SimpleFilterEditor
+                            filter={filter.left}
+                            columns={columns}
+                            onPromote={handlePromoteLeft}
+                            onChange={handleChangeLeft}
+                            nestingDepth={nestingDepth}
+                        />
+                    ) : (
+                        <FilterEditor
+                            filter={filter.left}
+                            columns={columns}
+                            onDemote={handleDemoteLeft}
+                            onChange={handleChangeLeft}
+                            nestingDepth={nestingDepth + 1}
+                        />
+                    )}
+                    {filter.right.kind === Infix ? (
+                        <SimpleFilterEditor
+                            filter={filter.right}
+                            columns={columns}
+                            onPromote={handlePromoteRight}
+                            onChange={handleChangeRight}
+                            nestingDepth={nestingDepth}
+                        />
+                    ) : (
+                        <FilterEditor
+                            filter={filter.right}
+                            columns={columns}
+                            onDemote={handleDemoteRight}
+                            onChange={handleChangeRight}
+                            nestingDepth={nestingDepth + 1}
+                        />
+                    )}
+                </Stack>
+            )}
+            {hasOnlyLeafChildren(filter) && (
+                <IconButton
+                    sx={{ verticalAlign: "revert" }}
+                    onClick={handleDemote}
+                >
+                    <FormatIndentDecreaseIcon
+                        sx={{
+                            fontSize: "80%",
+                            color: "#aa0000",
+                        }}
+                    />
+                </IconButton>
+            )}
         </Box>
     )
 }
 
-const prepareFilterValue = (value: SimpleFilter["right"] | undefined): string =>
-    value ? unpackContainsValue(value.toString()) : ""
+type HasOnlyLeafChildren =
+    | c.MkNotCondition<PartialSimpleFilter>
+    | c.MkAndCondition<PartialSimpleFilter>
+    | c.MkOrCondition<PartialSimpleFilter>
 
-/** Convert the value a user enters in a `contains` condition to database-ready
- * format (by adding percent symbols).
- */
-const packContainsValue = (value: string): string =>
-    "%" +
-    value
-        .split("")
-        .map(c => (LIKE_PATTERN_ESCAPE_CHARS.includes(c) ? "\\" + c : c))
-        .join("") +
-    "%"
+const hasOnlyLeafChildren = (
+    filter: Exclude<PartialFilter, PartialSimpleFilter>
+): filter is HasOnlyLeafChildren =>
+    (filter.kind === Not && filter.condition.kind === Infix) ||
+    (filter.kind !== Not &&
+        filter.left.kind === Infix &&
+        filter.right.kind === Infix)
 
 /**
- * Parse the SQL `LIKE` pattern into a format without format and escape chars.
+ * On demotion, return the "more important" branch of the filter to use
+ * as simple filter.
  */
-const unpackContainsValue = (value: string): string => {
-    let acc = ""
-    let lastWasBackslash = false
-    const pos = 0
-    for (const char of value.split("").slice(1, -1)) {
-        if (!lastWasBackslash && char === "\\") {
-            // saw a first backslash
-            lastWasBackslash = true
-        } else if (
-            lastWasBackslash &&
-            LIKE_PATTERN_ESCAPE_CHARS.includes(char)
-        ) {
-            // saw a backslash, now seeing \ % _
-            lastWasBackslash = false
-            acc = acc.concat(char)
-        } else if (lastWasBackslash)
-            // saw backslash, but not seeing an escapeable character after
-            throw Error(
-                `unpackContainsValue: unescaped \\ at ` + `position ${pos}`
-            )
-        else if (LIKE_PATTERN_ESCAPE_CHARS.includes(char))
-            // seeing escapeable character without a backslash before it
-            throw Error(
-                `unpackContainsValue: unescaped ${char} at ` + `position ${pos}`
-            )
-        else acc = acc.concat(char)
-    }
-    return acc
+const salvageBranch = (filter: HasOnlyLeafChildren): PartialSimpleFilter => {
+    if (filter.kind === Not) return filter.condition
+    else if (isValidFilter(filter.right) && !isValidFilter(filter.left))
+        return filter.right
+    else return filter.left
 }

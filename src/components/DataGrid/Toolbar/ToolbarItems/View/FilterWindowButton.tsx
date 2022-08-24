@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import { Button, Tooltip } from "@mui/material"
-import { SimpleFilter } from "@backend/condition"
+import { Filter } from "types/filter"
 import { defaultViewName } from "@backend/defaults"
 import { ColumnUtility } from "@datagrid/CellType/ColumnUtility"
 import { useTable } from "hooks/useTable"
@@ -15,8 +15,6 @@ const CANNOT_EDIT_DEFAULT_VIEW_MESSAGE =
 /**
  * Button to open the filter editor
  */
-// has a looooot of re-renders, in particular reloading the view, but not the
-// table? weird.
 export const FilterWindowButton: React.FC = () => {
     const { snackInfo, snackError } = useSnacki()
 
@@ -36,9 +34,7 @@ export const FilterWindowButton: React.FC = () => {
         openEditor(event)
     }
 
-    const handleUpdateFilters = async (
-        newFilters: SimpleFilter[]
-    ): Promise<void> => {
+    const handleUpdateFilters = async (newFilters: Filter[]): Promise<void> => {
         try {
             await updateFilters(newFilters)
         } catch (error) {
@@ -79,7 +75,7 @@ export const FilterWindowButton: React.FC = () => {
                     columns={tableData.columns.filter(
                         c => !ColumnUtility.isAppColumn(c)
                     )}
-                    activeFilters={viewData.filters as SimpleFilter[]}
+                    activeFilters={viewData.filters}
                     onHandleCloseEditor={closeEditor}
                     onUpdateFilters={handleUpdateFilters}
                 />

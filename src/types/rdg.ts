@@ -1,12 +1,12 @@
 import type { CellContentType } from "@datagrid/Editor/types/CellContentType"
 import type {
     ColumnInfo,
-    Condition as Filter,
     ParentColumnSpecifier as GroupColumn,
     SortColumn,
     ViewDescriptor,
     ViewInfo,
 } from "@intutable/lazy-views"
+import type { Filter } from "./filter"
 import { Column as ReactDataGrid_Column } from "react-data-grid"
 import { project_management } from "./type-annotations/project-management"
 
