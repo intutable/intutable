@@ -6,6 +6,9 @@ import * as Editor from "@datagrid/CellContentType/editors"
 import * as Formatter from "@datagrid/CellContentType/formatters"
 import * as Validator from "@datagrid/CellContentType/validators"
 
+import { Text } from "@datagrid/Cells/components/Text"
+const text = new Text()
+
 export type CellContentTypeComponentDescriptor = {
     editor: EditorComponent | null | undefined
     formatter: FormatterComponent
@@ -30,8 +33,8 @@ export const CellContentTypeComponents: {
     [key in CellContentType]: CellContentTypeComponentDescriptor
 } = {
     string: {
-        editor: Editor.String,
-        formatter: ColumnKindComponents.standard,
+        editor: text.editor,
+        formatter: text.formatter,
     },
     number: {
         editor: Editor.Number,

@@ -26,6 +26,7 @@ import {
 import { useTheme } from "@mui/material/styles"
 import HelpIcon from "@mui/icons-material/Help"
 import { StandardColumnSpecifier } from "@backend/types"
+import Cells from "@datagrid/Cells"
 
 type AddColumnModalProps = {
     open: boolean
@@ -91,23 +92,12 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                     )
                                 }}
                             >
-                                {Runtime_CellContentType.map(type => (
+                                {Cells.map(cell => (
                                     <MenuItem
-                                        key={type}
-                                        value={type}
-                                        disabled={
-                                            type !== "string" &&
-                                            type !== "email" &&
-                                            type !== "number" &&
-                                            type !== "percentage" &&
-                                            type !== "currency" &&
-                                            type !== "boolean" &&
-                                            type !== "time" &&
-                                            type !== "hyperlink" &&
-                                            type !== "date"
-                                        }
+                                        key={cell.brand}
+                                        value={cell.brand}
                                     >
-                                        {CellContentTypeDisplayName[type]}
+                                        {cell.label}
                                     </MenuItem>
                                 ))}
                             </Select>

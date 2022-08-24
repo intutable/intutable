@@ -12,6 +12,8 @@ import {
 } from "@datagrid/CellContentType/map"
 import { headerRenderer } from "@datagrid/renderers"
 
+import cells, { Cell } from "@datagrid/Cells"
+
 /**
  * // TODO: this flexbility could be a potential error cause.
  *
@@ -78,7 +80,11 @@ import { headerRenderer } from "@datagrid/renderers"
  * explicitly sets this prop (see {@link MetaColumnProps._cellContentType}).
  */
 export class ColumnUtility {
-    constructor(public readonly column: Column.Serialized) {}
+    public cell: Cell
+
+    constructor(public readonly column: Column.Serialized) {
+        this.cell = cells.getCell(this.column._cellContentType)
+    }
 
     // get column(): Column.Serialized {}
 
@@ -105,14 +111,7 @@ export class ColumnUtility {
     }
 
     public getEditor(): EditorComponent | undefined | null {
-        const { _cellContentType } = this.column
-
-        if (isCellContentType(_cellContentType) === false)
-            throw RangeError(
-                `${_cellContentType} is not a valid serialized value for an editor`
-            )
-
-        return CellContentTypeComponents[_cellContentType].editor
+        return this.cell.editor
     }
 
     public getFormatter(): FormatterComponent | undefined | null {
