@@ -1,4 +1,4 @@
-import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
+import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { Box, IconButton, Tooltip } from "@mui/material"
 import { Row } from "types"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"

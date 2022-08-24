@@ -1,2 +1,2 @@
-export * from "../types/CellContentType"
+export * from "../../Cells/types/CellContentType"
 export * from "./whitelist"

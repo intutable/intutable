@@ -1,5 +1,8 @@
 import { CellInputData } from "."
-import { CellContentType, isCellContentType } from "../types/CellContentType"
+import {
+    CellContentType,
+    isCellContentType,
+} from "../../Cells/types/CellContentType"
 
 /**
  * • 'none' means that one type A is not convertable to another type B regardless of the circumstances. Note that 'none' is not used in a whitelist because this would be redundant.

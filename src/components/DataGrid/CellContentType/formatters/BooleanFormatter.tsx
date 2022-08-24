@@ -1,4 +1,4 @@
-import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
+import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { Box, Checkbox } from "@mui/material"
 import { Row } from "types"
 

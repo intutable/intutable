@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
-import EditorComponent from "@datagrid/CellContentType/types/EditorComponent"
-import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
+import EditorComponent from "@datagrid/Cells/types/EditorComponent"
+import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { InputUnstyled, InputUnstyledProps } from "@mui/base"
 import { Box } from "@mui/material"
 import { styled } from "@mui/material/styles"

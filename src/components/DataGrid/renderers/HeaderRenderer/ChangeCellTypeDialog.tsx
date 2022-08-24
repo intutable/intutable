@@ -6,7 +6,7 @@ import {
     CellContentType,
     isCellContentType,
     Runtime_CellContentType,
-} from "@datagrid/CellContentType/types/CellContentType"
+} from "@datagrid/Cells/types/CellContentType"
 import {
     Box,
     Button,

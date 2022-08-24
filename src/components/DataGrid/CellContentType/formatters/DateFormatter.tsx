@@ -1,4 +1,4 @@
-import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
+import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { Box } from "@mui/material"
 import TextField from "@mui/material/TextField"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"

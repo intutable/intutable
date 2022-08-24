@@ -1,6 +1,6 @@
 import React from "react"
 import { Row } from "types"
-import { EditorComponent } from "@datagrid/CellContentType/types/EditorComponent"
+import { EditorComponent } from "@datagrid/Cells/types/EditorComponent"
 import { Input } from "../inputs/Input"
 
 /**

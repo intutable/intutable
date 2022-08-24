@@ -1,6 +1,6 @@
 import { CellContentType } from "@datagrid/CellContentType/type_converter"
-import { EditorComponent } from "@datagrid/CellContentType/types/EditorComponent"
-import { FormatterComponent } from "@datagrid/CellContentType/types/FormatterComponent"
+import { EditorComponent } from "@datagrid/Cells/types/EditorComponent"
+import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { MetaColumnProps } from "types"
 import * as Editor from "@datagrid/CellContentType/editors"
 import * as Formatter from "@datagrid/CellContentType/formatters"
