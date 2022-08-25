@@ -42,7 +42,7 @@ export class Percentage extends Cell {
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = e.target.value as unknown as number
-            if (this.isValid(value) === false) return
+            // if (this.isValid(value) === false) return
             props.onRowChange({
                 ...row,
                 [key]: value,

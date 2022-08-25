@@ -51,13 +51,13 @@ const intersectRows = (columns: Column.Serialized[], rows: Row[]) =>
                     ._cellContentType as CellContentType
             // if a type has a validator, use it to validate the value
             // in case the value is not valid, ignore it
-            if (CellContentTypeComponents[cellType].validator != null) {
-                const isValid = CellContentTypeComponents[cellType].validator!
-                if (isValid(value) === false) {
-                    intersection[key] = ""
-                    return
-                }
-            }
+            // if (CellContentTypeComponents[cellType].validator != null) {
+            //     const isValid = CellContentTypeComponents[cellType].validator!
+            //     if (isValid(value) === false) {
+            //         intersection[key] = ""
+            //         return
+            //     }
+            // }
 
             intersection[key] = value
         })

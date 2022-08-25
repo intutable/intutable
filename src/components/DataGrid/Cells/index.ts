@@ -18,8 +18,9 @@ const cells = new Cells(
     new Percentage(),
     new Currency(),
     new Hyperlink(),
-    new EMail(),
-    new DateCell()
+    new EMail()
 )
 
 export default cells
+
+export { default as Cell } from "./Cell"

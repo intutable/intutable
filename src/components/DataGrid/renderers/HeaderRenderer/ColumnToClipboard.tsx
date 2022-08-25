@@ -52,10 +52,11 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
         // filter invalid values
         const cellType = (col.attributes as Column.SQL)
             ._cellContentType as CellContentType
-        if (CellContentTypeComponents[cellType].validator != null) {
-            const validator = CellContentTypeComponents[cellType].validator!
-            values = values.filter(validator)
-        }
+
+        // if (CellContentTypeComponents[cellType].validator != null) {
+        //     const validator = CellContentTypeComponents[cellType].validator!
+        //     values = values.filter(validator)
+        // }
 
         columnToClipboard(values as (string | boolean | number)[])
 

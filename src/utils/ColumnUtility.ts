@@ -1,17 +1,11 @@
-import {
-    CellContentType,
-    isCellContentType,
-} from "@datagrid/CellContentType/type_converter"
+import { CellContentType } from "@datagrid/Cells/types/CellContentType"
 import { EditorComponent } from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
+import { headerRenderer } from "@datagrid/renderers"
 import { PLACEHOLDER } from "api/utils/SerDes/PLACEHOLDER_KEYS"
 import { Column, MetaColumnProps } from "types"
-import {
-    CellContentTypeComponents,
-    ColumnKindComponents,
-} from "@datagrid/CellContentType/map"
-import { headerRenderer } from "@datagrid/renderers"
 
+import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 import cells, { Cell } from "@datagrid/Cells"
 
 /**
@@ -96,14 +90,13 @@ export class ColumnUtility {
     }
 
     public isEditable(): boolean | null | undefined {
-        const { _cellContentType, _kind, editable } = this.column
+        const { _kind, editable } = this.column
 
         // index columns are not editable, at least no by the editable
         if (_kind === "index") return false
 
         // some types don't have an editor and should not be editable
-        if (CellContentTypeComponents[_cellContentType].editor == null)
-            return false
+        if (this.cell.editor == null) return false
 
         // TODO: further checking here, e.g. should link and lookup columns be editable??
 
@@ -115,18 +108,14 @@ export class ColumnUtility {
     }
 
     public getFormatter(): FormatterComponent | undefined | null {
-        const { _cellContentType, _kind } = this.column
+        const { _kind } = this.column
 
-        // special treatment when the kind is not 'standard'
-        if (_kind !== "standard") return ColumnKindComponents[_kind]
+        // special treatment when the kind is 'link'
+        // this will be changed soon
+        if (_kind === "link") return LinkColumnFormatter
 
-        if (isCellContentType(_cellContentType) === false)
-            throw RangeError(
-                `${_cellContentType} is not a valid serialized value for an formatter`
-            )
-
-        // otherwise choose the formatter actually by the value of this property
-        return CellContentTypeComponents[_cellContentType].formatter
+        // otherwise choose the formatter by its type
+        return this.cell.formatter
     }
 
     public getHeaderRenderer(): Column["headerRenderer"] {

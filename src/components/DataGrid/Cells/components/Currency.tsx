@@ -12,6 +12,10 @@ export class Currency extends Cell {
         return typeof value === "number"
     }
 
+    export(value: unknown): string {
+        return value + " €"
+    }
+
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)
 

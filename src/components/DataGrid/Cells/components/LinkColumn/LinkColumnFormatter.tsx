@@ -10,8 +10,8 @@ import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
 import React, { useCallback, useMemo, useState } from "react"
 import { Row } from "types"
-import { DeleteButton } from "./components/DeleteButton"
-import { RowSelector } from "./components/RowSelector"
+import { DeleteButton } from "./DeleteButton"
+import { RowSelector } from "./RowSelector"
 
 const _LinkColumnFormatter: FormatterComponent = props => {
     const { row, column } = props

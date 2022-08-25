@@ -16,6 +16,10 @@ export class EMail extends Cell {
         return MailAddressRegex.test(value.toLowerCase())
     }
 
+    // export(value: unknown): string {
+    //     // const date = value as Date
+    // }
+
     formatter = (props: FormatterProps<Row>) => {
         const { content } = this.destruct<string | null | undefined>(props)
 
