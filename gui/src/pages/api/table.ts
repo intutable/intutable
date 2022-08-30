@@ -29,7 +29,7 @@ import {
     defaultViewName,
     standardColumnAttributes,
     indexColumnAttributes,
-} from "dekanat-app-plugin/dist/defaults"
+} from "@backend/defaults"
 
 /**
  * Create a new table with the specified name.

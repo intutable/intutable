@@ -10,7 +10,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
-import { defaultViewName } from "dekanat-app-plugin/dist/defaults"
+import { defaultViewName } from "@backend/defaults"
 import { Filter } from "types/filter"
 import { Filter as FilterParser } from "api/utils/parse"
 

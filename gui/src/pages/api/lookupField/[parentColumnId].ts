@@ -9,8 +9,8 @@ import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import { lookupColumnAttributes } from "dekanat-app-plugin/dist/defaults"
-import { addColumnToTable } from "dekanat-app-plugin/dist/requests"
+import { lookupColumnAttributes } from "@backend/defaults"
+import { addColumnToTable } from "@backend/requests"
 
 /**
  * Add a lookup field from a linked table.

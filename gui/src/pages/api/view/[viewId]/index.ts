@@ -17,7 +17,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import type { NextApiRequest, NextApiResponse } from "next"
 
 import { withUserCheck } from "api/utils/withUserCheck"
-import { defaultViewName } from "dekanat-app-plugin/dist/defaults"
+import { defaultViewName } from "@backend/defaults"
 
 /**
  * GET a single filter view's data {@type {TableData.Serialized}}.

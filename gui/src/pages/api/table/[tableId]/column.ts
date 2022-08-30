@@ -13,9 +13,9 @@ import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import sanitizeName from "utils/sanitizeName"
 
-import { StandardColumnSpecifier } from "dekanat-app-plugin/dist/types"
-import { addColumnToTable } from "dekanat-app-plugin/dist/requests"
-import { standardColumnAttributes } from "dekanat-app-plugin/dist/defaults"
+import { StandardColumnSpecifier } from "@backend/types"
+import { addColumnToTable } from "@backend/requests"
+import { standardColumnAttributes } from "@backend/defaults"
 
 /**
  * Add a column to a table.

@@ -15,7 +15,7 @@ import { withSessionRoute } from "auth"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { objToSql } from "utils/objToSql"
 
-import { removeColumnFromTable } from "dekanat-app-plugin/dist/requests"
+import { removeColumnFromTable } from "@backend/requests"
 
 /**
  * Update the metadata of a column. Only its `attributes` can be changed, all
