@@ -15,8 +15,8 @@ import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import { project_management_constants } from "types/type-annotations/project-management"
 import makeForeignKeyName from "utils/makeForeignKeyName"
-import { linkColumnAttributes } from "@backend/defaults"
-import { addColumnToTable } from "@backend/requests"
+import { linkColumnAttributes } from "dekanat-app-plugin/dist/defaults"
+import { addColumnToTable } from "dekanat-app-plugin/dist/requests"
 
 /**
  * Add a link from one table view to another. The target table will be

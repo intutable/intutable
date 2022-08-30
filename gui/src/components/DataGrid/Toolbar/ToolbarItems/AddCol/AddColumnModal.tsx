@@ -25,7 +25,7 @@ import {
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import HelpIcon from "@mui/icons-material/Help"
-import { StandardColumnSpecifier } from "@backend/types"
+import { StandardColumnSpecifier } from "dekanat-app-plugin/dist/types"
 
 type AddColumnModalProps = {
     open: boolean

@@ -16,7 +16,6 @@
         "incremental": true,
         "baseUrl": "./src",
         "paths": {
-            "@backend/*": ["../../dekanat-app-plugin/dist/*"],
             "@datagrid/*": ["components/DataGrid/*"]
         }
     },

@@ -10,7 +10,7 @@ import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
-import { defaultRowOptions } from "@backend/defaults"
+import { defaultRowOptions } from "dekanat-app-plugin/dist/defaults"
 import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
