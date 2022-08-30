@@ -3,21 +3,18 @@
     "version": "0.1.0",
     "private": true,
     "workspaces": [
-        "gui",
+        "dekanat-app-plugin",
         "backend",
         "database",
-        "dekanat-app-plugin"
+        "gui"
     ],
     "scripts": {
-        "build": "npm run build-core && npm run build-db && npm run build-gui",
-        "build-core": "cd src/backend/startup && tsc && cd ../dekanat-app-plugin && tsc && cd ../../..",
-        "build-db": "cd database/ && docker-compose build --pull && cd ..",
-        "build-gui": "npm run build -w gui",
+        "build": "npm run build --workspaces",
         "start": "concurrently --kill-others \"npm:start-*\"",
-        "start-core": "node ./src/backend/startup/dist/core",
+        "start-core": "node ./backend/dist/index.js",
         "start-db": "cd database/ && docker-compose up && cd ..",
         "start-gui": "npm run start -w gui",
-        "dev": "npm run build-core && npm run build-db && concurrently --kill-others \"npm:dev-*\"",
+        "dev": "npm run build -w backend && npm run build -w dekanat-app-plugin && npm run build -w database && concurrently --kill-others \"npm:dev-*\"",
         "dev-core": "node ./src/backend/startup/dist/core dev",
         "dev-db": "cd database/ && docker-compose up && cd ..",
         "dev-gui": "npm run dev -w gui",
@@ -26,7 +23,7 @@
         "lint:production": "npm run lint:production -w gui",
         "analyze": "npm run analyze -w gui",
         "test": "npm run test --workspaces --if-present",
-        "reset-db": "cd database/ && docker-compose down && cd .. && docker volume rm database_db-data"
+        "reset-db": "npm run reset -w database"
     },
     "dependencies": {
         "@intutable/core": "^0.1.6",
