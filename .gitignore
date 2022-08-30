@@ -1,7 +1,6 @@
 .next/
-node_modules
-src/backend/dekanat-app-plugin/dist/
-src/backend/startup/dist/
+/**/node_modules
+/**/dist
 data.db
 .DS_Store
 .log/
