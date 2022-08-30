@@ -18,7 +18,7 @@ main()
  */
 async function main() {
     await waitForDatabase().catch(e => crash<Core>(e))
-    const devMode = process.env["npm_lifecycle_event"] === "dev"
+    const devMode = process.argv.includes("dev") // what could go wrong?
     const events: EventSystem = new EventSystem(devMode) // flag sets debug mode
     await Core.create(PLUGIN_PATHS, events).catch(e => crash<Core>(e))
 }
@@ -28,8 +28,8 @@ async function waitForDatabase() {
     let lastError: unknown
     let retries = RETRIES
     while (retries > 0 && !connected) {
-        console.log(`${path.basename(__filename)}: waiting for database...`)
-        console.log(`${path.basename(__filename)}: retries: ${retries}`)
+        console.log(`waiting for database...`)
+        console.log(`retries: ${retries}`)
         await testPort(PG_PORT)
             .then(() => {
                 connected = true
