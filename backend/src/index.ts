@@ -10,6 +10,8 @@ const PLUGIN_PATHS = [
 const PG_PORT = 5432
 const RETRIES = Math.pow(2, 30)
 
+const x : Object = { a: 10 }
+
 main()
 
 /**
