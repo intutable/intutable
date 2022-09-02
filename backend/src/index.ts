@@ -4,7 +4,7 @@ import path from "path"
 import process from "process"
 
 const PLUGIN_PATHS = [
-    path.join(process.cwd(), "node_modules/@intutable/*"),
+    path.join(__dirname, "../../node_modules/@intutable/*"),
     path.join(__dirname, "../../dekanat-app-plugin"),
 ]
 const PG_PORT = 5432

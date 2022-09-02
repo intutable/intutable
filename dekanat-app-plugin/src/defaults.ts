@@ -10,7 +10,7 @@ import { CellContentType } from "./types"
 export const UID_KEY = "_id"
 export const INDEX_KEY = "index"
 /** Minimum width of a column. */
-export const COLUMN_MIN_WIDTH = 128
+export const COLUMN_MIN_WIDTH = 256
 
 /**
  * Blank row options - no filters, no grouping, no sorting.

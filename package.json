@@ -10,14 +10,8 @@
     ],
     "scripts": {
         "build": "npm run build -w dekanat-app-plugin && npm run build -w backend && npm run build -w database && npm run build -w gui",
-        "start": "concurrently --kill-others \"npm:start-*\"",
-        "start-core": "node ./backend/dist/index",
-        "start-db": "npm run start -w database",
-        "start-gui": "npm run start -w gui",
-        "dev": "npm run build -w backend && npm run build -w dekanat-app-plugin && npm run build -w database && concurrently --kill-others \"npm:dev-*\"",
-        "dev-core": "npm run start-core",
-        "dev-db": "cd database/ && docker-compose up && cd ..",
-        "dev-gui": "npm run dev -w gui",
+        "start": "concurrently --kill-others \"npm run start -w database\" \"npm run start -w backend\" \"npm run start -w gui\"",
+        "dev": "npm run build -w database && concurrently --kill-others \"npm run start -w database\" \"npm run dev -w backend\" \"npm run dev -w gui\"",
         "lint": "npm run lint -ws --if-present",
         "lint-fix": "npm run lint-fix -ws --if-present",
         "lint-production": "npm run lint-production -ws --if-present",
@@ -36,16 +30,18 @@
         "concurrently": "^7.3.0"
     },
     "devDependencies": {
-        "jest": "^27.1.4",
-        "ts-jest": "^27.1.4",
-        "@types/jest": "^27.4.1",
-        "@typescript-eslint/eslint-plugin": "^5.10.2",
-        "prettier": "^2.5.1",
+        "cross-env": "^7.0.3",
         "eslint": "^8.18.0",
+        "@typescript-eslint/eslint-plugin": "^5.10.2",
         "eslint-config-next": "12.1.5",
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-prettier": "^4.0.0",
         "eslint-plugin-react": "^7.28.0",
-        "cross-env": "^7.0.3"
+        "prettier": "^2.5.1",
+        "jest": "^27.1.4",
+        "@types/jest": "^27.4.1",
+        "ts-jest": "^27.1.4",
+        "nodemon": "^2.0.19",
+        "ts-node": "^10.9.1"
     }
 }
