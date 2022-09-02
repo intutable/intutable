@@ -6,13 +6,11 @@ export type SqlData<A> = A extends boolean
     : A
 
 /** Replace all booleans with 0 or 1 in a given value. */
-export function toSql(obj: boolean): number
+export function toSql(obj: boolean): SqlData<boolean>
 export function toSql(
     obj: Record<string, unknown>
-): Record<string, Exclude<unknown, boolean>>
-export function toSql(
-    obj: boolean | Record<string, unknown> | unknown
-): SqlData<typeof obj> {
+): SqlData<Record<string, unknown>>
+export function toSql(obj: unknown): SqlData<unknown> {
     if (typeof obj === "boolean") return obj ? 1 : 0
     else if (typeof obj === "object" && obj !== null)
         return Object.getOwnPropertyNames(obj).reduce(
