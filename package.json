@@ -9,10 +9,10 @@
         "gui"
     ],
     "scripts": {
-        "build": "npm run build -ws",
+        "build": "npm run build -w dekanat-app-plugin && npm run build -w backend && npm run build -w database && npm run build -w gui",
         "start": "concurrently --kill-others \"npm:start-*\"",
         "start-core": "node ./backend/dist/index",
-        "start-db": "cd database/ && docker-compose up && cd ..",
+        "start-db": "npm run start -w database",
         "start-gui": "npm run start -w gui",
         "dev": "npm run build -w backend && npm run build -w dekanat-app-plugin && npm run build -w database && concurrently --kill-others \"npm:dev-*\"",
         "dev-core": "npm run start-core",

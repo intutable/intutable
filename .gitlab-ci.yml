@@ -30,7 +30,7 @@ lint-production:
 build:
     stage: build
     script:
-        - npm run build-gui
+        - npm run build
     rules:
         - if: $CI_COMMIT_BRANCH == "main"
         - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
