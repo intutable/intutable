@@ -7,7 +7,7 @@
         "start": "node dist/index.js",
         "dev": "npx nodemon -c nodemon.json",
         "lint": "cross-env NODE_ENV=development eslint src",
-        "lint-fix": "npm run lint -- --fix",
-        "lint-production": "cross-env NODE_ENV=production eslint src"
+        "lint:fix": "npm run lint -- --fix",
+        "lint:production": "cross-env NODE_ENV=production eslint src"
     }
 }

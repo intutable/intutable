@@ -7,8 +7,8 @@
         "start": "next start",
         "dev": "next dev",
         "lint": "cross-env NODE_ENV=development next lint -c ../.eslintrc.js",
-        "lint-fix": "npm run lint -- --fix",
-        "lint-production": "cross-env NODE_ENV=production next lint",        
+        "lint:fix": "npm run lint -- --fix",
+        "lint:production": "cross-env NODE_ENV=production next lint",        
         "analyze": "cross-env ANALYZE=true next build",
         "test": "jest"
     },
