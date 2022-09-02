@@ -13,7 +13,7 @@ export function addColumnToTable(
     tableId: lv.ViewDescriptor["id"],
     column: lv.ColumnSpecifier,
     joinId: number | null = null,
-    createInViews: boolean = true
+    createInViews = true
 ) {
     return {
         channel: CHANNEL,

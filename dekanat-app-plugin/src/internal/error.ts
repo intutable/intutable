@@ -1,10 +1,20 @@
-export async function error(method: string, message: string, reason?: any) {
-    let error
-    if (reason instanceof Error) error = reason.toString()
-    else error = reason
-    return Promise.reject({
+export type JsonError = {
+    method: string
+    message: string
+    reason: unknown
+}
+
+export function error(
+    method: string,
+    message: string,
+    reason?: unknown
+): JsonError {
+    let reason_: unknown
+    if (reason instanceof Error) reason_ = reason.toString()
+    else reason_ = reason
+    return {
         method,
         message,
-        reason: error,
-    })
+        reason: reason_,
+    }
 }

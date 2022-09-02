@@ -9,7 +9,7 @@
         "gui"
     ],
     "scripts": {
-        "build": "npm run build --workspaces",
+        "build": "npm run build -ws",
         "start": "concurrently --kill-others \"npm:start-*\"",
         "start-core": "node ./backend/dist/index",
         "start-db": "cd database/ && docker-compose up && cd ..",
@@ -18,11 +18,11 @@
         "dev-core": "npm run start-core",
         "dev-db": "cd database/ && docker-compose up && cd ..",
         "dev-gui": "npm run dev -w gui",
-        "lint": "npm run lint -w gui",
-        "lint:fix": "npm run lint:fix -w gui",
-        "lint:production": "npm run lint:production -w gui",
+        "lint": "npm run lint -ws --if-present",
+        "lint-fix": "npm run lint-fix -ws --if-present",
+        "lint-production": "npm run lint-production -ws --if-present",
         "analyze": "npm run analyze -w gui",
-        "test": "npm run test --workspaces --if-present"
+        "test": "npm run test -ws --if-present"
     },
     "dependencies": {
         "@intutable/core": "^0.1.6",
