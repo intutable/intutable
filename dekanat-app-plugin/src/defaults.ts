@@ -4,13 +4,13 @@ import {
     RowOptions,
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
-import { toSQL, A } from "./attributes"
+import { toSql, A } from "./attributes"
 import { CellContentType } from "./types"
 
 export const UID_KEY = "_id"
 export const INDEX_KEY = "index"
 /** Minimum width of a column. */
-export const COLUMN_MIN_WIDTH=128
+export const COLUMN_MIN_WIDTH = 256
 
 /**
  * Blank row options - no filters, no grouping, no sorting.
@@ -55,8 +55,8 @@ export function standardColumnAttributes(
     contentType: CellContentType,
     columnIndex?: number,
     userPrimary?: boolean
-) {
-    return toSQL({
+): Record<string, unknown> {
+    return toSql({
         _kind: "standard",
         ...(userPrimary !== undefined && { userPrimary }),
         displayName,
@@ -70,8 +70,8 @@ export function standardColumnAttributes(
 export function linkColumnAttributes(
     displayName: string,
     columnIndex?: number
-) {
-    return toSQL({
+): Record<string, unknown> {
+    return toSql({
         _kind: "link",
         displayName,
         [A.COLUMN_INDEX.key]: columnIndex,
@@ -85,8 +85,8 @@ export function lookupColumnAttributes(
     displayName: string,
     contentType: CellContentType,
     columnIndex?: number
-) {
-    return toSQL({
+): Record<string, unknown> {
+    return toSql({
         _kind: "lookup",
         displayName,
         [A.COLUMN_INDEX.key]: columnIndex,
@@ -96,8 +96,10 @@ export function lookupColumnAttributes(
     })
 }
 
-export function indexColumnAttributes(columnIndex?: number) {
-    return toSQL({
+export function indexColumnAttributes(
+    columnIndex?: number
+): Record<string, unknown> {
+    return toSql({
         displayName: "Index",
         _kind: "index",
         _cellContentType: "number",

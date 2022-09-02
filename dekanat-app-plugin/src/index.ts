@@ -126,7 +126,7 @@ async function addColumnToTable(
     tableId: lvt.ViewDescriptor["id"],
     column: lvt.ColumnSpecifier,
     joinId: number | null = null,
-    createInViews: boolean = true
+    createInViews = true
 ): Promise<lvt.ColumnInfo> {
     const tableColumn = (await core.events.request(
         lvr.addColumnToView(tableId, column, joinId)
@@ -232,9 +232,11 @@ async function removeLinkColumn(
     const join = info.joins.find(j => j.id === column.joinId)
 
     if (!join)
-        return error(
-            "removeColumnFromTable",
-            `column belongs to join ${column.joinId}, but no such join found`
+        return Promise.reject(
+            error(
+                "removeColumnFromTable",
+                `no join with ID ${column.joinId}, in table ${tableId}`
+            )
         )
     // remove lookup columns
     const lookupColumns = info.columns.filter(
@@ -299,14 +301,14 @@ async function removeColumnFromViews(
  */
 function getColumnIndexUpdates(
     columns: lvt.ColumnInfo[]
-): { id: number, index: number }[] {
+): { id: number; index: number }[] {
     const indexKey = A.COLUMN_INDEX.key
     return columns
         .map((c, index) => ({ column: c, index }))
         .filter(pair => pair.column.attributes[indexKey] !== pair.index)
         .map(pair => ({
             id: pair.column.id,
-            index: pair.index
+            index: pair.index,
         }))
 }
 
@@ -314,7 +316,7 @@ async function changeTableColumnAttributes(
     tableId: number,
     columnId: number,
     attributes: Partial<lvt.ColumnInfo["attributes"]>,
-    changeInViews: boolean = true
+    changeInViews = true
 ): Promise<void> {
     await core.events.request(lvr.changeColumnAttributes(columnId, attributes))
     if (changeInViews)

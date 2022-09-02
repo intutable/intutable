@@ -23,11 +23,11 @@ export type JoinSpec = {
     table: string
     fkColumn: Column
     pkColumn: string
-    linkColumns: { name: string; attributes: Record<string, any> }[]
+    linkColumns: { name: string; attributes: Record<string, unknown> }[]
 }
 export type TableSpec = {
     name: string
-    columns: { baseColumn: Column; attributes: Record<string, any> }[]
+    columns: { baseColumn: Column; attributes: Record<string, unknown> }[]
     joins: JoinSpec[]
 }
 export type Table = {
