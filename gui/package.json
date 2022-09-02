@@ -9,7 +9,8 @@
         "lint": "cross-env NODE_ENV=development next lint -c ../.eslintrc.js",
         "lint-fix": "npm run lint -- --fix",
         "lint-production": "cross-env NODE_ENV=production next lint",        
-        "analyze": "cross-env ANALYZE=true next build"
+        "analyze": "cross-env ANALYZE=true next build",
+        "test": "jest"
     },
     "dependencies": {
         "@emotion/css": "^11.9.0",
