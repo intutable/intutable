@@ -9,6 +9,7 @@ import { Currency } from "./components/Currency"
 import { Hyperlink } from "./components/Hyperlink"
 import { EMail } from "./components/EMail"
 import { Select } from "./components/Select"
+import { MultiSelect } from "./components/MultiSelect"
 
 const cells = new Cells(
     new Text(),
@@ -20,7 +21,8 @@ const cells = new Cells(
     new Currency(),
     new Hyperlink(),
     new EMail(),
-    new Select()
+    new Select(),
+    new MultiSelect()
 )
 
 export default cells
