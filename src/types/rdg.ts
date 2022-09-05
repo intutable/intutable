@@ -1,4 +1,3 @@
-import type { CellContentType } from "@datagrid/Cells/types/CellContentType"
 import type {
     ColumnInfo,
     Condition as Filter,
@@ -121,7 +120,7 @@ export type MetaColumnProps = {
      * In addition to {@link SerializedColumn.editor} and {@link SerializedColumn.formatter},
      * this explicitly sets the type.
      */
-    _cellContentType: CellContentType
+    _cellContentType: string
     /**
      * @property {number | null} __columnIndex__ ordering position of the
      * column.

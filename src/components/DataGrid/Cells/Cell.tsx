@@ -35,10 +35,16 @@ export interface Exportable {
 //     convert: <T extends CellType>(to: T) => T
 // }
 
+/**
+ * Base class for all cell components.
+ */
 export default abstract class Cell implements Validatable, Exportable {
+    /** unique identifier */
     public abstract readonly brand: string
+    /** public name / no i18n yet */
     public abstract label: string
 
+    /** utilty that destructs the `props` argument for `editor` and `formatter` */
     protected destruct<T = unknown>(
         props: EditorProps<Row> | FormatterProps<Row>
     ) {
@@ -49,6 +55,7 @@ export default abstract class Cell implements Validatable, Exportable {
         return { row, column, key, content }
     }
 
+    /** default input component */
     protected readonly Input = React.forwardRef(
         (
             props: InputUnstyledProps & {
@@ -66,6 +73,11 @@ export default abstract class Cell implements Validatable, Exportable {
         )
     )
 
+    /**
+     *
+     * If set to `null`, no editor will be rendered and the {@link ColumnUtility}
+     * will set `editable` to `false` for the column.
+     */
     public editor?: EditorComponent = (props: EditorProps<Row>) => {
         // default editor component
         const { row, key, content } = this.destruct(props)
@@ -95,8 +107,10 @@ export default abstract class Cell implements Validatable, Exportable {
         return <Box>{content}</Box>
     }
 
+    /** used for validating its content */
     public abstract isValid(value: unknown): boolean
 
+    /** used for file and clipboard export, override this method to change the behaviour  */
     public export(value: unknown): unknown {
         // default export method
         return value

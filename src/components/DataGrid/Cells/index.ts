@@ -8,6 +8,7 @@ import { Percentage } from "./components/Percentage"
 import { Currency } from "./components/Currency"
 import { Hyperlink } from "./components/Hyperlink"
 import { EMail } from "./components/EMail"
+import { Select } from "./components/Select"
 
 const cells = new Cells(
     new Text(),
@@ -18,7 +19,8 @@ const cells = new Cells(
     new Percentage(),
     new Currency(),
     new Hyperlink(),
-    new EMail()
+    new EMail(),
+    new Select()
 )
 
 export default cells
