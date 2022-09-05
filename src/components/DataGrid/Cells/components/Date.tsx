@@ -20,6 +20,13 @@ export class DateCell extends Cell {
         return isValidDate(value)
     }
 
+    export(value: unknown): string | void {
+        const parsed = Number.parseInt(value as string)
+        if (this.isValid(parsed) === false) return
+        const date = new Date(parsed)
+        return date.toLocaleDateString()
+    }
+
     formatter = (props: FormatterProps<Row>) => {
         /**
          * MUIs Time Picker component requires a `value`.

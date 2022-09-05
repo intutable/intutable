@@ -13,7 +13,7 @@ export class Currency extends Cell {
     }
 
     export(value: unknown): string {
-        return value + " €"
+        return value + "€"
     }
 
     editor = (props: EditorProps<Row>) => {

@@ -46,6 +46,15 @@ export class MultiSelect extends Cell {
 
     editor = () => null
 
+    export(value: unknown): string | void {
+        if (value == null || value === "") return
+
+        const arr = JSON.parse(value as string) as string[]
+        if (Array.isArray(arr)) return arr.join(";")
+
+        return
+    }
+
     formatter = (props: FormatterProps<Row>) => {
         const {
             content: _content,

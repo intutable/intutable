@@ -7,10 +7,7 @@ import { useView } from "hooks/useView"
 import React, { useCallback } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
-import { columnToClipboard } from "utils/columnToClipboard"
-import { isValidMailAddress } from "@datagrid/CellContentType/validators/isValidMailAddress"
-import { CellContentType } from "@backend/types"
-import { CellContentTypeComponents } from "@datagrid/CellContentType/map"
+import { ColumnUtility } from "utils/ColumnUtility"
 
 export type ColumnToClipboardProps = {
     headerRendererProps: HeaderRendererProps<Row>
@@ -49,19 +46,25 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
                 .filter(e => e != null)
         }
 
-        // filter invalid values
-        const cellType = (col.attributes as Column.SQL)
-            ._cellContentType as CellContentType
+        const util = new ColumnUtility(
+            props.headerRendererProps.column as Column.Serialized
+        )
 
-        // if (CellContentTypeComponents[cellType].validator != null) {
-        //     const validator = CellContentTypeComponents[cellType].validator!
-        //     values = values.filter(validator)
-        // }
+        values = values
+            .map(val => util.cell.export(val))
+            .filter(val => val != null && val !== "")
 
-        columnToClipboard(values as (string | boolean | number)[])
+        navigator.clipboard.writeText(values.join(", "))
 
         snackInfo("In die Zwischenablage kopiert!")
-    }, [col, headerRendererProps, selectedRows, viewData, snackInfo])
+    }, [
+        viewData,
+        headerRendererProps.allRowsSelected,
+        selectedRows,
+        props.headerRendererProps.column,
+        snackInfo,
+        col.id,
+    ])
 
     return (
         <MenuItem onClick={handleCopyToClipboard}>

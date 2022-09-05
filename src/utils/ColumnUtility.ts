@@ -1,4 +1,3 @@
-import { CellContentType } from "@datagrid/Cells/types/CellContentType"
 import { EditorComponent } from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { headerRenderer } from "@datagrid/renderers"
@@ -85,7 +84,7 @@ export class ColumnUtility {
     public getKind(): MetaColumnProps["_kind"] {
         return this.column._kind
     }
-    public getCellContentType(): CellContentType {
+    public getCellContentType(): string {
         return this.column._cellContentType
     }
 

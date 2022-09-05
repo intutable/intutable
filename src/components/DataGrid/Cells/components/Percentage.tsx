@@ -37,6 +37,10 @@ export class Percentage extends Cell {
         return typeof value === "number" && value >= 0 && value <= 100
     }
 
+    export(value: unknown): string {
+        return value + "%"
+    }
+
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)
 

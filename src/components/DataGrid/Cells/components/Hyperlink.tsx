@@ -20,6 +20,11 @@ export class Hyperlink extends Cell {
         }
     }
 
+    export(value: unknown): string | void {
+        if (this.isValid(value) === false) return // you can save values that are not valid, will be deprecated in a future version
+        return value as string
+    }
+
     formatter = (props: FormatterProps<Row>) => {
         const { content } = this.destruct<string | null | undefined>(props)
 

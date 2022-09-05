@@ -11,7 +11,15 @@ export class Bool extends Cell {
     editor = () => null
 
     isValid(value: unknown): boolean {
-        return typeof value === "number"
+        return (
+            (typeof value === "number" && (value === 1 || value === 0)) ||
+            typeof value === "boolean"
+        )
+    }
+
+    export(value: unknown): string {
+        const bool = value as 1 | 0 | boolean
+        return bool ? "wahr" : "falsch"
     }
 
     formatter = (props: FormatterProps<Row>) => {

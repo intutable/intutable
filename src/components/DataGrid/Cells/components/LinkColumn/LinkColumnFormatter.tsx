@@ -13,6 +13,15 @@ import { Row } from "types"
 import { DeleteButton } from "./DeleteButton"
 import { RowSelector } from "./RowSelector"
 
+/**
+ * @deprecated
+ *
+ * This formatter is no usual cell component
+ * but a meta wrapper
+ *
+ * This should be refactored in a much simpler way
+ */
+
 const _LinkColumnFormatter: FormatterComponent = props => {
     const { row, column } = props
     const { snackError } = useSnacki()

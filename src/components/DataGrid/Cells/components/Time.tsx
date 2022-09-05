@@ -20,6 +20,16 @@ export class Time extends Cell {
         return isValidTime(value)
     }
 
+    export(value: unknown): string | void {
+        const parsed = Number.parseInt(value as string)
+        if (this.isValid(parsed) === false) return
+        const date = new Date(parsed)
+        return date.toLocaleTimeString("de-DE", {
+            hour: "2-digit",
+            minute: "2-digit",
+        })
+    }
+
     formatter = (props: FormatterProps<Row>) => {
         /**
          * MUIs Time Picker component requires a `value`.

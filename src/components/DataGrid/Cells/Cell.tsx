@@ -111,8 +111,12 @@ export default abstract class Cell implements Validatable, Exportable {
     public abstract isValid(value: unknown): boolean
 
     /** used for file and clipboard export, override this method to change the behaviour  */
-    public export(value: unknown): unknown {
+    public export(value: unknown): string | void {
         // default export method
-        return value
+
+        // if (typeof value !== "string" || typeof value !== "number")
+        //     throw new Error(`Could not export value: ${value}`)
+
+        return value as string
     }
 }
