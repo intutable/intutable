@@ -1,23 +1,23 @@
-import { EditorProps, FormatterProps } from "react-data-grid"
-import { Row } from "types"
-import Cell from "../Cell"
+import AddIcon from "@mui/icons-material/Add"
+import CheckIcon from "@mui/icons-material/Check"
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import {
-    Chip,
     Box,
+    Chip,
+    Divider,
     IconButton,
     Menu,
-    MenuList,
     MenuItem,
+    MenuList,
     TextField,
-    Divider,
 } from "@mui/material"
-import { useView } from "hooks/useView"
-import { useMemo, useState } from "react"
-import { stringToColor } from "utils/stringToColor"
 import { useTheme } from "@mui/system"
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import CheckIcon from "@mui/icons-material/Check"
-import AddIcon from "@mui/icons-material/Add"
+import { useView } from "hooks/useView"
+import { useMemo, useRef, useState } from "react"
+import { FormatterProps } from "react-data-grid"
+import { Row } from "types"
+import { stringToColor } from "utils/stringToColor"
+import Cell from "../Cell"
 
 const ChipItem: React.FC<{
     label: string
@@ -55,13 +55,14 @@ export class Select extends Cell {
         const isEmpty = content == null || content === ""
 
         const [hovering, setHovering] = useState<boolean>(false)
-        const [open, setOpen] = useState<Element | null>(null)
+        const modalRef = useRef(null)
+        const [open, setOpen] = useState<boolean>(false)
         const openModal = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
-            setOpen(e.currentTarget)
+            setOpen(true)
         }
-        const closeModal = () => setOpen(null)
+        const closeModal = () => setOpen(false)
 
         const [input, setInput] = useState<string>("")
         const changeOption = (value: string) => {
@@ -79,9 +80,10 @@ export class Select extends Cell {
             const values = data.rows
                 .map(row => row[_column.key] as string)
                 .filter(value => typeof value === "string" && value.length > 0)
+                .filter(item => item !== content)
 
             return [...new Set(values)]
-        }, [_column.key, data])
+        }, [_column.key, content, data])
 
         return (
             <>
@@ -97,6 +99,7 @@ export class Select extends Cell {
                         alignItems: "center",
                         whiteSpace: "nowrap",
                     }}
+                    ref={modalRef}
                 >
                     {isEmpty ? (
                         <>
@@ -134,18 +137,18 @@ export class Select extends Cell {
                 </Box>
                 <Menu
                     elevation={0}
-                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                     transformOrigin={{
                         vertical: "top",
                         horizontal: "right",
                     }}
-                    open={open != null}
-                    anchorEl={open}
+                    open={open}
+                    anchorEl={modalRef.current}
                     keepMounted
                     onClose={closeModal}
                     PaperProps={{
                         sx: {
-                            // boxShadow: theme.shadows[1],
+                            boxShadow: "10px 10px 20px 0px rgba(0,0,0,0.2)",
                         },
                     }}
                 >
@@ -173,23 +176,21 @@ export class Select extends Cell {
                             overflowY: "scroll",
                         }}
                     >
-                        {list
-                            ?.filter(item => item !== content)
-                            .map(item => (
-                                <MenuItem
-                                    key={item}
-                                    data-value={item}
-                                    onClick={e =>
-                                        changeOption(
-                                            e.currentTarget.dataset[
-                                                "value"
-                                            ] as string
-                                        )
-                                    }
-                                >
-                                    <ChipItem label={item} />
-                                </MenuItem>
-                            ))}
+                        {list?.map(item => (
+                            <MenuItem
+                                key={item}
+                                data-value={item}
+                                onClick={e =>
+                                    changeOption(
+                                        e.currentTarget.dataset[
+                                            "value"
+                                        ] as string
+                                    )
+                                }
+                            >
+                                <ChipItem label={item} />
+                            </MenuItem>
+                        ))}
                     </MenuList>
                 </Menu>
             </>
