@@ -51,8 +51,8 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
         )
 
         values = values
-            .map(val => util.cell.export(val))
             .filter(val => val != null && val !== "")
+            .map(val => util.cell.export(val))
 
         navigator.clipboard.writeText(values.join(", "))
 

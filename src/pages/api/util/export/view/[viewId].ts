@@ -6,13 +6,12 @@ import { withSessionRoute } from "auth"
 import fs from "fs-extra"
 import { parseAsync } from "json2csv"
 import path from "path"
-import { Column, Row, ViewData } from "types"
+import { Column, Row } from "types"
 import Obj from "types/Obj"
-import { isValidMailAddress } from "@datagrid/CellContentType/validators/isValidMailAddress"
 import { capitalizeFirstLetter } from "utils/capitalizeFirstLetter"
+import { ColumnUtility } from "utils/ColumnUtility"
 import { TmpDir } from "utils/TmpDir"
-import { CellContentTypeComponents } from "@datagrid/CellContentType/map"
-import { CellContentType } from "@datagrid/CellContentType/type_converter"
+import { ViewData } from "@intutable/lazy-views/dist/types"
 
 export type AnyArray = (string | number | boolean)[]
 
@@ -42,24 +41,17 @@ const intersectRows = (columns: Column.Serialized[], rows: Row[]) =>
         const intersection: Obj = {}
 
         columns.forEach(col => {
+            const util = new ColumnUtility(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (col as any)["attributes"] as Column.Serialized
+            ) // BUG: col is not Column.Serialized
+
             const value = row[col.key]
+            const exported =
+                value == null || value === "" ? "" : util.cell.export(value)
             const key = capitalizeFirstLetter(col.name)
 
-            const cellType =
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ((col as any).attributes as Column.SQL)
-                    ._cellContentType as CellContentType
-            // if a type has a validator, use it to validate the value
-            // in case the value is not valid, ignore it
-            // if (CellContentTypeComponents[cellType].validator != null) {
-            //     const isValid = CellContentTypeComponents[cellType].validator!
-            //     if (isValid(value) === false) {
-            //         intersection[key] = ""
-            //         return
-            //     }
-            // }
-
-            intersection[key] = value
+            intersection[key] = exported
         })
 
         return intersection

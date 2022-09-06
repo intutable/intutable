@@ -24,7 +24,7 @@ export class DateCell extends Cell {
         const parsed = Number.parseInt(value as string)
         if (this.isValid(parsed) === false) return
         const date = new Date(parsed)
-        return date.toLocaleDateString()
+        return date.toLocaleDateString("de-DE")
     }
 
     formatter = (props: FormatterProps<Row>) => {
