@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from "react"
-import {
-    CellContentType,
-    Runtime_CellContentType,
-    CellContentTypeDisplayName,
-} from "@datagrid/Cells/types/CellContentType"
+import { StandardColumnSpecifier } from "@backend/types"
+import Cells from "@datagrid/Cells"
+import HelpIcon from "@mui/icons-material/Help"
 import {
     Box,
     Button,
@@ -24,9 +21,7 @@ import {
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import HelpIcon from "@mui/icons-material/Help"
-import { StandardColumnSpecifier } from "@backend/types"
-import Cells from "@datagrid/Cells"
+import React, { useEffect, useState } from "react"
 
 type AddColumnModalProps = {
     open: boolean
@@ -88,7 +83,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                 onChange={e => {
                                     setOption(
                                         "_cellContentType",
-                                        e.target.value as CellContentType
+                                        e.target.value
                                     )
                                 }}
                             >
