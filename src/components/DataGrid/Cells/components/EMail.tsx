@@ -1,7 +1,8 @@
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import { Box, IconButton, Tooltip } from "@mui/material"
-import { FormatterProps } from "react-data-grid"
+import { ChangeEvent, useEffect, useState } from "react"
+import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import Cell from "../Cell"
 const MailAddressRegex =
@@ -17,14 +18,42 @@ export class EMail extends Cell {
     }
 
     export(value: unknown): string | void {
-        if (this.isValid(value) === false) return // you can save values that are not valid, will be deprecated in a future version
-        return value as string
+        if (this.isValid(value)) return value as string
+        return
+    }
+
+    editor = (props: EditorProps<Row>) => {
+        const { row, key, content } = this.destruct(props)
+
+        const [input, setInput] = useState(content ?? "")
+
+        useEffect(() => {
+            if (this.isValid(input)) {
+                props.onRowChange({
+                    ...row,
+                    [key]: input,
+                })
+            }
+        }, [input, key, props, row])
+
+        return (
+            <this.Input
+                onChange={e => setInput(e.target.value)}
+                onBlur={() => props.onClose(true)}
+                value={input}
+            />
+        )
     }
 
     formatter = (props: FormatterProps<Row>) => {
         const { content } = this.destruct<string | null | undefined>(props)
 
-        if (content == null || content.length < 1) return null // prevents showing the warning icon when content is null or has no length
+        if (
+            this.isValid(content) === false ||
+            content == null ||
+            content.length < 1
+        )
+            return null
 
         return (
             <Box
@@ -37,48 +66,19 @@ export class EMail extends Cell {
                     whiteSpace: "nowrap",
                 }}
             >
-                {this.isValid(content) ? (
-                    // case: valid mail
-                    <Tooltip title={content!} arrow placement="top">
-                        <IconButton
-                            size="small"
-                            href={`mailto:${content}`}
-                            color="success"
-                        >
-                            <MarkEmailReadIcon
-                                sx={{
-                                    fontSize: "90%",
-                                }}
-                            />
-                        </IconButton>
-                    </Tooltip>
-                ) : (
-                    // case: invalid mail, will be ignored when e.g. generating a mail list, but the input gets saved
-                    <>
-                        <Box
+                <Tooltip title={content!} arrow placement="top">
+                    <IconButton
+                        size="small"
+                        href={`mailto:${content}`}
+                        color="success"
+                    >
+                        <MarkEmailReadIcon
                             sx={{
-                                flex: 1,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
+                                fontSize: "90%",
                             }}
-                        >
-                            {content}
-                        </Box>
-                        <Tooltip
-                            title="Dies ist keine gültige E-Mail-Adresse und wird bei Aktionen für diesen Typen ignoriert."
-                            arrow
-                            placement="right"
-                        >
-                            <IconButton size="small" color="warning">
-                                <WarningAmberIcon
-                                    sx={{
-                                        fontSize: "60%",
-                                    }}
-                                />
-                            </IconButton>
-                        </Tooltip>
-                    </>
-                )}
+                        />
+                    </IconButton>
+                </Tooltip>
             </Box>
         )
     }
