@@ -22,7 +22,7 @@ lint:
 lint-production:
     stage: lint-production
     script:
-        - npm run lint:prodution
+        - npm run lint-production
     rules:
         - if: $CI_COMMIT_BRANCH == "main"
         - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
@@ -30,7 +30,9 @@ lint-production:
 build:
     stage: build
     script:
-        - npm run build:next
+        - npm run build -w dekanat-app-plugin
+        - npm run build -w backend
+        - npm run build -w gui
     rules:
         - if: $CI_COMMIT_BRANCH == "main"
         - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
