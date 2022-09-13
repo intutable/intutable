@@ -1,11 +1,6 @@
-.next/
-node_modules
-src/backend/dekanat-app-plugin/dist/
-src/backend/startup/dist/
-data.db
-todo
 .DS_Store
 .log/
-
-# Database stuff for now
-./database/database-data
+/**/node_modules
+/**/dist
+gui/.next/
+gui/.swc/
