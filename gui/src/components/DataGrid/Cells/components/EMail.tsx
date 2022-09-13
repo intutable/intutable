@@ -1,7 +1,6 @@
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
-import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import { Box, IconButton, Tooltip } from "@mui/material"
-import { ChangeEvent, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import Cell from "../Cell"

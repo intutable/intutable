@@ -1,5 +1,4 @@
 import LinkIcon from "@mui/icons-material/Attachment"
-import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import { Box, IconButton, Tooltip } from "@mui/material"
 import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
