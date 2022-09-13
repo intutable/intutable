@@ -7,8 +7,7 @@ import { useView } from "hooks/useView"
 import React, { useCallback } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
-import { columnToClipboard } from "utils/columnToClipboard"
-import { isValidMailAddress } from "utils/isValidMailAddress"
+import { ColumnUtility } from "utils/ColumnUtility"
 
 export type ColumnToClipboardProps = {
     headerRendererProps: HeaderRendererProps<Row>
@@ -47,14 +46,25 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
                 .filter(e => e != null)
         }
 
-        // filter invalid emails
-        if ((col.attributes as Column.SQL)._cellContentType === "email")
-            values = values.filter(isValidMailAddress)
+        const util = new ColumnUtility(
+            props.headerRendererProps.column as Column.Serialized
+        )
 
-        columnToClipboard(values as (string | boolean | number)[])
+        values = values
+            .filter(val => val != null && val !== "")
+            .map(val => util.cell.export(val))
+
+        navigator.clipboard.writeText(values.join(", "))
 
         snackInfo("In die Zwischenablage kopiert!")
-    }, [col, headerRendererProps, selectedRows, viewData, snackInfo])
+    }, [
+        viewData,
+        headerRendererProps.allRowsSelected,
+        selectedRows,
+        props.headerRendererProps.column,
+        snackInfo,
+        col.id,
+    ])
 
     return (
         <MenuItem onClick={handleCopyToClipboard}>

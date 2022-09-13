@@ -1,5 +1,5 @@
 import { ViewData } from "@intutable/lazy-views"
-import type { Row, TableData } from "types"
+import type { TableData } from "types"
 import { Column as ColumnParser } from "."
 import { byIndex } from "./utils"
 
@@ -18,7 +18,8 @@ export const parse = (view: ViewData): TableData.Serialized => {
             .map(ColumnParser.parse),
         rows: view.rows.map(r => ({
             ...r,
+            _id: r["_id"] as number,
             __rowIndex__: r[indexColumn.key] as number,
-        })) as Row[],
+        })) ,
     }
 }

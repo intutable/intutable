@@ -5,12 +5,11 @@ import {
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
 import { toSql, A } from "./attributes"
-import { CellContentType } from "./types"
 
 export const UID_KEY = "_id"
 export const INDEX_KEY = "index"
 /** Minimum width of a column. */
-export const COLUMN_MIN_WIDTH = 256
+export const COLUMN_MIN_WIDTH = 128
 
 /**
  * Blank row options - no filters, no grouping, no sorting.
@@ -52,7 +51,7 @@ export function defaultViewName() {
 
 export function standardColumnAttributes(
     displayName: string,
-    contentType: CellContentType,
+    contentType: string,
     columnIndex?: number,
     userPrimary?: boolean
 ): Record<string, unknown> {
@@ -83,7 +82,7 @@ export function linkColumnAttributes(
 
 export function lookupColumnAttributes(
     displayName: string,
-    contentType: CellContentType,
+    contentType: string,
     columnIndex?: number
 ): Record<string, unknown> {
     return toSql({

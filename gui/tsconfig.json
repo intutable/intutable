@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "ES6",
         "lib": ["dom", "dom.iterable", "esnext"],
         "allowJs": true,
         "skipLibCheck": true,
@@ -15,6 +15,7 @@
         "jsx": "preserve",
         "incremental": true,
         "baseUrl": "./src",
+        "experimentalDecorators": true,
         "paths": {
             "@backend/*": ["../../dekanat-app-plugin/src/*"],
             "@datagrid/*": ["components/DataGrid/*"]

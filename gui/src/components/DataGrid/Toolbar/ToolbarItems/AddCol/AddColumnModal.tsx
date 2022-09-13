@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from "react"
-import {
-    CellContentType,
-    Runtime_CellContentType,
-    CellContentTypeDisplayName,
-} from "@datagrid/Editor/types/CellContentType"
+import { StandardColumnSpecifier } from "@backend/types"
+import Cells from "@datagrid/Cells"
+import HelpIcon from "@mui/icons-material/Help"
 import {
     Box,
     Button,
@@ -24,8 +21,7 @@ import {
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import HelpIcon from "@mui/icons-material/Help"
-import { StandardColumnSpecifier } from "@backend/types"
+import React, { useEffect, useState } from "react"
 
 type AddColumnModalProps = {
     open: boolean
@@ -87,20 +83,16 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                 onChange={e => {
                                     setOption(
                                         "_cellContentType",
-                                        e.target.value as CellContentType
+                                        e.target.value
                                     )
                                 }}
                             >
-                                {Runtime_CellContentType.map((type, i) => (
+                                {Cells.map(cell => (
                                     <MenuItem
-                                        key={i}
-                                        value={type}
-                                        disabled={
-                                            type !== "string" &&
-                                            type !== "email"
-                                        }
+                                        key={cell.brand}
+                                        value={cell.brand}
                                     >
-                                        {CellContentTypeDisplayName[type]}
+                                        {cell.label}
                                     </MenuItem>
                                 ))}
                             </Select>

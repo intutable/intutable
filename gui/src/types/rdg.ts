@@ -1,4 +1,3 @@
-import type { CellContentType } from "@datagrid/Editor/types/CellContentType"
 import type {
     ColumnInfo,
     ParentColumnSpecifier as GroupColumn,
@@ -29,13 +28,12 @@ export type TableData = Table<SerializedColumn, Row>
 export type DeserializedTableData = Table<Column, Row>
 
 export namespace TableData {
-    export type Deserialized = DeserializedTableData
     /**
      * @deprecated
      * @legacy
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export type Serialized = any
+    export type Deserialized = DeserializedTableData
+    export type Serialized = TableData
 }
 
 // #################################################################
@@ -64,6 +62,7 @@ export namespace ViewData {
 // #################################################################
 
 export type Row = project_management.UID & {
+    _id: number
     __rowIndex__: number
     [key: string]: unknown
 }
@@ -121,7 +120,7 @@ export type MetaColumnProps = {
      * In addition to {@link SerializedColumn.editor} and {@link SerializedColumn.formatter},
      * this explicitly sets the type.
      */
-    _cellContentType: CellContentType
+    _cellContentType: string
     /**
      * @property {number | null} __columnIndex__ ordering position of the
      * column.

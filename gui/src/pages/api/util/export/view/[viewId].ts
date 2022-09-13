@@ -1,31 +1,24 @@
-import { ColumnInfo, getViewData, ViewDescriptor } from "@intutable/lazy-views"
+import {
+    ViewData as RawViewData,
+    ViewOptions,
+    ColumnInfo,
+    getViewData,
+    getViewOptions,
+    ViewDescriptor,
+} from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
+import { View as ViewParser } from "api/utils/parse"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import fs from "fs-extra"
 import { parseAsync } from "json2csv"
 import path from "path"
-import tmp from "tmp"
 import { Column, Row, ViewData } from "types"
 import Obj from "types/Obj"
-import { isValidMailAddress } from "utils/isValidMailAddress"
-
-const capitalizeFirstLetter = (string: string) =>
-    string.charAt(0).toUpperCase() + string.slice(1)
-
-export class TmpDir {
-    public readonly path: string
-    private removeCallback: () => void
-    constructor() {
-        const dir = tmp.dirSync({ unsafeCleanup: true })
-        this.path = dir.name
-        this.removeCallback = dir.removeCallback
-    }
-    delete() {
-        this.removeCallback()
-    }
-}
+import { capitalizeFirstLetter } from "utils/capitalizeFirstLetter"
+import { ColumnUtility } from "utils/ColumnUtility"
+import { TmpDir } from "utils/TmpDir"
 
 export type AnyArray = (string | number | boolean)[]
 
@@ -55,21 +48,17 @@ const intersectRows = (columns: Column.Serialized[], rows: Row[]) =>
         const intersection: Obj = {}
 
         columns.forEach(col => {
+            const util = new ColumnUtility(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (col as any)["attributes"] as Column.Serialized
+            ) // BUG: col is not Column.Serialized
+
             const value = row[col.key]
+            const exported =
+                value == null || value === "" ? "" : util.cell.export(value)
             const key = capitalizeFirstLetter(col.name)
 
-            // hack for email type: filter out every invalid address
-            const cellType =
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ((col as any).attributes as Column.SQL)._cellContentType
-            if (cellType === "email") {
-                if (isValidMailAddress(value) === false) {
-                    intersection[key] = ""
-                    return
-                }
-            }
-
-            intersection[key] = value
+            intersection[key] = exported
         })
 
         return intersection
@@ -96,20 +85,27 @@ const POST = withCatchingAPIRoute(
             req.body
         ) as ExportViewRequestBody
 
+        // currently only csv is supported
         if (format !== "csv") throw new Error(`Unsupported format: ${format}`)
 
-        const viewData = await coreRequest<ViewData.Serialized>(
+        const viewOptions = await coreRequest<ViewOptions>(
+            getViewOptions(viewId),
+            user.authCookie
+        )
+        const rawViewData = await coreRequest<RawViewData>(
             getViewData(viewId),
             user.authCookie
         )
+        const viewData = ViewParser.parse(viewOptions, rawViewData)
 
+        // only use the specified columns
         const cols: Column.Serialized[] = viewData.columns.filter(col =>
             columns.includes((col as unknown as Column & { id: number }).id)
         )
 
         let rows: ViewData.Serialized["rows"] = viewData.rows
 
-        // row selection
+        // only use the selected rows, if specified
         if (options?.rowSelection != null && options.rowSelection.length > 0) {
             // find the index column where the information about the indices are stored,
             // because the indices of each row are not accessible in the viewData
@@ -129,9 +125,10 @@ const POST = withCatchingAPIRoute(
             )
         }
 
-        const data = intersectRows(cols, rows)
+        const data = intersectRows(cols, rows) // <-- this is where the magic happens
         const csv = await toCSV(data, options?.csvOptions)
 
+        // create the file
         const filename = fileName + ".csv"
         const dir = new TmpDir()
         const csvFile = path.join(dir.path, filename)
@@ -148,6 +145,7 @@ const POST = withCatchingAPIRoute(
             readStream.pipe(res)
             readStream.on("end", resolve)
         })
+
         dir.delete()
     }
 )
