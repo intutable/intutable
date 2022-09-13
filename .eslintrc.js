@@ -16,8 +16,6 @@ module.exports = {
         "@typescript-eslint/no-extra-semi": "off",
         "no-extra-semi": "off",
         "no-console": process.env.NODE_ENV === "production" ? "error" : "warn",
-        "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "error",
         "no-restricted-imports": [
             process.env.NODE_ENV === "production" ? "error" : "warn",
             {
@@ -26,9 +24,7 @@ module.exports = {
         ],
     },
     extends: [
-        "next/core-web-vitals",
         "eslint:recommended",
-        "next",
         "prettier",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
