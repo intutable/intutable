@@ -5,7 +5,7 @@ export const supportedFeatures: Feature[] = [
         name: "Filter für Tabellen",
         infoText:
             "Boolsche Filter für ganze Tabellen resp. Views (bspw. wenn X gleich Y, dann zeige diese Daten)",
-        support: "in-testing",
+        support: "supported",
         release: "v0.1.0-alpha.3",
     },
     {
@@ -16,7 +16,7 @@ export const supportedFeatures: Feature[] = [
     },
     {
         name: "Views",
-        infoText: "",
+        infoText: "Verschiedene Ansichten einer Tabelle",
         support: "supported",
         release: "v0.1.0-alpha.2",
     },
@@ -39,6 +39,13 @@ export const supportedFeatures: Feature[] = [
     {
         name: "User Permissions",
         infoText: "Verschiedene Benutzerberechtigungen und Rollen",
-        support: "in-development",
+        support: "in-testing",
+    },
+    {
+        name: "Spalten-Typen",
+        infoText:
+            "Spalten und Zellen können verschiedene Daten anders strukturieren (bspw. Datum, Zeit, Währung, Text, Zahlen etc.)",
+        support: "supported",
+        release: "v1.0.0-alpha.1",
     },
 ]
