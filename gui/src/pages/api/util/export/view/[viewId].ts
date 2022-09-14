@@ -48,10 +48,7 @@ const intersectRows = (columns: Column.Serialized[], rows: Row[]) =>
         const intersection: Obj = {}
 
         columns.forEach(col => {
-            const util = new ColumnUtility(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (col as any)["attributes"] as Column.Serialized
-            ) // BUG: col is not Column.Serialized
+            const util = new ColumnUtility(col)
 
             const value = row[col.key]
             const exported =
@@ -97,10 +94,11 @@ const POST = withCatchingAPIRoute(
             user.authCookie
         )
         const viewData = ViewParser.parse(viewOptions, rawViewData)
+        console.log(viewData)
 
         // only use the specified columns
         const cols: Column.Serialized[] = viewData.columns.filter(col =>
-            columns.includes((col as unknown as Column & { id: number }).id)
+            columns.includes(col._id)
         )
 
         let rows: ViewData.Serialized["rows"] = viewData.rows
@@ -110,9 +108,7 @@ const POST = withCatchingAPIRoute(
             // find the index column where the information about the indices are stored,
             // because the indices of each row are not accessible in the viewData
             // due to prefixes of the keys
-            const indexColumn = viewData.columns.find(
-                (c: Obj) => (c.attributes as Column.SQL)._kind === "index"
-            )!
+            const indexColumn = viewData.columns.find(c => c._kind === "index")!
             // and remap to the actual rows
             rows = rows.map(row => ({
                 ...row,
