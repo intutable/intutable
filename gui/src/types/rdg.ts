@@ -14,7 +14,7 @@ import { project_management } from "./type-annotations/project-management"
 // #################################################################
 
 type Table<COL, ROW> = {
-    metadata: ViewInfo
+    metadata: Omit<ViewInfo, "rowOptions">
     columns: COL[]
     rows: ROW[]
 }

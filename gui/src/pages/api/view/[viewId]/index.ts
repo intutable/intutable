@@ -35,17 +35,13 @@ const GET = withCatchingAPIRoute(
         viewId: ViewDescriptor["id"]
     ) => {
         const user = req.session.user!
-        const options = await coreRequest<ViewOptions>(
-            getViewOptions(viewId),
-            user.authCookie
-        )
         const tableData = await coreRequest<ViewData>( // should be `ViweData.Serialized`?
             getViewData(viewId),
             user.authCookie
         )
 
         // parse it
-        const parsedData = View.parse(options, tableData)
+        const parsedData = View.parse(tableData)
 
         res.status(200).json(parsedData)
     }

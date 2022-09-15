@@ -1,9 +1,7 @@
 import {
     ViewData as RawViewData,
-    ViewOptions,
     ColumnInfo,
     getViewData,
-    getViewOptions,
     ViewDescriptor,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
@@ -85,16 +83,11 @@ const POST = withCatchingAPIRoute(
         // currently only csv is supported
         if (format !== "csv") throw new Error(`Unsupported format: ${format}`)
 
-        const viewOptions = await coreRequest<ViewOptions>(
-            getViewOptions(viewId),
-            user.authCookie
-        )
         const rawViewData = await coreRequest<RawViewData>(
             getViewData(viewId),
             user.authCookie
         )
-        const viewData = ViewParser.parse(viewOptions, rawViewData)
-        console.log(viewData)
+        const viewData = ViewParser.parse(rawViewData)
 
         // only use the specified columns
         const cols: Column.Serialized[] = viewData.columns.filter(col =>
