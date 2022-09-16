@@ -40,6 +40,49 @@ export class ExportUtil {
         this.viewId = viewId
     }
 
+    public async export(): Promise<void> {
+        const data = await this.fetchData()
+
+        const selected = this.select(data)
+        const intersected = this.intersect(selected.columns, selected.rows)
+
+        this.exportedData = intersected
+
+        return
+    }
+
+    public async send(): Promise<void> {
+        if (this.exportedData == null) throw new Error("No data was exported")
+
+        // export to specified format
+        const exported = await this.toCSV()
+
+        // create file
+        const filename = this.makeFilename()
+        const dir = new TmpDir()
+        const file = path.join(dir.path, filename)
+        await fs.writeFile(file, exported)
+        const stat = await fs.stat(file)
+
+        // write headers
+        this.response.writeHead(200, {
+            "Content-Type": `text/${this.job.file.format}`,
+            "Content-Length": stat.size,
+        })
+
+        // stream file
+        const readStream = fs.createReadStream(file)
+        await new Promise(resolve => {
+            readStream.pipe(this.response)
+            readStream.on("end", resolve)
+        })
+
+        // cleanup
+        dir.delete()
+    }
+
+    // utils
+
     private async fetchData(): Promise<ViewData.Serialized> {
         const viewOptions = await coreRequest<ViewOptions>(
             getViewOptions(this.viewId),
@@ -110,50 +153,31 @@ export class ExportUtil {
 
     private async toCSV() {
         return await parseAsync(this.exportedData!, {
-            header: this.job.options.includeHeader === true,
-            includeEmptyRows: this.job.options.includeEmptyRows === true,
+            header: this.job.options.includeHeader ?? false, // default 'false' if not specified
+            includeEmptyRows: this.job.options.includeEmptyRows ?? false, // default 'false' if not specified // BUG: does not work somehow
             withBOM: true,
         })
     }
 
-    public async export(): Promise<void> {
-        const data = await this.fetchData()
+    // TODO: frontend just overrides the filename
 
-        const selected = this.select(data)
-        const intersected = this.intersect(selected.columns, selected.rows)
+    static makeFilename(
+        file: ExportRequest["file"] & Pick<ExportRequest, "date">
+    ): string {
+        // default 'true' if not specified
+        if (file.excludeDateString == null || file.excludeDateString === false)
+            // TODO: make filename OS friendly, exclude some special characters
+            return `${file.name} ${file.date.toLocaleString("de-DE")}.${
+                file.format
+            }`
 
-        this.exportedData = intersected
-
-        return
+        return `${file.name}.${file.format}`
     }
 
-    public async send(): Promise<void> {
-        if (this.exportedData == null) throw new Error("No data was exported")
-
-        // export to specified format
-        const exported = await this.toCSV()
-
-        // create file
-        const filename = `${this.job.file.name}.${this.job.file.format}`
-        const dir = new TmpDir()
-        const file = path.join(dir.path, filename)
-        await fs.writeFile(file, exported)
-        const stat = await fs.stat(file)
-
-        // write headers
-        this.response.writeHead(200, {
-            "Content-Type": `text/${this.job.file.format}`,
-            "Content-Length": stat.size,
+    public makeFilename(): string {
+        return ExportUtil.makeFilename({
+            ...this.job.file,
+            date: this.job.date,
         })
-
-        // stream file
-        const readStream = fs.createReadStream(file)
-        await new Promise(resolve => {
-            readStream.pipe(this.response)
-            readStream.on("end", resolve)
-        })
-
-        // cleanup
-        dir.delete()
     }
 }

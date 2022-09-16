@@ -63,16 +63,16 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
                 options={{
                     title: "Mailing-Liste generieren",
                     initialState: {
-                        fileName: `Mail Liste ${table!.name}-${
-                            view!.name
-                        } ${localDateFormat}`,
-                        format: "csv",
-                        columns: emailColumns || [],
+                        date: new Date(),
                         options: {
-                            csvOptions: {
-                                header: false,
-                                includeEmptyRows: false,
-                            },
+                            columnSelection: emailColumns ?? [],
+                        },
+                        file: {
+                            name: `Mail Liste ${table!.name}-${
+                                view!.name
+                            } ${localDateFormat}`,
+                            format: "csv",
+                            excludeDateString: true,
                         },
                     },
                 }}

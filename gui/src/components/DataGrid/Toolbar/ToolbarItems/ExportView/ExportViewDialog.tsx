@@ -1,4 +1,3 @@
-import { ColumnUtility } from "utils/ColumnUtility"
 import { LoadingButton } from "@mui/lab"
 import {
     Button,
@@ -19,15 +18,13 @@ import {
     Switch,
     Typography,
 } from "@mui/material"
-import { fetcher } from "api"
 import { useSelectedRows } from "context/SelectedRowsContext"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
-import {
-    CSVExportOptions,
-    ExportViewRequestBody,
-} from "pages/api/util/export/view/[viewId]"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useMemo, useState } from "react"
+import { ColumnUtility } from "utils/ColumnUtility"
+import { ExportJob } from "utils/Export/ExportJob"
+import { ExportOptions, ExportRequest } from "utils/Export/ExportRequest"
 
 type ExportViewDialogProps = {
     open: boolean
@@ -35,19 +32,19 @@ type ExportViewDialogProps = {
     allRowsSelected: boolean
     options?: {
         title?: string
-        initialState?: ExportViewRequestBody
+        initialState?: ExportRequest
     }
 }
 
-const inistalState: ExportViewRequestBody = {
-    fileName: "",
-    format: "csv",
-    columns: [],
+const initialState: ExportRequest = {
+    date: new Date(),
     options: {
-        csvOptions: {
-            header: false,
-            includeEmptyRows: false,
-        },
+        columnSelection: [],
+    },
+    file: {
+        name: "",
+        format: "csv",
+        excludeDateString: true,
     },
 }
 
@@ -56,51 +53,46 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
     const { data: viewData } = useView()
     const { selectedRows } = useSelectedRows() // TODO: consider row selection
 
-    const [state, setState] = useState<ExportViewRequestBody>(
-        props.options?.initialState || inistalState
+    const [file, setFile] = useState<ExportRequest["file"]>(
+        props.options?.initialState?.file || initialState.file
     )
-    const resetState = () =>
-        setState(props.options?.initialState || inistalState)
+    const [options, setOptions] = useState<ExportOptions>(
+        props.options?.initialState?.options || initialState.options
+    )
+    const [considerRowSelection, setConsiderRowSelection] =
+        useState<boolean>(false)
+    const resetState = () => {
+        setFile(props.options?.initialState?.file || initialState.file)
+        setOptions(props.options?.initialState?.options || initialState.options)
+    }
 
-    // update selected Rows in state
-    // Note: apply the selected Rows in the fetch … better for performance
-    useEffect(() => {
-        if (selectedRows.size > 0) {
-            setState(prev => ({
-                ...prev,
-                options: {
-                    ...prev.options,
-                    rowSelection: Array.from(selectedRows),
-                },
-            }))
-        }
-    }, [selectedRows])
-
+    // minimum user action: filename and column selection
     const valid = useMemo(
-        () => state.fileName.length > 0 && state.columns.length > 0,
-        [state]
+        () => file.name.length > 0 && options.columnSelection.length > 0,
+        [file.name.length, options.columnSelection.length]
     )
 
     const [loading, setLoading] = useState<boolean>(false)
-    const [file, setFile] = useState<string | null>(null)
-    const filename = state.fileName + "." + state.format
+    const [fileBuffer, setFileBuffer] = useState<string | null>(null) // not actually a buffer
+    const filename = file.name + "." + file.format
 
     const exportView = async () => {
+        if (viewData == null) return
         setLoading(true)
         try {
-            const csv = await fetcher<string>({
-                url: `/api/util/export/view/${viewData?.descriptor.id}`,
-                body: {
-                    ...state,
+            const job = new ExportJob(viewData.descriptor, {
+                date: props.options?.initialState?.date || initialState.date,
+                file,
+                options: {
+                    rowSelection: considerRowSelection
+                        ? Array.from(selectedRows)
+                        : undefined,
+                    ...options,
                 },
-                method: "POST",
-                headers: {
-                    "Content-Type": "text/csv",
-                    Accept: "text/csv",
-                },
-                isReadstream: true,
             })
-            setFile(csv)
+            const _file = await job.request()
+
+            setFileBuffer(_file)
         } catch (error) {
             snackError("Export fehlgeschlagen.")
             props.onClose()
@@ -109,38 +101,27 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
         }
     }
 
-    const updateState = <T extends keyof ExportViewRequestBody>(
+    // util
+    const updateState = <
+        U extends "file" | "options",
+        T extends keyof ExportRequest[U]
+    >(
+        state: U,
         key: T,
-        value: ExportViewRequestBody[T]
+        value: ExportRequest[U][T]
     ) =>
-        setState(prev => ({
-            ...prev,
-            [key]: value,
-        }))
-
-    const updateCsvOptions = <T extends keyof CSVExportOptions>(
-        key: T,
-        value: CSVExportOptions[T]
-    ) => {
-        setState(prev => ({
-            ...prev,
-            options: {
-                ...prev.options,
-                csvOptions: {
-                    ...prev.options?.csvOptions,
-                    [key]: value,
-                },
-            },
-        }))
-    }
+        state === "file"
+            ? setFile(prev => ({ ...prev, [key]: value }))
+            : setOptions(prev => ({ ...prev, [key]: value }))
 
     return (
         <Dialog open={props.open} onClose={props.onClose}>
             <DialogTitle>
-                {props.options?.title || "View exportieren"}
+                {props.options?.title ||
+                    `View ${viewData?.descriptor.name} exportieren`}
             </DialogTitle>
             <DialogContent>
-                {state.columns.length > 0 && (
+                {options.columnSelection.length > 0 && (
                     <DialogContentText
                         sx={{
                             width: "100%",
@@ -183,9 +164,9 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                             }
                             label="Dateiname"
                             required
-                            value={state.fileName}
+                            value={file.name}
                             onChange={e =>
-                                updateState("fileName", e.target.value)
+                                updateState("file", "name", e.target.value)
                             }
                         />
                     </FormControl>
@@ -195,12 +176,13 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                         <Select
                             required
                             labelId="format-label"
-                            value={state.format}
+                            value={file.format}
                             onChange={e =>
                                 updateState(
+                                    "file",
                                     "format",
                                     e.target
-                                        .value as ExportViewRequestBody["format"]
+                                        .value as ExportRequest["file"]["format"]
                                 )
                             }
                             input={<OutlinedInput label="Format" />}
@@ -223,14 +205,15 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                         <Select
                             required
                             labelId="columns-label"
-                            value={state.columns}
+                            value={options.columnSelection}
                             multiple
                             multiline
                             onChange={e =>
                                 updateState(
-                                    "columns",
+                                    "options",
+                                    "columnSelection",
                                     e.target
-                                        .value as ExportViewRequestBody["columns"]
+                                        .value as ExportOptions["columnSelection"]
                                 )
                             }
                             input={<OutlinedInput label="Format" />}
@@ -248,50 +231,54 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                         </Select>
                     </FormControl>
 
-                    {state.format === "csv" && (
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={state.options?.csvOptions?.header}
-                                    onChange={e =>
-                                        updateCsvOptions(
-                                            "header",
-                                            e.target.checked
-                                        )
-                                    }
-                                />
-                            }
-                            label="Mit Headern in CSV-Datei"
-                        />
-                    )}
-
-                    {state.format === "csv" && (
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={
-                                        state.options?.csvOptions
-                                            ?.includeEmptyRows
-                                    }
-                                    onChange={e =>
-                                        updateCsvOptions(
-                                            "includeEmptyRows",
-                                            e.target.checked
-                                        )
-                                    }
-                                />
-                            }
-                            label="Leere Zeilen übernehmen"
-                        />
-                    )}
-
-                    {selectedRows.size > 0 &&
-                        props.allRowsSelected === false && (
-                            <FormControlLabel
-                                control={<Switch checked disabled />}
-                                label="Nur markierte Zeilen exportieren"
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={options.includeHeader ?? false}
+                                onChange={e =>
+                                    updateState(
+                                        "options",
+                                        "includeHeader",
+                                        e.target.checked
+                                    )
+                                }
                             />
-                        )}
+                        }
+                        label="Spalten-Titel mit exportieren"
+                    />
+
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={options.includeEmptyRows ?? false}
+                                onChange={e =>
+                                    updateState(
+                                        "options",
+                                        "includeEmptyRows",
+                                        e.target.checked
+                                    )
+                                }
+                            />
+                        }
+                        label="Leere Zeilen mit exportieren"
+                    />
+
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={
+                                    selectedRows.size === 0
+                                        ? false
+                                        : considerRowSelection
+                                }
+                                onChange={e =>
+                                    setConsiderRowSelection(e.target.checked)
+                                }
+                                disabled={selectedRows.size === 0}
+                            />
+                        }
+                        label="Nur markierte Zeilen exportieren"
+                    />
                 </FormControl>
             </DialogContent>
             <DialogActions>
@@ -311,15 +298,15 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                 >
                     Exportieren
                 </LoadingButton>
-                {file && (
+                {fileBuffer && (
                     <a
                         ref={ref => {
                             ref?.click()
-                            setFile(null)
+                            setFileBuffer(null)
                             props.onClose()
                         }}
                         download={filename}
-                        href={file}
+                        href={fileBuffer}
                         title={filename}
                     ></a>
                 )}
