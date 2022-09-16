@@ -20,7 +20,6 @@ import {
     Typography,
 } from "@mui/material"
 import { fetcher } from "api"
-
 import { useSelectedRows } from "context/SelectedRowsContext"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
