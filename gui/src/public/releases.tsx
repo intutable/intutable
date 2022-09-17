@@ -14,7 +14,7 @@ export const releases: ReleaseProps[] = [
         version: "v0.1.0-alpha.3",
         prerelease: true,
         title: "1. Test-Version",
-        date: new Date("07/01/2022"),
+        date: new Date("07/04/2022"),
         teaser: "Eine erste Test-Version wurde im Prerelease für eine beschränkte Nutzergruppe zum Testen veröffentlicht.",
         description:
             "Basale Features können getestet werden. Filter, Tabellen bieten einige basale Funktionen.",
