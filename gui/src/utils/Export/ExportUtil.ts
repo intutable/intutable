@@ -19,11 +19,16 @@ import { ColumnUtility } from "utils/ColumnUtility"
 import { TmpDir } from "../TmpDir"
 import { ExportRequest } from "./ExportRequest"
 
+/**
+ * Helps to export the data of views.
+ *
+ * This class can be used in the backend.
+ */
 export class ExportUtil {
-    private response: NextApiResponse
+    private response: NextApiResponse // response of the api handler
     private viewId: ViewDescriptor["id"]
 
-    public exportedData: Obj[] | null = null
+    public exportedData: Obj[] | null = null // cache the selected and intersected data that should be exported in the next step
 
     constructor(
         private job: ExportRequest,
@@ -40,6 +45,9 @@ export class ExportUtil {
         this.viewId = viewId
     }
 
+    /**
+     * Queries the data and prepares it for export into a specific format.
+     */
     public async export(): Promise<void> {
         const data = await this.fetchData()
 
@@ -51,6 +59,10 @@ export class ExportUtil {
         return
     }
 
+    /**
+     * Creates the file and writes the data into it.
+     * Then sends the file to the client.
+     */
     public async send(): Promise<void> {
         if (this.exportedData == null) throw new Error("No data was exported")
 
@@ -83,6 +95,7 @@ export class ExportUtil {
 
     // utils
 
+    /** Get the view data */
     private async fetchData(): Promise<ViewData.Serialized> {
         const viewOptions = await coreRequest<ViewOptions>(
             getViewOptions(this.viewId),
@@ -97,6 +110,7 @@ export class ExportUtil {
         return viewData
     }
 
+    /** Only use columns selected by the user for export as well as rows, if marked */
     private select(data: ViewData.Serialized) {
         // only use the specified columns
         const columns: Column.Serialized[] = data.columns.filter(col =>
@@ -132,6 +146,8 @@ export class ExportUtil {
         }
     }
 
+    /** This creates an intersection from the column and row objects
+     * – prepares the data that is stores in several different columns and rows  */
     private intersect(columns: Column.Serialized[], rows: Row[]) {
         return rows.map(row => {
             const intersection: Obj = {}
@@ -151,6 +167,7 @@ export class ExportUtil {
         })
     }
 
+    /** Export the intersected data to CSV */
     private async toCSV() {
         return await parseAsync(this.exportedData!, {
             header: this.job.options.includeHeader ?? false, // default 'false' if not specified
@@ -160,7 +177,6 @@ export class ExportUtil {
     }
 
     // TODO: frontend just overrides the filename
-
     static makeFilename(
         file: ExportRequest["file"] & Pick<ExportRequest, "date">
     ): string {
