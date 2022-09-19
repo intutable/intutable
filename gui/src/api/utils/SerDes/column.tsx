@@ -1,5 +1,6 @@
 import { ColumnUtility } from "utils/ColumnUtility"
 import { Column } from "types"
+import React from "react"
 
 /**
  * Serializes a single Column.
@@ -35,25 +36,28 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
  * @returns {Column}
  */
 export const deserialize = (col: Column.Serialized): Column.Deserialized => {
-    const Column = new ColumnUtility(col)
+    const columnUtil = new ColumnUtility(col)
 
     return {
         ...col,
-        editable: Column.isEditable(),
-        editor: Column.getEditor(),
-        formatter: Column.getFormatter(),
+        editable: columnUtil.isEditable(),
+        editor: columnUtil.getEditor(),
+        formatter: columnUtil.getFormatter(),
         summaryFormatter: undefined, // currently not supported
         groupFormatter: undefined, // currently not supported
         colSpan: undefined, // currently not supported
-        editorOptions: {
-            // renderFormatter: true // what is this doing?
-            onCellKeyDown: undefined, // currently not supported
-            onNavigation: undefined, // currently not supported
-        },
-        headerRenderer: Column.getHeaderRenderer(),
+        editorOptions: { onNavigation: onEditorNavigation },
+        headerRenderer: columnUtil.getHeaderRenderer(),
     }
 }
 
 export const isAppColumn = (
     column: Column.Serialized | Column.Deserialized
 ): boolean => ColumnUtility.isAppColumn(column)
+
+// What to do when the user navigates with tab/shift-tab while editing a
+// cell's contents. Returning true means "this truly was a navigation event,
+// so allow it to bubble up to the DataGrid so it can switch the focus".
+const onEditorNavigation = ({
+    key
+}: React.KeyboardEvent<HTMLDivElement>): boolean => key === 'Tab'
