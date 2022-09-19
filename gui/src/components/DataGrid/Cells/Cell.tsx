@@ -4,7 +4,7 @@ import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { InputUnstyled, InputUnstyledProps } from "@mui/base"
 import { Box } from "@mui/material"
 import { styled } from "@mui/material/styles"
-import React, { useRef } from "react"
+import React, { useRef, useEffect } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 
@@ -62,15 +62,36 @@ export default abstract class Cell implements Validatable, Exportable {
                 onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
             },
             ref?: React.Ref<HTMLInputElement>
-        ) => (
-            // default Input component, used in editor/formatter components
-            <InputUnstyled
-                components={{ Input: StyledInputElement }}
-                ref={ref || props.ref}
-                onKeyDown={props.onKeyDown}
-                {...props}
-            />
-        )
+        ) => {
+            const inputRef = useRef<HTMLInputElement | null>(null)
+            useEffect(() => {
+                let realRef: React.Ref<HTMLInputElement>
+                if (typeof ref === "function") return
+                else if (ref && typeof ref === "object") realRef = ref
+                else realRef = inputRef
+                const input = realRef.current
+                autoFocusAndSelect(input)
+            }, [ref])
+
+            function autoFocusAndSelect(input: HTMLInputElement | null) {
+                if (!input || !input.children) return
+                const domInput = Array.from(input.children).find(
+                    c => c.tagName.toLowerCase() === "input"
+                )
+                if (!domInput || !(domInput instanceof HTMLInputElement)) return
+                domInput.focus()
+                domInput.select()
+            }
+            return (
+                // default Input component, used in editor/formatter components
+                <InputUnstyled
+                    components={{ Input: StyledInputElement }}
+                    ref={ref || inputRef}
+                    onKeyDown={props.onKeyDown}
+                    {...props}
+                />
+            )
+        }
     )
 
     /**
@@ -79,9 +100,6 @@ export default abstract class Cell implements Validatable, Exportable {
      * will set `editable` to `false` for the column.
      */
     public editor?: EditorComponent = (props: EditorProps<Row>) => {
-        // this component re-renders on every key press. This ref prevents
-        // the input getting re-focused each time.
-        const inputRef = useRef<HTMLInputElement | null>(null)
         // default editor component
         const { row, key, content } = this.destruct(props)
 
@@ -91,23 +109,10 @@ export default abstract class Cell implements Validatable, Exportable {
                 [key]: e.target.value,
             })
 
-        function autoFocusAndSelect(input: HTMLInputElement | null) {
-            if (inputRef.current !== null || !input || !input.children) return
-            const maybeDomInput = Array.from(input.children).find(
-                c => c.tagName.toLowerCase() === "input"
-            )
-            if (!maybeDomInput || !(maybeDomInput instanceof HTMLInputElement))
-                return
-            maybeDomInput.focus()
-            maybeDomInput.select()
-            inputRef.current = input
-        }
-
         return (
             <this.Input
                 onChange={handleChange}
                 onBlur={() => props.onClose(true)}
-                ref={autoFocusAndSelect}
                 value={content}
             />
         )
