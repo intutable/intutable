@@ -59,5 +59,5 @@ export const isAppColumn = (
 // cell's contents. Returning true means "this truly was a navigation event,
 // so allow it to bubble up to the DataGrid so it can switch the focus".
 const onEditorNavigation = ({
-    key
-}: React.KeyboardEvent<HTMLDivElement>): boolean => key === 'Tab'
+    key,
+}: React.KeyboardEvent<HTMLDivElement>): boolean => key === "Tab"
