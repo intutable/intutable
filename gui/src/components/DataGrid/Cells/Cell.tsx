@@ -65,14 +65,15 @@ export default abstract class Cell implements Validatable, Exportable {
         ) => {
             // if no ref is forwarded, we still need a ref for autofocus
             const inputRef = useRef<HTMLInputElement | null>(null)
+
             // autofocus effect
             useEffect(() => {
-                let realRef: React.Ref<HTMLInputElement>
-                if (typeof ref === "function") return
-                else if (ref && typeof ref === "object") realRef = ref
-                else realRef = inputRef
-                const input = realRef.current
-                this.autoFocusEditor(input)
+                if (ref == null || typeof ref === "function") return
+
+                const realRef: React.Ref<HTMLInputElement> =
+                    typeof ref === "object" ? ref : inputRef
+
+                this.autoFocusEditor(realRef.current)
             }, [ref])
 
             return (
@@ -96,11 +97,14 @@ export default abstract class Cell implements Validatable, Exportable {
      * the autofocus function will not run.
      */
     protected autoFocusEditor(input: HTMLInputElement | null) {
-        if (!input || !input.children) return
+        if (input == null || input.children == null) return
+
         const domInput = Array.from(input.children).find(
             c => c.tagName.toLowerCase() === "input"
         )
-        if (!domInput || !(domInput instanceof HTMLInputElement)) return
+
+        if (domInput == null || !(domInput instanceof HTMLInputElement)) return
+
         domInput.focus()
         domInput.select()
     }
