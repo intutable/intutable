@@ -63,25 +63,18 @@ export default abstract class Cell implements Validatable, Exportable {
             },
             ref?: React.Ref<HTMLInputElement>
         ) => {
+            // if no ref is forwarded, we still need a ref for autofocus
             const inputRef = useRef<HTMLInputElement | null>(null)
+            // autofocus effect
             useEffect(() => {
                 let realRef: React.Ref<HTMLInputElement>
                 if (typeof ref === "function") return
                 else if (ref && typeof ref === "object") realRef = ref
                 else realRef = inputRef
                 const input = realRef.current
-                autoFocusAndSelect(input)
+                this.autoFocusEditor(input)
             }, [ref])
 
-            function autoFocusAndSelect(input: HTMLInputElement | null) {
-                if (!input || !input.children) return
-                const domInput = Array.from(input.children).find(
-                    c => c.tagName.toLowerCase() === "input"
-                )
-                if (!domInput || !(domInput instanceof HTMLInputElement)) return
-                domInput.focus()
-                domInput.select()
-            }
             return (
                 // default Input component, used in editor/formatter components
                 <InputUnstyled
@@ -93,6 +86,22 @@ export default abstract class Cell implements Validatable, Exportable {
             )
         }
     )
+
+    /**
+     * Automatically focus the editor's input component when the editor
+     * renders (i.e. cell's content is selected or edited). Since each editor
+     * has different structure, the method for finding what element should
+     * be focused also has to be configurable.
+     */
+    protected autoFocusEditor(input: HTMLInputElement | null) {
+        if (!input || !input.children) return
+        const domInput = Array.from(input.children).find(
+            c => c.tagName.toLowerCase() === "input"
+        )
+        if (!domInput || !(domInput instanceof HTMLInputElement)) return
+        domInput.focus()
+        domInput.select()
+    }
 
     /**
      *
