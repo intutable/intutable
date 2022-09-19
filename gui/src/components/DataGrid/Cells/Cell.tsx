@@ -92,6 +92,8 @@ export default abstract class Cell implements Validatable, Exportable {
      * renders (i.e. cell's content is selected or edited). Since each editor
      * has different structure, the method for finding what element should
      * be focused also has to be configurable.
+     * Note: if {@link this.editor} passes a callback ref into the `Input`,
+     * the autofocus function will not run.
      */
     protected autoFocusEditor(input: HTMLInputElement | null) {
         if (!input || !input.children) return
