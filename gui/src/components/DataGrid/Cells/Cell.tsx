@@ -6,7 +6,8 @@ import { Box } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import React, { useRef, useEffect } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
+import { mergeNonNullish } from "utils/mergeNonNullish"
 
 const StyledInputElement = styled("input")`
     width: 100%;
@@ -22,6 +23,8 @@ const StyledInputElement = styled("input")`
         outline: none;
     }
 `
+
+type EditorOptions = NonNullable<Column["editorOptions"]>
 
 export interface Validatable {
     isValid: <T = unknown>(value: T) => boolean
@@ -43,6 +46,25 @@ export default abstract class Cell implements Validatable, Exportable {
     public abstract readonly brand: string
     /** public name / no i18n yet */
     public abstract label: string
+
+    /** override rdg's default properties for `editorOptions`. */
+    // Note: before overring these, look up what the defaul values look like
+    private _editorOptions: EditorOptions = {
+        // Gets exposed to rdg internally. Needed for internal 'tab'/arrow key navigation.
+        // Indicates what type of KeyboardEvent should be such a navigation event.
+        onNavigation: ({ key }: React.KeyboardEvent<HTMLDivElement>): boolean =>
+            key === "Tab",
+    }
+    public get editorOptions() {
+        return this._editorOptions
+    }
+    // merges `_editorOptions` with values set in child classes
+    protected setEditorOptions(options: EditorOptions) {
+        this._editorOptions = mergeNonNullish<EditorOptions>(
+            this._editorOptions,
+            options
+        )
+    }
 
     /** utilty that destructs the `props` argument for `editor` and `formatter` */
     protected destruct<T = unknown>(
