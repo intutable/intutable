@@ -1,11 +1,11 @@
 import { EditorComponent } from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
-import { headerRenderer } from "@datagrid/renderers"
+
 import { PLACEHOLDER } from "api/utils/SerDes/PLACEHOLDER_KEYS"
 import { Column, MetaColumnProps } from "types"
 
-import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 import cells, { Cell } from "@datagrid/Cells"
+import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 
 /**
  * // TODO: this flexbility could be a potential error cause.
@@ -142,4 +142,7 @@ export class ColumnUtility {
             column.key === PLACEHOLDER.COL_SELECTOR || column._kind === "index"
         )
     }
+
+    static DefaultColumn(type: string) {}
+    static DefaultGrid() {}
 }

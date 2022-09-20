@@ -103,6 +103,8 @@ export const useColumn = (
         await mutate()
     }
 
+    const updateAttribute = async (column: Column): Promise<void> => {}
+
     return {
         mutate,
         getTableColumn,
