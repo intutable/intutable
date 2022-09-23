@@ -6,7 +6,8 @@ import Typography from "@mui/material/Typography"
 import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
+import { NumericCell } from "../abstract/NumericCell"
 
 const LinearProgressWithLabel = (
     props: LinearProgressProps & { value: number }
@@ -29,7 +30,7 @@ const LinearProgressWithLabel = (
     </Box>
 )
 
-export class Percentage extends Cell {
+export class Percentage extends NumericCell {
     readonly brand = "percentage"
     label = "Percentage"
 
@@ -42,15 +43,16 @@ export class Percentage extends Cell {
     }
 
     editor = (props: EditorProps<Row>) => {
-        const { row, key, content } = this.destruct(props)
+        const { row, key, content } = this.destruct<number | null>(props)
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const value = e.target.value as unknown as number
-            // if (this.isValid(value) === false) return
-            props.onRowChange({
-                ...row,
-                [key]: value,
-            })
+            const value = this.parse(e.target.value) // value gets back as a string and needs to be parsed
+            if (this.isValid(value) || value == null)
+                // if it was an empty string, it became 'null'
+                props.onRowChange({
+                    ...row,
+                    [key]: value ?? "", // and then it needs to be saved as an empty string
+                })
         }
 
         return (
@@ -70,7 +72,7 @@ export class Percentage extends Cell {
     }
 
     formatter = (props: FormatterProps<Row>) => {
-        const { content } = this.destruct<string | null | undefined>(props)
+        const { content } = this.destruct<number | null>(props)
 
         return (
             <Box
@@ -83,7 +85,9 @@ export class Percentage extends Cell {
                     whiteSpace: "nowrap",
                 }}
             >
-                {content && <LinearProgressWithLabel value={Number(content)} />}
+                {this.isValid(content) && (
+                    <LinearProgressWithLabel value={content!} />
+                )}
             </Box>
         )
     }

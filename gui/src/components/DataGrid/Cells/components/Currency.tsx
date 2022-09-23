@@ -2,15 +2,11 @@ import { Box } from "@mui/material"
 import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../Cell"
+import { NumericCell } from "../abstract/NumericCell"
 
-export class Currency extends Cell {
+export class Currency extends NumericCell {
     readonly brand = "currency"
     label = "Currency"
-
-    isValid(value: unknown): boolean {
-        return typeof value === "number"
-    }
 
     export(value: unknown): string {
         return value + "€"

@@ -1,9 +1,9 @@
 import React from "react"
 import { EditorProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../Cell"
+import { NumericCell } from "../abstract/NumericCell"
 
-export class Num extends Cell {
+export class Num extends NumericCell {
     readonly brand = "number"
     label = "Number"
 
@@ -24,9 +24,5 @@ export class Num extends Cell {
                 value={content}
             />
         )
-    }
-
-    isValid(value: unknown): boolean {
-        return typeof value === "number"
     }
 }

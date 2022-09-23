@@ -2,7 +2,7 @@ import { Box, Checkbox } from "@mui/material"
 import React from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
 
 export class Bool extends Cell {
     readonly brand = "boolean"
@@ -17,14 +17,27 @@ export class Bool extends Cell {
         )
     }
 
+    parse(content: "true" | "false" | boolean | 1 | 0): boolean {
+        if (typeof content === "boolean") return content
+        return content === "true" || content === 1
+    }
+
     export(value: unknown): string {
-        const bool = value as 1 | 0 | boolean
+        if (
+            (typeof value === "boolean" ||
+                value === "true" ||
+                value === "false") === false
+        )
+            throw new RangeError(
+                "Boolean Cell Debug Error: value is not a boolean"
+            ) // only for debugging
+
+        const bool = this.parse(value as "true" | "false" | boolean)
         return bool ? "wahr" : "falsch"
     }
 
     formatter = (props: FormatterProps<Row>) => {
-        const { row, key, content: _content } = this.destruct(props)
-        const content = _content === "true"
+        const { row, key, content } = this.destruct<boolean>(props)
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             if (e.target.checked !== content)

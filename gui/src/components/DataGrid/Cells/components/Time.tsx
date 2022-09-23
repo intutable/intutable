@@ -8,23 +8,19 @@ import deLocale from "date-fns/locale/de"
 import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
+import { TempusCell } from "../abstract/TempusCell"
 
-export class Time extends Cell {
+export class Time extends TempusCell {
     readonly brand = "time"
     label = "Time"
 
     editor = () => null
 
-    isValid(value: unknown): boolean {
-        return isValidTime(value)
-    }
-
     export(value: unknown): string | void {
-        const parsed = Number.parseInt(value as string)
-        if (this.isValid(parsed) === false) return
-        const date = new Date(parsed)
-        return date.toLocaleTimeString("de-DE", {
+        const parsed = this.parse(value as string)
+        if (parsed == null) return
+        return parsed.toLocaleTimeString("de-DE", {
             hour: "2-digit",
             minute: "2-digit",
         })
@@ -38,12 +34,12 @@ export class Time extends Cell {
          * null will be displayed as a placeholder "hh:mm"
          */
 
-        const { row, key, content: _content } = this.destruct(props)
-        const parsed = Number.parseInt(_content as string)
-        const isValid = this.isValid(parsed)
-        const [content, setContent] = useState<Date | null>(
-            isValid ? new Date(parsed) : null
-        )
+        const {
+            row,
+            key,
+            content: _content,
+        } = this.destruct<Date | null>(props)
+        const [content, setContent] = useState(_content)
 
         const handleChange = (date: Date | null) => {
             if (date === null) return erase()

@@ -1,4 +1,4 @@
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
 
 export class Text extends Cell {
     readonly brand = "string"

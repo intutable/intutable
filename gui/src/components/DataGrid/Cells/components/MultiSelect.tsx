@@ -17,7 +17,7 @@ import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
 
 const ChipItem: React.FC<{
     label: string
@@ -44,6 +44,12 @@ export class MultiSelect extends Cell {
     readonly brand = "multiselect"
     label = "Mehrfach-Auswahlliste"
 
+    parse(value: string | string[] | null | undefined): string[] {
+        if (typeof value === "undefined" || value == null) return []
+        if (Array.isArray(value)) return value
+        return JSON.parse(value ?? "[]") as string[]
+    }
+
     editor = () => null
 
     export(value: unknown): string | void {
@@ -62,7 +68,7 @@ export class MultiSelect extends Cell {
             row,
             key,
         } = this.destruct<string | null | undefined>(props)
-        const content = JSON.parse(_content ?? "[]") as string[]
+        const content = this.parse(_content)
         const isEmpty = content == null || content.length === 0
 
         const [hovering, setHovering] = useState<boolean>(false)

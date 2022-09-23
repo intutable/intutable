@@ -8,7 +8,7 @@ import deLocale from "date-fns/locale/de"
 import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
 
 export class DateCell extends Cell {
     readonly brand = "date"
@@ -20,11 +20,23 @@ export class DateCell extends Cell {
         return isValidDate(value)
     }
 
-    export(value: unknown): string | void {
+    parse(value: string | null | undefined | Date): Date | null {
+        // case nullish
+        if (typeof value === "undefined" || value === null || value === "")
+            return null
+        // case Date
+        if (value instanceof Date) return value
         const parsed = Number.parseInt(value as string)
-        if (this.isValid(parsed) === false) return
-        const date = new Date(parsed)
-        return date.toLocaleDateString("de-DE")
+        // case invalid
+        if (this.isValid(parsed) === false) return null
+        // case timestamp
+        return new Date(parsed)
+    }
+
+    export(value: unknown): string | void {
+        const parsed = this.parse(value as string)
+        if (parsed == null) return
+        return parsed.toLocaleDateString("de-DE")
     }
 
     formatter = (props: FormatterProps<Row>) => {
@@ -35,12 +47,12 @@ export class DateCell extends Cell {
          * null will be displayed as a placeholder "hh:mm"
          */
 
-        const { row, key, content: _content } = this.destruct(props)
-        const parsed = Number.parseInt(_content as string)
-        const isValid = this.isValid(parsed)
-        const [content, setContent] = useState<Date | null>(
-            isValid ? new Date(parsed) : null
-        )
+        const {
+            row,
+            key,
+            content: _content,
+        } = this.destruct<Date | null>(props)
+        const [content, setContent] = useState<Date | null>(_content)
 
         const handleChange = (date: Date | null) => {
             if (date === null) return erase()
