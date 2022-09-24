@@ -16,14 +16,12 @@ export enum DefaultRole {
     Admin,
 }
 
+/**
+ * Since the details are kept secretively in the database, we'll only give
+ * a description to the user.
+ */
 export type CustomRole = {
-    view: TablePermissions[]
-    edit: TablePermissions[]
-    alter: TablePermissions[]
-}
-
-export type TablePermissions = {
-    table: string
-    columns: string[]
-    rows: number[]
+    id: number
+    name: string
+    description: string
 }
