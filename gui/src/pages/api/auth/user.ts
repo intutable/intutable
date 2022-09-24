@@ -1,7 +1,8 @@
 import { getCurrentUser } from "auth"
 import { withSessionRoute } from "auth/withSessionRoute"
 import { NextApiRequest, NextApiResponse } from "next"
-import { User, DefaultRole } from "types/User"
+import { User } from "types/User"
+import { DefaultRole } from "@backend/permissions/types"
 
 const userRoute = async (req: NextApiRequest, res: NextApiResponse) => {
     try {

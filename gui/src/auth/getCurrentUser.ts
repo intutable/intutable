@@ -1,5 +1,6 @@
 import { coreRequest } from "../api/utils/coreRequest"
-import { User, DefaultRole } from "types/User"
+import { User } from "types/User"
+import { DefaultRole } from "@backend/permissions/types"
 
 /**
  * Check if logged into core by using the session cookie.
