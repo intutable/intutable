@@ -1,3 +1,9 @@
+export type User = {
+    id: number
+    email: string
+    role: Role
+}
+
 /**
  * temp, should eventually be provided by permission plugin
  */
@@ -10,4 +16,14 @@ export enum DefaultRole {
     Admin,
 }
 
-export type CustomRole = never
+export type CustomRole = {
+    view: TablePermissions[]
+    edit: TablePermissions[]
+    alter: TablePermissions[]
+}
+
+export type TablePermissions = {
+    table: string
+    columns: string[]
+    rows: number[]
+}

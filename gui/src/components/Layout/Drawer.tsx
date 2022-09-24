@@ -146,13 +146,14 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     />
                 </>
             )}
-            {user?.isLoggedIn && user?.role === DefaultRole.Admin &&
-                 <DrawerListItem
-                     text="Nutzerverwaltung"
-                     href="/users"
-                     nonActiveIcon={<PeopleIconOutlined />}
-                     activeIcon={<PeopleIcon />} />
-            }
+            {user?.isLoggedIn && user?.role === DefaultRole.Admin && (
+                <DrawerListItem
+                    text="Nutzerverwaltung"
+                    href="/users"
+                    nonActiveIcon={<PeopleIconOutlined />}
+                    activeIcon={<PeopleIcon />}
+                />
+            )}
             <Divider
                 sx={{
                     flexGrow: 100,
