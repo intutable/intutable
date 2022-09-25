@@ -7,7 +7,7 @@ export const ADMIN_ROLE = {
     description: "Vollzugriff auf alle Objektdaten und Schemata.",
 }
 export const GUEST_ROLE = {
-    id: 3,
+    id: 1,
     name: "Gastbenutzer",
     roleKind: RoleKind.Guest,
     description: "Kein Zugriff auf irgendwelche Daten.",

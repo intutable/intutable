@@ -29,17 +29,17 @@ let users: User[] = [
     {
         id: 1,
         email: "final@boss.com",
-        role: roles[0],
+        role: roles[3],
     },
     {
         id: 2,
         email: "not@logged.in",
-        role: roles[2],
+        role: roles[1],
     },
     {
         id: 3,
         email: "hiwi@mathinf.uni-heidelberg.de",
-        role: roles[1],
+        role: roles[2],
     },
 ]
 
