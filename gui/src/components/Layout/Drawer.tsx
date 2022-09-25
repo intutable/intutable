@@ -22,7 +22,7 @@ import {
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { CSSObject, styled, Theme } from "@mui/material/styles"
-import { DefaultRole } from "@backend/permissions/types"
+import { RoleKind } from "@backend/permissions/types"
 import { useUser } from "auth"
 import { useRouter } from "next/router"
 import React from "react"
@@ -146,7 +146,7 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     />
                 </>
             )}
-            {user?.isLoggedIn && user?.role === DefaultRole.Admin && (
+            {user?.isLoggedIn && user?.role.roleKind === RoleKind.Admin && (
                 <DrawerListItem
                     text="Nutzerverwaltung"
                     href="/users"

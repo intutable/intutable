@@ -1,9 +1,12 @@
 import { CoreRequest, CoreResponse } from "@intutable/core"
 import { CHANNEL } from "../requests"
-import { User, Role, DefaultRole } from "./types"
+import { User, Role, RoleKind } from "./types"
+import { ADMIN_ROLE, GUEST_ROLE } from "./constants"
 
-const DEFAULT_ROLES: Role[] = [DefaultRole.Admin, DefaultRole.Guest]
-const CUSTOM_ROLES: Role[] = [
+/** Do not mess with the 1:1 correspondence between id and array index pls */
+const roles: Role[] = [
+    ADMIN_ROLE,
+    GUEST_ROLE,
     {
         id: 2,
         name: "Hiwi-Sekretariat",
@@ -21,23 +24,22 @@ const CUSTOM_ROLES: Role[] = [
             " auf alle anderen Tabellen, kein Zugriff auf Tabellenschemata.",
     },
 ]
-const roles = DEFAULT_ROLES.concat(CUSTOM_ROLES)
 
 let users: User[] = [
     {
         id: 1,
         email: "final@boss.com",
-        role: DefaultRole.Admin,
+        role: roles[0],
     },
     {
         id: 2,
         email: "not@logged.in",
-        role: DefaultRole.Guest,
+        role: roles[2],
     },
     {
         id: 3,
         email: "hiwi@mathinf.uni-heidelberg.de",
-        role: CUSTOM_ROLES[1],
+        role: roles[1],
     },
 ]
 

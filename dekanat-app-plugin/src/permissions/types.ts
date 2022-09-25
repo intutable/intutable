@@ -7,21 +7,16 @@ export type User = {
 /**
  * temp, should eventually be provided by permission plugin
  */
-export type Role = DefaultRole | CustomRole
-
-export enum DefaultRole {
-    /** Basically for a user who is not even logged in. */
-    Guest,
-    /** Full privileges. */
-    Admin,
-}
-
-/**
- * Since the details are kept secretively in the database, we'll only give
- * a description to the user.
- */
-export type CustomRole = {
+export type Role = {
     id: number
+    roleKind?: RoleKind
     name: string
     description: string
+}
+
+export enum RoleKind {
+    /** Full Privileges. */
+    Admin,
+    /** No privileges, not even viewing tables. */
+    Guest,
 }

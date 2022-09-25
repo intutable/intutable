@@ -2,7 +2,7 @@ import { getCurrentUser } from "auth"
 import { withSessionRoute } from "auth/withSessionRoute"
 import { NextApiRequest, NextApiResponse } from "next"
 import { User } from "types/User"
-import { DefaultRole } from "@backend/permissions/types"
+import { GUEST_ROLE } from "@backend/permissions"
 
 const userRoute = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
@@ -16,7 +16,7 @@ const userRoute = async (req: NextApiRequest, res: NextApiResponse) => {
                 username: "",
                 authCookie: "",
                 id: -1,
-                role: DefaultRole.Guest,
+                role: GUEST_ROLE,
             } as User)
 
         res.json({

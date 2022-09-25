@@ -1,7 +1,7 @@
 import { withSessionRoute } from "auth/withSessionRoute"
 import { NextApiRequest, NextApiResponse } from "next"
 import type { User } from "types/User"
-import { DefaultRole } from "@backend/permissions/types"
+import { GUEST_ROLE } from "@backend/permissions"
 
 const logoutRoute = async (req: NextApiRequest, res: NextApiResponse<User>) => {
     const response = await fetch(
@@ -21,7 +21,7 @@ const logoutRoute = async (req: NextApiRequest, res: NextApiResponse<User>) => {
         username: "",
         id: -1,
         authCookie: "",
-        role: DefaultRole.Guest,
+        role: GUEST_ROLE,
     })
 }
 
