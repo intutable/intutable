@@ -63,7 +63,7 @@ export async function getRoles_() {
     return roles
 }
 
-/** 
+/**
  * Create a new user (lasts until the app is shut down)
  */
 export function createUser(user: Omit<User, "id">) {
@@ -107,7 +107,7 @@ export async function changeRole_({
     }
 }
 
-/** 
+/**
  * Delete a user.
  */
 export function deleteUser(userID: number) {
