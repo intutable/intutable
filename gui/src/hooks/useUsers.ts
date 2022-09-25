@@ -42,6 +42,7 @@ export const useUsers = () => {
             body: { roleId },
             method: "PATCH"
         })
+        await mutate()
     }
 
     return { users, createUser, deleteUser, changeRole, error, mutate }

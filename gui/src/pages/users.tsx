@@ -1,20 +1,56 @@
+import { useState } from "react"
 import { InferGetServerSidePropsType, NextPage } from "next"
-import { Typography } from "@mui/material"
-import { User } from "@backend/permissions/types"
+import { SWRConfig } from "swr"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import { withSSRCatch } from "utils/withSSRCatch"
+import { IconButton } from "@mui/material"
+import AddIcon from "@mui/icons-material/Add"
+import { User } from "@backend/permissions/types"
+import { useUsers, useUsersConfig } from "hooks/useUsers"
+import { UserListItem, AddUserModal } from "components/Permissions"
 
-type PageProps = { users: User[] }
+type PageProps = { fallback: Record<string, User[]> }
 
 const Users: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ users }) => {
+> = ({ fallback }) => (
+    <SWRConfig value={{ fallback }}>
+        <UserPage />
+    </SWRConfig>
+)
+
+const UserPage: React.FC = () => {
+    const { users, createUser, deleteUser, changeRole } = useUsers()
+
+    const [anchorEl, setAnchorEl] = useState<Element | null>(null)
+
+    if (!users) return null
+
+    const handleOpenAddUserModal = (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    ) => {
+        setAnchorEl(event.currentTarget)
+    }
+
     return (
         <>
-            {(users as unknown as User[]).map(u => (
-                <Typography key={u.id}>{u.email}</Typography>
+            {users.map(u => (
+                <UserListItem
+                    key={u.id}
+                    user={u}
+                    onDelete={() => deleteUser(u.id)}
+                    onChangeRole={roleId => changeRole(u.id, roleId)}
+                />
             ))}
+            <IconButton onClick={handleOpenAddUserModal}>
+                <AddIcon />
+            </IconButton>
+            <AddUserModal
+                open={anchorEl !== null}
+                onClose={() => setAnchorEl(null)}
+                onHandleCreateUser={createUser}
+            />
         </>
     )
 }
@@ -32,7 +68,11 @@ export const getServerSideProps = withSSRCatch(
             method: "GET",
             headers: context.req.headers as HeadersInit,
         })
-        return { props: { users } }
+        return {
+            props: {
+                fallback: { [useUsersConfig.cacheKey]: users },
+            },
+        }
     })
 )
 export default Users

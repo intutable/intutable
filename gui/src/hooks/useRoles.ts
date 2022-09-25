@@ -15,19 +15,3 @@ export const useRoles = () => {
 
     return { roles, error, mutate }
 }
-
-/**
- * Config for `useRoles` hook.
- */
-export const useRolesConfig = {
-    /**
-     * Returns the swr cache key for `useRolesConfig`.
-     * Can be used to ssr data.
-     *
-     * Note: the key does **not** neet to be serialized.
-     */
-    cacheKey: unstable_serialize({
-        url: `/api/permissions/roles`,
-        method: "GET"
-    }),
-}
