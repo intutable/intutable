@@ -9,6 +9,8 @@ import WorkspacesIcon from "@mui/icons-material/Workspaces"
 import WorkspacesIconOutlined from "@mui/icons-material/WorkspacesOutlined"
 import DashboardIcon from "@mui/icons-material/Dashboard"
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined"
+import PeopleIcon from "@mui/icons-material/People"
+import PeopleIconOutlined from "@mui/icons-material/PeopleOutlined"
 import {
     Divider,
     Drawer as MuiDrawer,
@@ -20,6 +22,7 @@ import {
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { CSSObject, styled, Theme } from "@mui/material/styles"
+import { RoleKind } from "@backend/permissions/types"
 import { useUser } from "auth"
 import { useRouter } from "next/router"
 import React from "react"
@@ -142,6 +145,14 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                         activeIcon={<WorkspacesIcon />}
                     />
                 </>
+            )}
+            {user?.isLoggedIn && user?.role.roleKind === RoleKind.Admin && (
+                <DrawerListItem
+                    text="Nutzerverwaltung"
+                    href="/users"
+                    nonActiveIcon={<PeopleIconOutlined />}
+                    activeIcon={<PeopleIcon />}
+                />
             )}
             <Divider
                 sx={{
