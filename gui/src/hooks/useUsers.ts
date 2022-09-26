@@ -15,10 +15,13 @@ export const useUsers = () => {
         mutate,
     } = useSWR<User[]>({ url: `/api/permissions/users`, method: "GET" })
 
-    const createUser = async (user: Omit<User, "id">): Promise<void> => {
+    const createUser = async (
+        user: Omit<User, "id">,
+        password: string,
+    ): Promise<void> => {
         await fetcher({
             url: `/api/permissions/user`,
-            body: { user },
+            body: { user, password },
             method: "POST",
         })
         await mutate()

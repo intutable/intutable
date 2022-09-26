@@ -9,17 +9,21 @@ import { User, createUser } from "@backend/permissions"
  * @tutorial
  * ```
  * URL: `/api/permissions/user`
- * Body: { user: Omit<User, "id"> }
+ * Body: {
+ *    user: Omit<User, "id">
+ *    password: string
+ * }
  * ```
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
-    const { user } = req.body as {
+    const { user, password } = req.body as {
         user: Omit<User, "id">
+        password: string
     }
     const currentUser = req.session.user!
 
     const response = await coreRequest<{ message: string }>(
-        createUser(user),
+        createUser(user, password),
         currentUser.authCookie
     )
 

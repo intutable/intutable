@@ -68,10 +68,13 @@ export async function getRoles_() {
 /**
  * Create a new user (lasts until the app is shut down)
  */
-export function createUser(user: Omit<User, "id">) {
-    return { channel: CHANNEL, method: createUser.name, user }
+export function createUser(user: Omit<User, "id">, password: string) {
+    return { channel: CHANNEL, method: createUser.name, user, password }
 }
-export function createUser_({ user }: CoreRequest): Promise<CoreResponse> {
+export function createUser_({
+    user,
+    password,
+}: CoreRequest): Promise<CoreResponse> {
     const newID =
         users
             .map(u => u.id)
