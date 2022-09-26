@@ -10,6 +10,7 @@ import {
     Select,
     SelectChangeEvent,
     MenuItem,
+    InputLabel,
 } from "@mui/material"
 import { User } from "@backend/permissions"
 import { useRoles } from "hooks/useRoles"
@@ -59,8 +60,10 @@ const EditUserModal: React.FC<EditUserModalProps> = props => {
                         variant="outlined"
                     />
                 </FormControl>
-                <FormControl fullWidth>
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                    <InputLabel id="edituser-select-role">Rolle</InputLabel>
                     <Select
+                        labelId="edituser-select-role"
                         label="Rolle"
                         value={role ?? ""}
                         onChange={handleChangeRole}

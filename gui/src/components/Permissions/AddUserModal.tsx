@@ -10,6 +10,7 @@ import {
     Select,
     SelectChangeEvent,
     MenuItem,
+    InputLabel,
 } from "@mui/material"
 import { isValidEMailAddress } from "utils/isValidEMailAddress"
 import { User } from "@backend/permissions"
@@ -67,7 +68,7 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
                         onChange={e => setEmail(e.target.value)}
                     />
                 </FormControl>
-                <FormControl fullWidth>
+                <FormControl fullWidth sx={{ mt: 2 }}>
                     <TextField
                         label="Passwort"
                         type="password"
@@ -76,8 +77,10 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
                         onChange={e => setPassword(e.target.value)}
                     />
                 </FormControl>
-                <FormControl fullWidth>
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                    <InputLabel id="adduser-select-role">Rolle</InputLabel>
                     <Select
+                        labelId="adduser-select-role"
                         label="Rolle"
                         value={role ?? ""}
                         onChange={handleChangeRole}
