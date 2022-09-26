@@ -17,7 +17,7 @@ const roles: Role[] = [
     },
     {
         id: 3,
-        name: "Geschäftsführung des Dekanats.",
+        name: "Geschäftsführung des Dekanats",
         description:
             "Lesezugriff auf Einrichtungen," +
             " Lese- und Zeilenschreibzugriff auf Personen, Lesezugriff" +

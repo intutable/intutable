@@ -8,9 +8,7 @@ import { IconButton } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { User } from "@backend/permissions/types"
 import { useUsers, useUsersConfig } from "hooks/useUsers"
-import { UserListItem, AddUserModal } from "components/Permissions"
-
-type PageProps = { fallback: Record<string, User[]> }
+import { UserList, AddUserModal } from "components/Permissions"
 
 const Users: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -35,14 +33,15 @@ const UserPage: React.FC = () => {
 
     return (
         <>
-            {users.map(u => (
-                <UserListItem
-                    key={u.id}
-                    user={u}
-                    onDelete={() => deleteUser(u.id)}
-                    onChangeRole={roleId => changeRole(u.id, roleId)}
-                />
-            ))}
+            <UserList
+                users={users}
+                onDeleteUser={deleteUser}
+                onChangeUserRole={changeRole}
+                sx={{
+                    maxWidth: 0.8,
+                    maxHeight: 0.8,
+                }}
+            />
             <IconButton onClick={handleOpenAddUserModal}>
                 <AddIcon />
             </IconButton>
@@ -54,6 +53,8 @@ const UserPage: React.FC = () => {
         </>
     )
 }
+
+type PageProps = { fallback: Record<string, User[]> }
 
 export const getServerSideProps = withSSRCatch(
     withSessionSsr<PageProps>(async context => {
