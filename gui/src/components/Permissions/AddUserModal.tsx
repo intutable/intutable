@@ -7,9 +7,13 @@ import {
     Button,
     DialogActions,
     TextField,
+    Select,
+    SelectChangeEvent,
+    MenuItem,
 } from "@mui/material"
+import { isValidEMailAddress } from "utils/isValidEMailAddress"
 import { User } from "@backend/permissions"
-import UserModalFields from "./UserModalFields"
+import { useRoles } from "hooks/useRoles"
 
 type AddUserModalProps = {
     open: boolean
@@ -21,28 +25,49 @@ type AddUserModalProps = {
 }
 
 const AddUserModal: React.FC<AddUserModalProps> = props => {
-    const [user, setUser] = useState<Omit<User, "id"> | null>(null)
+    const { roles } = useRoles()
+    const [email, setEmail] = useState<string>("")
     const [password, setPassword] = useState<string>("")
+    const [role, setRole] = useState<number | null>(roles ? roles[0].id : null)
     const [valid, setValid] = useState<boolean>(false)
 
-    const isPasswordValid = (password: string) => password.length >= 8
-
     useEffect(() => {
-        if (user !== null && isPasswordValid(password)) setValid(true)
+        if (isValidEMailAddress(email) && password.length >= 8 && role != null)
+            setValid(true)
         else setValid(false)
-    }, [user, password])
+    }, [email, password, role])
 
-    const handleSaveUser = async () => {
-        if (user === null || !isPasswordValid(password)) return
-        await props.onHandleCreateUser(user, password)
-        props.onClose()
+    if (!roles || roles.length === 0) return null
+
+    const handleChangeRole = (e: SelectChangeEvent<string | number>) => {
+        console.log(e.target.value)
+        if (typeof e.target.value === "string") return
+        else setRole(e.target.value)
     }
 
+    const handleSaveUser = async () => {
+        await props.onHandleCreateUser(
+            {
+                email,
+                role: roles[role!],
+            },
+            password
+        )
+        props.onClose()
+    }
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>Neuen Benutzer erstellen</DialogTitle>
             <DialogContent>
-                <UserModalFields user={user} onUserChange={setUser} />
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                    {/* Name */}
+                    <TextField
+                        label="E-Mail"
+                        value={email}
+                        variant="outlined"
+                        onChange={e => setEmail(e.target.value)}
+                    />
+                </FormControl>
                 <FormControl fullWidth>
                     <TextField
                         label="Passwort"
@@ -51,6 +76,19 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
                         variant="outlined"
                         onChange={e => setPassword(e.target.value)}
                     />
+                </FormControl>
+                <FormControl fullWidth>
+                    <Select
+                        label="Rolle"
+                        value={role ?? ""}
+                        onChange={handleChangeRole}
+                    >
+                        {roles.map(r => (
+                            <MenuItem key={r.id} value={r.id}>
+                                {r.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
                 </FormControl>
             </DialogContent>
             <DialogActions>
@@ -62,4 +100,5 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
         </Dialog>
     )
 }
+
 export default AddUserModal
