@@ -3,9 +3,6 @@ import {
     SxProps,
     Theme,
     IconButton,
-    Select,
-    SelectChangeEvent,
-    MenuItem,
     TableContainer,
     Table,
     TableHead,
@@ -14,24 +11,29 @@ import {
     TableCell,
 } from "@mui/material"
 import DeleteIcon from "@mui/icons-material/Delete"
+import EditIcon from "@mui/icons-material/Edit"
 import { User } from "@backend/permissions"
 import { useRoles } from "hooks/useRoles"
 
 const USER_TABLE_COLUMNS = [
     { id: "email", label: "E-Mail", minWidth: "20em" },
     { id: "role", label: "Rolle", minWidth: "12em" },
+    { id: "edit", label: "", minWidth: null },
     { id: "delete", label: "", minWidth: null },
 ]
 
 export type UserListProps = {
     users: User[]
     onDeleteUser: (id: number) => Promise<void>
-    onChangeUserRole: (userId: number, roleId: number) => Promise<void>
+    onOpenEditor: (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+        user: User
+    ) => Promise<void>
     sx?: SxProps<Theme>
 }
 
 const UserList: React.FC<UserListProps> = props => {
-    const { users, onDeleteUser, onChangeUserRole, sx } = props
+    const { users, onDeleteUser, onOpenEditor, sx } = props
     return (
         <TableContainer sx={sx}>
             <Table stickyHeader>
@@ -55,9 +57,7 @@ const UserList: React.FC<UserListProps> = props => {
                             key={u.id}
                             user={u}
                             onDelete={() => onDeleteUser(u.id)}
-                            onChangeRole={roleId =>
-                                onChangeUserRole(u.id, roleId)
-                            }
+                            onOpenEditor={e => onOpenEditor(e, u)}
                         />
                     ))}
                 </TableBody>
@@ -69,30 +69,25 @@ const UserList: React.FC<UserListProps> = props => {
 type UserListItemProps = {
     user: User
     onDelete: () => Promise<void>
-    onChangeRole: (roleId: number) => Promise<void>
+    onOpenEditor: (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    ) => Promise<void>
 }
 
 const UserListItem: React.FC<UserListItemProps> = props => {
-    const { user, onDelete, onChangeRole } = props
+    const { user, onDelete, onOpenEditor } = props
     const { roles } = useRoles()
 
     if (!user || !roles) return null
 
-    const handleChangeRole = (e: SelectChangeEvent<number>) => {
-        if (typeof e.target.value === "string") return
-        onChangeRole(e.target.value)
-    }
     return (
         <TableRow>
             <TableCell key="email">{user.email}</TableCell>
-            <TableCell key="role">
-                <Select value={user.role.id ?? ""} onChange={handleChangeRole}>
-                    {roles.map(r => (
-                        <MenuItem key={r.id} value={r.id}>
-                            {r.name}
-                        </MenuItem>
-                    ))}
-                </Select>
+            <TableCell key="role">{user.role.name}</TableCell>
+            <TableCell key="edit">
+                <IconButton onClick={onOpenEditor}>
+                    <EditIcon />
+                </IconButton>
             </TableCell>
             <TableCell key="delete">
                 <IconButton onClick={onDelete}>
