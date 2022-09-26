@@ -1,4 +1,5 @@
 import cells from "@datagrid/Cells"
+import { useAPI } from "context"
 import {
     CopyEvent,
     DataGridProps,
@@ -53,13 +54,21 @@ export class ClipboardUtil implements ClipboardEvents {
     }
 
     /** Paste Event – fires when a user pastes content into cell, e.g. cmd+v on a cell */
-    public handleOnPaste(event: PasteEvent<Row>) {
+    public handleOnPaste = (event: PasteEvent<Row>) => {
         const { targetRow, targetColumnKey, sourceRow, sourceColumnKey } = event
+        const sourceRawContent = sourceRow[sourceColumnKey]
         const targetColumn = this.getColumn(targetColumnKey)
+        const sourceColumn = this.getColumn(sourceColumnKey)
+        const sourceUtil = this.util(sourceColumn)
         const targetUtil = this.util(targetColumn)
-        const sourceRawContent = targetUtil.parse(sourceRow[sourceColumnKey])
 
-        if (targetUtil.isValid(sourceRawContent) === false) return targetRow // passes source content the target validator?
+        // passes source content the target validator?
+        if (targetUtil.isValid(sourceRawContent) === false) return targetRow
+
+        console.table({
+            source: {},
+            target: {},
+        })
 
         return {
             ...targetRow,
@@ -67,7 +76,7 @@ export class ClipboardUtil implements ClipboardEvents {
         }
     }
 
-    // TODO: handle fill is currently not working
+    // TODO: handle fill is currently not working / implemented
     /** Fill Event – fires when a user drags a cell across multiple other cells of that column to override them  */
     public handleOnFill(event: FillEvent<Row>) {
         const { sourceRow, columnKey, targetRow } = event

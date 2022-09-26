@@ -21,6 +21,9 @@ export class Bool extends Cell {
         if (typeof content === "boolean") return content
         return content === "true" || content === 1
     }
+    unparse(value: boolean): "true" | "false" | 1 | 0 {
+        return value ? "true" : "false"
+    }
 
     export(value: unknown): string {
         if (
@@ -35,6 +38,15 @@ export class Bool extends Cell {
         const bool = this.parse(value as "true" | "false" | boolean)
         return bool ? "wahr" : "falsch"
     }
+    unexport(value: "wahr" | "falsch"): boolean {
+        console.log("unexporting", value)
+        if (value !== "wahr" && value !== "falsch")
+            throw new RangeError(
+                "Boolean Cell Debug Error: value is not a boolean"
+            )
+
+        return value === "wahr"
+    }
 
     formatter = (props: FormatterProps<Row>) => {
         const { row, key, content } = this.destruct<boolean>(props)
@@ -43,7 +55,7 @@ export class Bool extends Cell {
             if (e.target.checked !== content)
                 props.onRowChange({
                     ...row,
-                    [key]: Boolean(e.target.checked).toString(),
+                    [key]: this.unparse(Boolean(e.target.checked)),
                 })
         }
 

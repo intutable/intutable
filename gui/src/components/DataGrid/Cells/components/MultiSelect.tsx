@@ -49,6 +49,9 @@ export class MultiSelect extends Cell {
         if (Array.isArray(value)) return value
         return JSON.parse(value ?? "[]") as string[]
     }
+    unparse(value: string[]): string {
+        return JSON.stringify(value)
+    }
 
     editor = () => null
 
@@ -59,6 +62,9 @@ export class MultiSelect extends Cell {
         if (Array.isArray(arr)) return arr.join(";")
 
         return
+    }
+    unexport(value: string): string[] {
+        return value.split(";")
     }
 
     formatter = (props: FormatterProps<Row>) => {

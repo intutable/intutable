@@ -16,11 +16,6 @@ export class EMail extends Cell {
         return MailAddressRegex.test(value.toLowerCase())
     }
 
-    export(value: unknown): string | void {
-        if (this.isValid(value)) return value as string
-        return
-    }
-
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)
 

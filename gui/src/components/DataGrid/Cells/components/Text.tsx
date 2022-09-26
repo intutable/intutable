@@ -5,6 +5,6 @@ export class Text extends Cell {
     label = "Text"
 
     isValid(value: unknown) {
-        return typeof value === "string"
+        return typeof value === "string" || typeof value === "number"
     }
 }

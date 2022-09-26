@@ -47,4 +47,8 @@ export abstract class NumericCell extends Cell {
 
         return null
     }
+
+    unexport(value: number | string): number | null {
+        return this.parse(value)
+    }
 }

@@ -20,11 +20,6 @@ export class Hyperlink extends Cell {
         }
     }
 
-    export(value: unknown): string | void {
-        if (this.isValid(value)) return value as string
-        return
-    }
-
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)
 

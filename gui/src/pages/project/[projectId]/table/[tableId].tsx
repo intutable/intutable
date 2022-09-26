@@ -39,7 +39,7 @@ import {
     SelectedRowsContextProvider,
     useSelectedRows,
 } from "context/SelectedRowsContext"
-import { ClipboardUtil } from "utils/Clipboard"
+import { ClipboardUtil } from "utils/ClipboardUtil"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()

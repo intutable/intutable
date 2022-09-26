@@ -61,4 +61,22 @@ export abstract class TempusCell extends Cell {
 
         return null
     }
+
+    unparse(value: string | Date | null | undefined): string {
+        // ensure value is a Date
+        const parsed = this.parse(value) // we can do this bc `parse` is idempotent
+
+        if (parsed === null) return ""
+
+        return parsed.getTime().toString() // save as string
+    }
+
+    unexport(value: string): Date {
+        const parsed = this.parse(value)
+
+        if (parsed === null)
+            throw new RangeError("TempusCell.unexport: invalid value")
+
+        return parsed
+    }
 }

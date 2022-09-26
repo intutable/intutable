@@ -2,7 +2,7 @@ import { Box } from "@mui/material"
 import TextField from "@mui/material/TextField"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
-import { TimePicker } from "@mui/x-date-pickers/TimePicker"
+import { TimePicker } from "@mui/x-date-pickers"
 import { isValid as isValidTime } from "date-fns"
 import deLocale from "date-fns/locale/de"
 import { useState } from "react"
@@ -27,13 +27,6 @@ export class Time extends TempusCell {
     }
 
     formatter = (props: FormatterProps<Row>) => {
-        /**
-         * MUIs Time Picker component requires a `value`.
-         * This can either be a Date object or null.
-         *
-         * null will be displayed as a placeholder "hh:mm"
-         */
-
         const {
             row,
             key,
@@ -47,7 +40,7 @@ export class Time extends TempusCell {
 
             props.onRowChange({
                 ...row,
-                [key]: date.getTime().toString(),
+                [key]: this.unparse(date),
             })
         }
 

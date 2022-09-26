@@ -8,6 +8,17 @@ import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 
+class CellError extends Error {
+    constructor(message: string) {
+        super(message)
+
+        this.name = CellError.name
+        // this.cause =
+
+        Error.captureStackTrace(this)
+    }
+}
+
 const StyledInputElement = styled("input")`
     width: 100%;
     font-size: 1rem;
@@ -31,6 +42,13 @@ export interface Validatable {
 export interface Exportable {
     /** exports parsed values, e.g. percentage '5' exports to '5%' */
     export: <T = unknown>(value: T) => unknown
+    /**
+     * Tries to revert the exported value to the original value.
+     *
+     * @throws Should throw an error if the value is invalid.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unexport: (value: string) => any
 }
 
 // TODO: make this a static method, this increases performance
@@ -40,10 +58,19 @@ export interface Parsable {
      * Parses values for the class that come directly from the db
      * e.g. dates are saved as timestamps and get converted to Date objects.
      *
-     * Note: Ensure that if a parsed value gets parsed again, this should work.
+     * @throws Should throw an error if the value is invalid.
+     *
+     * Note: Ensure that if a parsed value gets parsed again, this should work (idempotent).
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     parse: (value: any) => any
+    /**
+     * Turns parsed values back into a format for the db.
+     *
+     * @throws Should throw an error if the value is invalid.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unparse: (value: any) => any
 }
 
 // export interface Convertable {
@@ -130,6 +157,9 @@ export default abstract class Cell
     public parse(value: unknown): unknown {
         return value // default is to just return the value and don't parse it
     }
+    public unparse(value: unknown): unknown {
+        return value // default is to just return the value and don't unparse it
+    }
 
     public export(value: unknown): string | void {
         // default export method
@@ -139,4 +169,10 @@ export default abstract class Cell
 
         return value as string
     }
+    // used in clipboard
+    public unexport(value: string): unknown {
+        return value
+    }
+
+    static Error = CellError
 }
