@@ -8,7 +8,7 @@ import { IconButton } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { User } from "@backend/permissions/types"
 import { useUsers, useUsersConfig } from "hooks/useUsers"
-import { UserList, AddUserModal } from "components/Permissions"
+import { UserList, AddUserModal, EditUserModal } from "components/Permissions"
 
 const Users: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
@@ -21,14 +21,26 @@ const Users: NextPage<
 const UserPage: React.FC = () => {
     const { users, createUser, deleteUser, changeRole } = useUsers()
 
-    const [anchorEl, setAnchorEl] = useState<Element | null>(null)
+    const [addUserAnchorEl, setAddUserAnchorEl] = useState<Element | null>(null)
+    const [editUserAnchorEl, setEditUserAnchorEl] = useState<Element | null>(
+        null
+    )
+    const [userBeingEdited, setUserBeingEdited] = useState<User | null>(null)
 
     if (!users) return null
 
     const handleOpenAddUserModal = (
         event: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ) => {
-        setAnchorEl(event.currentTarget)
+        setAddUserAnchorEl(event.currentTarget)
+    }
+
+    const handleOpenEditUserModal = async (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+        user: User
+    ) => {
+        setEditUserAnchorEl(event.currentTarget)
+        setUserBeingEdited(user)
     }
 
     return (
@@ -36,7 +48,7 @@ const UserPage: React.FC = () => {
             <UserList
                 users={users}
                 onDeleteUser={deleteUser}
-                onChangeUserRole={changeRole}
+                onOpenEditor={handleOpenEditUserModal}
                 sx={{
                     maxWidth: 0.8,
                     maxHeight: 0.8,
@@ -46,10 +58,18 @@ const UserPage: React.FC = () => {
                 <AddIcon />
             </IconButton>
             <AddUserModal
-                open={anchorEl !== null}
-                onClose={() => setAnchorEl(null)}
+                open={addUserAnchorEl !== null}
+                onClose={() => setAddUserAnchorEl(null)}
                 onHandleCreateUser={createUser}
             />
+            {editUserAnchorEl && userBeingEdited && (
+                <EditUserModal
+                    open={editUserAnchorEl != null}
+                    onClose={() => setEditUserAnchorEl(null)}
+                    user={userBeingEdited}
+                    onHandleChangeRole={changeRole}
+                />
+            )}
         </>
     )
 }

@@ -11,31 +11,27 @@ import {
     SelectChangeEvent,
     MenuItem,
 } from "@mui/material"
-import { isValidEMailAddress } from "utils/isValidEMailAddress"
 import { User } from "@backend/permissions"
 import { useRoles } from "hooks/useRoles"
 
-type AddUserModalProps = {
+type EditUserModalProps = {
     open: boolean
     onClose: () => void
-    onHandleCreateUser: (
-        user: Omit<User, "id">,
-        password: string
-    ) => Promise<void>
+    user: User
+    onHandleChangeRole: (userId: number, roleId: number) => Promise<void>
 }
 
-const AddUserModal: React.FC<AddUserModalProps> = props => {
+const EditUserModal: React.FC<EditUserModalProps> = props => {
+    const { open, onClose, user, onHandleChangeRole } = props
     const { roles } = useRoles()
-    const [email, setEmail] = useState<string>("")
-    const [password, setPassword] = useState<string>("")
-    const [role, setRole] = useState<number | null>(roles ? roles[0].id : null)
+
+    const [role, setRole] = useState<number | null>(user.role.id)
     const [valid, setValid] = useState<boolean>(false)
 
     useEffect(() => {
-        if (isValidEMailAddress(email) && password.length >= 8 && role != null)
-            setValid(true)
+        if (role !== null) setValid(true)
         else setValid(false)
-    }, [email, password, role])
+    }, [role])
 
     if (!roles || roles.length === 0) return null
 
@@ -45,35 +41,22 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
     }
 
     const handleSaveUser = async () => {
-        await props.onHandleCreateUser(
-            {
-                email,
-                role: roles[role!],
-            },
-            password
-        )
+        if (role !== null && role !== user.role.id)
+            await onHandleChangeRole(user.id, role)
         props.onClose()
     }
+
     return (
-        <Dialog open={props.open} onClose={() => props.onClose()}>
-            <DialogTitle>Neuen Benutzer erstellen</DialogTitle>
+        <Dialog open={open} onClose={() => onClose()}>
+            <DialogTitle>Benutzer anpassen</DialogTitle>
             <DialogContent>
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     {/* Name */}
                     <TextField
+                        disabled
                         label="E-Mail"
-                        value={email}
+                        value={user.email}
                         variant="outlined"
-                        onChange={e => setEmail(e.target.value)}
-                    />
-                </FormControl>
-                <FormControl fullWidth>
-                    <TextField
-                        label="Passwort"
-                        type="password"
-                        value={password}
-                        variant="outlined"
-                        onChange={e => setPassword(e.target.value)}
                     />
                 </FormControl>
                 <FormControl fullWidth>
@@ -91,7 +74,7 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
                 </FormControl>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => props.onClose()}>Abbrechen</Button>
+                <Button onClick={() => onClose()}>Abbrechen</Button>
                 <Button onClick={handleSaveUser} disabled={valid == false}>
                     Speichern
                 </Button>
@@ -100,4 +83,4 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
     )
 }
 
-export default AddUserModal
+export default EditUserModal
