@@ -2,7 +2,7 @@ import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import { User, getUsers } from "@backend/permissions"
+import { User, RoleKind, getUsers } from "@backend/permissions"
 
 /**
  * List all users (only available to admin)
@@ -13,6 +13,10 @@ import { User, getUsers } from "@backend/permissions"
  */
 const GET = withCatchingAPIRoute(async (req, res) => {
     const currentUser = req.session.user!
+
+    if (currentUser.role.roleKind !== RoleKind.Admin)
+        throw Error("accessDenied")
+
     const users = await coreRequest<User[]>(getUsers(), currentUser.authCookie)
 
     res.status(200).json(users)

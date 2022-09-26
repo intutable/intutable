@@ -2,7 +2,7 @@ import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import { User, createUser } from "@backend/permissions"
+import { User, RoleKind, createUser } from "@backend/permissions"
 
 /**
  * Create a new user.
@@ -21,6 +21,9 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         password: string
     }
     const currentUser = req.session.user!
+
+    if (currentUser.role.roleKind !== RoleKind.Admin)
+        throw Error("accessDenied")
 
     const response = await coreRequest<{ message: string }>(
         createUser(user, password),

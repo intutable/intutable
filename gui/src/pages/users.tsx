@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useRouter } from "next/router"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import { SWRConfig } from "swr"
 import { fetcher } from "api"
@@ -20,6 +21,7 @@ const Users: NextPage<
 
 const UserPage: React.FC = () => {
     const { users, createUser, deleteUser, changeRole } = useUsersAsAdmin()
+    const router = useRouter()
 
     const [addUserAnchorEl, setAddUserAnchorEl] = useState<Element | null>(null)
     const [editUserAnchorEl, setEditUserAnchorEl] = useState<Element | null>(
@@ -27,7 +29,10 @@ const UserPage: React.FC = () => {
     )
     const [userBeingEdited, setUserBeingEdited] = useState<User | null>(null)
 
-    if (!users) return null
+    if (!users) {
+        router.push("/")
+        return null
+    }
 
     const handleOpenAddUserModal = (
         event: React.MouseEvent<HTMLButtonElement, MouseEvent>
