@@ -5,10 +5,10 @@ import { User } from "@backend/permissions"
 /**
  * ### useUsers hook.
  *
- * Returns a list of users and a list of roles, and offers some CRUD ops
- * for users.
+ * Returns a list of users (as objects for editing, only available to the
+ * admin)
  */
-export const useUsers = () => {
+export const useUsersAsAdmin = () => {
     const {
         data: users,
         error,
@@ -54,7 +54,7 @@ export const useUsers = () => {
 /**
  * Config for `useUsers` hook.
  */
-export const useUsersConfig = {
+export const useUsersAsAdminConfig = {
     /**
      * Returns the swr cache key for `useUsersConfig`.
      * Can be used to ssr data.

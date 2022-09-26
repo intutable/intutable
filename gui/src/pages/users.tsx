@@ -7,7 +7,7 @@ import { withSSRCatch } from "utils/withSSRCatch"
 import { IconButton } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { User } from "@backend/permissions/types"
-import { useUsers, useUsersConfig } from "hooks/useUsers"
+import { useUsersAsAdmin, useUsersAsAdminConfig } from "hooks/useUsersAsAdmin"
 import { UserList, AddUserModal, EditUserModal } from "components/Permissions"
 
 const Users: NextPage<
@@ -19,7 +19,7 @@ const Users: NextPage<
 )
 
 const UserPage: React.FC = () => {
-    const { users, createUser, deleteUser, changeRole } = useUsers()
+    const { users, createUser, deleteUser, changeRole } = useUsersAsAdmin()
 
     const [addUserAnchorEl, setAddUserAnchorEl] = useState<Element | null>(null)
     const [editUserAnchorEl, setEditUserAnchorEl] = useState<Element | null>(
@@ -91,7 +91,7 @@ export const getServerSideProps = withSSRCatch(
         })
         return {
             props: {
-                fallback: { [useUsersConfig.cacheKey]: users },
+                fallback: { [useUsersAsAdminConfig.cacheKey]: users },
             },
         }
     })
