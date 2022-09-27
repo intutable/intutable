@@ -35,6 +35,12 @@ export class Percentage extends NumericCell {
     label = "Percentage"
 
     isValid(value: unknown): boolean {
+        if (typeof value === "string" && NumericCell.isNumeric(value)) {
+            const number = NumericCell.isInteger(value)
+                ? Number.parseInt(value)
+                : Number.parseFloat(value)
+            return number >= 0 && number <= 100
+        }
         return typeof value === "number" && value >= 0 && value <= 100
     }
 
