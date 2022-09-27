@@ -11,10 +11,12 @@ export class Bool extends Cell {
     editor = () => null
 
     isValid(value: unknown): boolean {
-        return (
-            (typeof value === "number" && (value === 1 || value === 0)) ||
-            typeof value === "boolean"
-        )
+        if (typeof value === "string")
+            return value === "true" || value === "false"
+
+        if (typeof value === "number") return value === 1 || value === 0
+
+        return typeof value === "boolean"
     }
 
     parse(content: "true" | "false" | boolean | 1 | 0): boolean {
@@ -39,7 +41,6 @@ export class Bool extends Cell {
         return bool ? "wahr" : "falsch"
     }
     unexport(value: "wahr" | "falsch"): boolean {
-        console.log("unexporting", value)
         if (value !== "wahr" && value !== "falsch")
             throw new RangeError(
                 "Boolean Cell Debug Error: value is not a boolean"
