@@ -44,12 +44,22 @@ export class MultiSelect extends Cell {
     readonly brand = "multiselect"
     label = "Mehrfach-Auswahlliste"
 
-    parse(value: string | string[] | null | undefined): string[] {
-        if (typeof value === "undefined" || value == null) return []
+    parse(value: unknown): string[] {
+        if (value == null) return []
         if (Array.isArray(value)) return value
-        return JSON.parse(value ?? "[]") as string[]
+
+        if (typeof value === "string") {
+            try {
+                const jsonparsed = JSON.parse(value ?? "[]")
+                if (Array.isArray(jsonparsed)) return jsonparsed
+            } catch (e) {
+                return [value]
+            }
+        }
+
+        return []
     }
-    unparse(value: string[]): string {
+    stringify(value: string[]): string {
         return JSON.stringify(value)
     }
 
@@ -58,7 +68,7 @@ export class MultiSelect extends Cell {
     export(value: unknown): string | void {
         if (value == null || value === "") return
 
-        const arr = JSON.parse(value as string) as string[]
+        const arr = this.parse(value as string)
         if (Array.isArray(arr)) return arr.join(";")
 
         return
@@ -69,12 +79,11 @@ export class MultiSelect extends Cell {
 
     formatter = (props: FormatterProps<Row>) => {
         const {
-            content: _content,
+            content,
             column: _column,
             row,
             key,
-        } = this.destruct<string | null | undefined>(props)
-        const content = this.parse(_content)
+        } = this.destruct<string[]>(props)
         const isEmpty = content == null || content.length === 0
 
         const [hovering, setHovering] = useState<boolean>(false)
@@ -91,18 +100,16 @@ export class MultiSelect extends Cell {
 
         const [input, setInput] = useState<string>("")
         const addChip = (value: string) => {
-            if (content == null) return
             props.onRowChange({
                 ...row,
-                [key]: JSON.stringify([...content, value]),
+                [key]: this.stringify([...content, value]),
             })
             closeModal()
         }
         const removeChip = (value: string) => {
-            if (content == null) return
             props.onRowChange({
                 ...row,
-                [key]: JSON.stringify(content.filter(v => v !== value)),
+                [key]: this.stringify(content.filter(v => v !== value)),
             })
             closeModal()
         }
@@ -112,12 +119,7 @@ export class MultiSelect extends Cell {
             if (data == null) return null
 
             const values = data.rows
-                .map(
-                    row =>
-                        JSON.parse(
-                            (row[_column.key] as string | null) ?? "[]"
-                        ) as string[]
-                )
+                .map(row => this.parse(row[_column.key]))
                 .flat()
                 .filter(value => typeof value === "string" && value.length > 0)
                 .filter(value => content.includes(value) === false)

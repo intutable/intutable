@@ -44,7 +44,7 @@ import { ClipboardUtil } from "utils/ClipboardUtil"
 const TablePage: React.FC = () => {
     const theme = useTheme()
     const { getTheme } = useThemeToggler()
-    const { snackWarning, closeSnackbar } = useSnacki()
+    const { snackWarning, closeSnackbar, snackError, snack } = useSnacki()
     const { isChrome } = useBrowserInfo()
     const { selectedRows, setSelectedRows } = useSelectedRows()
 
@@ -198,14 +198,32 @@ const TablePage: React.FC = () => {
                                             resizable: true,
                                             // formatter: // TODO: adjust
                                         }}
-                                        onCopy={e =>
-                                            clipboardUtil.handleOnCopy(e)
+                                        onCopy={event =>
+                                            clipboardUtil.handleOnCopy(
+                                                event,
+                                                error => {
+                                                    error
+                                                        ? snackError(error)
+                                                        : snack(
+                                                              "1 Zelle kopiert"
+                                                          )
+                                                }
+                                            )
                                         }
                                         // onFill={e =>
                                         //     clipboardUtil.handleOnFill(e)
                                         // }
                                         onPaste={e =>
-                                            clipboardUtil.handleOnPaste(e)
+                                            clipboardUtil.handleOnPaste(
+                                                e,
+                                                error => {
+                                                    error
+                                                        ? snackError(error)
+                                                        : snack(
+                                                              "1 Zelle eingefügt"
+                                                          )
+                                                }
+                                            )
                                         }
                                         selectedRows={selectedRows}
                                         onSelectedRowsChange={setSelectedRows}

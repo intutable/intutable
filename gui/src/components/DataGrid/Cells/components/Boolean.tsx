@@ -23,7 +23,7 @@ export class Bool extends Cell {
         if (typeof content === "boolean") return content
         return content === "true" || content === 1
     }
-    unparse(value: boolean): "true" | "false" | 1 | 0 {
+    stringify(value: boolean): "true" | "false" | 1 | 0 {
         return value ? "true" : "false"
     }
 
@@ -56,7 +56,7 @@ export class Bool extends Cell {
             if (e.target.checked !== content)
                 props.onRowChange({
                     ...row,
-                    [key]: this.unparse(Boolean(e.target.checked)),
+                    [key]: this.stringify(Boolean(e.target.checked)),
                 })
         }
 

@@ -33,6 +33,7 @@ const StyledInputElement = styled("input")`
         outline: none;
     }
 `
+
 // TODO: make this a static method, this increases performance
 export interface Validatable {
     /** validates parsed values – doesn't parse values for you */
@@ -70,7 +71,7 @@ export interface Parsable {
      * @throws Should throw an error if the value is invalid.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    unparse: (value: any) => any
+    stringify: (value: any) => any
 }
 
 // export interface Convertable {
@@ -157,7 +158,7 @@ export default abstract class Cell
     public parse(value: unknown): unknown {
         return value // default is to just return the value and don't parse it
     }
-    public unparse(value: unknown): unknown {
+    public stringify(value: unknown): unknown {
         return value // default is to just return the value and don't unparse it
     }
 

@@ -41,7 +41,7 @@ export class DateCell extends TempusCell {
 
             props.onRowChange({
                 ...row,
-                [key]: this.unparse(date),
+                [key]: this.stringify(date),
             })
         }
 

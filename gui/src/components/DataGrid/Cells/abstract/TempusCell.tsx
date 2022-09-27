@@ -62,7 +62,7 @@ export abstract class TempusCell extends Cell {
         return null
     }
 
-    unparse(value: string | Date | null | undefined): string {
+    stringify(value: string | Date | null | undefined): string {
         // ensure value is a Date
         const parsed = this.parse(value) // we can do this bc `parse` is idempotent
 
