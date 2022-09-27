@@ -6,14 +6,16 @@ export const CHANNEL = "dekanat-app-plugin"
  * Create a column in a table view, optionally (default is yes) adding it
  * to all of the table's filter views.
  * PM column must already be present.
- * @param {boolean} createInViews if true (default) also create a corresponding
- * column in all of the table's views.
  */
 export function addColumnToTable(
     sessionID: string,
     tableId: lv.ViewDescriptor["id"],
     column: lv.ColumnSpecifier,
     joinId: number | null = null,
+    /**
+     * @param {boolean} createInViews if true (default) also create a
+     * corresponding column in all of the table's views.
+     */
     createInViews = true
 ) {
     return {

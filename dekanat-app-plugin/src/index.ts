@@ -1,6 +1,9 @@
 /**
- * This dummy plugin allows us to run initialization (config, example data)
- * on starting up the core.
+ * This plugin allows us to run initialization (config, example data)
+ * on starting up the core. We can also create methods to allow complex
+ * tasks to be accomplished with only one network request. It may eventually
+ * even be a security bonus to create highly specific methods and expose only
+ * them for use by the front-end.
  */
 import { readFileSync } from "fs"
 import { randomBytes } from "crypto"
@@ -26,6 +29,7 @@ import {
 import * as req from "./requests"
 import { A } from "./attributes"
 import { error } from "./internal/error"
+import * as perm from "./permissions/requests"
 
 import { createExampleSchema, insertExampleData } from "./example/load"
 
@@ -80,6 +84,11 @@ export async function init(plugins: PluginLoader) {
         .on(req.addColumnToTable.name, addColumnToTable_)
         .on(req.addColumnToViews.name, addColumnToFilterViews_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
+        .on(perm.getUsers.name, perm.getUsers_)
+        .on(perm.getRoles.name, perm.getRoles_)
+        .on(perm.createUser.name, perm.createUser_)
+        .on(perm.deleteUser.name, perm.deleteUser_)
+        .on(perm.changeRole.name, perm.changeRole_)
 
     await core.events.request(closeConnection(sessionID))
 }
