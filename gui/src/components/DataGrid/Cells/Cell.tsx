@@ -54,6 +54,7 @@ export default abstract class Cell implements Validatable, Exportable {
         // Indicates what type of KeyboardEvent should be such a navigation event.
         onNavigation: ({ key }: React.KeyboardEvent<HTMLDivElement>): boolean =>
             key === "Tab",
+        editOnClick: true,
     }
     public get editorOptions() {
         return this._editorOptions
