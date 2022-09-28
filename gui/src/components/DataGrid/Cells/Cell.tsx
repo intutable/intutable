@@ -90,10 +90,11 @@ export default abstract class Cell implements Validatable, Exportable {
 
             // autofocus effect
             useEffect(() => {
-                if (ref == null || typeof ref === "function") return
+                if (typeof ref === "function") return
 
-                const realRef: React.Ref<HTMLInputElement> =
-                    typeof ref === "object" ? ref : inputRef
+                const realRef: React.Ref<HTMLInputElement> = ref
+                    ? ref
+                    : inputRef
 
                 this.autoFocusEditor(realRef.current)
             }, [ref])
