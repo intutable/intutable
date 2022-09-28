@@ -107,7 +107,6 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
                 // transformOrigin={{ vertical: "top", horizontal: "right" }}
                 open={anchorEL != null}
                 anchorEl={anchorEL}
-                keepMounted={true}
                 onClose={handleCloseContextMenu}
                 PaperProps={{
                     sx: {
