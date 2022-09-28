@@ -27,4 +27,4 @@ const cells = new Cells(
 
 export default cells
 
-export { default as Cell } from "./Cell"
+export { default as Cell } from "./abstract/Cell"
