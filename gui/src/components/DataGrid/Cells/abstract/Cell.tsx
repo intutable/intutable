@@ -4,9 +4,10 @@ import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { InputUnstyled, InputUnstyledProps } from "@mui/base"
 import { Box } from "@mui/material"
 import { styled } from "@mui/material/styles"
-import React from "react"
+import React, { useRef, useEffect } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
+import { mergeNonNullish } from "utils/mergeNonNullish"
 
 class CellError extends Error {
     constructor(message: string) {
@@ -33,6 +34,8 @@ const StyledInputElement = styled("input")`
         outline: none;
     }
 `
+
+type EditorOptions = NonNullable<Column["editorOptions"]>
 
 // TODO: make this a static method, this increases performance
 export interface Validatable {
@@ -89,6 +92,26 @@ export default abstract class Cell
     /** public name / no i18n yet */
     public abstract label: string
 
+    /** override rdg's default properties for `editorOptions`. */
+    // Note: before overring these, look up what the defaul values look like
+    private _editorOptions: EditorOptions = {
+        // Gets exposed to rdg internally. Needed for internal 'tab'/arrow key navigation.
+        // Indicates what type of KeyboardEvent should be such a navigation event.
+        onNavigation: ({ key }: React.KeyboardEvent<HTMLDivElement>): boolean =>
+            key === "Tab",
+        editOnClick: true,
+    }
+    public get editorOptions() {
+        return this._editorOptions
+    }
+    // merges `_editorOptions` with values set in child classes
+    protected setEditorOptions(options: EditorOptions) {
+        this._editorOptions = mergeNonNullish<EditorOptions>(
+            this._editorOptions,
+            options
+        )
+    }
+
     /** utilty that destructs the `props` argument for `editor` and `formatter`
      * and automatically parses `content` by calling `parse` */
     protected destruct<T = ReturnType<typeof this.parse>>(
@@ -108,16 +131,53 @@ export default abstract class Cell
                 onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
             },
             ref?: React.Ref<HTMLInputElement>
-        ) => (
-            // default Input component, used in editor/formatter components
-            <InputUnstyled
-                components={{ Input: StyledInputElement }}
-                ref={ref || props.ref}
-                onKeyDown={props.onKeyDown}
-                {...props}
-            />
-        )
+        ) => {
+            // if no ref is forwarded, we still need a ref for autofocus
+            const inputRef = useRef<HTMLInputElement | null>(null)
+
+            // autofocus effect
+            useEffect(() => {
+                if (typeof ref === "function") return
+
+                const realRef: React.Ref<HTMLInputElement> = ref
+                    ? ref
+                    : inputRef
+
+                this.autoFocusEditor(realRef.current)
+            }, [ref])
+
+            return (
+                // default Input component, used in editor/formatter components
+                <InputUnstyled
+                    components={{ Input: StyledInputElement }}
+                    ref={ref || inputRef}
+                    onKeyDown={props.onKeyDown}
+                    {...props}
+                />
+            )
+        }
     )
+
+    /**
+     * Automatically focus the editor's input component when the editor
+     * renders (i.e. cell's content is selected or edited). Since each editor
+     * has different structure, the method for finding what element should
+     * be focused also has to be configurable.
+     * Note: if {@link this.editor} passes a callback ref into the `Input`,
+     * the autofocus function will not run.
+     */
+    protected autoFocusEditor(input: HTMLInputElement | null) {
+        if (input == null || input.children == null) return
+
+        const domInput = Array.from(input.children).find(
+            c => c.tagName.toLowerCase() === "input"
+        )
+
+        if (domInput == null || !(domInput instanceof HTMLInputElement)) return
+
+        domInput.focus()
+        domInput.select()
+    }
 
     /**
      *

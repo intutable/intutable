@@ -113,7 +113,6 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                 elevation={0}
                 open={anchorEl != null}
                 anchorEl={anchorEl}
-                keepMounted={true}
                 onClose={handleCloseContextMenu}
                 PaperProps={{
                     sx: {

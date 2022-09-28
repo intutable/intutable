@@ -189,7 +189,6 @@ export class MultiSelect extends Cell {
                     }}
                     open={open}
                     anchorEl={modalRef.current}
-                    keepMounted
                     onClose={closeModal}
                     PaperProps={{
                         sx: {

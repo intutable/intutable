@@ -39,6 +39,7 @@ import {
     SelectedRowsContextProvider,
     useSelectedRows,
 } from "context/SelectedRowsContext"
+import { useCellNavigation } from "hooks/useCellNavigation"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 
 const TablePage: React.FC = () => {
@@ -47,6 +48,7 @@ const TablePage: React.FC = () => {
     const { snackWarning, closeSnackbar, snackError, snack } = useSnacki()
     const { isChrome } = useBrowserInfo()
     const { selectedRows, setSelectedRows } = useSelectedRows()
+    const { cellNavigationMode } = useCellNavigation()
 
     // warn if browser is not chrome
     useEffect(() => {
@@ -232,6 +234,7 @@ const TablePage: React.FC = () => {
                                         onRowClick={(row, column) =>
                                             setDetailedViewData({ row, column })
                                         }
+                                        cellNavigationMode={cellNavigationMode}
                                     />
                                 </DndProvider>
 

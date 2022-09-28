@@ -102,7 +102,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                 // transformOrigin={{ vertical: "top", horizontal: "right" }}
                 open={anchorEL != null}
                 anchorEl={anchorEL}
-                keepMounted={true}
                 onClose={closeContextMenu}
                 PaperProps={{
                     sx: {

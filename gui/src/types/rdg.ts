@@ -14,7 +14,7 @@ import { project_management } from "./type-annotations/project-management"
 // #################################################################
 
 type Table<COL, ROW> = {
-    metadata: ViewInfo
+    metadata: Omit<ViewInfo, "rowOptions">
     columns: COL[]
     rows: ROW[]
 }
@@ -335,60 +335,60 @@ type SerializedColumn = MetaColumnProps & {
      * {@type {CellContentType}} during deserialization in {@link deserialize}.
      */
     // editor?: CellContentType | null // inferred in deserialization by _cellContentType
-    editorOptions?: null | {
-        /**
-         * @property {(boolean | undefined | null)} [renderFormatter=false] ({@default false}).
-         *
-         * See the orignal type here: {@link Column.editorOptions}.
-         */
-        renderFormatter?: boolean | null
-        /**
-         * @property {(boolean | undefined | null)} [editOnClick=false] ({@default false}).
-         *
-         * See the orignal type here: {@link Column.editorOptions}.
-         */
-        editOnClick?: boolean | null
-        /**
-         * @property {(boolean | undefined | null)} [commitOnOutsideClick=true] ({@default true}).
-         *
-         * See the orignal type here: {@link Column.editorOptions}.
-         */
-        commitOnOutsideClick?: boolean | null
-        /**
-         * @property {(string | undefined | null)} [onCellKeyDown] Prevent default to cancel editing.
-         *
-         * See the orignal type here: {@link Column.editorOptions}.
-         *
-         * ---
-         *
-         * __Warning__: This type is customized for serialization (see below).
-         *
-         * __Note__: the orignal type requires a event callback.
-         * That function would be deserialized based
-         * on a type in {@link deserialize}.
-         *
-         * __Note__: This feature is not supported yet.
-         * No deserialization takes place.
-         */
-        onCellKeyDown?: string | null
-        /**
-         * @property {(string | undefined | null)} [onNavigation] Control the default cell navigation behavior while the editor is open.
-         *
-         * See the orignal type here: {@link Column.editorOptions}.
-         *
-         * ---
-         *
-         * __Warning__: This type is customized for serialization (see below).
-         *
-         * __Note__: the orignal type requires a event callback.
-         * That function would be deserialized based
-         * on a type in {@link deserialize}.
-         *
-         * __Note__: This feature is not supported yet.
-         * No deserialization takes place.
-         */
-        onNavigation?: string | null
-    }
+    // editorOptions?: null | {
+    /**
+     * @property {(boolean | undefined | null)} [renderFormatter=false] ({@default false}). If set to true, the formatter won't disappear when the editor is beeing rendered.
+     *
+     * See the orignal type here: {@link Column.editorOptions}.
+     */
+    // renderFormatter?: boolean | null
+    /**
+     * @property {(boolean | undefined | null)} [editOnClick=false] ({@default false}).
+     *
+     * See the orignal type here: {@link Column.editorOptions}.
+     */
+    // editOnClick?: boolean | null
+    /**
+     * @property {(boolean | undefined | null)} [commitOnOutsideClick=true] ({@default true}).
+     *
+     * See the orignal type here: {@link Column.editorOptions}.
+     */
+    // commitOnOutsideClick?: boolean | null
+    /**
+     * @property {(string | undefined | null)} [onCellKeyDown] Prevent default to cancel editing.
+     *
+     * See the orignal type here: {@link Column.editorOptions}.
+     *
+     * ---
+     *
+     * __Warning__: This type is customized for serialization (see below).
+     *
+     * __Note__: the orignal type requires a event callback.
+     * That function would be deserialized based
+     * on a type in {@link deserialize}.
+     *
+     * __Note__: This feature is not supported yet.
+     * No deserialization takes place.
+     */
+    // onCellKeyDown?: string | null
+    /**
+     * @property {(string | undefined | null)} [onNavigation] Control the default cell navigation behavior while the editor is open.
+     *
+     * See the orignal type here: {@link Column.editorOptions}.
+     *
+     * ---
+     *
+     * __Warning__: This type is customized for serialization (see below).
+     *
+     * __Note__: the orignal type requires a event callback.
+     * That function would be deserialized based
+     * on a type in {@link deserialize}.
+     *
+     * __Note__: This feature is not supported yet.
+     * No deserialization takes place.
+     */
+    // onNavigation?: string | null
+    // }
     /**
      * @property {(string | undefined | null)} [headerRenderer] Header renderer for each header cell.
      *
@@ -406,25 +406,8 @@ type SerializedColumn = MetaColumnProps & {
 }
 
 /**
- * Our version of the default props for some properties of {@link SerializedColumn}.
+ * // TODO: Once a middleware parses the data, this will be moved out of the scope of the frontend
  */
-export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
-    _kind: "standard",
-    _cellContentType: "string",
-    __columnIndex__: null,
-    width: undefined,
-    editable: true,
-    frozen: false,
-    resizable: true,
-    sortable: true,
-    editorOptions: {
-        renderFormatter: true, // TODO: determine the role of this property
-        editOnClick: true,
-        commitOnOutsideClick: true,
-    },
-    headerRenderer: "headerRenderer",
-} as const
-
 type DatabaseColumnAttributes = {
     _kind: string
     _cellContentType: string
@@ -447,16 +430,16 @@ type DatabaseColumnAttributes = {
     resizable?: 1 | 0 | null
     sortable?: 1 | 0 | null
     sortDescendingFirst?: 1 | 0 | null
-    renderFormatter?: 1 | 0 | null
-    editOnClick?: 1 | 0 | null
-    commitOnOutsideClick?: 1 | 0 | null
-    onCellKeyDown?: string | null
-    onNavigation?: string | null
+    // renderFormatter?: 1 | 0 | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
+    // editOnClick?: 1 | 0 | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
+    // commitOnOutsideClick?: 1 | 0 | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
+    // onCellKeyDown?: string | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
+    // onNavigation?: string | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
     headerRenderer?: string | null
 }
 
 export namespace Column {
-    export type SQL = DatabaseColumnAttributes
+    export type SQL = DatabaseColumnAttributes // deprecated in the future
     export type Serialized = SerializedColumn
     export type Deserialized = Column
 }
