@@ -9,6 +9,17 @@ import { EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { mergeNonNullish } from "utils/mergeNonNullish"
 
+class CellError extends Error {
+    constructor(message: string) {
+        super(message)
+
+        this.name = CellError.name
+        // this.cause =
+
+        Error.captureStackTrace(this)
+    }
+}
+
 const StyledInputElement = styled("input")`
     width: 100%;
     font-size: 1rem;
@@ -26,12 +37,44 @@ const StyledInputElement = styled("input")`
 
 type EditorOptions = NonNullable<Column["editorOptions"]>
 
+// TODO: make this a static method, this increases performance
 export interface Validatable {
+    /** validates parsed values – doesn't parse values for you */
     isValid: <T = unknown>(value: T) => boolean
 }
-
+// TODO: make this a static method, this increases performance
 export interface Exportable {
+    /** exports parsed values, e.g. percentage '5' exports to '5%' */
     export: <T = unknown>(value: T) => unknown
+    /**
+     * Tries to revert the exported value to the original value.
+     *
+     * @throws Should throw an error if the value is invalid.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unexport: (value: string) => any
+}
+
+// TODO: make this a static method, this increases performance
+// TODO: replace 'any'
+export interface Parsable {
+    /**
+     * Parses values for the class that come directly from the db
+     * e.g. dates are saved as timestamps and get converted to Date objects.
+     *
+     * @throws Should throw an error if the value is invalid.
+     *
+     * Note: Ensure that if a parsed value gets parsed again, this should work (idempotent).
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    parse: (value: any) => any
+    /**
+     * Turns parsed values back into a format for the db.
+     *
+     * @throws Should throw an error if the value is invalid.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    stringify: (value: any) => any
 }
 
 // export interface Convertable {
@@ -41,7 +84,9 @@ export interface Exportable {
 /**
  * Base class for all cell components.
  */
-export default abstract class Cell implements Validatable, Exportable {
+export default abstract class Cell
+    implements Validatable, Exportable, Parsable
+{
     /** unique identifier */
     public abstract readonly brand: string
     /** public name / no i18n yet */
@@ -67,14 +112,15 @@ export default abstract class Cell implements Validatable, Exportable {
         )
     }
 
-    /** utilty that destructs the `props` argument for `editor` and `formatter` */
-    protected destruct<T = unknown>(
+    /** utilty that destructs the `props` argument for `editor` and `formatter`
+     * and automatically parses `content` by calling `parse` */
+    protected destruct<T = ReturnType<typeof this.parse>>(
         props: EditorProps<Row> | FormatterProps<Row>
     ) {
         const row = props.row
         const column = props.column
         const key = props.column.key as keyof Row
-        const content = row[key] as T
+        const content = this.parse(row[key]) as T
         return { row, column, key, content }
     }
 
@@ -167,10 +213,15 @@ export default abstract class Cell implements Validatable, Exportable {
         return <Box>{content}</Box>
     }
 
-    /** used for validating its content */
     public abstract isValid(value: unknown): boolean
 
-    /** used for file and clipboard export, override this method to change the behaviour  */
+    public parse(value: unknown): unknown {
+        return value // default is to just return the value and don't parse it
+    }
+    public stringify(value: unknown): unknown {
+        return value // default is to just return the value and don't unparse it
+    }
+
     public export(value: unknown): string | void {
         // default export method
 
@@ -179,4 +230,10 @@ export default abstract class Cell implements Validatable, Exportable {
 
         return value as string
     }
+    // used in clipboard
+    public unexport(value: string): unknown {
+        return value
+    }
+
+    static Error = CellError
 }

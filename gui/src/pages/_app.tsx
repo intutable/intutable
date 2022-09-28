@@ -96,7 +96,12 @@ const MyApp = (props: AppProps) => {
             >
                 <ThemeTogglerContext.Provider value={colorMode}>
                     <ThemeProvider theme={theme}>
-                        <SnackbarProvider maxSnack={5}>
+                        <SnackbarProvider
+                            autoHideDuration={2500}
+                            maxSnack={5}
+                            dense
+                            preventDuplicate
+                        >
                             <CssBaseline />
                             <Layout>
                                 <Component {...pageProps} />

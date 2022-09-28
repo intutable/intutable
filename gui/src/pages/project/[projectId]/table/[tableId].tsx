@@ -40,11 +40,12 @@ import {
     useSelectedRows,
 } from "context/SelectedRowsContext"
 import { useCellNavigation } from "hooks/useCellNavigation"
+import { ClipboardUtil } from "utils/ClipboardUtil"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
     const { getTheme } = useThemeToggler()
-    const { snackWarning, closeSnackbar } = useSnacki()
+    const { snackWarning, closeSnackbar, snackError, snack } = useSnacki()
     const { isChrome } = useBrowserInfo()
     const { selectedRows, setSelectedRows } = useSelectedRows()
     const { cellNavigationMode } = useCellNavigation()
@@ -121,6 +122,8 @@ const TablePage: React.FC = () => {
     }
     if (tableList == null || data == null) return <LoadingSkeleton />
 
+    const clipboardUtil = new ClipboardUtil(data!.columns)
+
     return (
         <>
             <MetaTitle title={project!.name} />
@@ -180,7 +183,9 @@ const TablePage: React.FC = () => {
 
                                 <DndProvider backend={HTML5Backend}>
                                     <DataGrid
-                                        className={"rdg-" + getTheme()}
+                                        className={
+                                            "rdg-" + getTheme() + " fill-grid"
+                                        }
                                         rows={data.rows}
                                         columns={data.columns}
                                         components={{
@@ -195,6 +200,33 @@ const TablePage: React.FC = () => {
                                             resizable: true,
                                             // formatter: // TODO: adjust
                                         }}
+                                        onCopy={event =>
+                                            clipboardUtil.handleOnCopy(
+                                                event,
+                                                error => {
+                                                    error
+                                                        ? snackError(error)
+                                                        : snack(
+                                                              "1 Zelle kopiert"
+                                                          )
+                                                }
+                                            )
+                                        }
+                                        // onFill={e =>
+                                        //     clipboardUtil.handleOnFill(e)
+                                        // }
+                                        onPaste={e =>
+                                            clipboardUtil.handleOnPaste(
+                                                e,
+                                                error => {
+                                                    error
+                                                        ? snackError(error)
+                                                        : snack(
+                                                              "1 Zelle eingefügt"
+                                                          )
+                                                }
+                                            )
+                                        }
                                         selectedRows={selectedRows}
                                         onSelectedRowsChange={setSelectedRows}
                                         onRowsChange={partialRowUpdate}
