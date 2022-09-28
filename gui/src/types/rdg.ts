@@ -11,7 +11,6 @@ import type {
 } from "@intutable/lazy-views"
 import type { Filter } from "./filter"
 import { Column as ReactDataGrid_Column } from "react-data-grid"
-import { project_management } from "./type-annotations/project-management"
 
 /**
  * The two basic columns that every table must have (in addition to _id, but
@@ -74,7 +73,7 @@ export namespace ViewData {
 //       Row
 // #################################################################
 
-export type Row = project_management.UID & {
+export type Row = {
     _id: number
     __rowIndex__: number
     [key: string]: unknown

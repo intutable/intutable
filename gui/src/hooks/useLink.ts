@@ -2,7 +2,6 @@ import { useMemo } from "react"
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { TableRow, TableColumn } from "types"
-import { project_management_constants } from "types/type-annotations/project-management"
 
 export type RowPreview = {
     id: number
@@ -25,7 +24,7 @@ export const useLink = (options: TableHookOptions) => {
 
     const getRowId = (row: TableRow): number => {
         const uidColumn = linkTableData!.metadata.columns.find(
-            c => c.name === project_management_constants.UID_KEY
+            c => c.name === "_id"
         )!
         return row[uidColumn.key] as number
     }

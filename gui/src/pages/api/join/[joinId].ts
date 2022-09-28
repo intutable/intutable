@@ -13,7 +13,6 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
-import { project_management_constants } from "types/type-annotations/project-management"
 
 /**
  * Link rows in linked tables, by setting the value in the linking table's
@@ -55,7 +54,7 @@ const POST = withCatchingAPIRoute(
 
             await coreRequest(
                 update(sessionID, asTable(tableInfo.source).table.key, {
-                    condition: [project_management_constants.UID_KEY, rowId],
+                    condition: ["_id", rowId],
                     update: { [fkColumn.name]: value },
                 }),
                 user.authCookie
