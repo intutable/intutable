@@ -6,6 +6,7 @@ import { Column, Row } from "types"
 import { project_management_constants } from "types/type-annotations/project-management"
 import { useColumn } from "./useColumn"
 import { APIContextProvider } from "context/APIContext"
+import { useSnacki } from "./useSnacki"
 
 /**
  * ### useRow hook.
@@ -23,6 +24,8 @@ export const useRow = (
     tableOptions?: TableHookOptions,
     viewOptions?: ViewHookOptions
 ) => {
+    const { snackError } = useSnacki()
+
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
     const { getTableColumn } = useColumn(tableOptions, viewOptions)
@@ -117,8 +120,13 @@ export const useRow = (
         const baseColumnKey = metaColumn.name
 
         // TODO: put this in the api route
-        if (metaColumn.joinId !== null)
-            throw Error("attempted to edit data of a different table")
+        if (metaColumn.joinId !== null) {
+            snackError(
+                "Dies ist ein Lookup. Änderungen dürfen nur in der Originaltabelle vorgenommen werden."
+            )
+            return
+            // throw Error("attempted to edit data of a different table")
+        }
 
         await fetcher({
             url: "/api/row",
