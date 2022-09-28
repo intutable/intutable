@@ -4,6 +4,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withReadOnlyConnection } from "api/utils/databaseConnection"
 
 /**
  * List views on a given table.
@@ -19,10 +20,14 @@ const GET = async (
 ) => {
     try {
         const user = req.session.user!
-        const views = await coreRequest<ViewDescriptor[]>(
-            // remember, the table is itself a view
-            listViews(viewId(tableId)),
-            user.authCookie
+        const views = await withReadOnlyConnection(
+            user.authCookie,
+            async sessionID =>
+                coreRequest<ViewDescriptor[]>(
+                    // remember, the table is itself a view
+                    listViews(sessionID, viewId(tableId)),
+                    user.authCookie
+                )
         )
 
         res.status(200).json(views)

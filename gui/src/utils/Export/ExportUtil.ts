@@ -12,6 +12,7 @@ import { parseAsync } from "json2csv"
 import { NextApiResponse } from "next"
 import path from "path"
 import { Column, Row, ViewData } from "types"
+import { withReadOnlyConnection } from "api/utils/databaseConnection"
 import Obj from "types/Obj"
 import { User } from "types/User"
 import { capitalizeFirstLetter } from "utils/capitalizeFirstLetter"
@@ -97,17 +98,14 @@ export class ExportUtil {
 
     /** Get the view data */
     private async fetchData(): Promise<ViewData.Serialized> {
-        const viewOptions = await coreRequest<ViewOptions>(
-            getViewOptions(this.viewId),
-            this.user.authCookie
-        )
-        const rawViewData = await coreRequest<RawViewData>(
-            getViewData(this.viewId),
-            this.user.authCookie
-        )
-        const viewData = ViewParser.parse(viewOptions, rawViewData)
+        return withReadOnlyConnection(this.user.authCookie, async sessionID => {
 
-        return viewData
+            const rawViewData = await coreRequest<RawViewData>(
+                getViewData(sessionID, this.viewId),
+                this.user.authCookie
+            )
+            return ViewParser.parse(rawViewData)
+        })
     }
 
     /** Only use columns selected by the user for export as well as rows, if marked */

@@ -10,6 +10,7 @@ import {
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withSessionRoute } from "auth"
+import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { objToSql } from "utils/objToSql"
 
@@ -39,18 +40,28 @@ const PATCH = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        const filterView = await coreRequest<ViewInfo>(
-            getViewInfo(viewId),
-            user.authCookie
-        )
-        const column = filterView.columns.find(c => c.id === columnId)
+        const updatedColumn = await withReadWriteConnection(
+            user.authCookie,
+            async sessionID => {
+                const filterView = await coreRequest<ViewInfo>(
+                    getViewInfo(sessionID, viewId),
+                    user.authCookie
+                )
+                const column = filterView.columns.find(c => c.id === columnId)
 
-        if (!column) throw Error("columnNotFound")
+                if (!column) throw Error("columnNotFound")
 
-        // change property in view column, underlying table column is never used
-        const updatedColumn = await coreRequest<ColumnInfo>(
-            changeColumnAttributes(columnId, objToSql(update)),
-            user.authCookie
+                // change property in view column, underlying table column
+                // is never used anyway.
+                return coreRequest<ColumnInfo>(
+                    changeColumnAttributes(
+                        sessionID,
+                        columnId,
+                        objToSql(update)
+                    ),
+                    user.authCookie
+                )
+            }
         )
 
         res.status(200).json(updatedColumn)
@@ -76,17 +87,21 @@ const DELETE = withCatchingAPIRoute(
     ) => {
         const user = req.session.user!
 
-        const filterView = await coreRequest<ViewInfo>(
-            getViewInfo(viewId),
-            user.authCookie
-        )
-        const column = filterView.columns.find(c => c.id === columnId)
+        await withReadWriteConnection(user.authCookie, async sessionID => {
+            const filterView = await coreRequest<ViewInfo>(
+                getViewInfo(sessionID, viewId),
+                user.authCookie
+            )
+            const column = filterView.columns.find(c => c.id === columnId)
 
-        if (!column) throw Error("columnNotFound")
+            if (!column) throw Error("columnNotFound")
 
-        // delete column in table view:
-        await coreRequest(removeColumnFromView(columnId), user.authCookie)
-
+            // delete column in table view:
+            await coreRequest(
+                removeColumnFromView(sessionID, columnId),
+                user.authCookie
+            )
+        })
         res.status(200).json({})
     }
 )

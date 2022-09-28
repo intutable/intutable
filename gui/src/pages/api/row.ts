@@ -8,9 +8,9 @@ import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
+import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { Row } from "types"
 import Obj from "types/Obj"
-import { project_management_constants } from "types/type-annotations/project-management"
 
 // Intermediate type representing a row whose index is to be changed.
 type IndexChange = {
@@ -45,47 +45,49 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         atIndex?: number
     }
     const user = req.session.user!
+    const authCookie = user.authCookie
 
-    const oldData = await coreRequest<TableData>(
-        getTableData(table.id),
-        user.authCookie
-    )
-
-    let newRow: Obj
-    if (atIndex == null || atIndex === oldData.rows.length)
-        newRow = { ...rowToInsert, index: oldData.rows.length }
-    else {
-        newRow = { ...rowToInsert, index: atIndex }
-        const shiftedRows = (oldData.rows as Row[])
-            .sort(byIndex)
-            .slice(atIndex)
-            .map((row: Row) => ({
-                _id: row._id as number,
-                oldIndex: row.index as number,
-                index: (row.index as number) + 1,
-            }))
-
-        await Promise.all(
-            shiftedRows.map(
-                async (row: Obj) =>
-                    await coreRequest(
-                        update(table.key, {
-                            condition: ["_id", row._id],
-                            update: { index: row.index },
-                        }),
-                        user.authCookie
-                    )
-            )
+    const rowId = await withReadWriteConnection(authCookie, async sessionID => {
+        const oldData = await coreRequest<TableData<unknown>>(
+            getTableData(sessionID, table.id),
+            user.authCookie
         )
-    }
 
-    // create row in database
-    const rowId = await coreRequest<
-        typeof project_management_constants.UID_KEY
-    >(
-        insert(table.key, newRow, [project_management_constants.UID_KEY]),
-        user.authCookie
-    )
+        // mind-bending "insert at certain index" logic... good lord!
+        let newRow: Obj
+        if (atIndex == null || atIndex === oldData.rows.length)
+            newRow = { ...rowToInsert, index: oldData.rows.length }
+        else {
+            newRow = { ...rowToInsert, index: atIndex }
+            const shiftedRows = (oldData.rows as Row[])
+                .sort(byIndex)
+                .slice(atIndex)
+                .map((row: Row) => ({
+                    _id: row._id as number,
+                    oldIndex: row.index as number,
+                    index: (row.index as number) + 1,
+                }))
+
+            await Promise.all(
+                shiftedRows.map(
+                    async (row: Obj) =>
+                        await coreRequest(
+                            update(sessionID, table.key, {
+                                condition: ["_id", row._id],
+                                update: { index: row.index },
+                            }),
+                            user.authCookie
+                        )
+                )
+            )
+        }
+
+        // create row in database
+        return coreRequest<number>(
+            insert(sessionID, table.key, newRow, ["_id"]),
+            user.authCookie
+        )
+    })
 
     res.status(200).send(rowId)
 })
@@ -113,12 +115,18 @@ const PATCH = withCatchingAPIRoute(async (req, res) => {
         update: { [index: string]: unknown }
     }
 
-    const updatedRow = await coreRequest<Row>(
-        update(table.key, {
-            condition,
-            update: rowUpdate,
-        }),
-        req.session.user!.authCookie
+    const user = req.session.user!
+    const updatedRow = await withReadWriteConnection(
+        user.authCookie,
+        async sessionID => {
+            return coreRequest<Row>(
+                update(sessionID, table.key, {
+                    condition,
+                    update: rowUpdate,
+                }),
+                user.authCookie
+            )
+        }
     )
 
     res.status(200).json(updatedRow)
@@ -141,33 +149,40 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
     }
     const user = req.session.user!
 
-    await coreRequest(deleteRow(table.key, condition), user.authCookie)
-    // shift indices
-    const newData = await coreRequest<TableData>(
-        getTableData(table.id),
-        user.authCookie
-    )
-    const rows = newData.rows as Row[]
-    const newIndices: IndexChange[] = rows
-        .sort(byIndex)
-        .map((row: Row, newIndex: number) => ({
-            _id: row._id as number,
-            oldIndex: row.index as number,
-            index: newIndex,
-        }))
-        .filter(row => row.oldIndex !== row.index)
+    await withReadWriteConnection(user.authCookie, async sessionID => {
+        await coreRequest(
+            deleteRow(sessionID, table.key, condition),
+            user.authCookie
+        )
+        // shift indices
+        const newData = await coreRequest<TableData<unknown>>(
+            getTableData(sessionID, table.id),
+            user.authCookie
+        )
 
-    await Promise.all(
-        newIndices.map(async ({ _id, index }) =>
-            coreRequest(
-                update(table.key, {
-                    update: { index: index },
-                    condition: ["_id", _id],
-                }),
-                user.authCookie
+        const rows = newData.rows as Row[]
+        const newIndices: IndexChange[] = rows
+            .sort(byIndex)
+            .map((row: Row, newIndex: number) => ({
+                _id: row._id as number,
+                oldIndex: row.index as number,
+                index: newIndex,
+            }))
+            .filter(row => row.oldIndex !== row.index)
+
+        await Promise.all(
+            newIndices.map(async ({ _id, index }) =>
+                coreRequest(
+                    update(sessionID, table.key, {
+                        update: { index: index },
+                        condition: ["_id", _id],
+                    }),
+                    user.authCookie
+                )
             )
         )
-    )
+    })
+
     res.status(200).json({})
 })
 

@@ -20,6 +20,10 @@ import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { Table } from "api/utils/parse"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
+import {
+    withReadWriteConnection,
+    withReadOnlyConnection,
+} from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 
@@ -35,13 +39,14 @@ import { withSessionRoute } from "auth"
 const GET = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
         const user = req.session.user!
-        const tableData = await coreRequest<ViewData>(
-            getViewData(tableId),
-            user.authCookie
+        const parsedTableData = await withReadOnlyConnection(
+            user.authCookie,
+            async sessionID =>
+                coreRequest<ViewData>(
+                    getViewData(sessionID, tableId),
+                    user.authCookie
+                ).then(Table.parse)
         )
-
-        // parse it
-        const parsedTableData = Table.parse(tableData)
 
         res.status(200).json(parsedTableData)
     }
@@ -69,30 +74,37 @@ const PATCH = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        // check if name is taken
-        const baseTables = await coreRequest<TableDescriptor[]>(
-            getTablesFromProject(project.id),
-            user.authCookie
-        )
-        const tables = await Promise.all(
-            baseTables.map(tbl =>
-                coreRequest<ViewDescriptor[]>(
-                    listViews(makeTableId(tbl.id)),
+        const updatedTable = await withReadWriteConnection(
+            user.authCookie,
+            async sessionID => {
+                // check if name is taken
+                const baseTables = await coreRequest<TableDescriptor[]>(
+                    getTablesFromProject(sessionID, project.id),
                     user.authCookie
                 )
-            )
-        ).then(tableLists => tableLists.flat())
-        const isTaken = tables
-            .map(tbl => tbl.name.toLowerCase())
-            .includes(newName.toLowerCase())
+                const tables = await Promise.all(
+                    baseTables.map(tbl =>
+                        coreRequest<ViewDescriptor[]>(
+                            listViews(sessionID, makeTableId(tbl.id)),
+                            user.authCookie
+                        )
+                    )
+                ).then(tableLists => tableLists.flat())
 
-        // rename only view, underlying table's name does not matter.
-        const updatedTable = await coreRequest<ViewDescriptor>(
-            renameView(tableId, newName),
-            user.authCookie
+                const isTaken = tables
+                    .map(tbl => tbl.name.toLowerCase())
+                    .includes(newName.toLowerCase())
+                if (isTaken) throw new Error("alreadyTaken")
+
+                // rename only view, underlying table's name does not matter.
+                // TODO: uh, does it? oh man...
+                const updatedTable = await coreRequest<ViewDescriptor>(
+                    renameView(sessionID, tableId, newName),
+                    user.authCookie
+                )
+                return updatedTable
+            }
         )
-
-        if (isTaken) throw new Error("alreadyTaken")
 
         res.status(200).json(updatedTable)
     }
@@ -111,30 +123,33 @@ const DELETE = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
         const user = req.session.user!
 
-        // delete filter views
-        const filterViews = await coreRequest<ViewDescriptor[]>(
-            listViews(viewId(tableId)),
-            user.authCookie
-        )
+        await withReadWriteConnection(user.authCookie, async sessionID => {
+            // delete filter views
+            const filterViews = await coreRequest<ViewDescriptor[]>(
+                listViews(sessionID, viewId(tableId)),
+                user.authCookie
+            )
 
-        Promise.all(
-            filterViews.map(v => coreRequest(deleteView(v.id), user.authCookie))
-        )
+            Promise.all(
+                filterViews.map(v =>
+                    coreRequest(deleteView(sessionID, v.id), user.authCookie)
+                )
+            )
 
-        const options = await coreRequest<ViewOptions>(
-            getViewOptions(tableId),
-            user.authCookie
-        )
+            const options = await coreRequest<ViewOptions>(
+                getViewOptions(sessionID, tableId),
+                user.authCookie
+            )
 
-        // delete table view
-        await coreRequest(deleteView(tableId), user.authCookie)
+            // delete table view
+            await coreRequest(deleteView(sessionID, tableId), user.authCookie)
 
-        // delete table in project-management
-        await coreRequest(
-            removeTable(asTable(options.source).id),
-            user.authCookie
-        )
-
+            // delete table in project-management
+            await coreRequest(
+                removeTable(sessionID, asTable(options.source).id),
+                user.authCookie
+            )
+        })
         res.status(200).json({})
     }
 )

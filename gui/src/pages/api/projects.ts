@@ -3,6 +3,7 @@ import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withReadOnlyConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 
 /**
@@ -14,10 +15,14 @@ import { withSessionRoute } from "auth"
  */
 const GET = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
-    const projects = await coreRequest<ProjectDescriptor[]>(
-        getProjects(user.id),
-        user.authCookie
-    )
+    const cookie = user.authCookie
+    const projects = await withReadOnlyConnection(cookie, async sessionID => {
+        console.log("in withConnection function...")
+        return coreRequest<ProjectDescriptor[]>(
+            getProjects(sessionID, user.id),
+            cookie
+        )
+    })
 
     res.status(200).json(projects)
 })

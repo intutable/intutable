@@ -109,4 +109,4 @@ export const deparse = (
 }
 
 export const isInternalColumn = (column: ColumnInfo): boolean =>
-    column.name === project_management_constants.UID_KEY
+    column.name === "_id"

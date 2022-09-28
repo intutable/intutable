@@ -11,6 +11,7 @@ export const parse = (view: ViewData): TableData.Serialized => {
             source: view.source,
             joins: view.joins,
             columns: view.columns,
+            rowOptions: view.rowOptions
         },
         columns: view.columns
             .sort(byIndex)
