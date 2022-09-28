@@ -46,8 +46,6 @@ const GET = withCatchingAPIRoute(
                 getViewData(sessionID, viewId),
                 user.authCookie
             )
-
-            // parse it
             return View.parse(tableData)
         })
 

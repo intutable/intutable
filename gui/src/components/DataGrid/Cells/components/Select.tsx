@@ -17,7 +17,7 @@ import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
 
 const ChipItem: React.FC<{
     label: string
@@ -144,7 +144,6 @@ export class Select extends Cell {
                     }}
                     open={open}
                     anchorEl={modalRef.current}
-                    keepMounted
                     onClose={closeModal}
                     PaperProps={{
                         sx: {

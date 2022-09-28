@@ -40,22 +40,7 @@ export const parse = (column: ColumnInfo): Column.Serialized => ({
         column.attributes.sortDescendingFirst == null
             ? column.attributes.sortDescendingFirst
             : Boolean(column.attributes.sortDescendingFirst),
-    editorOptions: {
-        renderFormatter:
-            column.attributes.renderFormatter == null
-                ? column.attributes.renderFormatter
-                : Boolean(column.attributes.renderFormatter),
-        editOnClick:
-            column.attributes.editOnClick == null
-                ? column.attributes.editOnClick
-                : Boolean(column.attributes.editOnClick),
-        commitOnOutsideClick:
-            column.attributes.commitOnOutsideClick == null
-                ? column.attributes.commitOnOutsideClick
-                : Boolean(column.attributes.commitOnOutsideClick),
-        onCellKeyDown: column.attributes.onCellKeyDown,
-        onNavigation: column.attributes.onNavigation,
-    },
+
     headerRenderer: column.attributes.headerRenderer,
 })
 
@@ -91,16 +76,7 @@ export const deparse = (
         resizable: column.resizable ? 1 : 0,
         sortable: column.sortable ? 1 : 0,
         sortDescendingFirst: column.sortDescendingFirst ? 1 : 0,
-        renderFormatter: column.editorOptions?.renderFormatter ? 1 : 0,
-        editOnClick: column.editorOptions?.editOnClick ? 1 : 0,
-        commitOnOutsideClick: column.editorOptions?.commitOnOutsideClick
-            ? 1
-            : 0,
-        onCellKeyDown: column.editorOptions?.onCellKeyDown,
-        onNavigation: column.editorOptions?.onNavigation,
     }
-
-    delete column.editorOptions // no objects in db
 
     return {
         parentColumnId: colId,

@@ -124,6 +124,10 @@ export class ColumnUtility {
         return headerRenderer
     }
 
+    public getEditorOptions(): Column["editorOptions"] {
+        return this.cell.editorOptions
+    }
+
     // static deserialize(column: Column.Serialized): Column { }
     // public deserialize(): Column { }
 

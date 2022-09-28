@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { isValidEMailAddress } from "utils/isValidEMailAddress"
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
 
 export class EMail extends Cell {
     readonly brand = "email"
@@ -12,11 +12,6 @@ export class EMail extends Cell {
 
     isValid(value: unknown): boolean {
         return isValidEMailAddress(value)
-    }
-
-    export(value: unknown): string | void {
-        if (this.isValid(value)) return value as string
-        return
     }
 
     editor = (props: EditorProps<Row>) => {

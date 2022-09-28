@@ -39,7 +39,6 @@ const ProjectContextMenu: React.FC<ProjectContextMenuProps> = props => {
             // transformOrigin={{ vertical: "top", horizontal: "right" }}
             open={props.open}
             anchorEl={props.anchorEL}
-            keepMounted={true}
             onClose={props.onClose}
             PaperProps={{
                 sx: {

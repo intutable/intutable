@@ -21,11 +21,6 @@ export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
     frozen: false,
     resizable: true,
     sortable: true,
-    editorOptions: {
-        renderFormatter: true, // TODO: determine the role of this property
-        editOnClick: true,
-        commitOnOutsideClick: true,
-    },
     headerRenderer: "headerRenderer",
 } as const
 

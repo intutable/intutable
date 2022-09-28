@@ -42,7 +42,6 @@ const TableContextMenu: React.FC<TableContextMenuProps> = props => {
             // transformOrigin={{ vertical: "top", horizontal: "right" }}
             open={props.open}
             anchorEl={props.anchorEL}
-            keepMounted={true}
             onClose={props.onClose}
             PaperProps={{
                 sx: {

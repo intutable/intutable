@@ -11,7 +11,6 @@ export const parse = (view: ViewData): TableData.Serialized => {
             source: view.source,
             joins: view.joins,
             columns: view.columns,
-            rowOptions: view.rowOptions
         },
         columns: view.columns
             .sort(byIndex)
@@ -21,6 +20,6 @@ export const parse = (view: ViewData): TableData.Serialized => {
             ...r,
             _id: r["_id"] as number,
             __rowIndex__: r[indexColumn.key] as number,
-        })) ,
+        })),
     }
 }

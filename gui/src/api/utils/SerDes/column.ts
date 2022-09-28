@@ -1,5 +1,6 @@
 import { ColumnUtility } from "utils/ColumnUtility"
 import { Column } from "types"
+import React from "react"
 
 /**
  * Serializes a single Column.
@@ -20,11 +21,6 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
     cellClass: undefined, // currently not supported
     summaryCellClass: undefined, // currently not supported
     colSpan: undefined, // currently not supported
-    editorOptions: {
-        ...col.editorOptions,
-        onCellKeyDown: undefined, // currently not supported
-        onNavigation: undefined, /// currently not supported
-    },
     headerRenderer: undefined, // supported but gets a default value in the deserializer
 })
 
@@ -35,25 +31,26 @@ export const serialize = (col: Column.Deserialized): Column.Serialized => ({
  * @returns {Column}
  */
 export const deserialize = (col: Column.Serialized): Column.Deserialized => {
-    const Column = new ColumnUtility(col)
+    const columnUtil = new ColumnUtility(col)
 
     return {
         ...col,
-        editable: Column.isEditable(),
-        editor: Column.getEditor(),
-        formatter: Column.getFormatter(),
+        editable: columnUtil.isEditable(),
+        editor: columnUtil.getEditor(),
+        formatter: columnUtil.getFormatter(),
         summaryFormatter: undefined, // currently not supported
         groupFormatter: undefined, // currently not supported
         colSpan: undefined, // currently not supported
-        editorOptions: {
-            // renderFormatter: true // what is this doing?
-            onCellKeyDown: undefined, // currently not supported
-            onNavigation: undefined, // currently not supported
-        },
-        headerRenderer: Column.getHeaderRenderer(),
+        editorOptions: columnUtil.getEditorOptions(),
+        headerRenderer: columnUtil.getHeaderRenderer(),
     }
 }
 
+/**
+ * @deprecated
+ *
+ * use `ColumnUtility.isAppColumn` instead
+ */
 export const isAppColumn = (
     column: Column.Serialized | Column.Deserialized
 ): boolean => ColumnUtility.isAppColumn(column)

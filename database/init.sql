@@ -95,10 +95,5 @@ CREATE TABLE view_columns(
     resizable INTEGER NULL,
     sortable INTEGER NULL,
     "sortDescendingFirst" INTEGER NULL,
-    "renderFormatter" INTEGER DEFAULT 0,
-    "editOnClick" INTEGER DEFAULT 0,
-    "commitOnOutsideClick" INTEGER DEFAULT 0,
-    "onCellKeyDown" VARCHAR(255) NULL,
-    "onNavigation" VARCHAR(255) NULL,
     "headerRenderer" VARCHAR(255) NULL
 );
