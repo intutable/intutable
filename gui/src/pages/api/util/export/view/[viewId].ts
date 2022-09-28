@@ -1,70 +1,9 @@
-import {
-    ViewData as RawViewData,
-    ColumnInfo,
-    getViewData,
-    ViewDescriptor,
-} from "@intutable/lazy-views"
-import { coreRequest } from "api/utils"
-import { View as ViewParser } from "api/utils/parse"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import fs from "fs-extra"
-import { parseAsync } from "json2csv"
-import path from "path"
-import { Column, Row, ViewData } from "types"
-import Obj from "types/Obj"
-import { capitalizeFirstLetter } from "utils/capitalizeFirstLetter"
-import { ColumnUtility } from "utils/ColumnUtility"
-import { TmpDir } from "utils/TmpDir"
-
-export type AnyArray = (string | number | boolean)[]
-
-export type CSVExportOptions = {
-    /**
-     * @default false
-     */
-    header?: boolean
-    includeEmptyRows?: boolean
-}
-
-export type ExportViewRequestBody = {
-    fileName: string
-    format: "csv" | "json" | "xlsx" | "xml"
-    columns: ColumnInfo["id"][]
-    options?: {
-        /**
-         * indices of rows to include in the export
-         */
-        rowSelection?: number[]
-        csvOptions?: CSVExportOptions
-    }
-}
-
-const intersectRows = (columns: Column.Serialized[], rows: Row[]) =>
-    rows.map(row => {
-        const intersection: Obj = {}
-
-        columns.forEach(col => {
-            const util = new ColumnUtility(col)
-
-            const value = row[col.key]
-            const exported =
-                value == null || value === "" ? "" : util.cell.export(value)
-            const key = capitalizeFirstLetter(col.name)
-
-            intersection[key] = exported
-        })
-
-        return intersection
-    })
-
-export const toCSV = async (data: Obj[], csvOptions?: CSVExportOptions) =>
-    await parseAsync(data, {
-        header: csvOptions?.header === true,
-        includeEmptyRows: csvOptions?.includeEmptyRows === true,
-        withBOM: true,
-    })
+import { ExportRequest } from "utils/Export/ExportRequest"
+import { ExportUtil } from "utils/Export/ExportUtil"
 
 /**
  * Generate a Mail-List
@@ -76,66 +15,18 @@ export const toCSV = async (data: Obj[], csvOptions?: CSVExportOptions) =>
 const POST = withCatchingAPIRoute(
     async (req, res, viewId: ViewDescriptor["id"]) => {
         const user = req.session.user!
-        const { fileName, format, columns, options } = JSON.parse(
-            req.body
-        ) as ExportViewRequestBody
-
-        // currently only csv is supported
-        if (format !== "csv") throw new Error(`Unsupported format: ${format}`)
-
-        const rawViewData = await coreRequest<RawViewData>(
-            getViewData(viewId),
-            user.authCookie
-        )
-        const viewData = ViewParser.parse(rawViewData)
-
-        // only use the specified columns
-        const cols: Column.Serialized[] = viewData.columns.filter(col =>
-            columns.includes(col._id)
-        )
-
-        let rows: ViewData.Serialized["rows"] = viewData.rows
-
-        // only use the selected rows, if specified
-        if (options?.rowSelection != null && options.rowSelection.length > 0) {
-            // find the index column where the information about the indices are stored,
-            // because the indices of each row are not accessible in the viewData
-            // due to prefixes of the keys
-            const indexColumn = viewData.columns.find(c => c._kind === "index")!
-            // and remap to the actual rows
-            rows = rows.map(row => ({
-                ...row,
-                __rowIndex__: row[indexColumn.key] as number,
-            }))
-
-            // filter out the rows that are not selected
-            rows = rows.filter(row =>
-                options.rowSelection!.includes(row.__rowIndex__)
-            )
+        const { exportRequest } = JSON.parse(req.body) as {
+            exportRequest: ExportRequest
         }
 
-        const data = intersectRows(cols, rows) // <-- this is where the magic happens
-        const csv = await toCSV(data, options?.csvOptions)
+        const util = new ExportUtil(
+            exportRequest,
+            { response: res, viewId },
+            user
+        )
 
-        // create the file
-        const filename = fileName + ".csv"
-        const dir = new TmpDir()
-        const csvFile = path.join(dir.path, filename)
-        await fs.writeFile(csvFile, csv)
-        const stat = await fs.stat(csvFile)
-
-        res.writeHead(200, {
-            "Content-Type": "text/csv",
-            "Content-Length": stat.size,
-        })
-
-        const readStream = fs.createReadStream(csvFile)
-        await new Promise(resolve => {
-            readStream.pipe(res)
-            readStream.on("end", resolve)
-        })
-
-        dir.delete()
+        await util.export()
+        await util.send()
     }
 )
 
