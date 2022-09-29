@@ -1,9 +1,7 @@
 import {
     getViewData,
-    getViewOptions,
     ViewData as RawViewData,
     ViewDescriptor,
-    ViewOptions,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
 import { View as ViewParser } from "api/utils/parse"
@@ -97,15 +95,12 @@ export class ExportUtil {
 
     /** Get the view data */
     private async fetchData(): Promise<ViewData.Serialized> {
-        const viewOptions = await coreRequest<ViewOptions>(
-            getViewOptions(this.viewId),
-            this.user.authCookie
-        )
+
         const rawViewData = await coreRequest<RawViewData>(
             getViewData(this.viewId),
             this.user.authCookie
         )
-        const viewData = ViewParser.parse(viewOptions, rawViewData)
+        const viewData = ViewParser.parse(rawViewData)
 
         return viewData
     }
