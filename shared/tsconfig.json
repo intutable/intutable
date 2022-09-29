@@ -13,8 +13,5 @@
         "allowJs": true,
         "checkJs": true,
         "outDir": "./dist",
-        "paths": {
-            "@shared/*": ["../../shared/src/*"]
-        }
     }
 }

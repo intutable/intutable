@@ -12,7 +12,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import { objToSql } from "utils/objToSql"
+import { toSql } from "@shared/attributes"
 
 import { removeColumnFromTable } from "@backend/requests"
 
@@ -63,11 +63,7 @@ const PATCH = withCatchingAPIRoute(
 
                 // change property in table column
                 const updatedColumn = await coreRequest<ColumnInfo>(
-                    changeColumnAttributes(
-                        sessionID,
-                        columnId,
-                        objToSql(update)
-                    ),
+                    changeColumnAttributes(sessionID, columnId, toSql(update)),
                     user.authCookie
                 )
 
@@ -94,7 +90,7 @@ const PATCH = withCatchingAPIRoute(
                                 changeColumnAttributes(
                                     sessionID,
                                     theColumn.id,
-                                    objToSql(update)
+                                    toSql(update)
                                 ),
                                 user.authCookie
                             )

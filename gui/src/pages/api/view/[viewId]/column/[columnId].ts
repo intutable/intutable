@@ -12,7 +12,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withSessionRoute } from "auth"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
-import { objToSql } from "utils/objToSql"
+import { toSql } from "@shared/attributes"
 
 /**
  * Update the metadata of a column. Only its `attributes` can be changed, all
@@ -54,11 +54,7 @@ const PATCH = withCatchingAPIRoute(
                 // change property in view column, underlying table column
                 // is never used anyway.
                 return coreRequest<ColumnInfo>(
-                    changeColumnAttributes(
-                        sessionID,
-                        columnId,
-                        objToSql(update)
-                    ),
+                    changeColumnAttributes(sessionID, columnId, toSql(update)),
                     user.authCookie
                 )
             }

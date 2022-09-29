@@ -1,6 +1,7 @@
 {
     "name": "dekanat-app-plugin",
     "version": "0.1.0",
+    "description": "A core plugin with GUI-specific methods.",
     "private": true,
     "main": "./dist/index.js",
     "scripts": {

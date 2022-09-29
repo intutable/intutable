@@ -30,6 +30,18 @@ module.exports = withBundleAnalyzer({
                 }
             ],
         })
+        config.module.rules.push({
+            test: /\/shared\/.*\.ts$/,
+            use: [
+                {
+                    loader: "ts-loader",
+                    options: {
+                        transpileOnly: true,
+                        onlyCompileBundledFiles: true,
+                    }
+                }
+            ],
+        })
         return config
     },
     // experimental: {
