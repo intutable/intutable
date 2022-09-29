@@ -97,7 +97,6 @@ export class ExportUtil {
     /** Get the view data */
     private async fetchData(): Promise<ViewData.Serialized> {
         return withReadOnlyConnection(this.user, async sessionID => {
-
             const rawViewData = await coreRequest<RawViewData>(
                 getViewData(sessionID, this.viewId),
                 this.user.authCookie
