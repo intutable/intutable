@@ -27,25 +27,22 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     // check validity: alphanum + underscore
     if (!name.match(new RegExp(/^[\p{L}\p{N}_]*$/u))) throw Error("invalidName")
 
-    const project = await withReadWriteConnection(
-        user.authCookie,
-        async sessionID => {
-            // check if already exists
-            const projects = await coreRequest<ProjectDescriptor[]>(
-                getProjects(sessionID, user.id),
-                user.authCookie
-            )
-            if (projects.some(p => p.name === name)) {
-                throw Error("alreadyTaken")
-            }
-
-            // create project in project-management
-            return coreRequest<ProjectDescriptor>(
-                createProject(sessionID, user.id, name),
-                user.authCookie
-            )
+    const project = await withReadWriteConnection(user, async sessionID => {
+        // check if already exists
+        const projects = await coreRequest<ProjectDescriptor[]>(
+            getProjects(sessionID, user.id),
+            user.authCookie
+        )
+        if (projects.some(p => p.name === name)) {
+            throw Error("alreadyTaken")
         }
-    )
+
+        // create project in project-management
+        return coreRequest<ProjectDescriptor>(
+            createProject(sessionID, user.id, name),
+            user.authCookie
+        )
+    })
 
     res.status(200).json(project)
 })

@@ -32,7 +32,7 @@ const POST = withCatchingAPIRoute(
         const user = req.session.user!
 
         const filterView = await withReadWriteConnection(
-            user.authCookie,
+            user,
             async sessionID => {
                 // avoid duplicates
                 const existingViews = await coreRequest<ViewDescriptor[]>(

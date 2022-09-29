@@ -6,7 +6,8 @@ import {
     ViewOptions,
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
-import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
+import { ColumnDescriptor } from "@intutable/project-management/dist/types"
+import { Column } from "types/rdg"
 import { coreRequest, Parser } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
@@ -35,8 +36,8 @@ const POST = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        const newColumn = await withReadWriteConnection(
-            user.authCookie,
+        const newColumn: Column.Serialized = await withReadWriteConnection(
+            user,
             async sessionID => {
                 const options = await coreRequest<ViewOptions>(
                     getViewOptions(sessionID, tableId),
@@ -45,7 +46,7 @@ const POST = withCatchingAPIRoute(
 
                 const key = sanitizeName(column.name)
                 // add column in project-management
-                const tableColumn = await coreRequest<PM_Column>(
+                const tableColumn = await coreRequest<ColumnDescriptor>(
                     createColumnInTable(
                         sessionID,
                         asTable(options.source).id,

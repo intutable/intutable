@@ -45,7 +45,7 @@ const PATCH = withCatchingAPIRoute(
         const user = req.session.user!
 
         const updatedColumn = await withReadWriteConnection(
-            user.authCookie,
+            user,
             async sessionID => {
                 const tableInfo = await coreRequest<ViewInfo>(
                     getViewInfo(sessionID, tableId),
@@ -128,7 +128,7 @@ const DELETE = withCatchingAPIRoute(
     ) => {
         const user = req.session.user!
 
-        await withReadWriteConnection(user.authCookie, async sessionID => {
+        await withReadWriteConnection(user, async sessionID => {
             const tableInfo = await coreRequest<ViewInfo>(
                 getViewInfo(sessionID, tableId),
                 user.authCookie

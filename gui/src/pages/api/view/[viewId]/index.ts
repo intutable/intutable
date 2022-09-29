@@ -39,9 +39,8 @@ const GET = withCatchingAPIRoute(
         viewId: ViewDescriptor["id"]
     ) => {
         const user = req.session.user!
-        const cookie = user.authCookie
 
-        const data = await withReadOnlyConnection(cookie, async sessionID => {
+        const data = await withReadOnlyConnection(user, async sessionID => {
             const tableData = await coreRequest<ViewData>(
                 getViewData(sessionID, viewId),
                 user.authCookie
@@ -76,7 +75,7 @@ const PATCH = withCatchingAPIRoute(
         const user = req.session.user!
 
         const updatedView = await withReadWriteConnection(
-            user.authCookie,
+            user,
             async sessionID => {
                 const options = await coreRequest<ViewOptions>(
                     getViewOptions(sessionID, viewId),
@@ -124,7 +123,7 @@ const DELETE = withCatchingAPIRoute(
     ) => {
         const user = req.session.user!
 
-        await withReadWriteConnection(user.authCookie, async sessionID => {
+        await withReadWriteConnection(user, async sessionID => {
             const options = await coreRequest<ViewOptions>(
                 getViewOptions(sessionID, viewId),
                 user.authCookie

@@ -40,7 +40,7 @@ const GET = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
         const user = req.session.user!
         const parsedTableData = await withReadOnlyConnection(
-            user.authCookie,
+            user,
             async sessionID =>
                 coreRequest<ViewData>(
                     getViewData(sessionID, tableId),
@@ -75,7 +75,7 @@ const PATCH = withCatchingAPIRoute(
         const user = req.session.user!
 
         const updatedTable = await withReadWriteConnection(
-            user.authCookie,
+            user,
             async sessionID => {
                 // check if name is taken
                 const baseTables = await coreRequest<TableDescriptor[]>(
@@ -123,7 +123,7 @@ const DELETE = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
         const user = req.session.user!
 
-        await withReadWriteConnection(user.authCookie, async sessionID => {
+        await withReadWriteConnection(user, async sessionID => {
             // delete filter views
             const filterViews = await coreRequest<ViewDescriptor[]>(
                 listViews(sessionID, viewId(tableId)),

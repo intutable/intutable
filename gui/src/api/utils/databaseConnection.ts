@@ -1,5 +1,5 @@
-import { NextApiRequest } from "next"
 import { randomBytes } from "crypto"
+import { User } from "types/User"
 import {
     openConnection,
     closeConnection,
@@ -20,7 +20,7 @@ const getNextSessionID = () => {
  * if the login fails.
  */
 export const withReadWriteConnection = async <T>(
-    authCookie: string | NextApiRequest,
+    user: User,
     callback: (sessionID: string) => Promise<T>
 ): Promise<T> => {
     const username = process.env.DB_RW_USERNAME
@@ -34,13 +34,13 @@ export const withReadWriteConnection = async <T>(
 
     await coreRequest<void>(
         openConnection(sessionID, username, password),
-        authCookie
+        user.authCookie
     )
     let result : T
     try {
         result = await callback(sessionID)
     } finally {
-        await coreRequest<void>(closeConnection(sessionID), authCookie)
+        await coreRequest<void>(closeConnection(sessionID), user.authCookie)
     }
     return result
 }
@@ -52,7 +52,7 @@ export const withReadWriteConnection = async <T>(
  * if the login fails.
  */
 export const withReadOnlyConnection = async <T>(
-    authCookie: string | NextApiRequest,
+    user: User,
     callback: (sessionID: string) => Promise<T>
 ): Promise<T> => {
     const username = process.env.DB_RDONLY_USERNAME
@@ -64,13 +64,13 @@ export const withReadOnlyConnection = async <T>(
 
     await coreRequest<void>(
         openConnection(sessionID, username, password),
-        authCookie
+        user.authCookie
     )
     let result : T
     try {
         result = await callback(sessionID)
     } finally {
-        await coreRequest<void>(closeConnection(sessionID), authCookie)
+        await coreRequest<void>(closeConnection(sessionID), user.authCookie)
     }
     return result
 }

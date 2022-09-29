@@ -45,9 +45,8 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         atIndex?: number
     }
     const user = req.session.user!
-    const authCookie = user.authCookie
 
-    const rowId = await withReadWriteConnection(authCookie, async sessionID => {
+    const rowId = await withReadWriteConnection(user, async sessionID => {
         const oldData = await coreRequest<TableData<unknown>>(
             getTableData(sessionID, table.id),
             user.authCookie
@@ -116,18 +115,15 @@ const PATCH = withCatchingAPIRoute(async (req, res) => {
     }
 
     const user = req.session.user!
-    const updatedRow = await withReadWriteConnection(
-        user.authCookie,
-        async sessionID => {
-            return coreRequest<Row>(
-                update(sessionID, table.key, {
-                    condition,
-                    update: rowUpdate,
-                }),
-                user.authCookie
-            )
-        }
-    )
+    const updatedRow = await withReadWriteConnection(user, async sessionID => {
+        return coreRequest<Row>(
+            update(sessionID, table.key, {
+                condition,
+                update: rowUpdate,
+            }),
+            user.authCookie
+        )
+    })
 
     res.status(200).json(updatedRow)
 })
@@ -149,7 +145,7 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
     }
     const user = req.session.user!
 
-    await withReadWriteConnection(user.authCookie, async sessionID => {
+    await withReadWriteConnection(user, async sessionID => {
         await coreRequest(
             deleteRow(sessionID, table.key, condition),
             user.authCookie

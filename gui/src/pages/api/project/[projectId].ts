@@ -25,20 +25,17 @@ const GET = withCatchingAPIRoute(
     async (req, res, projectId: ProjectDescriptor["id"]) => {
         const user = req.session.user!
 
-        const project = await withReadOnlyConnection(
-            user.authCookie,
-            async sessionID => {
-                const allProjects = await coreRequest<ProjectDescriptor[]>(
-                    getProjects(sessionID, user.id),
-                    user.authCookie
-                )
+        const project = await withReadOnlyConnection(user, async sessionID => {
+            const allProjects = await coreRequest<ProjectDescriptor[]>(
+                getProjects(sessionID, user.id),
+                user.authCookie
+            )
 
-                const project = allProjects.find(proj => proj.id === projectId)
-                if (project == null)
-                    throw new Error(`could not find project #${projectId}`)
-                return project
-            }
-        )
+            const project = allProjects.find(proj => proj.id === projectId)
+            if (project == null)
+                throw new Error(`could not find project #${projectId}`)
+            return project
+        })
 
         res.status(200).json(project)
     }
@@ -66,7 +63,7 @@ const PATCH = withCatchingAPIRoute(
         const user = req.session.user!
 
         const updatedProject = await withReadWriteConnection(
-            user.authCookie,
+            user,
             async sessionID => {
                 // check if name is taken
                 const projects = await coreRequest<ProjectDescriptor[]>(
@@ -103,7 +100,7 @@ const DELETE = withCatchingAPIRoute(
     async (req, res, projectId: ProjectDescriptor["id"]) => {
         const user = req.session.user!
         // delete project in project-management
-        await withReadWriteConnection(user.authCookie, async sessionID => {
+        await withReadWriteConnection(user, async sessionID => {
             return coreRequest(
                 removeProject(sessionID, projectId),
                 user.authCookie

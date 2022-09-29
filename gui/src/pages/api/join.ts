@@ -38,12 +38,11 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         foreignTableId: number
     }
     const user = req.session.user!
-    const authCookie = user.authCookie
 
-    const join = await withReadWriteConnection(authCookie, async sessionID => {
+    const join = await withReadWriteConnection(user, async sessionID => {
         const tableInfo = await coreRequest<ViewInfo>(
             getViewInfo(sessionID, tableId),
-            authCookie
+            user.authCookie
         )
 
         // create a table column with the foreign key
@@ -54,7 +53,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
                 makeForeignKeyName(tableInfo),
                 ColumnType.integer
             ),
-            authCookie
+            user.authCookie
         )
 
         // find out the foreign table's ID column (the actual primary key)
@@ -62,7 +61,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         // to the user
         const foreignTableInfo = await coreRequest<ViewInfo>(
             getViewInfo(sessionID, foreignTableId),
-            authCookie
+            user.authCookie
         )
         const foreignIdColumn = foreignTableInfo.columns.find(
             c => c.name === "_id"
@@ -80,7 +79,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
                 on: [fkColumn.id, "=", foreignIdColumn.id],
                 columns: [],
             }),
-            authCookie
+            user.authCookie
         )
 
         const columnIndex = tableInfo.columns.length
@@ -94,7 +93,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
                 { parentColumnId: userPrimaryColumn.id, attributes },
                 join.id
             ),
-            authCookie
+            user.authCookie
         )
         return join
     })

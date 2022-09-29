@@ -21,25 +21,22 @@ import { withSessionRoute } from "auth"
 const GET = withCatchingAPIRoute(
     async (req, res, projectId: ProjectDescriptor["id"]) => {
         const user = req.session.user!
-        const tables = await withReadOnlyConnection(
-            user.authCookie,
-            async sessionID => {
-                const baseTables = await coreRequest<TableDescriptor[]>(
-                    getTablesFromProject(sessionID, projectId),
-                    user.authCookie
-                )
+        const tables = await withReadOnlyConnection(user, async sessionID => {
+            const baseTables = await coreRequest<TableDescriptor[]>(
+                getTablesFromProject(sessionID, projectId),
+                user.authCookie
+            )
 
-                const tables = await Promise.all(
-                    baseTables.map(t =>
-                        coreRequest<ViewDescriptor[]>(
-                            listViews(sessionID, tableId(t.id)),
-                            user.authCookie
-                        )
+            const tables = await Promise.all(
+                baseTables.map(t =>
+                    coreRequest<ViewDescriptor[]>(
+                        listViews(sessionID, tableId(t.id)),
+                        user.authCookie
                     )
-                ).then(tableLists => tableLists.flat())
-                return tables
-            }
-        )
+                )
+            ).then(tableLists => tableLists.flat())
+            return tables
+        })
         res.status(200).json(tables)
     }
 )

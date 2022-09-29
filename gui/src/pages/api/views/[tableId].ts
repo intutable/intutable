@@ -20,14 +20,12 @@ const GET = async (
 ) => {
     try {
         const user = req.session.user!
-        const views = await withReadOnlyConnection(
-            user.authCookie,
-            async sessionID =>
-                coreRequest<ViewDescriptor[]>(
-                    // remember, the table is itself a view
-                    listViews(sessionID, viewId(tableId)),
-                    user.authCookie
-                )
+        const views = await withReadOnlyConnection(user, async sessionID =>
+            coreRequest<ViewDescriptor[]>(
+                // remember, the table is itself a view
+                listViews(sessionID, viewId(tableId)),
+                user.authCookie
+            )
         )
 
         res.status(200).json(views)

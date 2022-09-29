@@ -37,7 +37,7 @@ const PATCH = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        await withReadWriteConnection(user.authCookie, async sessionID => {
+        await withReadWriteConnection(user, async sessionID => {
             const options = await coreRequest<ViewOptions>(
                 getViewOptions(sessionID, viewId),
                 user.authCookie
