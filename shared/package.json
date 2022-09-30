@@ -1,11 +1,9 @@
 {
-    "name": "backend",
+    "name": "shared",
     "version": "0.1.0",
+    "description": "source code shared across frontend and backend.",
     "private": true,
     "scripts": {
-        "build": "tsc",
-        "start": "node dist/index.js",
-        "dev": "npx nodemon -c nodemon.json dev",
         "lint": "cross-env NODE_ENV=development eslint src",
         "lint:fix": "npm run lint -- --fix",
         "lint:production": "cross-env NODE_ENV=production eslint src"

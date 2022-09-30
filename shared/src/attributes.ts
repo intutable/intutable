@@ -23,7 +23,8 @@ export function toSql(obj: unknown): SqlData<unknown> {
     else return obj
 }
 
-export const A = {
+// uh, slightly incomplete.
+export const ATTRIBUTES = {
     COLUMN_INDEX: {
         key: "__columnIndex__",
     },

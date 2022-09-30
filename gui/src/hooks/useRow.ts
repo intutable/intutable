@@ -3,7 +3,7 @@ import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column, Row } from "types"
-import { project_management_constants } from "types/type-annotations/project-management"
+
 import { useColumn } from "./useColumn"
 import { APIContextProvider } from "context/APIContext"
 import { useSnacki } from "./useSnacki"
@@ -37,7 +37,7 @@ export const useRow = (
      */
     const getRowId = (row: Row): number => {
         const uidColumn = view!.metaColumns.find(
-            c => c.name === project_management_constants.UID_KEY
+            c => c.name === "_id"
         )!
         return row[uidColumn.key] as number
     }
@@ -92,7 +92,7 @@ export const useRow = (
             body: {
                 table: asTable(table!.metadata.source).table,
                 condition: [
-                    project_management_constants.UID_KEY,
+                    "_id",
                     getRowId(row),
                 ],
             },
@@ -132,7 +132,7 @@ export const useRow = (
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: [project_management_constants.UID_KEY, rowId],
+                condition: ["_id", rowId],
                 update: {
                     [baseColumnKey]: value,
                 },

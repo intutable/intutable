@@ -20,6 +20,6 @@ export const parse = (view: ViewData): TableData.Serialized => {
             ...r,
             _id: r["_id"] as number,
             __rowIndex__: r[indexColumn.key] as number,
-        })) ,
+        })),
     }
 }

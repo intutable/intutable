@@ -1,4 +1,3 @@
-import { ColumnType } from "@intutable/database/dist/column"
 import {
     createView,
     tableId,
@@ -18,9 +17,11 @@ import {
     ProjectDescriptor,
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
+import { BASIC_TABLE_COLUMNS } from "types/rdg"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 import sanitizeName from "utils/sanitizeName"
 import {
@@ -55,64 +56,72 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 
     const internalName = sanitizeName(name)
 
-    const existingTables = await coreRequest<TableDescriptor[]>(
-        getTablesFromProject(projectId),
-        user.authCookie
-    )
-    if (existingTables.some(t => t.name === internalName))
-        throw Error("alreadyTaken")
+    const tableView = await withReadWriteConnection(user, async sessionID => {
+        const existingTables = await coreRequest<TableDescriptor[]>(
+            getTablesFromProject(sessionID, projectId),
+            user.authCookie
+        )
+        if (existingTables.some(t => t.name === internalName))
+            throw Error("alreadyTaken")
 
-    // create table in project-management with primary "name" column
-    const table = await coreRequest<TableDescriptor>(
-        createTableInProject(user.id, projectId, internalName, [
-            { name: "index", type: ColumnType.integer, options: [] },
-            { name: "name", type: ColumnType.string, options: [] },
-        ]),
-        user.authCookie
-    )
+        // create table in project-management with primary "name" column
+        const table = await coreRequest<TableDescriptor>(
+            createTableInProject(
+                sessionID,
+                user.id,
+                projectId,
+                internalName,
+                BASIC_TABLE_COLUMNS
+            ),
+            user.authCookie
+        )
 
-    // make specifiers for view columns
-    const baseColumns = await coreRequest<PM_Column[]>(
-        getColumnsFromTable(table.id),
-        user.authCookie
-    )
-    const columnSpecs = baseColumns.map(c => {
-        const makeColumnAttributes =
-            defaultColumnAttributeMap[c.name] ||
-            (() => ({} as ColumnSpecifier["attributes"]))
-        return {
-            parentColumnId: c.id,
-            attributes: makeColumnAttributes(),
-        }
+        // make specifiers for view columns
+        const baseColumns = await coreRequest<PM_Column[]>(
+            getColumnsFromTable(sessionID, table.id),
+            user.authCookie
+        )
+        const columnSpecs = baseColumns.map(c => {
+            const makeColumnAttributes =
+                defaultColumnAttributeMap[c.name] ||
+                (() => ({} as ColumnSpecifier["attributes"]))
+            return {
+                parentColumnId: c.id,
+                attributes: makeColumnAttributes(),
+            }
+        })
+
+        // create table view
+        const tableView = await coreRequest<ViewDescriptor>(
+            createView(
+                sessionID,
+                tableId(table.id),
+                name,
+                { columns: columnSpecs, joins: [] },
+                emptyRowOptions(),
+                user.id
+            ),
+            user.authCookie
+        )
+
+        // create default filter view
+        const tableColumns = await coreRequest<ViewInfo>(
+            getViewInfo(sessionID, tableView.id),
+            user.authCookie
+        ).then(i => i.columns)
+        await coreRequest<ViewDescriptor>(
+            createView(
+                sessionID,
+                viewId(tableView.id),
+                defaultViewName(),
+                { columns: [], joins: [] },
+                defaultRowOptions(tableColumns),
+                user.id
+            ),
+            user.authCookie
+        )
+        return tableView
     })
-
-    // create table view
-    const tableView = await coreRequest<ViewDescriptor>(
-        createView(
-            tableId(table.id),
-            name,
-            { columns: columnSpecs, joins: [] },
-            emptyRowOptions(),
-            user.id
-        ),
-        user.authCookie
-    )
-
-    // create default filter view
-    const tableColumns = await coreRequest<ViewInfo>(
-        getViewInfo(tableView.id),
-        user.authCookie
-    ).then(i => i.columns)
-    await coreRequest<ViewDescriptor>(
-        createView(
-            viewId(tableView.id),
-            defaultViewName(),
-            { columns: [], joins: [] },
-            defaultRowOptions(tableColumns),
-            user.id
-        ),
-        user.authCookie
-    )
 
     res.status(200).json(tableView)
 })

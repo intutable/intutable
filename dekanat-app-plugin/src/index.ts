@@ -5,13 +5,20 @@
  * even be a security bonus to create highly specific methods and expose only
  * them for use by the front-end.
  */
+import { readFileSync } from "fs"
+import { randomBytes } from "crypto"
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import {
     Column,
     ColumnType,
-    ColumnOption,
-} from "@intutable/database/dist/column"
-import { insert, select } from "@intutable/database/dist/requests"
+    SimpleColumnOption,
+} from "@intutable/database/dist/types"
+import {
+    openConnection,
+    closeConnection,
+    insert,
+    select,
+} from "@intutable/database/dist/requests"
 import { removeColumn } from "@intutable/project-management/dist/requests"
 import {
     types as lvt,
@@ -20,26 +27,46 @@ import {
 } from "@intutable/lazy-views/"
 
 import * as req from "./requests"
-import { A } from "./attributes"
+import { ATTRIBUTES as A } from "@shared/attributes"
 import { error } from "./internal/error"
 import * as perm from "./permissions/requests"
 
 import { createExampleSchema, insertExampleData } from "./example/load"
 
 let core: PluginLoader
+// default credentials, if none are specified in the config:
 const ADMIN_NAME = "admin@dekanat.de"
+const ADMIN_PASSWORD = "password"
 let adminId: number
 
 export async function init(plugins: PluginLoader) {
     core = plugins
 
+    const configText = readFileSync(`${__dirname}/../../shared/config.json`, {
+        encoding: "utf8",
+    })
+    const configJson = JSON.parse(configText)
+    const username: string = configJson.databaseAdminUsername
+    const password: string = configJson.databaseAdminPassword
+    if (typeof username !== "string" || typeof password !== "string") {
+        // the error sometimes just causes silent failure
+        console.log("error: database credentials not present in config file")
+        throw TypeError("database credentials not present in config file")
+    }
+
+    const sessionID = "dekanat-app-plugin_" + randomBytes(20).toString("hex")
+
+    await core.events.request(openConnection(sessionID, username, password))
+
     // in init.sql until db supports default values
     // await configureColumnAttributes()
 
     // create some custom data
-    const maybeAdminId = await getAdminId()
+    const maybeAdminId = await getAdminId(sessionID)
     if (maybeAdminId === null) {
-        adminId = await createAdmin()
+        const username: string = configJson.appAdminUsername ?? ADMIN_NAME
+        const password: string = configJson.appAdminPassword ?? ADMIN_PASSWORD
+        adminId = await createAdmin(sessionID, username, password)
         console.log("set up admin user")
     } else {
         adminId = maybeAdminId
@@ -49,8 +76,8 @@ export async function init(plugins: PluginLoader) {
     // testing data
     if (maybeAdminId === null) {
         console.log("creating and populating example schema")
-        await createExampleSchema(core, adminId)
-        await insertExampleData(core)
+        await createExampleSchema(core, sessionID, adminId)
+        await insertExampleData(core, sessionID)
     } else console.log("skipped creating example schema")
 
     core.listenForRequests(req.CHANNEL)
@@ -62,11 +89,13 @@ export async function init(plugins: PluginLoader) {
         .on(perm.createUser.name, perm.createUser_)
         .on(perm.deleteUser.name, perm.deleteUser_)
         .on(perm.changeRole.name, perm.changeRole_)
+
+    await core.events.request(closeConnection(sessionID))
 }
 
-async function getAdminId(): Promise<number | null> {
+async function getAdminId(sessionID: string): Promise<number | null> {
     const userRows = await core.events.request(
-        select("users", {
+        select(sessionID, "users", {
             columns: ["_id"],
             condition: ["email", ADMIN_NAME],
         })
@@ -78,70 +107,84 @@ async function getAdminId(): Promise<number | null> {
 }
 
 /** Create admin user */
-async function createAdmin(): Promise<number> {
+async function createAdmin(
+    sessionID: string,
+    username: string,
+    password: string
+): Promise<number> {
+    const passwordHash: string = await core.events
+        .request({
+            channel: "user-authentication",
+            method: "hashPassword",
+            password,
+        })
+        .then(response => response.hash)
     await core.events.request(
-        insert("users", {
-            email: ADMIN_NAME,
-            password:
-                "$argon2i$v=19$m=4096,t=3,p=1$vzOdnV+KUtQG3va/nlOOxg$vzo1JP16rQKYmXzQgYT9VjUXUXPA6cWHHAvXutrRHtM",
+        insert(sessionID, "users", {
+            email: username,
+            password: passwordHash,
         })
     )
-    return getAdminId().then(definitelyNumber => definitelyNumber!)
+    return getAdminId(sessionID).then(definitelyNumber => definitelyNumber!)
 }
 
 /** Create the custom attributes for views' columns we need. */
-async function configureColumnAttributes(): Promise<void> {
+async function configureColumnAttributes(sessionID: string): Promise<void> {
     const customColumns: Column[] = [
         {
             name: "displayName",
             type: ColumnType.text,
-            options: [ColumnOption.nullable],
+            options: [SimpleColumnOption.nullable],
         },
         {
             name: "userPrimary",
             type: ColumnType.integer,
-            options: [ColumnOption.notNullable],
+            options: [SimpleColumnOption.notNullable],
         },
         {
             name: "editable",
             type: ColumnType.integer,
-            options: [ColumnOption.notNullable],
+            options: [SimpleColumnOption.notNullable],
         },
         {
             name: "editor",
             type: ColumnType.text,
-            options: [ColumnOption.nullable],
+            options: [SimpleColumnOption.nullable],
         },
         {
             name: "formatter",
             type: ColumnType.text,
-            options: [ColumnOption.nullable],
+            options: [SimpleColumnOption.nullable],
         },
     ]
     await Promise.all(
-        customColumns.map(c => core.events.request(lvr.addColumnAttribute(c)))
+        customColumns.map(c =>
+            core.events.request(lvr.addColumnAttribute(sessionID, c))
+        )
     )
 }
 
 async function addColumnToTable_({
+    sessionID,
     tableId,
     column,
     joinId,
     createInViews,
 }: CoreRequest): Promise<CoreResponse> {
-    return addColumnToTable(tableId, column, joinId, createInViews)
+    return addColumnToTable(sessionID, tableId, column, joinId, createInViews)
 }
 async function addColumnToTable(
+    sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
     column: lvt.ColumnSpecifier,
     joinId: number | null = null,
     createInViews = true
 ): Promise<lvt.ColumnInfo> {
     const tableColumn = (await core.events.request(
-        lvr.addColumnToView(tableId, column, joinId)
+        lvr.addColumnToView(sessionID, tableId, column, joinId)
     )) as lvt.ColumnInfo
     if (createInViews)
-        await addColumnToFilterViews(tableId, {
+        await addColumnToFilterViews(sessionID, tableId, {
             parentColumnId: tableColumn.id,
             attributes: tableColumn.attributes,
         })
@@ -149,37 +192,41 @@ async function addColumnToTable(
 }
 
 async function addColumnToFilterViews_({
+    sessionID,
     tableId,
     column,
 }: CoreRequest): Promise<CoreResponse> {
-    return addColumnToFilterViews(tableId, column)
+    return addColumnToFilterViews(sessionID, tableId, column)
 }
 async function addColumnToFilterViews(
+    sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
     column: lvt.ColumnSpecifier
 ): Promise<lvt.ColumnInfo[]> {
     const filterViews = (await core.events.request(
-        lvr.listViews(selectable.viewId(tableId))
+        lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
     return Promise.all(
         filterViews.map(v =>
-            core.events.request(lvr.addColumnToView(v.id, column))
+            core.events.request(lvr.addColumnToView(sessionID, v.id, column))
         )
     )
 }
 
 async function removeColumnFromTable_({
+    sessionID,
     tableId,
     columnId,
 }: CoreRequest): Promise<CoreResponse> {
-    return removeColumnFromTable(tableId, columnId)
+    return removeColumnFromTable(sessionID, tableId, columnId)
 }
 async function removeColumnFromTable(
+    sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
     columnId: lvt.ColumnInfo["id"]
 ) {
     let tableInfo = (await core.events.request(
-        lvr.getViewInfo(tableId)
+        lvr.getViewInfo(sessionID, tableId)
     )) as lvt.ViewInfo
 
     if (!selectable.isTable(tableInfo.source))
@@ -198,13 +245,13 @@ async function removeColumnFromTable(
     const kind = column.attributes._kind
     switch (kind) {
         case "standard":
-            await removeStandardColumn(tableId, column)
+            await removeStandardColumn(sessionID, tableId, column)
             break
         case "link":
-            await removeLinkColumn(tableId, column)
+            await removeLinkColumn(sessionID, tableId, column)
             break
         case "lookup":
-            await removeLookupColumn(tableId, columnId)
+            await removeLookupColumn(sessionID, tableId, columnId)
             break
         default:
             return error(
@@ -217,14 +264,16 @@ async function removeColumnFromTable(
     // in case of links, more columns than the one specified may have
     // disappeared, so we need to refresh.
     tableInfo = (await core.events.request(
-        lvr.getViewInfo(tableId)
+        lvr.getViewInfo(sessionID, tableId)
     )) as lvt.ViewInfo
     const indexKey = A.COLUMN_INDEX.key
     const columnUpdates = getColumnIndexUpdates(tableInfo.columns)
 
     await Promise.all(
         columnUpdates.map(async c =>
-            changeTableColumnAttributes(tableId, c.id, { [indexKey]: c.index })
+            changeTableColumnAttributes(sessionID, tableId, c.id, {
+                [indexKey]: c.index,
+            })
         )
     )
 
@@ -232,11 +281,12 @@ async function removeColumnFromTable(
 }
 
 async function removeLinkColumn(
+    sessionID: string,
     tableId: number,
     column: lvt.ColumnInfo
 ): Promise<void> {
     const info = (await core.events.request(
-        lvr.getViewInfo(tableId)
+        lvr.getViewInfo(sessionID, tableId)
     )) as lvt.ViewInfo
     const join = info.joins.find(j => j.id === column.joinId)
 
@@ -253,52 +303,57 @@ async function removeLinkColumn(
     )
 
     await Promise.all(
-        lookupColumns.map(async c => removeColumnFromTable(tableId, c.id))
+        lookupColumns.map(async c =>
+            removeColumnFromTable(sessionID, tableId, c.id)
+        )
     )
     // remove link column
-    await removeColumnFromViews(tableId, column.id)
-    await core.events.request(lvr.removeColumnFromView(column.id))
+    await removeColumnFromViews(sessionID, tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(sessionID, column.id))
     // remove join and FK column
-    await core.events.request(lvr.removeJoinFromView(join.id))
+    await core.events.request(lvr.removeJoinFromView(sessionID, join.id))
     const fkColumnId = join.on[0]
-    await core.events.request(removeColumn(fkColumnId))
+    await core.events.request(removeColumn(sessionID, fkColumnId))
 }
 
 async function removeStandardColumn(
+    sessionID: string,
     tableId: number,
     column: lvt.ColumnInfo
 ): Promise<void> {
-    await removeColumnFromViews(tableId, column.id)
-    await core.events.request(lvr.removeColumnFromView(column.id))
-    await core.events.request(removeColumn(column.parentColumnId))
+    await removeColumnFromViews(sessionID, tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(sessionID, column.id))
+    await core.events.request(removeColumn(sessionID, column.parentColumnId))
 }
 
 async function removeLookupColumn(
+    sessionID: string,
     tableId: number,
     columnId: number
 ): Promise<void> {
-    await removeColumnFromViews(tableId, columnId)
-    await core.events.request(lvr.removeColumnFromView(columnId))
+    await removeColumnFromViews(sessionID, tableId, columnId)
+    await core.events.request(lvr.removeColumnFromView(sessionID, columnId))
 }
 
 async function removeColumnFromViews(
+    sessionID: string,
     tableId: number,
     parentColumnId: number
 ): Promise<void> {
     const views = (await core.events.request(
-        lvr.listViews(selectable.viewId(tableId))
+        lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
     await Promise.all(
         views.map(async v => {
             const info = (await core.events.request(
-                lvr.getViewInfo(v.id)
+                lvr.getViewInfo(sessionID, v.id)
             )) as lvt.ViewInfo
             const viewColumn = info.columns.find(
                 c => c.parentColumnId === parentColumnId
             )
             if (viewColumn)
                 await core.events.request(
-                    lvr.removeColumnFromView(viewColumn.id)
+                    lvr.removeColumnFromView(sessionID, viewColumn.id)
                 )
         })
     )
@@ -322,28 +377,37 @@ function getColumnIndexUpdates(
 }
 
 async function changeTableColumnAttributes(
+    sessionID: string,
     tableId: number,
     columnId: number,
     attributes: Partial<lvt.ColumnInfo["attributes"]>,
     changeInViews = true
 ): Promise<void> {
-    await core.events.request(lvr.changeColumnAttributes(columnId, attributes))
+    await core.events.request(
+        lvr.changeColumnAttributes(sessionID, columnId, attributes)
+    )
     if (changeInViews)
-        return changeColumnAttributesInViews(tableId, columnId, attributes)
+        return changeColumnAttributesInViews(
+            sessionID,
+            tableId,
+            columnId,
+            attributes
+        )
 }
 
 async function changeColumnAttributesInViews(
+    sessionID: string,
     tableId: number,
     columnId: number,
     attributes: Partial<lvt.ColumnInfo["attributes"]>
 ): Promise<void> {
     const views = (await core.events.request(
-        lvr.listViews(selectable.viewId(tableId))
+        lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
     const viewColumns = await Promise.all(
         views.map(async v => {
             const info = (await core.events.request(
-                lvr.getViewInfo(v.id)
+                lvr.getViewInfo(sessionID, v.id)
             )) as lvt.ViewInfo
             const viewColumn = info.columns.find(
                 c => c.parentColumnId === columnId
@@ -354,7 +418,9 @@ async function changeColumnAttributesInViews(
 
     await Promise.all(
         viewColumns.map(async c =>
-            core.events.request(lvr.changeColumnAttributes(c.id, attributes))
+            core.events.request(
+                lvr.changeColumnAttributes(sessionID, c.id, attributes)
+            )
         )
     )
 }

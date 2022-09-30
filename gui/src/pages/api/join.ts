@@ -1,4 +1,4 @@
-import { ColumnType } from "@intutable/database/dist/column"
+import { ColumnType } from "@intutable/database/dist/types"
 import {
     addJoinToView,
     getViewInfo,
@@ -12,8 +12,8 @@ import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dis
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
-import { project_management_constants } from "types/type-annotations/project-management"
 import makeForeignKeyName from "utils/makeForeignKeyName"
 import { linkColumnAttributes } from "@backend/defaults"
 import { addColumnToTable } from "@backend/requests"
@@ -39,55 +39,64 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     }
     const user = req.session.user!
 
-    const tableInfo = await coreRequest<ViewInfo>(
-        getViewInfo(tableId),
-        user.authCookie
-    )
+    const join = await withReadWriteConnection(user, async sessionID => {
+        const tableInfo = await coreRequest<ViewInfo>(
+            getViewInfo(sessionID, tableId),
+            user.authCookie
+        )
 
-    // create foreign key column
-    const fkColumn = await coreRequest<PM_Column>(
-        createColumnInTable(
-            selectable.getId(tableInfo.source),
-            makeForeignKeyName(tableInfo),
-            ColumnType.integer
-        ),
-        user.authCookie
-    )
+        // create a table column with the foreign key
+        const fkColumn = await coreRequest<PM_Column>(
+            createColumnInTable(
+                sessionID,
+                selectable.getId(tableInfo.source),
+                makeForeignKeyName(tableInfo),
+                ColumnType.integer
+            ),
+            user.authCookie
+        )
 
-    const foreignTableInfo = await coreRequest<ViewInfo>(
-        getViewInfo(foreignTableId),
-        user.authCookie
-    )
+        // find out the foreign table's ID column (the actual primary key)
+        // and its "user primary" column which will be used to represent it
+        // to the user
+        const foreignTableInfo = await coreRequest<ViewInfo>(
+            getViewInfo(sessionID, foreignTableId),
+            user.authCookie
+        )
+        const foreignIdColumn = foreignTableInfo.columns.find(
+            c => c.name === "_id"
+        )!
+        const userPrimaryColumn = foreignTableInfo.columns.find(
+            c => c.attributes.userPrimary! === 1
+        )!
+        const displayName = (userPrimaryColumn.attributes.displayName ||
+            userPrimaryColumn.name) as string
 
-    const foreignIdColumn = foreignTableInfo.columns.find(
-        c => c.name === project_management_constants.UID_KEY
-    )!
-    const primaryColumn = foreignTableInfo.columns.find(
-        c => c.attributes.userPrimary! === 1
-    )!
-    const displayName = (primaryColumn.attributes.displayName ||
-        primaryColumn.name) as string
-    const join = await coreRequest<JoinDescriptor>(
-        addJoinToView(tableId, {
-            foreignSource: viewId(foreignTableId),
-            on: [fkColumn.id, "=", foreignIdColumn.id],
-            columns: [],
-        }),
-        user.authCookie
-    )
+        // create the join metadata in the view plugin
+        const join = await coreRequest<JoinDescriptor>(
+            addJoinToView(sessionID, tableId, {
+                foreignSource: viewId(foreignTableId),
+                on: [fkColumn.id, "=", foreignIdColumn.id],
+                columns: [],
+            }),
+            user.authCookie
+        )
 
-    const columnIndex = tableInfo.columns.length
-    const attributes = linkColumnAttributes(displayName, columnIndex)
+        const columnIndex = tableInfo.columns.length
+        const attributes = linkColumnAttributes(displayName, columnIndex)
 
-    // create representative link column
-    await coreRequest(
-        addColumnToTable(
-            tableId,
-            { parentColumnId: primaryColumn.id, attributes },
-            join.id
-        ),
-        user.authCookie
-    )
+        // create representative link column
+        await coreRequest(
+            addColumnToTable(
+                sessionID,
+                tableId,
+                { parentColumnId: userPrimaryColumn.id, attributes },
+                join.id
+            ),
+            user.authCookie
+        )
+        return join
+    })
 
     res.status(200).json(join)
 })

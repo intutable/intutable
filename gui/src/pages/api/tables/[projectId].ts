@@ -6,6 +6,7 @@ import {
 } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
+import { withReadOnlyConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 
@@ -20,20 +21,22 @@ import { withSessionRoute } from "auth"
 const GET = withCatchingAPIRoute(
     async (req, res, projectId: ProjectDescriptor["id"]) => {
         const user = req.session.user!
-        const baseTables = await coreRequest<TableDescriptor[]>(
-            getTablesFromProject(projectId),
-            user.authCookie
-        )
-
-        const tables = await Promise.all(
-            baseTables.map(t =>
-                coreRequest<ViewDescriptor[]>(
-                    listViews(tableId(t.id)),
-                    user.authCookie
-                )
+        const tables = await withReadOnlyConnection(user, async sessionID => {
+            const baseTables = await coreRequest<TableDescriptor[]>(
+                getTablesFromProject(sessionID, projectId),
+                user.authCookie
             )
-        ).then(tableLists => tableLists.flat())
 
+            const tables = await Promise.all(
+                baseTables.map(t =>
+                    coreRequest<ViewDescriptor[]>(
+                        listViews(sessionID, tableId(t.id)),
+                        user.authCookie
+                    )
+                )
+            ).then(tableLists => tableLists.flat())
+            return tables
+        })
         res.status(200).json(tables)
     }
 )
