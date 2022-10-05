@@ -1,7 +1,6 @@
 import { EditorComponent } from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { headerRenderer } from "@datagrid/renderers"
-import { PLACEHOLDER } from "api/utils/SerDes/PLACEHOLDER_KEYS"
 import { Column, MetaColumnProps } from "types"
 
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
@@ -142,8 +141,7 @@ export class ColumnUtility {
     static isAppColumn(
         column: Column.Serialized | Column.Deserialized
     ): boolean {
-        return (
-            column.key === PLACEHOLDER.COL_SELECTOR || column._kind === "index"
-        )
+        // `select-row` is defined by rdg – do NOT change this
+        return column.key === "select-row" || column._kind === "index"
     }
 }

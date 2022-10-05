@@ -1,7 +1,4 @@
-import {
-    Column as PM_Column,
-    ColumnType
-} from "@intutable/database/dist/types"
+import { Column as PM_Column, ColumnType } from "@intutable/database/dist/types"
 import type {
     ColumnInfo,
     ParentColumnSpecifier as GroupColumn,
@@ -74,7 +71,7 @@ export namespace ViewData {
 // #################################################################
 
 export type Row = {
-    _id: number
+    readonly _id: number
     __rowIndex__: number
     [key: string]: unknown
 }
