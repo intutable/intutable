@@ -12,7 +12,7 @@ import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-import { project_management_constants } from "types/type-annotations/project-management"
+import { withReadWriteConnection } from "api/utils/databaseConnection"
 
 /**
  * Link rows in linked tables, by setting the value in the linking table's
@@ -36,25 +36,30 @@ const POST = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        const tableInfo = await coreRequest<ViewInfo>(
-            getViewInfo(tableId),
-            user.authCookie
-        )
-        const baseTableInfo = await coreRequest<TableInfo>(
-            getTableInfo(asTable(tableInfo.source).table.id),
-            user.authCookie
-        )
+        await withReadWriteConnection(user, async sessionID => {
+            const tableInfo = await coreRequest<ViewInfo>(
+                getViewInfo(sessionID, tableId),
+                user.authCookie
+            )
 
-        const join = tableInfo.joins.find(j => j.id === joinId)!
-        const fkColumn = baseTableInfo.columns.find(c => c.id === join.on[0])!
+            const baseTableInfo = await coreRequest<TableInfo>(
+                getTableInfo(sessionID, asTable(tableInfo.source).table.id),
+                user.authCookie
+            )
 
-        await coreRequest(
-            update(asTable(tableInfo.source).table.key, {
-                condition: [project_management_constants.UID_KEY, rowId],
-                update: { [fkColumn.name]: value },
-            }),
-            user.authCookie
-        )
+            const join = tableInfo.joins.find(j => j.id === joinId)!
+            const fkColumn = baseTableInfo.columns.find(
+                c => c.id === join.on[0]
+            )!
+
+            await coreRequest(
+                update(sessionID, asTable(tableInfo.source).table.key, {
+                    condition: ["_id", rowId],
+                    update: { [fkColumn.name]: value },
+                }),
+                user.authCookie
+            )
+        })
 
         res.status(200).json({})
     }

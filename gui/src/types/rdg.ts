@@ -1,3 +1,4 @@
+import { Column as PM_Column, ColumnType } from "@intutable/database/dist/types"
 import type {
     ColumnInfo,
     ParentColumnSpecifier as GroupColumn,
@@ -7,7 +8,15 @@ import type {
 } from "@intutable/lazy-views"
 import type { Filter } from "./filter"
 import { Column as ReactDataGrid_Column } from "react-data-grid"
-import { project_management } from "./type-annotations/project-management"
+
+/**
+ * The two basic columns that every table must have (in addition to _id, but
+ * the plugin creates that automatically)
+ */
+export const BASIC_TABLE_COLUMNS: PM_Column[] = [
+    { name: "index", type: ColumnType.integer, options: [] },
+    { name: "name", type: ColumnType.string, options: [] },
+]
 
 // #################################################################
 //       Table

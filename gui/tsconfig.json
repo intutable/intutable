@@ -17,6 +17,7 @@
         "baseUrl": "./src",
         "experimentalDecorators": true,
         "paths": {
+            "@shared/*": ["../../shared/src/*"],
             "@backend/*": ["../../dekanat-app-plugin/src/*"],
             "@datagrid/*": ["components/DataGrid/*"]
         }

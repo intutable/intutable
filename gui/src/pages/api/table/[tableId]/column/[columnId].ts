@@ -1,19 +1,18 @@
 import {
     changeColumnAttributes,
     ColumnInfo,
-    getColumnInfo,
     getViewInfo,
     listViews,
     viewId,
     ViewDescriptor,
     ViewInfo,
 } from "@intutable/lazy-views"
-
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
-import { withSessionRoute } from "auth"
+import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
-import { objToSql } from "utils/objToSql"
+import { withSessionRoute } from "auth"
+import { toSql } from "@shared/attributes"
 
 import { removeColumnFromTable } from "@backend/requests"
 
@@ -45,53 +44,62 @@ const PATCH = withCatchingAPIRoute(
 
         const user = req.session.user!
 
-        const tableInfo = await coreRequest<ViewInfo>(
-            getViewInfo(tableId),
-            user.authCookie
-        )
+        const updatedColumn = await withReadWriteConnection(
+            user,
+            async sessionID => {
+                const tableInfo = await coreRequest<ViewInfo>(
+                    getViewInfo(sessionID, tableId),
+                    user.authCookie
+                )
 
-        // check if the name is already taken
-        if (
-            update["displayName"] !== undefined &&
-            tableInfo.columns.some(
-                c => c.attributes.displayName === update.displayName
-            )
-        )
-            throw Error("alreadyTaken")
+                // check if the name is already taken
+                if (
+                    update["displayName"] !== undefined &&
+                    tableInfo.columns.some(
+                        c => c.attributes.displayName === update.displayName
+                    )
+                )
+                    throw Error("alreadyTaken")
 
-        // change property in table column
-        const updatedColumn = await coreRequest<ColumnInfo>(
-            changeColumnAttributes(columnId, objToSql(update)),
-            user.authCookie
-        )
+                // change property in table column
+                const updatedColumn = await coreRequest<ColumnInfo>(
+                    changeColumnAttributes(sessionID, columnId, toSql(update)),
+                    user.authCookie
+                )
 
-        if (cascade_) {
-            // change property in view columns
-            const filterViews = await coreRequest<ViewDescriptor[]>(
-                listViews(viewId(tableId)),
-                user.authCookie
-            )
-            await Promise.all(
-                filterViews.map(async v => {
-                    const viewInfo = await coreRequest<ViewInfo>(
-                        getViewInfo(v.id),
+                if (cascade_) {
+                    // change property in all view columns
+                    const filterViews = await coreRequest<ViewDescriptor[]>(
+                        listViews(sessionID, viewId(tableId)),
                         user.authCookie
                     )
-                    // we don't want to be accidentally renaming links or lookups.
-                    const theColumn = viewInfo.columns.find(
-                        c => c.parentColumnId === columnId && c.joinId === null
-                    )
-                    if (theColumn !== undefined)
-                        await coreRequest<ColumnInfo>(
-                            changeColumnAttributes(
-                                theColumn.id,
-                                objToSql(update)
-                            ),
+                    const changeAttributePromises = filterViews.map(async v => {
+                        const viewInfo = await coreRequest<ViewInfo>(
+                            getViewInfo(sessionID, v.id),
                             user.authCookie
                         )
-                })
-            )
-        }
+                        // we don't want to be accidentally renaming
+                        // links or lookups, so no join columns.
+                        const theColumn = viewInfo.columns.find(
+                            c =>
+                                c.parentColumnId === columnId &&
+                                c.joinId === null
+                        )
+                        if (theColumn !== undefined)
+                            await coreRequest<ColumnInfo>(
+                                changeColumnAttributes(
+                                    sessionID,
+                                    theColumn.id,
+                                    toSql(update)
+                                ),
+                                user.authCookie
+                            )
+                    })
+                    await Promise.all(changeAttributePromises)
+                }
+                return updatedColumn
+            }
+        )
 
         res.status(200).json(updatedColumn)
     }
@@ -116,20 +124,23 @@ const DELETE = withCatchingAPIRoute(
     ) => {
         const user = req.session.user!
 
-        const column = await coreRequest<ColumnInfo>(
-            getColumnInfo(columnId),
-            user.authCookie
-        )
+        await withReadWriteConnection(user, async sessionID => {
+            const tableInfo = await coreRequest<ViewInfo>(
+                getViewInfo(sessionID, tableId),
+                user.authCookie
+            )
+            const column = tableInfo.columns.find(c => c.id === columnId)
 
-        if (!column) throw Error("columnNotFound")
-        if (column.attributes.userPrimary)
-            // cannot delete the primary column
-            throw Error("deleteUserPrimary")
+            if (!column) throw Error("columnNotFound")
+            if (column.attributes.userPrimary)
+                // cannot delete the primary column
+                throw Error("deleteUserPrimary")
 
-        await coreRequest(
-            removeColumnFromTable(tableId, columnId),
-            user.authCookie
-        )
+            await coreRequest(
+                removeColumnFromTable(sessionID, tableId, columnId),
+                user.authCookie
+            )
+        })
 
         res.status(200).json({})
     }

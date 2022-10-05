@@ -4,8 +4,8 @@
 import {
     Column,
     ColumnType,
-    ColumnOption,
-} from "@intutable/database/dist/column"
+    SimpleColumnOption,
+} from "@intutable/database/dist/types"
 import {
     TableDescriptor,
     ViewDescriptor,
@@ -43,7 +43,7 @@ export const PERSONEN: TableSpec = {
             baseColumn: {
                 name: "_id",
                 type: ColumnType.increments,
-                options: [ColumnOption.primary],
+                options: [SimpleColumnOption.primary],
             },
             attributes: standardColumnAttributes("ID", "number", 0),
         },
@@ -167,7 +167,7 @@ export const ORGANE: TableSpec = {
             baseColumn: {
                 name: "_id",
                 type: ColumnType.increments,
-                options: [ColumnOption.primary],
+                options: [SimpleColumnOption.primary],
             },
             attributes: standardColumnAttributes("ID", "number", 0),
         },
@@ -305,7 +305,7 @@ export const ROLLEN = {
             baseColumn: {
                 name: "_id",
                 type: ColumnType.increments,
-                options: [ColumnOption.primary],
+                options: [SimpleColumnOption.primary],
             },
             attributes: standardColumnAttributes("ID", "number", 0),
         },
@@ -321,7 +321,7 @@ export const ROLLEN = {
             baseColumn: {
                 name: "rolle",
                 type: ColumnType.string,
-                options: [ColumnOption.nullable],
+                options: [SimpleColumnOption.nullable],
             },
             attributes: standardColumnAttributes("Rolle", "string", 2, true),
         },
