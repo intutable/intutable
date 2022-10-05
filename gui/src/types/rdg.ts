@@ -61,8 +61,8 @@ export namespace ViewData {
 //       Row
 // #################################################################
 
-export type Row = project_management.UID & {
-    _id: number
+export type Row = {
+    readonly _id: number
     __rowIndex__: number
     [key: string]: unknown
 }

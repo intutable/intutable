@@ -21,9 +21,10 @@ import {
     ListItem,
     ListItemButton,
 } from "@mui/material"
-import { isAppColumn } from "api/utils/SerDes/column"
+
 import { useLink } from "hooks/useLink"
 import { TableColumn } from "types"
+import { ColumnUtility } from "utils/ColumnUtility"
 
 type ModalProps = {
     open: boolean
@@ -74,7 +75,7 @@ const Modal: React.FC<ModalProps> = props => {
                     <>
                         <List>
                             {data!.columns
-                                .filter(c => !isAppColumn(c))
+                                .filter(c => !ColumnUtility.isAppColumn(c))
                                 .map((col, i) => (
                                     <ListItem
                                         key={i}

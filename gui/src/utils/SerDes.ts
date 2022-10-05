@@ -2,7 +2,7 @@ import { Column, Row, ViewData } from "types"
 import { ColumnUtility } from "./ColumnUtility"
 import { SelectColumn } from "react-data-grid"
 
-export class SerDes {
+export default class SerDes {
     constructor() {}
 
     /** not used atm */

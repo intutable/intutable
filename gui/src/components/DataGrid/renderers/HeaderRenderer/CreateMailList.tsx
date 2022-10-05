@@ -1,12 +1,13 @@
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import DownloadingIcon from "@mui/icons-material/Downloading"
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
-import { isAppColumn } from "api/utils/SerDes/column"
+
 import { useAPI } from "context"
 import { useView } from "hooks/useView"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
+import { ColumnUtility } from "utils/ColumnUtility"
 import { ExportViewDialog } from "../../Toolbar/ToolbarItems/ExportView/ExportViewDialog"
 
 export type CreateMailListProps = {
@@ -36,7 +37,7 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
         () =>
             viewData
                 ? viewData.columns
-                      .filter(col => isAppColumn(col) === false)
+                      .filter(col => ColumnUtility.isAppColumn(col) === false)
                       .filter(col => col._cellContentType === "email")
                       .map(col => col._id!)
                 : null,
