@@ -4,9 +4,11 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    Divider,
     ListItemText,
     MenuItem,
     Stack,
+    Tooltip,
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
@@ -14,32 +16,57 @@ import { useView } from "hooks/useView"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
+import InfoIcon from "@mui/icons-material/Info"
+import { ChangeCellType } from "./ChangeCellType"
 
 type AttributeProps = {
     label: string
-    value: string
+    helperText?: string
+    value: React.ReactNode
 }
 
 const Attribute: React.FC<AttributeProps> = props => {
     const theme = useTheme()
     const { label, value } = props
+
     return (
-        <Stack>
-            <Typography variant="body1" sx={{ mt: 1.5 }}>
-                {value}
-            </Typography>
-            <Typography
-                variant="caption"
+        <>
+            <Stack
                 sx={{
-                    mt: -0.5,
-                    fontStyle: "italic",
-                    color: theme.palette.grey[700],
-                    fontSize: "60%",
+                    my: 2,
                 }}
             >
-                {label}
-            </Typography>
-        </Stack>
+                <Typography variant="body1">{value}</Typography>
+                <Typography
+                    variant="caption"
+                    sx={{
+                        mt: -0.3,
+                        fontStyle: "italic",
+                        color: theme.palette.grey[700],
+                        fontSize: "60%",
+                        display: "flex",
+                        alignItems: "center",
+                    }}
+                >
+                    {label}
+                    {props.helperText && (
+                        <Tooltip
+                            arrow
+                            title={props.helperText}
+                            placement="right"
+                        >
+                            <InfoIcon
+                                sx={{
+                                    ml: 0.4,
+                                    fontSize: 10,
+                                }}
+                            />
+                        </Tooltip>
+                    )}
+                </Typography>
+            </Stack>
+            <Divider />
+        </>
     )
 }
 
@@ -67,16 +94,18 @@ const Modal: React.FC<ModalProps> = props => {
 
     return (
         <Dialog open={open} onClose={() => onClose()}>
-            <DialogTitle>Spalten-Eigenschaften</DialogTitle>
+            <DialogTitle>Eigenschaften</DialogTitle>
             <DialogContent>
                 <Attribute label={"Name"} value={column.name as string} />
                 <Attribute
-                    label={"Spalten-Typ"}
+                    label="Spalten-Typ"
+                    helperText="'Standard', 'Link', 'Lookup' und 'Index' sind die übergeordneten Spaltentypen."
                     value={column._kind as string}
                 />
                 <Attribute
-                    label={"Zellen-Typ"}
-                    value={column._cellContentType as string}
+                    label="Zellen-Typ"
+                    helperText="Typ des Inhalts der Zellen einer Spalte, bspw. 'Text' oder 'Datum'."
+                    value={<ChangeCellType column={column} />}
                 />
                 <Attribute
                     label={"Editierbar"}

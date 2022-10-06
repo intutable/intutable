@@ -10,7 +10,8 @@ export class Text extends Cell {
             (isJSONObject(value) === false &&
                 isJSONArray(value) == false &&
                 typeof value === "string") ||
-            typeof value === "number"
+            typeof value === "number" ||
+            value == null
         )
     }
 }
