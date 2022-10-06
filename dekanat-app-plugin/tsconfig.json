@@ -1,4 +1,8 @@
 {
+    "references": [
+        { "path": "../shared" }
+    ],
+    "include": ["./src/**/*.ts"],
     "compilerOptions": {
         "moduleResolution": "node",
         "module": "commonjs",
@@ -9,12 +13,11 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "baseUrl": "./src",
+        "baseUrl": ".",
         "allowJs": true,
         "checkJs": true,
         "outDir": "./dist",
-        "paths": {
-            "@shared/*": ["../../shared/src/*"]
-        }
+        "composite": true,
+        "rootDir": "./src"
     }
 }

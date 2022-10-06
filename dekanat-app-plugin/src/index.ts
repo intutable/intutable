@@ -27,7 +27,7 @@ import {
 } from "@intutable/lazy-views/"
 
 import * as req from "./requests"
-import { ATTRIBUTES as A } from "@shared/attributes"
+import { ATTRIBUTES as A } from "../../shared/dist/attributes"
 import { error } from "./internal/error"
 import * as perm from "./permissions/requests"
 
@@ -404,7 +404,7 @@ async function changeColumnAttributesInViews(
     const views = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
-    const viewColumns = await Promise.all(
+    const viewColumns: (lvt.ColumnInfo | undefined)[] = await Promise.all(
         views.map(async v => {
             const info = (await core.events.request(
                 lvr.getViewInfo(sessionID, v.id)
@@ -412,15 +412,16 @@ async function changeColumnAttributesInViews(
             const viewColumn = info.columns.find(
                 c => c.parentColumnId === columnId
             )
-            return viewColumn || null
+            return viewColumn
         })
     )
 
     await Promise.all(
-        viewColumns.map(async c =>
+        viewColumns.map(async c => {
+            if (c === undefined) return
             core.events.request(
                 lvr.changeColumnAttributes(sessionID, c.id, attributes)
             )
-        )
+        })
     )
 }
