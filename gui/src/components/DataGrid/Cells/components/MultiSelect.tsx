@@ -240,8 +240,4 @@ export class MultiSelect extends Cell {
             </>
         )
     }
-
-    isValid(value: unknown) {
-        return typeof value === "string"
-    }
 }

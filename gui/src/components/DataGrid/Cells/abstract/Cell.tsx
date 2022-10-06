@@ -7,6 +7,7 @@ import { styled } from "@mui/material/styles"
 import React, { useRef, useEffect } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
+import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
 
 class CellError extends Error {
@@ -213,7 +214,16 @@ export default abstract class Cell
         return <Box>{content}</Box>
     }
 
-    public abstract isValid(value: unknown): boolean
+    public isValid(value: unknown): boolean {
+        // default validation for text based editors
+        return (
+            (isJSONObject(value) === false &&
+                isJSONArray(value) == false &&
+                typeof value === "string") ||
+            typeof value === "number" ||
+            value == null
+        )
+    }
 
     public parse(value: unknown): unknown {
         return value // default is to just return the value and don't parse it

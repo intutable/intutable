@@ -16,7 +16,7 @@ const parse_dd_MM_yyyy = (str: string) =>
 export abstract class TempusCell extends Cell {
     // https://date-fns.org/v2.29.3/docs/isValid
     isValid(value: unknown): boolean {
-        return isValidTempus(value)
+        return value == null || isValidTempus(value)
     }
 
     /** Wether the value is a formatted time or date string,

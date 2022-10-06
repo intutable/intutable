@@ -10,6 +10,7 @@ export class Hyperlink extends Cell {
     label = "Hyperlink"
 
     isValid(value: unknown): boolean {
+        if (value == null) return true
         if (typeof value !== "string") return false
 
         try {

@@ -11,6 +11,8 @@ export class Bool extends Cell {
     editor = () => null
 
     isValid(value: unknown): boolean {
+        if (value == null) return true
+
         if (typeof value === "string")
             return value === "true" || value === "false"
 
