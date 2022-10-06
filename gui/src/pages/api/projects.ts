@@ -16,7 +16,6 @@ import { withSessionRoute } from "auth"
 const GET = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
     const projects = await withReadOnlyConnection(user, async sessionID => {
-        console.log("in withConnection function...")
         return coreRequest<ProjectDescriptor[]>(
             getProjects(sessionID, user.id),
             user.authCookie

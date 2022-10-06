@@ -1,4 +1,5 @@
 {
+    "include": ["./src/**/*.ts"],
     "compilerOptions": {
         "moduleResolution": "node",
         "module": "commonjs",
@@ -9,9 +10,11 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "baseUrl": "./src",
+        "baseUrl": ".",
         "allowJs": true,
         "checkJs": true,
         "outDir": "./dist",
+        "composite": true,
+        "rootDir": "./src"
     }
 }
