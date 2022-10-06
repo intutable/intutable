@@ -27,7 +27,7 @@ import {
 } from "@intutable/lazy-views/"
 
 import * as req from "./requests"
-import { ATTRIBUTES as A } from "@shared/attributes"
+import { ATTRIBUTES as A } from "../../shared/dist/attributes"
 import { error } from "./internal/error"
 import * as perm from "./permissions/requests"
 

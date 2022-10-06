@@ -1,4 +1,7 @@
 {
+    "references": [
+        { "path": "../shared" }
+    ],
     "compilerOptions": {
         "moduleResolution": "node",
         "module": "commonjs",
