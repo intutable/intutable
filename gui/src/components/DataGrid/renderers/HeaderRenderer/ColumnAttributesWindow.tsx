@@ -105,7 +105,7 @@ const Modal: React.FC<ModalProps> = props => {
                 <Attribute
                     label="Zellen-Typ"
                     helperText="Typ des Inhalts der Zellen einer Spalte, bspw. 'Text' oder 'Datum'."
-                    value={<ChangeCellType column={column} />}
+                    value={<ChangeCellType onClose={onClose} column={column} />}
                 />
                 <Attribute
                     label={"Editierbar"}

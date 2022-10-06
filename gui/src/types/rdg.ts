@@ -424,8 +424,6 @@ type DatabaseColumnAttributes = {
     userPrimary: 0 | 1
     displayName: string
     editable?: 1 | 0 | null
-    // editor: string
-    // formatter: string
     width?: string | null
     minWidth?: string | null
     maxWidth?: string | null
@@ -439,11 +437,6 @@ type DatabaseColumnAttributes = {
     resizable?: 1 | 0 | null
     sortable?: 1 | 0 | null
     sortDescendingFirst?: 1 | 0 | null
-    // renderFormatter?: 1 | 0 | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
-    // editOnClick?: 1 | 0 | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
-    // commitOnOutsideClick?: 1 | 0 | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
-    // onCellKeyDown?: string | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
-    // onNavigation?: string | null // TODO: property of `editorOptions`, no need to save this bc it depends on the column type and is set dynamically at runtime
     headerRenderer?: string | null
 }
 

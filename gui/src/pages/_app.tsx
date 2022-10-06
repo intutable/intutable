@@ -10,6 +10,7 @@ import React, { useEffect, useMemo, useState } from "react"
 import { SWRConfig } from "swr"
 import { getDesignToken } from "theme"
 import createTheme from "theme/utils"
+import ErrorIcon from "@mui/icons-material/Error"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void
@@ -101,6 +102,14 @@ const MyApp = (props: AppProps) => {
                             maxSnack={5}
                             dense
                             preventDuplicate
+                            iconVariant={{
+                                error: (
+                                    <ErrorIcon
+                                        fontSize="small"
+                                        sx={{ mr: 1 }}
+                                    />
+                                ),
+                            }}
                         >
                             <CssBaseline />
                             <Layout>

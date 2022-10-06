@@ -72,6 +72,8 @@ export const useColumn = (
         await mutate()
     }
 
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
     const renameColumn = async (
         column: Column,
         newName: Column["name"]
@@ -86,9 +88,17 @@ export const useColumn = (
         await mutate()
     }
 
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
     const changeAttributes = async (
         column: Column,
         update: Record<string, unknown>
+        // {
+        // [key in keyof Omit<
+        //     Column.SQL,
+        //     "displayName" | "__columnIndex__"
+        // >]: Column.SQL[key]
+        // } // TODO: ?
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const baseColumn = getTableColumn(column)
