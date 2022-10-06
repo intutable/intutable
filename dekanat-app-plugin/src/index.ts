@@ -404,7 +404,7 @@ async function changeColumnAttributesInViews(
     const views = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
-    const viewColumns : (lvt.ColumnInfo | undefined)[] = await Promise.all(
+    const viewColumns: (lvt.ColumnInfo | undefined)[] = await Promise.all(
         views.map(async v => {
             const info = (await core.events.request(
                 lvr.getViewInfo(sessionID, v.id)
