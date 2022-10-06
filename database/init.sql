@@ -1,3 +1,4 @@
+-- begin project-management schema
 CREATE TABLE users(
     _id SERIAL PRIMARY KEY,
     email TEXT,
@@ -42,8 +43,9 @@ CREATE TABLE columns(
     type TEXT default 'string' NOT NULL,
     FOREIGN KEY("tableId") REFERENCES tables(_id)
 );
+-- end project-management schema
 
--- join-tables meta tables
+-- begin lazy-views schema
 CREATE TABLE views(
     _id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -97,3 +99,4 @@ CREATE TABLE view_columns(
     "sortDescendingFirst" INTEGER NULL,
     "headerRenderer" VARCHAR(255) NULL
 );
+-- end lazy-views schema
