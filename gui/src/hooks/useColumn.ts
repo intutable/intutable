@@ -72,8 +72,6 @@ export const useColumn = (
         await mutate()
     }
 
-    // TODO: the cache should be mutated differently
-    // TODO: the state should be updated differently
     const renameColumn = async (
         column: Column,
         newName: Column["name"]
@@ -81,8 +79,22 @@ export const useColumn = (
         const tableId = table!.metadata.descriptor.id
         const baseColumn = getTableColumn(column)
         await fetcher({
+            url: `/api/table/${tableId}/column/${baseColumn!.id}/rename`,
+            body: { newName },
+            method: "PATCH",
+        })
+        await mutate()
+    }
+
+    const changeAttributes = async (
+        column: Column,
+        update: Record<string, unknown>
+    ): Promise<void> => {
+        const tableId = table!.metadata.descriptor.id
+        const baseColumn = getTableColumn(column)
+        await fetcher({
             url: `/api/table/${tableId}/column/${baseColumn!.id}`,
-            body: { update: { displayName: newName } },
+            body: { update },
             method: "PATCH",
         })
         await mutate()
@@ -108,6 +120,7 @@ export const useColumn = (
         getTableColumn,
         createColumn,
         renameColumn,
+        changeAttributes,
         deleteColumn,
     }
 }
