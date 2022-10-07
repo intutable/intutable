@@ -2,6 +2,14 @@ import { ReleaseProps } from "components/Release Notes/Release"
 
 export const releases: ReleaseProps[] = [
     {
+        version: "v1.1.1-alpha.1",
+        prerelease: true,
+        title: "Release v1.1.1-alpha.1",
+        date: new Date("10/07/2022"),
+        teaser: "Bug-Fix für die 'Nutzerverwaltung'-Seite",
+        description: "Es wurde ein Bug behoben, der die Seite abtürzen ließ.",
+    },
+    {
         version: "v1.1.0-alpha.1",
         prerelease: true,
         title: "Release v1.1.0-alpha.1",
