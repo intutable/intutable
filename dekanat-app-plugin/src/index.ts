@@ -27,7 +27,7 @@ import {
 } from "@intutable/lazy-views/"
 
 import * as req from "./requests"
-import { ATTRIBUTES as A } from "../../shared/dist/attributes"
+import { ATTRIBUTES as A, toSql } from "../../shared/dist/attributes"
 import { error } from "./internal/error"
 import * as perm from "./permissions/requests"
 
@@ -84,6 +84,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.addColumnToTable.name, addColumnToTable_)
         .on(req.addColumnToViews.name, addColumnToFilterViews_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
+        .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
         .on(perm.getUsers.name, perm.getUsers_)
         .on(perm.getRoles.name, perm.getRoles_)
         .on(perm.createUser.name, perm.createUser_)
@@ -164,6 +165,7 @@ async function configureColumnAttributes(sessionID: string): Promise<void> {
     )
 }
 
+//==================== core methods ==========================
 async function addColumnToTable_({
     sessionID,
     tableId,
@@ -376,13 +378,31 @@ function getColumnIndexUpdates(
         }))
 }
 
+async function changeTableColumnAttributes_({
+    sessionID,
+    tableId,
+    columnId,
+    update,
+    changeInViews,
+}: CoreRequest): Promise<CoreResponse> {
+    await changeTableColumnAttributes(
+        sessionID,
+        tableId,
+        columnId,
+        update,
+        changeInViews
+    )
+    return { message: `updated column #${columnId}'s attributes` }
+}
+
 async function changeTableColumnAttributes(
     sessionID: string,
     tableId: number,
     columnId: number,
-    attributes: Partial<lvt.ColumnInfo["attributes"]>,
+    update: Record<string, unknown>,
     changeInViews = true
 ): Promise<void> {
+    const attributes = toSql(update)
     await core.events.request(
         lvr.changeColumnAttributes(sessionID, columnId, attributes)
     )
@@ -399,7 +419,7 @@ async function changeColumnAttributesInViews(
     sessionID: string,
     tableId: number,
     columnId: number,
-    attributes: Partial<lvt.ColumnInfo["attributes"]>
+    update: Record<string, unknown>
 ): Promise<void> {
     const views = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
@@ -420,7 +440,7 @@ async function changeColumnAttributesInViews(
         viewColumns.map(async c => {
             if (c === undefined) return
             core.events.request(
-                lvr.changeColumnAttributes(sessionID, c.id, attributes)
+                lvr.changeColumnAttributes(sessionID, c.id, update)
             )
         })
     )

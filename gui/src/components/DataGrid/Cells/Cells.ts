@@ -18,4 +18,9 @@ export class Cells extends Array<Cell> {
     public getLabels(): string[] {
         return this.map(cell => cell.label)
     }
+
+    /** Map<brand, label> */
+    public getMap(): Map<string, string> {
+        return new Map(this.map(cell => [cell.brand, cell.label]))
+    }
 }

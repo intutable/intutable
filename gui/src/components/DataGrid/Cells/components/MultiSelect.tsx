@@ -44,6 +44,10 @@ export class MultiSelect extends Cell {
     readonly brand = "multiselect"
     label = "Mehrfach-Auswahlliste"
 
+    isValid(value: unknown): boolean {
+        return Array.isArray(value) && value.every(v => typeof v === "string")
+    }
+
     parse(value: unknown): string[] {
         if (value == null) return []
         if (Array.isArray(value)) return value
@@ -239,9 +243,5 @@ export class MultiSelect extends Cell {
                 </Menu>
             </>
         )
-    }
-
-    isValid(value: unknown) {
-        return typeof value === "string"
     }
 }
