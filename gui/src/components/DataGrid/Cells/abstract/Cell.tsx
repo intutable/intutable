@@ -216,11 +216,13 @@ export default abstract class Cell
 
     public isValid(value: unknown): boolean {
         // default validation for text based editors
+        // it should either be a non object like string, a stringified number or emtpy (null or empty str '')
         return (
             (isJSONObject(value) === false &&
-                isJSONArray(value) == false &&
+                isJSONArray(value) === false &&
                 typeof value === "string") ||
             typeof value === "number" ||
+            value === "" ||
             value == null
         )
     }

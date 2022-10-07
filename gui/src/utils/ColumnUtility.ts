@@ -143,6 +143,8 @@ export class ColumnUtility {
             cell => targetUtil.isValid(cell[1]) === false
         )
 
+        console.log(invalidCells)
+
         return invalidCells.length === 0
             ? true
             : invalidCells.map(cell => cell[0])

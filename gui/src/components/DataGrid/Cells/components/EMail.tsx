@@ -11,7 +11,7 @@ export class EMail extends Cell {
     label = "E-Mail"
 
     isValid(value: unknown): boolean {
-        return value == null || isValidEMailAddress(value)
+        return value == null || value === "" || isValidEMailAddress(value)
     }
 
     editor = (props: EditorProps<Row>) => {

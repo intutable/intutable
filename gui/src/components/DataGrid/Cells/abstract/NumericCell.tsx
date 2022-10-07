@@ -4,6 +4,7 @@ export abstract class NumericCell extends Cell {
     isValid(value: unknown): boolean {
         return (
             value == null ||
+            value === "" ||
             typeof value === "number" ||
             NumericCell.isNumeric(value)
         )
