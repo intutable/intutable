@@ -14,8 +14,8 @@ export type { Column, Literal } from "@intutable/lazy-views/dist/condition"
 /**
  * A filter  - may be any boolean combination of {@link SimpleFilter}s.
  */
-export type MkFilter<Infix extends c.IsInfixCondition>
-    = Infix
+export type MkFilter<Infix extends c.IsInfixCondition> =
+    | Infix
     | c.MkAndCondition<MkFilter<Infix>>
     | c.MkOrCondition<MkFilter<Infix>>
     | c.MkNotCondition<MkFilter<Infix>>
@@ -46,13 +46,13 @@ export type FilterOperator = keyof FilterOperatorMap
  * {@link OperatorDescriptor | properties}.
  */
 export type FilterOperatorMap = {
-    "=":  { pretty: "=" },
-    "!=": { pretty: "!=" },
-    "<":  { pretty: "<" },
-    ">":  { pretty: ">" },
-    "<=": { pretty: "<=" },
-    ">=": { pretty: ">=" },
-    LIKE: { pretty: "contains" },
+    "=": { pretty: "=" }
+    "!=": { pretty: "!=" }
+    "<": { pretty: "<" }
+    ">": { pretty: ">" }
+    "<=": { pretty: "<=" }
+    ">=": { pretty: ">=" }
+    LIKE: { pretty: "contains" }
 }
 
 /**
@@ -74,15 +74,14 @@ export type OperatorDescriptor = {
  * {@link FilterOperatorMap}, but as a value, so we can iterate over it, etc.
  */
 export const FILTER_OPERATORS: FilterOperatorMap = {
-    "=":  { pretty: "=" },
+    "=": { pretty: "=" },
     "!=": { pretty: "!=" },
-    "<":  { pretty: "<" },
-    ">":  { pretty: ">" },
+    "<": { pretty: "<" },
+    ">": { pretty: ">" },
     "<=": { pretty: "<=" },
     ">=": { pretty: ">=" },
     LIKE: { pretty: "contains" },
 }
-export const FILTER_OPERATORS_LIST: OperatorDescriptor[] =
-    (Object.getOwnPropertyNames(FILTER_OPERATORS) as FilterOperator[]).map(
-        name => ({ ...(FILTER_OPERATORS[name]), raw: name })
-    )
+export const FILTER_OPERATORS_LIST: OperatorDescriptor[] = (
+    Object.getOwnPropertyNames(FILTER_OPERATORS) as FilterOperator[]
+).map(name => ({ ...FILTER_OPERATORS[name], raw: name }))

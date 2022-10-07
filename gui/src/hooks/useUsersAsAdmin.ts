@@ -17,7 +17,7 @@ export const useUsersAsAdmin = () => {
 
     const createUser = async (
         user: Omit<User, "id">,
-        password: string,
+        password: string
     ): Promise<void> => {
         await fetcher({
             url: `/api/permissions/user`,
@@ -31,7 +31,7 @@ export const useUsersAsAdmin = () => {
         await fetcher({
             url: `/api/permissions/user/${userId}`,
             body: {},
-            method: "DELETE"
+            method: "DELETE",
         })
         await mutate()
     }
@@ -43,7 +43,7 @@ export const useUsersAsAdmin = () => {
         await fetcher({
             url: `/api/permissions/user/${userId}`,
             body: { roleId },
-            method: "PATCH"
+            method: "PATCH",
         })
         await mutate()
     }

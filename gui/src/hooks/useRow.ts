@@ -36,9 +36,7 @@ export const useRow = (
      * correct key. The table can be overridden with {@link viewOptions}.
      */
     const getRowId = (row: Row): number => {
-        const uidColumn = view!.metaColumns.find(
-            c => c.name === "_id"
-        )!
+        const uidColumn = view!.metaColumns.find(c => c.name === "_id")!
         return row[uidColumn.key] as number
     }
 
@@ -91,10 +89,7 @@ export const useRow = (
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: [
-                    "_id",
-                    getRowId(row),
-                ],
+                condition: ["_id", getRowId(row)],
             },
             method: "DELETE",
         })

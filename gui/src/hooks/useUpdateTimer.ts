@@ -9,13 +9,14 @@ import { useRef } from "react"
 type PendingUpdate<T> = {
     callback: () => Promise<T>
     resolve: (result: T) => void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reject: (error: any) => void
 }
 
 export class TimeoutError extends Error {
     message: string
-    cause?: any
-    constructor(message: string, cause?: any) {
+    cause?: Error | undefined
+    constructor(message: string, cause?: Error | undefined) {
         super(message)
         this.message = message
         this.cause = cause
@@ -115,7 +116,7 @@ export const useUpdateTimer = <Result>(
      * The timeout continues until it expires as normal.
      * @return {boolean} true if a queued update was cancelled, false if not.
      */
-    const cancelUpdate = (cause?: any): boolean => {
+    const cancelUpdate = (cause?: Error | undefined): boolean => {
         if (!pendingUpdate.current) return false
         else {
             pendingUpdate.current.reject(
