@@ -19,8 +19,7 @@ Built on [Intutable Core](https://gitlab.com/intutable/core/) and Next JS.
 
 ## Documentation
 
-N.N. Source is too unstable and rapidly changing for that to make sense.
-You'll have to find out the hard way.
+There is a high-level overview of the application's structure in /docs/dev.
 
 ## [Semver](https://semver.org) for Non-API Designs
 
