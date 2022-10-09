@@ -2,7 +2,12 @@ import Cell from "@datagrid/Cells/abstract/Cell"
 
 export abstract class NumericCell extends Cell {
     isValid(value: unknown): boolean {
-        return typeof value === "number" || NumericCell.isNumeric(value)
+        return (
+            value == null ||
+            value === "" ||
+            typeof value === "number" ||
+            NumericCell.isNumeric(value)
+        )
     }
 
     static isInteger(str: unknown): boolean {

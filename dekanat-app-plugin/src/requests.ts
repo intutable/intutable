@@ -63,3 +63,26 @@ export function removeColumnFromTable(
         columnId,
     }
 }
+
+/**
+ * Change the attributes of a column of a table, and optionally all its views.
+ * All boolean values in the attributes are changed into ones and zeros,
+ * other than that no transformation takes place.
+ */
+export function changeTableColumnAttributes(
+    sessionID: string,
+    tableId: lv.ViewDescriptor["id"],
+    columnId: lv.ColumnInfo["id"],
+    update: Record<string, unknown>,
+    changeInViews = true
+) {
+    return {
+        channel: CHANNEL,
+        method: changeTableColumnAttributes.name,
+        sessionID,
+        tableId,
+        columnId,
+        update,
+        changeInViews,
+    }
+}

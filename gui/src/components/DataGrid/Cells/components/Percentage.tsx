@@ -41,7 +41,11 @@ export class Percentage extends NumericCell {
                 : Number.parseFloat(value)
             return number >= 0 && number <= 100
         }
-        return typeof value === "number" && value >= 0 && value <= 100
+        return (
+            (typeof value === "number" && value >= 0 && value <= 100) ||
+            value == null ||
+            value === ""
+        )
     }
 
     export(value: unknown): string {

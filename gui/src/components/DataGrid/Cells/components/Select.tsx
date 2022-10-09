@@ -195,8 +195,4 @@ export class Select extends Cell {
             </>
         )
     }
-
-    isValid(value: unknown) {
-        return typeof value === "string"
-    }
 }
