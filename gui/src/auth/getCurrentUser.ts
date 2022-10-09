@@ -19,7 +19,7 @@ export const getCurrentUser = async (
         return Promise.resolve({
             ...user,
             authCookie,
-            role: ADMIN_ROLE
+            role: ADMIN_ROLE,
         })
     } catch (err) {
         if (typeof err === "object" && err != null && "status" in err) {

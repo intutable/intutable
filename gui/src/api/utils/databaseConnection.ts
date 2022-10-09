@@ -9,7 +9,7 @@ import { coreRequest } from "./coreRequest"
 let nextSessionID = 0
 const getNextSessionID = () => {
     const id = "dekanat-app_" + nextSessionID + randomBytes(20).toString("hex")
-    nextSessionID ++
+    nextSessionID++
     return id
 }
 
@@ -36,7 +36,7 @@ export const withReadWriteConnection = async <T>(
         openConnection(sessionID, username, password),
         user.authCookie
     )
-    let result : T
+    let result: T
     try {
         result = await callback(sessionID)
     } finally {
@@ -66,7 +66,7 @@ export const withReadOnlyConnection = async <T>(
         openConnection(sessionID, username, password),
         user.authCookie
     )
-    let result : T
+    let result: T
     try {
         result = await callback(sessionID)
     } finally {

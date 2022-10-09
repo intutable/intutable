@@ -9,7 +9,7 @@ export type SettableAttributes = keyof Exclude<
     InterdependentAttributes | ReadonlyAttributes
 >
 
-export type DefaultColumnOptions<T> = {}
+export type DefaultColumnOptions<T> = Record<string, never>
 
 /**
  * Our version of the default props for some properties of {@link SerializedColumn}.

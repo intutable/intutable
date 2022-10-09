@@ -14,6 +14,7 @@ module.exports = withBundleAnalyzer({
     // publicRuntimeConfig: {},
     // swcMinify: true, // experimental – does not work
     eslint: {
+        dirs: ["src"],
         ignoreDuringBuilds: true,
     },
     compiler: { removeConsole: false },
