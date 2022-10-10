@@ -6,17 +6,6 @@ task force, the top-secret spec-ops team known as the Ungeprüfte Hilfskräfte.
 In order to help you get your bearings in this rather complex system, here
 is an overview of how the app works.
 
-## What Does This App Do?
-
-dekanat-app is a highly configurable tool for keeping track of employees,
-committees, and institutions of the Faculty for Mathematics and Computer
-Science. More than a typical database app, it allows users to
-configure the tables and relationships between them.
-Key features in development include (similarly configurable) workflows
-for modeling processes like hiring and admission of doctoral students,
-import and export with the LSF and various file formats, and a fine-grained
-system of permissions in accordance with tight data protection regulations.
-
 ## Technologies, Components
 The app consists of a Next.js web-application that the user accesses through
 the browser, a PostgreSQL database, and a standalone back-end written in
@@ -114,11 +103,7 @@ refer to the standalone back-end as "core".
 ## `dekanat-app`: How it Works
 ### Tables and Views
 If you haven't already, this is probably a good time to launch the app and
-try it out.  
-    - Ensure that Docker, Node, and NPM are installed  
-    - `cd` into `dekanat-app`  
-    - run `npm install`  
-    - start with `npm run dev`  
+try it out (see `/README.md` for a basic intro)
 
 After logging in, you should be redirected to the project page and see one
 project named "Fakultät MathInf". Click on it to see its table list, then

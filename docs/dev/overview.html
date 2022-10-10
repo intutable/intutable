@@ -1,7 +1,5 @@
 <h1 id="high-level-overview-of-the-applications-structure">High-Level Overview of the Application’s Structure</h1>
 <p>Congratulations, and welcome to the illustrious <code>dekanat-app</code> project. You have been selected for Heidelberg’s finest software development task force, the top-secret spec-ops team known as the Ungeprüfte Hilfskräfte. In order to help you get your bearings in this rather complex system, here is an overview of how the app works.</p>
-<h2 id="what-does-this-app-do">What Does This App Do?</h2>
-<p>dekanat-app is a highly configurable tool for keeping track of employees, committees, and institutions of the Faculty for Mathematics and Computer Science. More than a typical database app, it allows users to configure the tables and relationships between them. Key features in development include (similarly configurable) workflows for modeling processes like hiring and admission of doctoral students, import and export with the LSF and various file formats, and a fine-grained system of permissions in accordance with tight data protection regulations.</p>
 <h2 id="technologies-components">Technologies, Components</h2>
 <p>The app consists of a Next.js web-application that the user accesses through the browser, a PostgreSQL database, and a standalone back-end written in node.js to mediate between the two. All node.js code is written in TypeScript.</p>
 <figure>
@@ -61,11 +59,7 @@
 </figure>
 <h2 id="dekanat-app-how-it-works"><code>dekanat-app</code>: How it Works</h2>
 <h3 id="tables-and-views">Tables and Views</h3>
-<p>If you haven’t already, this is probably a good time to launch the app and try it out.<br />
-- Ensure that Docker, Node, and NPM are installed<br />
-- <code>cd</code> into <code>dekanat-app</code><br />
-- run <code>npm install</code><br />
-- start with <code>npm run dev</code></p>
+<p>If you haven’t already, this is probably a good time to launch the app and try it out (see <code>/README.md</code> for a basic intro)</p>
 <p>After logging in, you should be redirected to the project page and see one project named “Fakultät MathInf”. Click on it to see its table list, then select “Personen”. In the middle of the screen is the table itself. You can click on a cell and start typing to edit it. The toolbar has “add column”, “add row”, “add link”, an export button (download icon) and a “detail view” button. You can experiment with these, they are fairly self-explanatory. The “add link” button allows you to add a link to another table. To see an example of this, check the “Rollen” table. If you click on a cell in the “Nachname” column, you can pick a different record to link with. If you do, the corresponding “Vorname” cell will change, too.</p>
 <p>To accomplish the linking functionality, what the user sees as a table is actually a view. The app manages the view and the underlying table, which contains the actual data, as a unit. This abstraction happens between the client and server in the Next.js app. What the user sees as views is implemented as a set of views on top of the “table” view:</p>
 <figure>
