@@ -5,7 +5,7 @@
 <h2 id="technologies-components">Technologies, Components</h2>
 <p>The app consists of a Next.js web-application that the user accesses through the browser, a PostgreSQL database, and a standalone back-end written in node.js to mediate between the two. All node.js code is written in TypeScript.</p>
 <figure>
-<img src="overview_1.jpg" alt="Application Structure" /><figcaption aria-hidden="true">Application Structure</figcaption>
+<img src="overview_1.jpg" alt="Application Overview" /><figcaption aria-hidden="true">Application Overview</figcaption>
 </figure>
 <h2 id="database">Database</h2>
 <p>The database is a PostgreSQL server. Currently, it runs in a Docker container to facilitate development, we have not yet decided whether to maintain this in production.</p>
@@ -76,17 +76,4 @@
 - <code>pages</code>: The pages that the user can navigate around.<br />
 - <code>pages/api</code>: API endpoints, i.e. routes that the GUI can request data from. All database-relevant actions, such as creating, loading, and editing tables, are performed by addressing one of these routes.<br />
 - <code>api</code>: Library of utilities for communication with API routes and with the Core.<br />
-- <code>components</code>: A library of React (display) components for the front-end. More detail on this in the next section.<br />
-- <code>hooks</code>: A library of <a href="https://reactjs.org/docs/hooks-intro.html">hooks</a>: components that are not displayed and only capture app logic or state.</p>
-<h3 id="gui-the-table-pages-structure">GUI: The Table Page’s Structure</h3>
-<p>To help you make sense of the particularly large <code>components</code> folder, a brief explanation of the locationcs of the most important components in the table page:</p>
-<figure>
-<img src="table_page.jpg" alt="The Table Page" /><figcaption aria-hidden="true">The Table Page</figcaption>
-</figure>
-<ol type="1">
-<li>Toolbar and Drawer: <code>components/Layout</code> contains components that are the same across all pages.</li>
-<li>The table itself is implemented with <a href="https://github.com/adazzle/react-data-grid"><code>react-data-grid</code></a>. You had best look in <code>pages/project/[projectId]/table/[tableId].tsx</code>, where the <code>DataGrid</code> component is used, to see where all the code relevant to it is located.</li>
-<li>Toolbar items are in <code>components/DataGrid/Toolbar</code>.</li>
-<li>The View Navigator and related components are in <code>components/ViewNavigator</code></li>
-<li>The Table Navigator is in <code>components/TableNavigator.tsx</code>.</li>
-</ol>
+- <code>components</code>: A library of React (display) components for the front-end. To get an idea of which components are used how, it is suggested you look into the table page at <code>pages/project/[projectId]/table/[tableId].tsx</code>. - <code>hooks</code>: A library of <a href="https://reactjs.org/docs/hooks-intro.html">hooks</a>: components that are not displayed and only capture app logic or state.</p>

@@ -150,25 +150,8 @@ the most important source directories and files:
     - `api`: Library of utilities for communication with API routes and with
     the Core.  
     - `components`: A library of React (display) components for the front-end.
-    More detail on this in the next section.  
+    To get an idea of which components are used how, it is suggested you
+    look into the table page at
+    `pages/project/[projectId]/table/[tableId].tsx`.
     - `hooks`: A library of [hooks](https://reactjs.org/docs/hooks-intro.html):
     components that are not displayed and only capture app logic or state.  
-
-### GUI: The Table Page's Structure
-To help you make sense of the particularly large `components` folder,
-a brief explanation of the locationcs of the most important components
-in the table page:
-
-![The Table Page](table_page.jpg)
-
-1. Toolbar and Drawer: `components/Layout` contains components that are
-  the same across all pages.
-2. The table itself is implemented with
-  [`react-data-grid`](https://github.com/adazzle/react-data-grid). You had
-  best look in `pages/project/[projectId]/table/[tableId].tsx`, where
-  the `DataGrid` component is used, to see where all the code relevant to
-  it is located.
-3. Toolbar items are in `components/DataGrid/Toolbar`.
-4. The View Navigator and related components are in
-  `components/ViewNavigator`
-4. The Table Navigator is in `components/TableNavigator.tsx`.
