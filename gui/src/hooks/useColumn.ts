@@ -3,9 +3,9 @@ import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column } from "types"
-import { StandardColumnSpecifier } from "@backend/types"
+import { StandardColumnSpecifier } from "@shared/types"
 
-export type { StandardColumnSpecifier } from "@backend/types"
+export type { StandardColumnSpecifier } from "@shared/types"
 
 /**
  * Get the Column Info {@type {ColumnInfo}} for a column. Pass in a RDG column

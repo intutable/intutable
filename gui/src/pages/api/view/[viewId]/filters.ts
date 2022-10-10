@@ -11,7 +11,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
-import { defaultViewName } from "@backend/defaults"
+import { defaultViewName } from "@shared/defaults"
 import { Filter } from "types/filter"
 import { DBParser } from "utils/DBParser"
 

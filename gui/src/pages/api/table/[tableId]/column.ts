@@ -16,9 +16,9 @@ import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 import sanitizeName from "utils/sanitizeName"
 
-import { StandardColumnSpecifier } from "@backend/types"
+import { StandardColumnSpecifier } from "@shared/types"
 import { addColumnToTable } from "@backend/requests"
-import { standardColumnAttributes } from "@backend/defaults"
+import { standardColumnAttributes } from "@shared/attributes"
 
 /**
  * Add a column to a table.

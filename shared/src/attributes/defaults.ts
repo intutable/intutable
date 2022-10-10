@@ -1,53 +1,7 @@
-/** Default row options for a new table view. */
-import {
-    ParentColumnDescriptor,
-    RowOptions,
-    SortOrder,
-} from "@intutable/lazy-views/dist/types"
-import { toSql, ATTRIBUTES as A } from "../../shared/dist/attributes"
+import { toSql, ATTRIBUTES as A } from "."
 
-export const UID_KEY = "_id"
-export const ROW_INDEX_KEY = "index"
 /** Minimum width of a column. */
 export const COLUMN_MIN_WIDTH = 128
-
-/**
- * Blank row options - no filters, no grouping, no sorting.
- */
-export function emptyRowOptions(): RowOptions {
-    return {
-        conditions: [],
-        groupColumns: [],
-        sortColumns: [],
-    }
-}
-
-/**
- * Default row options: obviously no filtering or grouping. Only order by
- * index, to keep rows from jumping around when you edit them.
- */
-export function defaultRowOptions(
-    /**
-     * The interface {@link ParentColumnDescriptor} can take columns of
-     * a table or a view. */
-    columns: ParentColumnDescriptor[]
-): RowOptions {
-    const indexColumn = columns.find(c => c.name === ROW_INDEX_KEY)!
-    return {
-        conditions: [],
-        groupColumns: [],
-        sortColumns: [
-            {
-                column: { parentColumnId: indexColumn.id, joinId: null },
-                order: SortOrder.Ascending,
-            },
-        ],
-    }
-}
-
-export function defaultViewName() {
-    return "Standard"
-}
 
 export function standardColumnAttributes(
     displayName: string,

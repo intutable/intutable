@@ -28,9 +28,11 @@ import {
     emptyRowOptions,
     defaultRowOptions,
     defaultViewName,
+} from "@shared/defaults"
+import {
     standardColumnAttributes,
     indexColumnAttributes,
-} from "@backend/defaults"
+} from "@shared/attributes"
 
 /**
  * Create a new table with the specified name.

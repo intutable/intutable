@@ -1,4 +1,3 @@
-import { StandardColumnSpecifier } from "@backend/types"
 import Cells from "@datagrid/Cells"
 import HelpIcon from "@mui/icons-material/Help"
 import {
@@ -22,6 +21,7 @@ import {
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import React, { useEffect, useState } from "react"
+import { StandardColumnSpecifier } from "hooks/useColumn"
 
 type AddColumnModalProps = {
     open: boolean
