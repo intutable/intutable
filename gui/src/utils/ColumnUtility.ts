@@ -163,7 +163,7 @@ export class ColumnUtility {
         return column.key === "select-row" || column._kind === "index"
     }
 
-    /** ? */
+    /** Used to filter the _id column */
     static isInternalColumn = (column: ColumnInfo): boolean =>
         column.name === "_id"
 }
