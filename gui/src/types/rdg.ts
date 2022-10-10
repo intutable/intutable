@@ -441,7 +441,6 @@ type DatabaseColumnAttributes = {
 }
 
 export namespace Column {
-    export type SQL = DatabaseColumnAttributes // deprecated in the future
     export type Serialized = SerializedColumn
     export type Deserialized = Column
 }

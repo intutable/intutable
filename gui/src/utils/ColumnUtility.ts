@@ -5,6 +5,7 @@ import { Column, MetaColumnProps, ViewData } from "types"
 
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 import cells, { Cell } from "@datagrid/Cells"
+import { ColumnInfo } from "@intutable/lazy-views"
 
 /**
  * // TODO: this flexbility could be a potential error cause.
@@ -161,4 +162,8 @@ export class ColumnUtility {
         // `select-row` is defined by rdg – do NOT change this
         return column.key === "select-row" || column._kind === "index"
     }
+
+    /** ? */
+    static isInternalColumn = (column: ColumnInfo): boolean =>
+        column.name === "_id"
 }
