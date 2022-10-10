@@ -42,7 +42,10 @@ export namespace DB {
         sortDescendingFirst?: 1 | 0 | null
         headerRenderer?: string | null
     }
-    /** `__rowIndex` is currently not saved in the db, will be changed in the future */
+    /**
+     * `__rowIndex` is currently not saved in the db, although the backend
+     * has its own row ordering mechanism. Will be changed in the future
+     */
     export type _Row = Omit<Row, "__rowIndex__">
 }
 

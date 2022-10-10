@@ -129,42 +129,6 @@ async function createAdmin(
     return getAdminId(sessionID).then(definitelyNumber => definitelyNumber!)
 }
 
-/** Create the custom attributes for views' columns we need. */
-async function configureColumnAttributes(sessionID: string): Promise<void> {
-    const customColumns: Column[] = [
-        {
-            name: "displayName",
-            type: ColumnType.text,
-            options: [SimpleColumnOption.nullable],
-        },
-        {
-            name: "userPrimary",
-            type: ColumnType.integer,
-            options: [SimpleColumnOption.notNullable],
-        },
-        {
-            name: "editable",
-            type: ColumnType.integer,
-            options: [SimpleColumnOption.notNullable],
-        },
-        {
-            name: "editor",
-            type: ColumnType.text,
-            options: [SimpleColumnOption.nullable],
-        },
-        {
-            name: "formatter",
-            type: ColumnType.text,
-            options: [SimpleColumnOption.nullable],
-        },
-    ]
-    await Promise.all(
-        customColumns.map(c =>
-            core.events.request(lvr.addColumnAttribute(sessionID, c))
-        )
-    )
-}
-
 //==================== core methods ==========================
 async function addColumnToTable_({
     sessionID,

@@ -7,7 +7,7 @@ import {
 import { toSql, ATTRIBUTES as A } from "../../shared/dist/attributes"
 
 export const UID_KEY = "_id"
-export const INDEX_KEY = "index"
+export const ROW_INDEX_KEY = "index"
 /** Minimum width of a column. */
 export const COLUMN_MIN_WIDTH = 128
 
@@ -32,7 +32,7 @@ export function defaultRowOptions(
      * a table or a view. */
     columns: ParentColumnDescriptor[]
 ): RowOptions {
-    const indexColumn = columns.find(c => c.name === INDEX_KEY)!
+    const indexColumn = columns.find(c => c.name === ROW_INDEX_KEY)!
     return {
         conditions: [],
         groupColumns: [],
