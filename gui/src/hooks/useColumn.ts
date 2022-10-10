@@ -4,6 +4,7 @@ import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column } from "types"
 import { StandardColumnSpecifier } from "@shared/types"
+import { DB } from "utils/DBParser"
 
 export type { StandardColumnSpecifier } from "@shared/types"
 
@@ -61,13 +62,21 @@ export const useColumn = (
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
+    /**
+     * Create a new column.
+     * Be very careful about using the `attributes` property, as you can also
+     * override the default properties defined by
+     * {@link shared/attributes/standardColumnAttributes}, most of which are
+     * essential to functionality and not just for display purposes.
+     */
     const createColumn = async (
-        column: StandardColumnSpecifier
+        column: StandardColumnSpecifier,
+        attributes?: Partial<DB.Column>
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         await fetcher({
             url: `/api/table/${tableId}/column`,
-            body: { column },
+            body: { column, attributes },
         })
         await mutate()
     }
