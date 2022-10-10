@@ -8,7 +8,8 @@ import {
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor } from "@intutable/project-management/dist/types"
 import { Column } from "types/rdg"
-import { coreRequest, Parser } from "api/utils"
+import { coreRequest } from "api/utils"
+import { DBParser } from "utils/DBParser"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
@@ -74,7 +75,7 @@ const POST = withCatchingAPIRoute(
                     user.authCookie
                 )
 
-                const parsedColumn = Parser.Column.parse(tableViewColumn)
+                const parsedColumn = DBParser.parseColumn(tableViewColumn)
                 return parsedColumn
             }
         )

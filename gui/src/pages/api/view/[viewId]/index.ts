@@ -11,7 +11,7 @@ import {
     isTable,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
-import { View } from "api/utils/parse"
+import { DBParser } from "utils/DBParser"
 import { withSessionRoute } from "auth"
 import {
     withReadWriteConnection,
@@ -45,7 +45,7 @@ const GET = withCatchingAPIRoute(
                 getViewData(sessionID, viewId),
                 user.authCookie
             )
-            return View.parse(tableData)
+            return DBParser.parseView(tableData)
         })
 
         res.status(200).json(data)

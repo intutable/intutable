@@ -4,7 +4,7 @@ import {
     ViewDescriptor,
 } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
-import { View as ViewParser } from "api/utils/parse"
+import { DBParser } from "utils/DBParser"
 import fs from "fs-extra"
 import { parseAsync } from "json2csv"
 import { NextApiResponse } from "next"
@@ -101,7 +101,7 @@ export class ExportUtil {
                 getViewData(sessionID, this.viewId),
                 this.user.authCookie
             )
-            return ViewParser.parse(rawViewData)
+            return DBParser.parseView(rawViewData)
         })
     }
 

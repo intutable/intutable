@@ -18,7 +18,7 @@ import {
 } from "@intutable/project-management/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
-import { Table } from "api/utils/parse"
+import { DBParser } from "utils/DBParser"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import {
     withReadWriteConnection,
@@ -45,7 +45,7 @@ const GET = withCatchingAPIRoute(
                 coreRequest<ViewData>(
                     getViewData(sessionID, tableId),
                     user.authCookie
-                ).then(Table.parse)
+                ).then(DBParser.parseTable)
         )
 
         res.status(200).json(parsedTableData)

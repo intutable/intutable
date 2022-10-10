@@ -13,7 +13,7 @@ import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { defaultViewName } from "@backend/defaults"
 import { Filter } from "types/filter"
-import { Filter as FilterParser } from "api/utils/parse"
+import { DBParser } from "utils/DBParser"
 
 /**
  * PATCH/update the name of a single view.
@@ -49,7 +49,7 @@ const PATCH = withCatchingAPIRoute(
 
             const newRowOptions = {
                 ...options.rowOptions,
-                conditions: filters.map(FilterParser.deparse),
+                conditions: filters.map(DBParser.deparseFilter),
             }
 
             await coreRequest(
