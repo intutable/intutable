@@ -6,7 +6,19 @@ No-code tool for building CRUD apps.
 
 Built on [Intutable Core](https://gitlab.com/intutable/core/) and Next JS.
 
-## Installation
+## What Does This App Do?
+
+dekanat-app is a highly configurable tool for keeping track of employees,
+committees, and institutions of the Faculty for Mathematics and Computer
+Science. More than a typical database app, it allows users to
+configure the tables and relationships between them.
+Key features in development include (similarly configurable) workflows
+for modeling processes like hiring and admission of doctoral students,
+import and export with the LSF and various file formats, and a fine-grained
+system of permissions in accordance with tight data protection regulations.
+
+## Getting Started
+### Installation
 
 1. Clone the repo
 2. `cd dekanat-app`
@@ -17,10 +29,20 @@ Built on [Intutable Core](https://gitlab.com/intutable/core/) and Next JS.
       `npm run start`
     - `npm run reset -w database` resets the database
 
+### Usage
+After starting the app, navigate to its location at
+`http://localhost:3000` in the browser. In dev mode, a default user with
+the e-mail admin@dekanat.de and the password "password" is created. Log in
+and you will see the projects page with one project named "Fakultät MathInf".
+Click on it, then click on the "Personen" table. This table page is the 
+center of the application. Try to create, edit, and delete some rows and
+columns. If you want to create or delete tables, you must go back to the
+project's page. The button on the very left of the toolbar allows you to
+create views, in which you can add filters to limit the data displayed.
+
 ## Documentation
 
-N.N. Source is too unstable and rapidly changing for that to make sense.
-You'll have to find out the hard way.
+There is a high-level overview of the application's structure in /docs/dev.
 
 ## [Semver](https://semver.org) for Non-API Designs
 
