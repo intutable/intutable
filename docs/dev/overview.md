@@ -21,7 +21,7 @@ this in production.
 ## Back-End: The Core
 The back-end centers around an event bus system named IntuTable, whose
 main module is called the "core". The core loads a given list of plugins
-on start-up, each of which listens on a _channel_ and expose certain
+on start-up, each of which listens on a _channel_ and exposes certain
 _methods_. These can be called by passing a JSON object to the
 core's `request` method.
 Example:
@@ -35,7 +35,8 @@ const rows = await core.events.request({
     table: "users",
     columns: ["email", "password"]
 })
-// ... instead use the request constructor the database plugin exports:
+// ... instead use the request constructor that the database
+// plugin exports:
 const rows = await core.events.request(
     db.select("users", { columns: ["email", "password"] })
 )
@@ -44,7 +45,7 @@ In addition to this basic remote procedure call (RPC) functionality, the
 core supports events called _notifications_. A request is directed _at_
 one plugin, a notification comes _from_ a plugin. Only one plugin may
 listen for requests on a given channel, but all plugins can listen for
-notifications. A request must have a response, a notification need not.
+all notifications. A request must have a response, a notification need not.
 This enables plugins to interact very closely with each other while
 remaining separated, independent functional units.
 Example:
@@ -65,7 +66,7 @@ core.events.listenForNotifications("database")
     .on("tableDeleted", (request) => deleteTableMetadata(request))
 
 // ==> database plugin can control higher-level metadata plugin
-// without having to be explicitly programmed for it
+// without being dependent on it in any way
 ```
 An overview of the most important plugins:  
     - `database`: Wraps the [`knex`](https://knexjs.org/) library for
