@@ -1,4 +1,4 @@
-import { coreRequest } from "api/utils"
+import { coreRequest } from "api/utils/_CoreRequest"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"

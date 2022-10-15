@@ -8,7 +8,7 @@ import {
 } from "@intutable/lazy-views"
 import { getTableInfo } from "@intutable/project-management/dist/requests"
 import { TableInfo } from "@intutable/project-management/dist/types"
-import { coreRequest } from "api/utils"
+import { coreRequest } from "api/utils/_CoreRequest"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"

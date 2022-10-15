@@ -4,7 +4,7 @@ import {
     openConnection,
     closeConnection,
 } from "@intutable/database/dist/requests"
-import { coreRequest } from "./coreRequest"
+import { coreRequest } from "api/utils/_CoreRequest"
 
 let nextSessionID = 0
 const getNextSessionID = () => {

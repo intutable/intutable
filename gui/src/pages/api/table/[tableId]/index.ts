@@ -17,7 +17,7 @@ import {
     removeTable,
 } from "@intutable/project-management/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { coreRequest } from "api/utils"
+import { coreRequest } from "api/utils/_CoreRequest"
 import { DBParser } from "utils/DBParser"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import {

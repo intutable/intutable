@@ -6,7 +6,7 @@ import {
     ViewInfo,
     ViewDescriptor,
 } from "@intutable/lazy-views"
-import { coreRequest } from "api/utils"
+import { coreRequest } from "api/utils/_CoreRequest"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"

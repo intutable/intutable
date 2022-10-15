@@ -10,7 +10,7 @@ import {
     asView,
     isTable,
 } from "@intutable/lazy-views"
-import { coreRequest } from "api/utils"
+import { coreRequest } from "api/utils/_CoreRequest"
 import { DBParser } from "utils/DBParser"
 import { withSessionRoute } from "auth"
 import {
