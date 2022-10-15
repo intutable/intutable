@@ -11,7 +11,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
-import { defaultRowOptions } from "@backend/defaults"
+import { defaultRowOptions } from "@shared/defaults"
 import { withUserCheck } from "api/utils/withUserCheck"
 
 /**

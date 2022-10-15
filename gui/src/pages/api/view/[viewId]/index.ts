@@ -21,7 +21,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import type { NextApiRequest, NextApiResponse } from "next"
 
 import { withUserCheck } from "api/utils/withUserCheck"
-import { defaultViewName } from "@backend/defaults"
+import { defaultViewName } from "@shared/defaults"
 
 /**
  * GET a single filter view's data {@type {ViewData.Serialized}}.

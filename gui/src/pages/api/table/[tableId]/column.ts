@@ -9,31 +9,37 @@ import { createColumnInTable } from "@intutable/project-management/dist/requests
 import { ColumnDescriptor } from "@intutable/project-management/dist/types"
 import { Column } from "types/rdg"
 import { coreRequest } from "api/utils/_CoreRequest"
-import { DBParser } from "utils/DBParser"
+import { DB, DBParser } from "utils/DBParser"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 import sanitizeName from "utils/sanitizeName"
 
-import { StandardColumnSpecifier } from "@backend/types"
+import { StandardColumnSpecifier } from "@shared/types"
 import { addColumnToTable } from "@backend/requests"
-import { standardColumnAttributes } from "@backend/defaults"
+import { standardColumnAttributes } from "@shared/attributes"
 
 /**
  * Add a column to a table.
+ * Be very careful about using the `attributes` property, as you can also
+ * override the default properties defined by
+ * {@link shared/attributes/standardColumnAttributes}, most of which are
+ * essential to functionality and not just for display purposes.
  * @tutorial
  * ```
  * - URL: /api/table/[tableId]/column
  * - Body: {
  *    column: {@type {Column.Serialized}}
+ *    attributes: {@type {DB.Column}}
  * }
  * ```
  */
 const POST = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
-        const { column } = req.body as {
+        const { column, attributes } = req.body as {
             column: StandardColumnSpecifier
+            attributes?: Partial<DB.Column>
         }
         const user = req.session.user!
 
@@ -63,14 +69,19 @@ const POST = withCatchingAPIRoute(
                         (acc, j) => acc + j.columns.length,
                         0
                     )
+                const customAttributes = attributes ?? {}
+
                 const tableViewColumn = await coreRequest<View_Column>(
                     addColumnToTable(sessionID, tableId, {
                         parentColumnId: tableColumn.id,
-                        attributes: standardColumnAttributes(
-                            column.name,
-                            column._cellContentType,
-                            columnIndex
-                        ),
+                        attributes: {
+                            ...standardColumnAttributes(
+                                column.name,
+                                column._cellContentType,
+                                columnIndex
+                            ),
+                            ...customAttributes,
+                        },
                     }),
                     user.authCookie
                 )

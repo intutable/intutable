@@ -16,8 +16,7 @@ import { isFilterOperator, not, and, or } from "utils/filter"
  */
 export const LIKE_PATTERN_ESCAPE_CHARS = ["%", "_", "\\"]
 
-/** Don't look, just a placeholdey hack - we're gonna change the simplefilter
- type a whole lot soon */
+/** Convert a filter from the lazy-views plugin to one the frontend can use. */
 export const parse = (c: Condition): Filter => {
     switch (c.kind) {
         case ConditionKind.Not:
@@ -61,7 +60,10 @@ const parseSimpleFilter = (c: InfixCondition): SimpleFilter => {
         }
 }
 
-/** Convert a filter from the lazy-views plugin to one the frontend can use. */
+/**
+ * Turn a frontend-side filter into the LV plugin's Condition type for
+ * storing in the database.
+ */
 export const deparse = (f: Filter): Condition =>
     mapCondition(deparseSimpleFilter, f)
 
