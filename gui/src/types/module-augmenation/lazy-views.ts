@@ -6,6 +6,6 @@ import { DB } from "utils/DBParser/DBParser"
 
 declare module "@intutable/lazy-views" {
     interface ColumnInfo {
-        attributes: DB.Column
+        attributes: DB.Column // TOOD: change to Column.Deserialized when DBParser moved to the backend
     }
 }
