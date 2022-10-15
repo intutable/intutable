@@ -1,5 +1,5 @@
 {
     "ext": "ts",
-    "watch": ["./src", "../dekanat-app-plugin/src"],
+    "watch": ["./src", "../dekanat-app-plugin/src", "../shared/src"],
     "exec": "npm run build -w dekanat-app-plugin -w backend && npm run start"
 }
