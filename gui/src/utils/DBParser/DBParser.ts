@@ -6,6 +6,8 @@ import type { ViewData } from "types"
 import type { Filter } from "types/filter"
 import * as FilterParser from "utils/DBParser/filter"
 import { ColumnUtility } from "utils/ColumnUtility"
+import { Parsable } from "@datagrid/Cells/abstract/Cell"
+import cells from "@datagrid/Cells"
 
 // Note: These types, describing data in a special state, should not be imported into the frontend's scope
 // The namespace is exported only for module augmentation
@@ -59,8 +61,7 @@ type ParsableStatic<T extends { [index: string]: [unknown, unknown] }> = {
         ...args: any[]
     ) => T[Key][1]
 } & {
-    [Key in keyof T as `deparse${Capitalize<Key & string>}`]?: (
-        // <-- deparse methods are optional, bc we dont use them yet
+    [Key in keyof T as `deparse${Capitalize<Key & string>}`]: (
         value: T[Key][1],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...args: any[]
@@ -83,17 +84,58 @@ type DBParserStaticImplements = {
  */
 @static_implements<DBParserStaticImplements>()
 export class DBParser {
-    static parseRow(row: DB._Row, rowIndex: number): Row {
+    static parseRows(rows: DB._Row[], columns: ColumnInfo[]): Row[] {
+        const indexColumn = columns.find(
+            column => column.attributes._kind === "index"
+        )
+        if (indexColumn == null)
+            throw new RangeError(
+                `${DBParser.name}: Could not find any index column when parsing the view.`
+            )
+
+        const parsedRows = rows
+
+        columns.forEach(column => {
+            const { _cellContentType } = column.attributes
+            const util = cells.getCell(_cellContentType)
+            parsedRows.map(row =>
+                DBParser.parseRow(
+                    row,
+                    row[indexColumn.key] as number,
+                    column.key,
+                    util.parse
+                )
+            )
+        })
+
+        return parsedRows as Row[]
+    }
+
+    static parseRow(
+        row: DB._Row,
+        rowIndex: number,
+        key: string,
+        parse: Parsable["parse"]
+    ): Row {
+        const parsedRow = row
+        parsedRow[key] = parse(row[key])
+
         return {
-            ...row,
+            ...parsedRow,
             // TODO: Hack: __rowIndex__ is not saved in the database, the plugins keep the order of the rows. this should be removed in the future by saving the value and combining it with the index column
             __rowIndex__: rowIndex,
         } as Row
     }
-    // static deparseRow(row: Row): DB._Row {
-    //     const { __rowIndex__, ...serializedRow } = row // delete the rowIndex
-    //     return serializedRow as Row
-    // }
+    static deparseRow(
+        row: Row,
+        key: string,
+        deparse: Parsable["stringify"]
+    ): DB._Row {
+        const { __rowIndex__, ...serializedRow } = row // delete the rowIndex
+        const deparsed = serializedRow
+        deparsed[key] = deparse(row[key])
+        return deparsed as Row
+    }
 
     static parseColumn(column: ColumnInfo): Column.Serialized {
         const { displayName, userPrimary, ...col } = column.attributes
@@ -104,10 +146,10 @@ export class DBParser {
             key: column.key,
         } as Column.Serialized
     }
-    // static deparseColumn(
-    //     column: Column.Serialized,
-    //     info: Omit<ColumnInfo, "attributes">
-    // ): ColumnInfo {}
+    static deparseColumn(
+        column: Column.Serialized,
+        info: Omit<ColumnInfo, "attributes">
+    ): ColumnInfo {}
 
     static parseFilter(condition: Condition): Filter {
         return FilterParser.parse(condition)
@@ -126,8 +168,15 @@ export class DBParser {
 
         if (indexColumn == null)
             throw new RangeError(
-                `${DBParser.name}: Could not find any index column when parsing the view ${view.descriptor.id} and column`
+                `${DBParser.name}: Could not find any index column when parsing the view ${view.descriptor.id}.`
             )
+
+        const parsedColumns = view.columns
+            .sort(byIndex)
+            .filter(col => ColumnUtility.isInternalColumn(col) === false)
+            .map(DBParser.parseColumn)
+
+        const parsedRows = DBParser.parseRows(view.rows, view.columns)
 
         return {
             metadata: {
@@ -136,16 +185,11 @@ export class DBParser {
                 joins: view.joins,
                 columns: view.columns,
             },
-            columns: view.columns
-                .sort(byIndex)
-                .filter(col => ColumnUtility.isInternalColumn(col) === false)
-                .map(DBParser.parseColumn),
-            rows: view.rows.map(row =>
-                DBParser.parseRow(row, row[indexColumn.key] as number)
-            ),
+            columns: parsedColumns,
+            rows: parsedRows,
         }
     }
-    // static deparseTable(tableData: TableData): RawViewData { }
+    static deparseTable(tableData: TableData): RawViewData {}
 
     static parseView(view: RawViewData): ViewData.Serialized {
         // used to populate the  `__rowIndex__` property
@@ -157,8 +201,15 @@ export class DBParser {
 
         if (indexColumn == null)
             throw new RangeError(
-                `${DBParser.name}: Could not find any index column when parsing the view ${view.descriptor.id} and column`
+                `${DBParser.name}: Could not find any index column when parsing the view ${view.descriptor.id}.`
             )
+
+        const parsedColumns = view.columns
+            .sort(byIndex)
+            .filter(col => ColumnUtility.isInternalColumn(col) === false)
+            .map(DBParser.parseColumn)
+
+        const parsedRows = DBParser.parseRows(view.rows, view.columns)
 
         return {
             descriptor: view.descriptor,
@@ -166,14 +217,9 @@ export class DBParser {
             filters: view.rowOptions.conditions.map(DBParser.parseFilter),
             sortColumns: view.rowOptions.sortColumns,
             groupColumns: view.rowOptions.groupColumns,
-            columns: view.columns
-                .sort(byIndex)
-                .filter(col => ColumnUtility.isInternalColumn(col) === false)
-                .map(DBParser.parseColumn),
-            rows: view.rows.map(row =>
-                DBParser.parseRow(row, row[indexColumn.key] as number)
-            ),
+            columns: parsedColumns,
+            rows: parsedRows,
         }
     }
-    // static deparseView(view: ViewData.Serialized): RawViewData {}
+    static deparseView(view: ViewData.Serialized): RawViewData {}
 }
