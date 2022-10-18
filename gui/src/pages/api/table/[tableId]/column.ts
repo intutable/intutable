@@ -1,6 +1,6 @@
 import {
     asTable,
-    ColumnInfo as View_Column,
+    ColumnInfo,
     getViewOptions,
     ViewDescriptor,
     ViewOptions,
@@ -71,7 +71,7 @@ const POST = withCatchingAPIRoute(
                     )
                 const customAttributes = attributes ?? {}
 
-                const tableViewColumn = await coreRequest<View_Column>(
+                const tableViewColumn = await coreRequest<ColumnInfo>(
                     addColumnToTable(sessionID, tableId, {
                         parentColumnId: tableColumn.id,
                         attributes: {
