@@ -102,12 +102,7 @@ export const useColumn = (
     const changeAttributes = async (
         column: Column,
         update: Record<string, unknown>
-        // {
-        // [key in keyof Omit<
-        //     Column.SQL,
-        //     "displayName" | "__columnIndex__"
-        // >]: Column.SQL[key]
-        // } // TODO: ?
+        // TODO: once the backend parses bidrectionally, this can be the parsed data type `Column.Serialized`
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const baseColumn = getTableColumn(column)

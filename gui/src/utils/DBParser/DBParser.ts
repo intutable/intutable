@@ -140,6 +140,27 @@ export class DBParser {
         return deparsed as Row
     }
 
+    /**
+     * We are facing a mismatch here:
+     *
+     * we loose information, that is not appropriate since we demand bidirectional conversion
+     *
+     * instead we could parse from ColumnInfo to ColumnInfoParsed, but we would discard each property
+     * except `attributes` (the actual column)
+     *
+     * Or we could parse from DB.Column to Column.Serialized, but when we would need another transformation
+     *
+     * This issue is caused by the backend, which sends the data in a violating format
+     *
+     * But this problem does not affect us directly. Only the protocol. We could easily implement a deparsing method
+     * that deparsed from Column.Serialized to DB.Column.
+     *
+     * The question is what to favour: an implementation that violates our protocol, which, in theory, should make life more clear.
+     * or to accept this break
+     *
+     * We only deparse a column, when we update attributes. It should work, IF other information of ColumnInfo are not requires
+     * // TODO: do wo need information of ColumnInfo when updating a column in the backend?
+     */
     static parseColumn(column: ColumnInfo): Column.Serialized {
         const { displayName, userPrimary, ...col } = column.attributes
         return {
@@ -161,6 +182,7 @@ export class DBParser {
         return FilterParser.deparse(filter)
     }
 
+    /** // TODO: this is not bidirectional either */
     static parseTable(view: RawViewData): TableData {
         // used to populate the  `__rowIndex__` property
         // TODO: in the future this will be reversed
@@ -182,17 +204,18 @@ export class DBParser {
         const parsedRows = DBParser.parseRows(view.rows, view.columns)
 
         return {
-            metadata: {
-                descriptor: view.descriptor,
-                source: view.source,
-                joins: view.joins,
-                columns: view.columns,
-            },
+            metadata: { ...view },
             columns: parsedColumns,
             rows: parsedRows,
         }
     }
-    static deparseTable(tableData: TableData): RawViewData {}
+    static deparseTable(tableData: TableData): RawViewData {
+        return {
+            ...tableData.metadata,
+            columns: [],
+            rows: [],
+        }
+    }
 
     static parseView(view: RawViewData): ViewData.Serialized {
         // used to populate the  `__rowIndex__` property

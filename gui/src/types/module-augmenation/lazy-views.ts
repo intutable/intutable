@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ColumnInfo } from "@intutable/lazy-views"
+import { Column } from "types/rdg"
 import { DB } from "utils/DBParser/DBParser"
 
 // Note: augments the `@intutable/lazy-views` module
@@ -7,5 +8,9 @@ import { DB } from "utils/DBParser/DBParser"
 declare module "@intutable/lazy-views" {
     interface ColumnInfo {
         attributes: DB.Column // TOOD: change to Column.Deserialized when DBParser moved to the backend
+    }
+    /** // TODO: is this suitable? a parsed version of ColumnInfo? */
+    interface ColumnInfoParsed extends Omit<ColumnInfo, "attributes"> {
+        attributes: Column.Serialized
     }
 }
