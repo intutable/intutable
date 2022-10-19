@@ -51,7 +51,9 @@ export const useColumn = (
     }
 
     /** Find a column in the base table. */
-    const getTableColumn = (column: Column): ColumnInfo | null => {
+    const getTableColumn = (
+        column: Column.Serialized | Column.Deserialized
+    ): ColumnInfo | null => {
         const viewColumn = view?.metaColumns.find(c => c.key === column.key)
         const tableColumn = table?.metadata.columns.find(
             c => c.id === viewColumn?.parentColumnId
@@ -71,7 +73,8 @@ export const useColumn = (
      */
     const createColumn = async (
         column: StandardColumnSpecifier,
-        attributes?: Partial<DB.Column>
+        attributes?: Partial<Column.Serialized>
+        // TODO: replace this by the column proxy
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         await fetcher({
@@ -101,8 +104,7 @@ export const useColumn = (
     // TODO: the state should be updated differently
     const changeAttributes = async (
         column: Column,
-        update: Record<string, unknown>
-        // TODO: once the backend parses bidrectionally, this can be the parsed data type `Column.Serialized`
+        update: Partial<Column.Serialized>
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const baseColumn = getTableColumn(column)
@@ -117,7 +119,9 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: get rid of `getColumnByKey`
-    const deleteColumn = async (column: Column): Promise<void> => {
+    const deleteColumn = async (
+        column: Column.Serialized | Column.Deserialized
+    ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const tableColumn = getTableColumn(column)
         await fetcher({

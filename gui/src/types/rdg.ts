@@ -414,32 +414,6 @@ type SerializedColumn = MetaColumnProps & {
     headerRenderer?: string | null
 }
 
-/**
- * // TODO: Once a middleware parses the data, this will be moved out of the scope of the frontend
- */
-type DatabaseColumnAttributes = {
-    _kind: string
-    _cellContentType: string
-    __columnIndex__: number | null
-    userPrimary: 0 | 1
-    displayName: string
-    editable?: 1 | 0 | null
-    width?: string | null
-    minWidth?: string | null
-    maxWidth?: string | null
-    cellClass?: string | null
-    headerCellClass?: string | null
-    summaryCellClass?: string | null
-    summaryFormatter?: string | null
-    groupFormatter?: string | null
-    colSpan?: string | null
-    frozen?: 1 | 0 | null
-    resizable?: 1 | 0 | null
-    sortable?: 1 | 0 | null
-    sortDescendingFirst?: 1 | 0 | null
-    headerRenderer?: string | null
-}
-
 export namespace Column {
     export type Serialized = SerializedColumn
     export type Deserialized = Column
