@@ -9,6 +9,11 @@ import { ColumnUtility } from "utils/ColumnUtility"
 import { Parsable } from "@datagrid/Cells/abstract/Cell"
 import cells from "@datagrid/Cells"
 
+const booleanToNumber = (value: boolean | undefined | null) =>
+    typeof value === "boolean" ? (value ? 1 : 0) : value
+const numberToString = (value: string | number | undefined | null) =>
+    typeof value === "number" ? value.toString() : value
+
 // Note: These types, describing data in a special state, should not be imported into the frontend's scope
 // The namespace is exported only for module augmentation
 export namespace DB {
@@ -64,7 +69,7 @@ type ParsableStatic<T extends { [index: string]: [unknown, unknown] }> = {
         ...args: any[]
     ) => T[Key][1]
 } & {
-    [Key in keyof T as `deparse${Capitalize<Key & string>}`]: (
+    [Key in keyof T as `deparse${Capitalize<Key & string>}`]?: (
         value: T[Key][1],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...args: any[]
@@ -76,7 +81,7 @@ type DBParserStaticImplements = {
     // new (): {} // <-- instance methods
 } & ParsableStatic<{
     row: [DB._Row, Row]
-    column: [ColumnInfo, Column.Serialized]
+    columnInfo: [ColumnInfo, Column.Serialized]
     filter: [Condition, Filter]
     table: [RawViewData, TableData]
     view: [RawViewData, ViewData.Serialized]
@@ -160,8 +165,11 @@ export class DBParser {
      *
      * We only deparse a column, when we update attributes. It should work, IF other information of ColumnInfo are not requires
      * // TODO: do wo need information of ColumnInfo when updating a column in the backend?
+     *
+     *
+     * answ -> DB.Column, filter
      */
-    static parseColumn(column: ColumnInfo): Column.Serialized {
+    static parseColumnInfo(column: ColumnInfo): Column.Serialized {
         const { displayName, userPrimary, ...col } = column.attributes
         return {
             ...col,
@@ -170,10 +178,32 @@ export class DBParser {
             key: column.key,
         } as Column.Serialized
     }
+
     static deparseColumn(
-        column: Column.Serialized,
-        info: Omit<ColumnInfo, "attributes">
-    ): ColumnInfo {}
+        column: Column.Serialized
+    ): Omit<DB.Column, "userPrimary"> {
+        return {
+            _kind: column._kind,
+            _cellContentType: column._cellContentType,
+            __columnIndex__: column.__columnIndex__,
+            displayName: column.name,
+            editable: booleanToNumber(column.editable),
+            width: numberToString(column.width),
+            minWidth: numberToString(column.minWidth),
+            maxWidth: numberToString(column.maxWidth),
+            cellClass: column.cellClass,
+            headerCellClass: column.headerCellClass,
+            summaryCellClass: column.summaryCellClass,
+            summaryFormatter: column.summaryFormatter,
+            groupFormatter: column.groupFormatter,
+            colSpan: column.colSpan,
+            frozen: booleanToNumber(column.frozen),
+            resizable: booleanToNumber(column.resizable),
+            sortable: booleanToNumber(column.sortable),
+            sortDescendingFirst: booleanToNumber(column.sortDescendingFirst),
+            headerRenderer: column.headerRenderer,
+        }
+    }
 
     static parseFilter(condition: Condition): Filter {
         return FilterParser.parse(condition)
@@ -199,7 +229,7 @@ export class DBParser {
         const parsedColumns = view.columns
             .sort(byIndex)
             .filter(col => ColumnUtility.isInternalColumn(col) === false)
-            .map(DBParser.parseColumn)
+            .map(DBParser.parseColumnInfo)
 
         const parsedRows = DBParser.parseRows(view.rows, view.columns)
 
@@ -207,13 +237,6 @@ export class DBParser {
             metadata: { ...view },
             columns: parsedColumns,
             rows: parsedRows,
-        }
-    }
-    static deparseTable(tableData: TableData): RawViewData {
-        return {
-            ...tableData.metadata,
-            columns: [],
-            rows: [],
         }
     }
 
@@ -233,7 +256,7 @@ export class DBParser {
         const parsedColumns = view.columns
             .sort(byIndex)
             .filter(col => ColumnUtility.isInternalColumn(col) === false)
-            .map(DBParser.parseColumn)
+            .map(DBParser.parseColumnInfo)
 
         const parsedRows = DBParser.parseRows(view.rows, view.columns)
 
@@ -247,5 +270,4 @@ export class DBParser {
             rows: parsedRows,
         }
     }
-    static deparseView(view: ViewData.Serialized): RawViewData {}
 }

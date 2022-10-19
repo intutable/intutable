@@ -86,7 +86,7 @@ const POST = withCatchingAPIRoute(
                     user.authCookie
                 )
 
-                const parsedColumn = DBParser.parseColumn(tableViewColumn)
+                const parsedColumn = DBParser.parseColumnInfo(tableViewColumn)
                 return parsedColumn
             }
         )
