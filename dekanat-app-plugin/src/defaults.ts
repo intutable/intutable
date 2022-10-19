@@ -4,7 +4,7 @@ import {
     RowOptions,
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
-import { toSql, A } from "./attributes"
+import { toSql, ATTRIBUTES as A } from "../../shared/dist/attributes"
 
 export const UID_KEY = "_id"
 export const INDEX_KEY = "index"

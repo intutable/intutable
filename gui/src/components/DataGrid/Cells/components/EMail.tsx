@@ -3,22 +3,15 @@ import { Box, IconButton, Tooltip } from "@mui/material"
 import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../Cell"
-const MailAddressRegex =
-    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+import { isValidEMailAddress } from "utils/isValidEMailAddress"
+import Cell from "../abstract/Cell"
 
 export class EMail extends Cell {
     readonly brand = "email"
     label = "E-Mail"
 
     isValid(value: unknown): boolean {
-        if (typeof value !== "string") return false
-        return MailAddressRegex.test(value.toLowerCase())
-    }
-
-    export(value: unknown): string | void {
-        if (this.isValid(value)) return value as string
-        return
+        return value == null || value === "" || isValidEMailAddress(value)
     }
 
     editor = (props: EditorProps<Row>) => {

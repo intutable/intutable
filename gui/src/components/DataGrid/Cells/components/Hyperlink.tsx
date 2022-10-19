@@ -3,13 +3,14 @@ import { Box, IconButton, Tooltip } from "@mui/material"
 import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../Cell"
+import Cell from "../abstract/Cell"
 
 export class Hyperlink extends Cell {
     readonly brand = "hyperlink"
     label = "Hyperlink"
 
     isValid(value: unknown): boolean {
+        if (value == null || value === "") return true
         if (typeof value !== "string") return false
 
         try {
@@ -18,11 +19,6 @@ export class Hyperlink extends Cell {
         } catch (e) {
             return false
         }
-    }
-
-    export(value: unknown): string | void {
-        if (this.isValid(value)) return value as string
-        return
     }
 
     editor = (props: EditorProps<Row>) => {

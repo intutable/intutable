@@ -1,7 +1,6 @@
 import { ColumnInfo, ColumnSpecifier } from "@intutable/lazy-views"
 import { Column } from "types"
 import { isNumber } from "utils/isNumber"
-import { project_management_constants } from "types/type-annotations/project-management"
 
 /** Convert a column coming from the DB to a serialized stub of a RDG column. */
 export const parse = (column: ColumnInfo): Column.Serialized => ({
@@ -40,22 +39,7 @@ export const parse = (column: ColumnInfo): Column.Serialized => ({
         column.attributes.sortDescendingFirst == null
             ? column.attributes.sortDescendingFirst
             : Boolean(column.attributes.sortDescendingFirst),
-    editorOptions: {
-        renderFormatter:
-            column.attributes.renderFormatter == null
-                ? column.attributes.renderFormatter
-                : Boolean(column.attributes.renderFormatter),
-        editOnClick:
-            column.attributes.editOnClick == null
-                ? column.attributes.editOnClick
-                : Boolean(column.attributes.editOnClick),
-        commitOnOutsideClick:
-            column.attributes.commitOnOutsideClick == null
-                ? column.attributes.commitOnOutsideClick
-                : Boolean(column.attributes.commitOnOutsideClick),
-        onCellKeyDown: column.attributes.onCellKeyDown,
-        onNavigation: column.attributes.onNavigation,
-    },
+
     headerRenderer: column.attributes.headerRenderer,
 })
 
@@ -91,16 +75,7 @@ export const deparse = (
         resizable: column.resizable ? 1 : 0,
         sortable: column.sortable ? 1 : 0,
         sortDescendingFirst: column.sortDescendingFirst ? 1 : 0,
-        renderFormatter: column.editorOptions?.renderFormatter ? 1 : 0,
-        editOnClick: column.editorOptions?.editOnClick ? 1 : 0,
-        commitOnOutsideClick: column.editorOptions?.commitOnOutsideClick
-            ? 1
-            : 0,
-        onCellKeyDown: column.editorOptions?.onCellKeyDown,
-        onNavigation: column.editorOptions?.onNavigation,
     }
-
-    delete column.editorOptions // no objects in db
 
     return {
         parentColumnId: colId,
@@ -109,4 +84,4 @@ export const deparse = (
 }
 
 export const isInternalColumn = (column: ColumnInfo): boolean =>
-    column.name === project_management_constants.UID_KEY
+    column.name === "_id"

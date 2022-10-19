@@ -9,7 +9,7 @@ export type SettableAttributes = keyof Exclude<
     InterdependentAttributes | ReadonlyAttributes
 >
 
-export type DefaultColumnOptions<T> = {}
+export type DefaultColumnOptions<T> = Record<string, never>
 
 /**
  * Our version of the default props for some properties of {@link SerializedColumn}.
@@ -21,11 +21,6 @@ export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
     frozen: false,
     resizable: true,
     sortable: true,
-    editorOptions: {
-        renderFormatter: true, // TODO: determine the role of this property
-        editOnClick: true,
-        commitOnOutsideClick: true,
-    },
     headerRenderer: "headerRenderer",
 } as const
 

@@ -1,4 +1,4 @@
-import { DeSerialize } from "api/utils"
+import SerDes from "utils/SerDes"
 import { Middleware, SWRHook } from "swr"
 import { ViewData } from "types"
 
@@ -25,7 +25,7 @@ export const deserializeView: Middleware =
 
         // deserialize
         const deserializedViewData: ViewData.Deserialized =
-            DeSerialize.View.deserialize(viewData)
+            SerDes.deserializeView(viewData)
 
         return Object.assign({}, swr, {
             data: deserializedViewData,

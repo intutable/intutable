@@ -1,4 +1,4 @@
-import { ViewOptions, ViewData as RawViewData } from "@intutable/lazy-views"
+import { ViewData as RawViewData } from "@intutable/lazy-views"
 import type { ViewData } from "types"
 import { Column as ColumnParser, Filter as FilterParser } from "."
 import { byIndex } from "./utils"
@@ -9,17 +9,14 @@ import { byIndex } from "./utils"
  * `ViewData` type, we now have to fetch them separately for this function.
  * Oops.
  */
-export const parse = (
-    options: ViewOptions,
-    view: RawViewData
-): ViewData.Serialized => {
+export const parse = (view: RawViewData): ViewData.Serialized => {
     const indexColumn = view.columns.find(c => c.attributes._kind === "index")!
     return {
         descriptor: view.descriptor,
         metaColumns: view.columns,
-        filters: options.rowOptions.conditions.map(FilterParser.parse),
-        sortColumns: options.rowOptions.sortColumns,
-        groupColumns: options.rowOptions.groupColumns,
+        filters: view.rowOptions.conditions.map(FilterParser.parse),
+        sortColumns: view.rowOptions.sortColumns,
+        groupColumns: view.rowOptions.groupColumns,
         columns: view.columns
             .sort(byIndex)
             .filter(col => !ColumnParser.isInternalColumn(col))

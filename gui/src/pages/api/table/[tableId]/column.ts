@@ -6,10 +6,12 @@ import {
     ViewOptions,
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
-import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
+import { ColumnDescriptor } from "@intutable/project-management/dist/types"
+import { Column } from "types/rdg"
 import { coreRequest, Parser } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 import sanitizeName from "utils/sanitizeName"
 
@@ -21,8 +23,8 @@ import { standardColumnAttributes } from "@backend/defaults"
  * Add a column to a table.
  * @tutorial
  * ```
+ * - URL: /api/table/[tableId]/column
  * - Body: {
- *    viewId: {@type {number}}
  *    column: {@type {Column.Serialized}}
  * }
  * ```
@@ -34,40 +36,50 @@ const POST = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        const options = await coreRequest<ViewOptions>(
-            getViewOptions(tableId),
-            user.authCookie
+        const newColumn: Column.Serialized = await withReadWriteConnection(
+            user,
+            async sessionID => {
+                const options = await coreRequest<ViewOptions>(
+                    getViewOptions(sessionID, tableId),
+                    user.authCookie
+                )
+
+                const key = sanitizeName(column.name)
+                // add column in project-management
+                const tableColumn = await coreRequest<ColumnDescriptor>(
+                    createColumnInTable(
+                        sessionID,
+                        asTable(options.source).id,
+                        key
+                    ),
+                    user.authCookie
+                )
+
+                // add column to table and filter views
+                const columnIndex =
+                    options.columnOptions.columns.length +
+                    options.columnOptions.joins.reduce(
+                        (acc, j) => acc + j.columns.length,
+                        0
+                    )
+                const tableViewColumn = await coreRequest<View_Column>(
+                    addColumnToTable(sessionID, tableId, {
+                        parentColumnId: tableColumn.id,
+                        attributes: standardColumnAttributes(
+                            column.name,
+                            column._cellContentType,
+                            columnIndex
+                        ),
+                    }),
+                    user.authCookie
+                )
+
+                const parsedColumn = Parser.Column.parse(tableViewColumn)
+                return parsedColumn
+            }
         )
 
-        const key = sanitizeName(column.name)
-        // add column in project-management
-        const tableColumn = await coreRequest<PM_Column>(
-            createColumnInTable(asTable(options.source).id, key),
-            user.authCookie
-        )
-
-        // add column to table and filter views
-        const columnIndex =
-            options.columnOptions.columns.length +
-            options.columnOptions.joins.reduce(
-                (acc, j) => acc + j.columns.length,
-                0
-            )
-        const tableViewColumn = await coreRequest<View_Column>(
-            addColumnToTable(tableId, {
-                parentColumnId: tableColumn.id,
-                attributes: standardColumnAttributes(
-                    column.name,
-                    column._cellContentType,
-                    columnIndex
-                ),
-            }),
-            user.authCookie
-        )
-
-        const parsedColumn = Parser.Column.parse(tableViewColumn)
-
-        res.status(200).json(parsedColumn)
+        res.status(200).json(newColumn)
     }
 )
 

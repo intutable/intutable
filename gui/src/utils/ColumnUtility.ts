@@ -1,8 +1,7 @@
 import { EditorComponent } from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 
-import { PLACEHOLDER } from "api/utils/SerDes/PLACEHOLDER_KEYS"
-import { Column, MetaColumnProps } from "types"
+import { Column, MetaColumnProps, ViewData } from "types"
 
 import cells, { Cell } from "@datagrid/Cells"
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
@@ -124,11 +123,32 @@ export class ColumnUtility {
         return headerRenderer
     }
 
-    // static deserialize(column: Column.Serialized): Column { }
-    // public deserialize(): Column { }
+    public getEditorOptions(): Column["editorOptions"] {
+        return this.cell.editorOptions
+    }
 
-    // static serialize(column: Column): Column.Serialized { }
-    // public serialize(): Column.Serialized { }
+    /** 'true' if yes, if no an array with indices of rows whose cells do not suit the new type */
+    static canInterchangeColumnType(
+        to: string,
+        column: Column | Column.Serialized,
+        view: ViewData
+    ): true | number[] {
+        const targetUtil = cells.getCell(to)
+        const data = view.rows.map(row => [
+            row.__rowIndex__,
+            row[column.key],
+        ]) as Array<[number, unknown]>
+
+        const invalidCells = data.filter(
+            cell => targetUtil.isValid(cell[1]) === false
+        )
+
+        console.log(invalidCells)
+
+        return invalidCells.length === 0
+            ? true
+            : invalidCells.map(cell => cell[0])
+    }
 
     /**
      * Identifies columns which are not part of the real object data, but rather
@@ -138,9 +158,8 @@ export class ColumnUtility {
     static isAppColumn(
         column: Column.Serialized | Column.Deserialized
     ): boolean {
-        return (
-            column.key === PLACEHOLDER.COL_SELECTOR || column._kind === "index"
-        )
+        // `select-row` is defined by rdg – do NOT change this
+        return column.key === "select-row" || column._kind === "index"
     }
 
     static DefaultColumn(type: string) {}

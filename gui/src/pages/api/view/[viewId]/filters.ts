@@ -10,6 +10,7 @@ import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
+import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { defaultViewName } from "@backend/defaults"
 import { Filter } from "types/filter"
 import { Filter as FilterParser } from "api/utils/parse"
@@ -36,24 +37,26 @@ const PATCH = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        const options = await coreRequest<ViewOptions>(
-            getViewOptions(viewId),
-            user.authCookie
-        )
+        await withReadWriteConnection(user, async sessionID => {
+            const options = await coreRequest<ViewOptions>(
+                getViewOptions(sessionID, viewId),
+                user.authCookie
+            )
 
-        // prevent altering the default view
-        if (options.name === defaultViewName()) throw Error("changeDefaultView")
+            // prevent altering the default view
+            if (options.name === defaultViewName())
+                throw Error("changeDefaultView")
 
-        const newRowOptions = {
-            ...options.rowOptions,
-            conditions: filters.map(FilterParser.deparse),
-        }
+            const newRowOptions = {
+                ...options.rowOptions,
+                conditions: filters.map(FilterParser.deparse),
+            }
 
-        await coreRequest(
-            changeRowOptions(viewId, newRowOptions),
-            user.authCookie
-        )
-
+            await coreRequest(
+                changeRowOptions(sessionID, viewId, newRowOptions),
+                user.authCookie
+            )
+        })
         res.status(200).json({})
     }
 )

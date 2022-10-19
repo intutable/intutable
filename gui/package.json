@@ -1,12 +1,12 @@
 {
     "name": "gui",
-    "version": "1.0.0-alpha.1",
+    "version": "1.1.1-alpha.1",
     "private": "true",
     "scripts": {
         "build": "next build",
         "start": "next start",
         "dev": "next dev",
-        "lint": "cross-env NODE_ENV=development next lint -c ../.eslintrc.js",
+        "lint": "cross-env NODE_ENV=development next lint",
         "lint:fix": "npm run lint -- --fix",
         "lint:production": "cross-env NODE_ENV=production next lint",
         "analyze": "cross-env ANALYZE=true next build",

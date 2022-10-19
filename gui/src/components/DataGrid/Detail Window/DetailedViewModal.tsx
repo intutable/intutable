@@ -36,7 +36,6 @@ export const DetailedViewModal: React.FC<DetailedViewModalProps> = props => {
         <Dialog
             open={props.open}
             TransitionComponent={PopupTransition}
-            keepMounted
             aria-describedby="row-detailed-view"
             fullWidth={true}
             maxWidth="xs"

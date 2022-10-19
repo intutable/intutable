@@ -1,5 +1,6 @@
 import { coreRequest } from "../api/utils/coreRequest"
 import { User } from "types/User"
+import { ADMIN_ROLE } from "@backend/permissions"
 
 /**
  * Check if logged into core by using the session cookie.
@@ -18,6 +19,7 @@ export const getCurrentUser = async (
         return Promise.resolve({
             ...user,
             authCookie,
+            role: ADMIN_ROLE,
         })
     } catch (err) {
         if (typeof err === "object" && err != null && "status" in err) {

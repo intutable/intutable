@@ -3,9 +3,10 @@ import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column, Row } from "types"
-import { project_management_constants } from "types/type-annotations/project-management"
+
 import { useColumn } from "./useColumn"
 import { APIContextProvider } from "context/APIContext"
+import { useSnacki } from "./useSnacki"
 
 /**
  * ### useRow hook.
@@ -23,6 +24,8 @@ export const useRow = (
     tableOptions?: TableHookOptions,
     viewOptions?: ViewHookOptions
 ) => {
+    const { snackError } = useSnacki()
+
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
     const { getTableColumn } = useColumn(tableOptions, viewOptions)
@@ -33,9 +36,7 @@ export const useRow = (
      * correct key. The table can be overridden with {@link viewOptions}.
      */
     const getRowId = (row: Row): number => {
-        const uidColumn = view!.metaColumns.find(
-            c => c.name === project_management_constants.UID_KEY
-        )!
+        const uidColumn = view!.metaColumns.find(c => c.name === "_id")!
         return row[uidColumn.key] as number
     }
 
@@ -88,10 +89,7 @@ export const useRow = (
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: [
-                    project_management_constants.UID_KEY,
-                    getRowId(row),
-                ],
+                condition: ["_id", getRowId(row)],
             },
             method: "DELETE",
         })
@@ -117,14 +115,19 @@ export const useRow = (
         const baseColumnKey = metaColumn.name
 
         // TODO: put this in the api route
-        if (metaColumn.joinId !== null)
-            throw Error("attempted to edit data of a different table")
+        if (metaColumn.joinId !== null) {
+            snackError(
+                "Dies ist ein Lookup. Änderungen dürfen nur in der Originaltabelle vorgenommen werden."
+            )
+            return
+            // throw Error("attempted to edit data of a different table")
+        }
 
         await fetcher({
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: [project_management_constants.UID_KEY, rowId],
+                condition: ["_id", rowId],
                 update: {
                     [baseColumnKey]: value,
                 },

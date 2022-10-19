@@ -71,6 +71,17 @@ const ServiceDesk: NextPage = () => {
                         Die App ist zzt. nicht für mobile Endgeräte optimiert.
                     </Typography>
                 </li>
+                <li>
+                    <Typography
+                        sx={{
+                            color: theme.palette.text.secondary,
+                        }}
+                    >
+                        Einige Kontext-Menüs können nicht zuverlässig mit der
+                        Maus bedient werden. Dann kann trotzdem die Tastatur zum
+                        Navigieren verwendet werden.
+                    </Typography>
+                </li>
             </ul>
 
             {/* Wiki */}

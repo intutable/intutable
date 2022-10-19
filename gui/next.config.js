@@ -14,12 +14,25 @@ module.exports = withBundleAnalyzer({
     // publicRuntimeConfig: {},
     // swcMinify: true, // experimental – does not work
     eslint: {
+        dirs: ["src"],
         ignoreDuringBuilds: true,
     },
     compiler: { removeConsole: false },
     webpack: (config, options) => {
         config.module.rules.push({
             test: /\/dekanat-app-plugin\/.*\.ts$/,
+            use: [
+                {
+                    loader: "ts-loader",
+                    options: {
+                        transpileOnly: true,
+                        onlyCompileBundledFiles: true,
+                    }
+                }
+            ],
+        })
+        config.module.rules.push({
+            test: /\/shared\/.*\.ts$/,
             use: [
                 {
                     loader: "ts-loader",
