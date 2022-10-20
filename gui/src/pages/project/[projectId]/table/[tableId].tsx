@@ -41,6 +41,7 @@ import {
 } from "context/SelectedRowsContext"
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { ClipboardUtil } from "utils/ClipboardUtil"
+import RowModal from "@datagrid/Detail Window/RowModal"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -252,6 +253,7 @@ const TablePage: React.FC = () => {
                                 />
                             </Grid>
                         )}
+                        {<RowModal />}
                     </Grid>
                 </>
             )}
