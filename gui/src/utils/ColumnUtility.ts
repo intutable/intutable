@@ -1,10 +1,5 @@
-import { EditorComponent } from "@datagrid/Cells/types/EditorComponent"
-import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
-
 import { Column, MetaColumnProps, ViewData } from "types"
-
 import cells, { Cell } from "@datagrid/Cells"
-import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 
 /**
  * // TODO: this flexbility could be a potential error cause.
@@ -78,55 +73,6 @@ export class ColumnUtility {
         this.cell = cells.getCell(this.column._cellContentType)
     }
 
-    // get column(): Column.Serialized {}
-
-    public getKind(): MetaColumnProps["_kind"] {
-        return this.column._kind
-    }
-    public getCellContentType(): string {
-        return this.column._cellContentType
-    }
-
-    public isEditable(): boolean | null | undefined {
-        const { _kind, editable } = this.column
-
-        // index columns are not editable, at least no by the editable
-        if (_kind === "index") return false
-
-        // some types don't have an editor and should not be editable
-        if (this.cell.editor == null) return false
-
-        // TODO: further checking here, e.g. should link and lookup columns be editable??
-
-        return editable
-    }
-
-    public getEditor(): EditorComponent | undefined | null {
-        return this.cell.editor
-    }
-
-    public getFormatter(): FormatterComponent | undefined | null {
-        const { _kind } = this.column
-
-        // special treatment when the kind is 'link'
-        // this will be changed soon
-        if (_kind === "link") return LinkColumnFormatter
-
-        // otherwise choose the formatter by its type
-        return this.cell.formatter
-    }
-
-    public getHeaderRenderer(): Column["headerRenderer"] {
-        // for now no actions on index columns
-        if (this.column._kind === "index") return null
-
-        return headerRenderer
-    }
-
-    public getEditorOptions(): Column["editorOptions"] {
-        return this.cell.editorOptions
-    }
-
     /** 'true' if yes, if no an array with indices of rows whose cells do not suit the new type */
     static canInterchangeColumnType(
         to: string,
@@ -142,8 +88,6 @@ export class ColumnUtility {
         const invalidCells = data.filter(
             cell => targetUtil.isValid(cell[1]) === false
         )
-
-        console.log(invalidCells)
 
         return invalidCells.length === 0
             ? true
@@ -162,6 +106,14 @@ export class ColumnUtility {
         return column.key === "select-row" || column._kind === "index"
     }
 
-    static DefaultColumn(type: string) {}
-    static DefaultGrid() {}
+    /**
+     *
+     */
+    static isProxy(column: Column.Serialized | Column.Deserialized): boolean {
+        const col = column as unknown
+        return (
+            Object.prototype.hasOwnProperty.call(col, "__isProxy") &&
+            (col as { __isProxy: unknown }).__isProxy === true
+        )
+    }
 }

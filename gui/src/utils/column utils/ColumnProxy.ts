@@ -1,17 +1,34 @@
-import { Column } from "types"
-import cells, { Cell } from "@datagrid/Cells"
+import cells from "@datagrid/Cells"
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 import { headerRenderer } from "@datagrid/renderers"
+import { Column } from "types"
+
+export const applyColumnProxy = (column: Column.Serialized): ProxyColumn =>
+    new Proxy(column as ProxyColumn, ColumnProxyHandler)
 
 // TODO: this could replace most of the ColumnUtility
 
-const ColumnProxyHandler: ProxyHandler<Column.Deserialized> = {
+// must be backwards compatible with `Column`
+export type ProxyColumn = Column.Deserialized & {
+    /**
+     * The proxy does not store an actual serialized object in itself.
+     * But you can pass by the get-traps with this property.
+     * */
+    serialized: Column.Serialized
+    /**
+     *
+     */
+    __isProxy: boolean
+}
+
+const ColumnProxyHandler: ProxyHandler<ProxyColumn> = {
     get(target, prop, receiver) {
         if (target._cellContentType == null)
             throw new Error("ColumnProxyHandler: _cellContentType is null")
+
         const cell = cells.getCell(target._cellContentType)
 
-        switch (prop as keyof Column) {
+        switch (prop as keyof ProxyColumn) {
             case "editable":
                 // index columns are not editable, at least no by the editable
                 if (target._kind === "index") return false
@@ -33,6 +50,13 @@ const ColumnProxyHandler: ProxyHandler<Column.Deserialized> = {
 
             case "editorOptions":
                 return cell.editorOptions
+
+            // pass by
+            case "serialized":
+                return target as Column.Serialized
+
+            case "__isProxy":
+                return true
 
             default:
                 return Reflect.get(target, prop, receiver)
