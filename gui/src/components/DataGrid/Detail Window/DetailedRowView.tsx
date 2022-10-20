@@ -1,4 +1,5 @@
 import OpenInFullIcon from "@mui/icons-material/OpenInFull"
+import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen"
 import {
     Box,
     Divider,
@@ -10,18 +11,24 @@ import {
 import { useTheme } from "@mui/material/styles"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo } from "react"
 import { CalculatedColumn } from "react-data-grid"
 import { Row } from "types"
 
 export type DetailedRowViewProps = {
     open: boolean
     data?: { row: Row; column: CalculatedColumn<Row> }
+    onExpand: (expanded: boolean) => void
 }
 export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
     const theme = useTheme()
-    const { snackWarning } = useSnacki()
+
     const { data } = useView()
+
+    const [expanded, setExpanded] = React.useState(false)
+    useEffect(() => {
+        props.onExpand(expanded)
+    }, [expanded, props])
 
     const row = useMemo(() => {
         if (props.data == null || data == null) return null
@@ -115,28 +122,26 @@ export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
                         >
                             <IconButton
                                 size="small"
-                                onClick={() =>
-                                    snackWarning("Nicht unterstützt")
-                                }
+                                onClick={() => {
+                                    setExpanded(prev => !prev)
+                                }}
                             >
-                                <OpenInFullIcon
-                                    sx={{
-                                        fontSize: "70%",
-                                    }}
-                                />
+                                {expanded ? (
+                                    <CloseFullscreenIcon
+                                        sx={{
+                                            fontSize: "70%",
+                                        }}
+                                    />
+                                ) : (
+                                    <OpenInFullIcon
+                                        sx={{
+                                            fontSize: "70%",
+                                        }}
+                                    />
+                                )}
                             </IconButton>
                         </Tooltip>
                     </Box>
-                    <Divider sx={{ my: 0.5 }} />
-                    <Typography
-                        sx={{
-                            p: 1,
-                            fontSize: "70%",
-                            color: theme.palette.error.light,
-                        }}
-                    >
-                        Dieses Feature wird zzt. nicht vollständig unterstützt.
-                    </Typography>
                 </>
             )}
         </Box>

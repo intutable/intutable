@@ -30,7 +30,7 @@ type RowModalProps = {
     /**
      * @default false
      */
-    createNewRow: true | { row: Row; column: CalculatedColumn<Row> }
+    mode: "createNewRow" | { row: Row; column: CalculatedColumn<Row> }
 }
 
 export const RowModal: React.FC<RowModalProps> = props => {
@@ -54,7 +54,9 @@ export const RowModal: React.FC<RowModalProps> = props => {
             onClose={props.onCloseHandler}
         >
             <DialogTitle>
-                {props.createNewRow ? "Neue Zeile erstellen" : `Zeile ${"X"}`}
+                {props.mode === "createNewRow"
+                    ? "Neue Zeile erstellen"
+                    : `Zeile ${"X"}`}
             </DialogTitle>
 
             <DialogContent>
@@ -66,19 +68,22 @@ export const RowModal: React.FC<RowModalProps> = props => {
                                 column._cellContentType!
                             )
 
-                            const updateCallback: ExposedInputUpdateCallback = (
-                                value: unknown
-                            ) => {}
+                            const updateCallback: ExposedInputUpdateCallback = {
+                                onChange: value => {},
+                            }
 
-                            const content = props.createNewRow ? undefined : any
+                            const content =
+                                props.mode === "createNewRow"
+                                    ? undefined
+                                    : undefined
 
                             return (
                                 <Input
                                     content={content}
                                     updateHandler={
-                                        props.createNewRow === true
+                                        props.mode === "createNewRow"
                                             ? updateCallback
-                                            : { ...props.createNewRow }
+                                            : { ...props.mode }
                                     }
                                 />
                             )
@@ -89,8 +94,8 @@ export const RowModal: React.FC<RowModalProps> = props => {
 
             <DialogActions sx={{ flexWrap: "wrap" }}>
                 <Button onClick={abort}>Abbrechen</Button>
-                <Button onClick={props.createNewRow ? create : save}>
-                    {props.createNewRow ? "Erstellen" : "Übernehmen"}
+                <Button onClick={props.mode === "createNewRow" ? create : save}>
+                    {props.mode === "createNewRow" ? "Erstellen" : "Übernehmen"}
                 </Button>
             </DialogActions>
         </Dialog>

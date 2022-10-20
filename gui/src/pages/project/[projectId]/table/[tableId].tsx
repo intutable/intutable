@@ -86,10 +86,11 @@ const TablePage: React.FC = () => {
 
     // Detailed View
     const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(false)
-    const [detailedViewData, setDetailedViewData] = useState<{
+    const [focusedRow, setFocusedRow] = useState<{
         row: Row
         column: CalculatedColumn<Row>
     } | null>(null)
+    const [rowModalOpen, setRowModalOpen] = useState<boolean>(false)
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
@@ -233,7 +234,7 @@ const TablePage: React.FC = () => {
                                         onRowsChange={partialRowUpdate}
                                         headerRowHeight={headerHeight}
                                         onRowClick={(row, column) =>
-                                            setDetailedViewData({ row, column })
+                                            setFocusedRow({ row, column })
                                         }
                                         cellNavigationMode={cellNavigationMode}
                                     />
@@ -248,12 +249,22 @@ const TablePage: React.FC = () => {
                         {detailedViewOpen && (
                             <Grid item xs={2} xl={1}>
                                 <DetailedRowView
-                                    data={detailedViewData || undefined}
+                                    data={focusedRow || undefined}
                                     open={detailedViewOpen}
+                                    onExpand={expanded =>
+                                        setRowModalOpen(expanded)
+                                    }
                                 />
                             </Grid>
                         )}
-                        {<RowModal />}
+
+                        {focusedRow != null && (
+                            <RowModal
+                                open={rowModalOpen}
+                                mode={focusedRow}
+                                onCloseHandler={() => setRowModalOpen(false)}
+                            />
+                        )}
                     </Grid>
                 </>
             )}
