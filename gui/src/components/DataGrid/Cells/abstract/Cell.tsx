@@ -2,9 +2,10 @@
 import EditorComponent from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { InputUnstyled, InputUnstyledProps } from "@mui/base"
-import { Box } from "@mui/material"
+import { Box, TextField } from "@mui/material"
 import { styled } from "@mui/material/styles"
-import React, { useRef, useEffect } from "react"
+import { useRow } from "hooks/useRow"
+import React, { useRef, useEffect, useState } from "react"
 import { CalculatedColumn, EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row, ViewData } from "types"
 import { isJSONArray, isJSONObject } from "utils/isJSON"
@@ -37,7 +38,8 @@ const StyledInputElement = styled("input")`
 `
 
 type EditorOptions = NonNullable<Column["editorOptions"]>
-
+export type ExposedInputUpdateCallback = { onChange: (value: unknown) => void }
+export type ExposedInputUpdateHandler = { column: Column; row: Row }
 export type ExposedInputProps = {
     /**
      * If focus is lost, instead the formatted value will be displayed (formatter).
@@ -46,22 +48,17 @@ export type ExposedInputProps = {
      * @default true
      */
     keepFormatter?: boolean
-    column: CalculatedColumn<Row>
-    row: Row
-    table: ViewData
+    /**
+     *
+     */
+    content?: unknown
+    /**
+     * 1: will update itself
+     * 2: returns the (updated) value
+     */
+    updateHandler: ExposedInputUpdateHandler | ExposedInputUpdateCallback
+    sx?: null
 }
-
-/**
- * Minimal required props:
- *
- * • [optional, e.g. when creating] content OR row and column
- *
- * This satisfies the requirements for the plain components to render,
- * but when updating, more is needed:
- *
- * • ?
- *
- */
 
 export interface ExposableInputComponent {
     /**
@@ -75,7 +72,7 @@ export interface ExposableInputComponent {
     /**
      * Updates the cell's `value`. Can be used outside the cell in other components.
      */
-    update: (value: unknown) => void
+    // update: (value: unknown) => void
 }
 
 // TODO: make this a static method, this increases performance
@@ -283,13 +280,43 @@ export default abstract class Cell
         return value
     }
 
-    public abstract ExposedInput: React.FC<{
-        keepFormatter?: boolean | undefined
-        column: Column
-        row: Row
-    }>
+    /** util type guard */
+    protected updateHandlerIsCallback(
+        updateHandler: ExposedInputProps["updateHandler"]
+    ): updateHandler is ExposedInputUpdateCallback {
+        return Object.prototype.hasOwnProperty.call(updateHandler, "onChange")
+    }
+    public ExposedInput = (props: ExposedInputProps) => {
+        const { getRowId, updateRow } = useRow()
 
-    public abstract update: (value: unknown) => void
+        const [content, setContent] = useState(props.content ?? "")
+
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setContent(e.target.value)
+            if (this.updateHandlerIsCallback(props.updateHandler)) {
+                const callback = (
+                    props.updateHandler as ExposedInputUpdateCallback
+                ).onChange
+                callback(e.target.value)
+            }
+        }
+
+        const handleBlur = async () => {
+            if (this.updateHandlerIsCallback(props.updateHandler) === false) {
+                const { row, column } =
+                    props.updateHandler as ExposedInputUpdateHandler
+                await updateRow(column, getRowId(row), content)
+            }
+        }
+
+        return (
+            <TextField
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={content}
+            />
+        )
+    }
 
     static Error = CellError
 }
