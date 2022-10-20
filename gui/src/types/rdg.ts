@@ -50,11 +50,30 @@ export namespace TableData {
 // #################################################################
 type View<COL, ROW> = {
     descriptor: ViewDescriptor
+    /**
+     * Since {@link columns} only contains direct display-relevant data and
+     * not backend-side metadata like IDs, we we also keep the original
+     * ColumnInfos around so we have access e.g. to the column's ID when it
+     * is to be deleted.
+     */
     metaColumns: ColumnInfo[]
+    /** Filters for the displayed data. */
     filters: Filter[]
+    /**
+     * What column data are sorted by (by the database; if you want to
+     * implement this client-side, do not use this prop).
+     * Not implemented yet.
+     */
     sortColumns: SortColumn[]
+    /**
+     * What column data are grouped by (by the database; if you intend to
+     * implement this client-side, do not use this prop).
+     * Not implemented yet.
+     */
     groupColumns: GroupColumn[]
+    /** RDG-side display columns. */
     columns: COL[]
+    /** RDG-side display rows. */
     rows: ROW[]
 }
 
