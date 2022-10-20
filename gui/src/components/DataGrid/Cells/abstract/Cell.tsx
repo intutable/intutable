@@ -5,8 +5,8 @@ import { InputUnstyled, InputUnstyledProps } from "@mui/base"
 import { Box } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import React, { useRef, useEffect } from "react"
-import { EditorProps, FormatterProps } from "react-data-grid"
-import { Column, Row } from "types"
+import { CalculatedColumn, EditorProps, FormatterProps } from "react-data-grid"
+import { Column, Row, ViewData } from "types"
 import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
 
@@ -38,6 +38,31 @@ const StyledInputElement = styled("input")`
 
 type EditorOptions = NonNullable<Column["editorOptions"]>
 
+export type ExposedInputProps = {
+    /**
+     * If focus is lost, instead the formatted value will be displayed (formatter).
+     * By clicking the value, the input component will be reactivated for editing (editor).
+     *
+     * @default true
+     */
+    keepFormatter?: boolean
+    column: CalculatedColumn<Row>
+    row: Row
+    table: ViewData
+}
+
+/**
+ * Minimal required props:
+ *
+ * • [optional, e.g. when creating] content OR row and column
+ *
+ * This satisfies the requirements for the plain components to render,
+ * but when updating, more is needed:
+ *
+ * • ?
+ *
+ */
+
 export interface ExposableInputComponent {
     /**
      * Reference to the input component of the cell class.
@@ -46,15 +71,7 @@ export interface ExposableInputComponent {
      * __Note__: This adapts the behaviour of native rdg cells and is NOT fully developed.
      * Bugs may occur.
      */
-    ExposedInput: (
-        /**
-         * If focus is lost, instead the formatted value will be displayed (formatter).
-         * By clicking the value, the input component will be reactivated for editing (editor).
-         *
-         * @default true
-         */
-        keepFormatter?: boolean
-    ) => JSX.Element
+    ExposedInput: React.FC<ExposedInputProps>
     /**
      * Updates the cell's `value`. Can be used outside the cell in other components.
      */
@@ -105,7 +122,7 @@ export interface Parsable {
  * Base class to all cell components.
  */
 export default abstract class Cell
-    implements Validatable, Exportable, Parsable
+    implements Validatable, Exportable, Parsable, ExposableInputComponent
 {
     /** unique identifier */
     public abstract readonly brand: string
@@ -265,6 +282,14 @@ export default abstract class Cell
     public unexport(value: string): unknown {
         return value
     }
+
+    public abstract ExposedInput: React.FC<{
+        keepFormatter?: boolean | undefined
+        column: Column
+        row: Row
+    }>
+
+    public abstract update: (value: unknown) => void
 
     static Error = CellError
 }
