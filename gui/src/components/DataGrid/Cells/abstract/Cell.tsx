@@ -38,6 +38,29 @@ const StyledInputElement = styled("input")`
 
 type EditorOptions = NonNullable<Column["editorOptions"]>
 
+export interface ExposableInputComponent {
+    /**
+     * Reference to the input component of the cell class.
+     * Can be used outside the cell for other components.
+     *
+     * __Note__: This adapts the behaviour of native rdg cells and is NOT fully developed.
+     * Bugs may occur.
+     */
+    ExposedInput: (
+        /**
+         * If focus is lost, instead the formatted value will be displayed (formatter).
+         * By clicking the value, the input component will be reactivated for editing (editor).
+         *
+         * @default true
+         */
+        keepFormatter?: boolean
+    ) => JSX.Element
+    /**
+     * Updates the cell's `value`. Can be used outside the cell in other components.
+     */
+    update: (value: unknown) => void
+}
+
 // TODO: make this a static method, this increases performance
 export interface Validatable {
     /** validates parsed values – doesn't parse values for you */
@@ -78,12 +101,8 @@ export interface Parsable {
     stringify: (value: any) => any
 }
 
-// export interface Convertable {
-//     convert: <T extends CellType>(to: T) => T
-// }
-
 /**
- * Base class for all cell components.
+ * Base class to all cell components.
  */
 export default abstract class Cell
     implements Validatable, Exportable, Parsable
