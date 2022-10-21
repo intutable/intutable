@@ -154,6 +154,10 @@ export type MetaColumnProps = {
      * column.
      */
     __columnIndex__: number | null
+    /**
+     * User defined primiary column
+     */
+    userPrimary: boolean
 }
 
 /**
