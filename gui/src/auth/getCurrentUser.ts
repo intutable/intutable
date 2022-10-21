@@ -1,4 +1,4 @@
-import { coreRequest } from "api/utils/_CoreRequest"
+import { coreRequest } from "../api/utils/coreRequest"
 import { User } from "types/User"
 import { ADMIN_ROLE } from "@backend/permissions"
 

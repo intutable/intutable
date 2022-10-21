@@ -5,7 +5,7 @@ import {
     changeRowOptions,
 } from "@intutable/lazy-views"
 
-import { coreRequest } from "api/utils/_CoreRequest"
+import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"

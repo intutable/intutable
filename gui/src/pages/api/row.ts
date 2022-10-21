@@ -4,7 +4,7 @@ import {
     TableDescriptor,
     TableData,
 } from "@intutable/project-management/dist/types"
-import { coreRequest } from "api/utils/_CoreRequest"
+import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"

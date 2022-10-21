@@ -3,7 +3,7 @@ import {
     ViewData as RawViewData,
     ViewDescriptor,
 } from "@intutable/lazy-views"
-import { coreRequest } from "api/utils/_CoreRequest"
+import { coreRequest } from "api/utils"
 import { DBParser } from "utils/DBParser"
 import fs from "fs-extra"
 import { parseAsync } from "json2csv"

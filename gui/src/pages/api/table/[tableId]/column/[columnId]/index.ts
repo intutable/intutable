@@ -4,7 +4,7 @@ import {
     ViewDescriptor,
     ViewInfo,
 } from "@intutable/lazy-views"
-import { coreRequest } from "api/utils/_CoreRequest"
+import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"

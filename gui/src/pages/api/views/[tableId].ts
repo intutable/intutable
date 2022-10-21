@@ -1,5 +1,5 @@
 import { ViewDescriptor, listViews, viewId } from "@intutable/lazy-views"
-import { coreRequest } from "api/utils/_CoreRequest"
+import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { makeError } from "utils/error-handling/utils/makeError"

@@ -4,7 +4,7 @@ import {
     ProjectDescriptor,
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
-import { coreRequest } from "api/utils/_CoreRequest"
+import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withReadOnlyConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
