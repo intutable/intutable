@@ -41,6 +41,7 @@ export const parse = (column: ColumnInfo): Column.Serialized => ({
             : Boolean(column.attributes.sortDescendingFirst),
 
     headerRenderer: column.attributes.headerRenderer,
+    userPrimary: column.attributes.userPrimary,
 })
 
 /**

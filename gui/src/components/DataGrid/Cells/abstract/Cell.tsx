@@ -5,9 +5,9 @@ import { InputUnstyled, InputUnstyledProps } from "@mui/base"
 import { Box, TextField } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import { useRow } from "hooks/useRow"
-import React, { useRef, useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { CalculatedColumn, EditorProps, FormatterProps } from "react-data-grid"
-import { Column, Row, ViewData } from "types"
+import { Column, Row } from "types"
 import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
 
@@ -38,8 +38,19 @@ const StyledInputElement = styled("input")`
 `
 
 type EditorOptions = NonNullable<Column["editorOptions"]>
-export type ExposedInputUpdateCallback = { onChange: (value: unknown) => void }
-export type ExposedInputUpdateHandler = { column: Column; row: Row }
+
+export type ExposedInputUpdateMode = "self" | "alien"
+export type ExposedInputUpdate<MODE extends ExposedInputUpdateMode> =
+    MODE extends "self"
+        ? {
+              mode: "self"
+              row: Row
+              column: Column | CalculatedColumn<Row>
+          }
+        : {
+              mode: "alien"
+              onChange: (value: unknown) => void
+          }
 export type ExposedInputProps = {
     /**
      * If focus is lost, instead the formatted value will be displayed (formatter).
@@ -56,7 +67,7 @@ export type ExposedInputProps = {
      * 1: will update itself
      * 2: returns the (updated) value
      */
-    updateHandler: ExposedInputUpdateHandler | ExposedInputUpdateCallback
+    update: ExposedInputUpdate<ExposedInputUpdateMode>
     sx?: null
 }
 
@@ -282,12 +293,6 @@ export default abstract class Cell
         return value
     }
 
-    /** util type guard */
-    protected updateHandlerIsCallback(
-        updateHandler: ExposedInputProps["updateHandler"]
-    ): updateHandler is ExposedInputUpdateCallback {
-        return Object.prototype.hasOwnProperty.call(updateHandler, "onChange")
-    }
     public ExposedInput = (props: ExposedInputProps) => {
         const { getRowId, updateRow } = useRow()
 
@@ -295,24 +300,22 @@ export default abstract class Cell
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             setContent(e.target.value)
-            if (this.updateHandlerIsCallback(props.updateHandler)) {
-                const callback = (
-                    props.updateHandler as ExposedInputUpdateCallback
-                ).onChange
+            if (props.update.mode === "alien") {
+                const callback = props.update.onChange
                 callback(e.target.value)
             }
         }
 
         const handleBlur = async () => {
-            if (this.updateHandlerIsCallback(props.updateHandler) === false) {
-                const { row, column } =
-                    props.updateHandler as ExposedInputUpdateHandler
+            if (props.update.mode === "self") {
+                const { row, column } = props.update
                 await updateRow(column, getRowId(row), content)
             }
         }
 
         return (
             <TextField
+                size="small"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={content}

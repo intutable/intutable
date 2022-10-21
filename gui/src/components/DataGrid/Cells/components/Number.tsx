@@ -3,11 +3,7 @@ import { useRow } from "hooks/useRow"
 import React, { useState } from "react"
 import { EditorProps } from "react-data-grid"
 import { Row } from "types"
-import {
-    ExposedInputProps,
-    ExposedInputUpdateCallback,
-    ExposedInputUpdateHandler,
-} from "../abstract/Cell"
+import { ExposedInputProps } from "../abstract/Cell"
 import { NumericCell } from "../abstract/NumericCell"
 import LooksOneIcon from "@mui/icons-material/LooksOne"
 
@@ -42,24 +38,24 @@ export class Num extends NumericCell {
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             setContent(e.target.value)
-            if (this.updateHandlerIsCallback(props.updateHandler)) {
-                const callback = (
-                    props.updateHandler as ExposedInputUpdateCallback
-                ).onChange
+            if (this.updateHandlerIsCallback(props.update)) {
+                const callback = (props.update as ExposedInputUpdateCallback)
+                    .onChange
                 callback(e.target.value)
             }
         }
 
         const handleBlur = async () => {
-            if (this.updateHandlerIsCallback(props.updateHandler) === false) {
+            if (this.updateHandlerIsCallback(props.update) === false) {
                 const { row, column } =
-                    props.updateHandler as ExposedInputUpdateHandler
+                    props.update as ExposedInputUpdateHandler
                 await updateRow(column, getRowId(row), content)
             }
         }
 
         return (
             <TextField
+                size="small"
                 type="number"
                 onChange={handleChange}
                 onBlur={handleBlur}

@@ -135,6 +135,7 @@ export type MetaColumnProps = {
      * column.
      */
     __columnIndex__: number | null
+    userPrimary: boolean
 }
 
 /**

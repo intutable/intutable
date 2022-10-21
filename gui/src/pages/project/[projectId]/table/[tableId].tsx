@@ -1,4 +1,4 @@
-import RowMask from "@datagrid/Detail Window/RowMask"
+import RowMask from "@datagrid/RowMask/RowMask"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton"
 import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
 import { RowRenderer } from "@datagrid/renderers"
