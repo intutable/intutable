@@ -29,7 +29,7 @@ import React, { useEffect, useState } from "react"
 import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import type { Row, TableData, ViewData } from "types"
+import type { Column, Row, TableData, ViewData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
@@ -42,6 +42,7 @@ import {
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import RowModal from "@datagrid/Detail Window/RowModal"
+import { ColumnUtility } from "utils/ColumnUtility"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -88,7 +89,7 @@ const TablePage: React.FC = () => {
     const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(false)
     const [focusedRow, setFocusedRow] = useState<{
         row: Row
-        column: CalculatedColumn<Row>
+        column: Column | CalculatedColumn<Row>
     } | null>(null)
     const [rowModalOpen, setRowModalOpen] = useState<boolean>(false)
 
@@ -251,9 +252,7 @@ const TablePage: React.FC = () => {
                                 <DetailedRowView
                                     data={focusedRow || undefined}
                                     open={detailedViewOpen}
-                                    onExpand={expanded =>
-                                        setRowModalOpen(expanded)
-                                    }
+                                    onExpand={() => setRowModalOpen(true)}
                                 />
                             </Grid>
                         )}
@@ -263,6 +262,19 @@ const TablePage: React.FC = () => {
                                 open={rowModalOpen}
                                 mode={focusedRow}
                                 onCloseHandler={() => setRowModalOpen(false)}
+                                onNavigateRow={rowIndex => {
+                                    setFocusedRow({
+                                        row: data.rows.find(
+                                            row => row.__rowIndex__ === rowIndex
+                                        )!,
+                                        column: data.columns.filter(
+                                            column =>
+                                                ColumnUtility.isAppColumn(
+                                                    column
+                                                ) === false
+                                        )[0]!,
+                                    })
+                                }}
                             />
                         )}
                     </Grid>

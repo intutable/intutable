@@ -18,6 +18,7 @@ import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
 import Cell from "../abstract/Cell"
+import BookmarkIcon from "@mui/icons-material/Bookmark"
 
 const ChipItem: React.FC<{
     label: string
@@ -42,6 +43,7 @@ const ChipItem: React.FC<{
 export class Select extends Cell {
     readonly brand = "select"
     label = "Auswahlliste"
+    icon = (<BookmarkIcon />)
 
     editor = () => null
 

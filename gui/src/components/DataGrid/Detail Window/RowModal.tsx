@@ -4,11 +4,14 @@ import {
     ExposedInputUpdateHandler,
 } from "@datagrid/Cells/abstract/Cell"
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
+    Divider,
+    IconButton,
     Slide,
     Stack,
     Typography,
@@ -18,6 +21,51 @@ import { useView } from "hooks/useView"
 import React, { useState } from "react"
 import { CalculatedColumn } from "react-data-grid"
 import { Row, Column } from "types"
+import { ColumnUtility } from "utils/ColumnUtility"
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp"
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"
+import CloseIcon from "@mui/icons-material/Close"
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
+import AddBoxIcon from "@mui/icons-material/AddBox"
+
+type RowNavigatorProps = {
+    currentIndex: number
+    maxIndex: number
+    onNavigate: (index: number) => void
+}
+const RowNavigator: React.FC<RowNavigatorProps> = props => {
+    const next = () =>
+        props.onNavigate(
+            props.currentIndex + 1 > props.maxIndex ? 0 : props.currentIndex + 1
+        )
+    const previous = () =>
+        props.onNavigate(
+            props.currentIndex - 1 < 0 ? props.maxIndex : props.currentIndex - 1
+        )
+
+    return (
+        <Stack
+            sx={{
+                mr: 1,
+            }}
+        >
+            <ArrowDropUpIcon
+                fontSize="small"
+                sx={{
+                    cursor: "pointer",
+                }}
+                onClick={previous}
+            />
+            <ArrowDropDownIcon
+                fontSize="small"
+                sx={{
+                    cursor: "pointer",
+                }}
+                onClick={next}
+            />
+        </Stack>
+    )
+}
 
 const getExposedInput = (type: Column.Serialized["_cellContentType"]) => {
     const cellUtil = cells.getCell(type)
@@ -30,7 +78,8 @@ type RowModalProps = {
     /**
      * @default false
      */
-    mode: "createNewRow" | { row: Row; column: CalculatedColumn<Row> }
+    mode: "createNewRow" | { row: Row; column: Column | CalculatedColumn<Row> }
+    onNavigateRow: (rowIndex: number) => void
 }
 
 export const RowModal: React.FC<RowModalProps> = props => {
@@ -54,50 +103,86 @@ export const RowModal: React.FC<RowModalProps> = props => {
             onClose={props.onCloseHandler}
         >
             <DialogTitle>
-                {props.mode === "createNewRow"
-                    ? "Neue Zeile erstellen"
-                    : `Zeile ${"X"}`}
+                <Stack direction="row">
+                    {props.mode !== "createNewRow" && (
+                        <RowNavigator
+                            currentIndex={props.mode.row.__rowIndex__}
+                            maxIndex={data.rows.length - 1}
+                            onNavigate={props.onNavigateRow}
+                        />
+                    )}
+                    {props.mode === "createNewRow"
+                        ? "Neue Zeile erstellen"
+                        : `Zeile ${props.mode.row.__rowIndex__}`}
+                    <IconButton>
+                        <MoreHorizIcon fontSize="small" />
+                    </IconButton>
+                    <Divider orientation="vertical" />
+                    <IconButton onClick={props.onCloseHandler}>
+                        <CloseIcon fontSize="small" />
+                    </IconButton>
+                </Stack>
             </DialogTitle>
 
-            <DialogContent>
-                {data.columns.map(column => (
-                    <Stack direction="row" key={column._id!}>
-                        <Typography>{column.name}</Typography>
-                        {(() => {
-                            const Input = getExposedInput(
-                                column._cellContentType!
-                            )
+            <Divider />
 
-                            const updateCallback: ExposedInputUpdateCallback = {
-                                onChange: value => {},
-                            }
+            <DialogContent
+                sx={{
+                    overflowY: "scroll",
+                    maxHeight: "70%",
+                }}
+            >
+                {data.columns
+                    .filter(
+                        column => ColumnUtility.isAppColumn(column) === false
+                    )
+                    .map(column => (
+                        <Stack direction="row" key={column._id!}>
+                            <Typography>
+                                {cells.getCell(column._cellContentType!).icon}
+                                {column.name}
+                            </Typography>
+                            {(() => {
+                                const Input = getExposedInput(
+                                    column._cellContentType!
+                                )
 
-                            const content =
-                                props.mode === "createNewRow"
-                                    ? undefined
-                                    : undefined
-
-                            return (
-                                <Input
-                                    content={content}
-                                    updateHandler={
-                                        props.mode === "createNewRow"
-                                            ? updateCallback
-                                            : { ...props.mode }
+                                const updateCallback: ExposedInputUpdateCallback =
+                                    {
+                                        onChange: value => {},
                                     }
-                                />
-                            )
-                        })()}
-                    </Stack>
-                ))}
-            </DialogContent>
 
-            <DialogActions sx={{ flexWrap: "wrap" }}>
-                <Button onClick={abort}>Abbrechen</Button>
-                <Button onClick={props.mode === "createNewRow" ? create : save}>
-                    {props.mode === "createNewRow" ? "Erstellen" : "Übernehmen"}
-                </Button>
-            </DialogActions>
+                                const content =
+                                    props.mode === "createNewRow"
+                                        ? undefined
+                                        : props.mode.row[column.key]
+
+                                return (
+                                    <Input
+                                        content={content}
+                                        updateHandler={
+                                            props.mode === "createNewRow"
+                                                ? updateCallback
+                                                : { ...props.mode }
+                                        }
+                                    />
+                                )
+                            })()}
+                        </Stack>
+                    ))}
+
+                <Typography>
+                    <AddBoxIcon fontSize="small" />
+                    Neue Spalte erstellen
+                </Typography>
+            </DialogContent>
+            {props.mode === "createNewRow" && (
+                <DialogActions sx={{ flexWrap: "wrap" }}>
+                    <Divider />
+                    <Button onClick={abort}>Abbrechen</Button>
+                    <Button onClick={create}>Erstellen</Button>
+                </DialogActions>
+            )}
         </Dialog>
     )
 }

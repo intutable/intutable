@@ -10,10 +10,12 @@ import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import Cell from "../abstract/Cell"
 import { TempusCell } from "../abstract/TempusCell"
+import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled"
 
 export class Time extends TempusCell {
     readonly brand = "time"
     label = "Time"
+    icon = (<AccessTimeFilledIcon />)
 
     editor = () => null
 

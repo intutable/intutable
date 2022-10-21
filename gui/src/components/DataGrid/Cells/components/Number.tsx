@@ -9,10 +9,12 @@ import {
     ExposedInputUpdateHandler,
 } from "../abstract/Cell"
 import { NumericCell } from "../abstract/NumericCell"
+import LooksOneIcon from "@mui/icons-material/LooksOne"
 
 export class Num extends NumericCell {
     readonly brand = "number"
     label = "Number"
+    icon = (<LooksOneIcon />)
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)

@@ -18,6 +18,7 @@ import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
 import Cell from "../abstract/Cell"
+import BookmarksIcon from "@mui/icons-material/Bookmarks"
 
 const ChipItem: React.FC<{
     label: string
@@ -43,6 +44,7 @@ const ChipItem: React.FC<{
 export class MultiSelect extends Cell {
     readonly brand = "multiselect"
     label = "Mehrfach-Auswahlliste"
+    icon = (<BookmarksIcon />)
 
     isValid(value: unknown): boolean {
         return Array.isArray(value) && value.every(v => typeof v === "string")

@@ -5,10 +5,12 @@ import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { isValidEMailAddress } from "utils/isValidEMailAddress"
 import Cell from "../abstract/Cell"
+import AlternateEmailIcon from "@mui/icons-material/AlternateEmail"
 
 export class EMail extends Cell {
     readonly brand = "email"
     label = "E-Mail"
+    icon = (<AlternateEmailIcon />)
 
     isValid(value: unknown): boolean {
         return value == null || value === "" || isValidEMailAddress(value)

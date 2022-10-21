@@ -125,6 +125,8 @@ export default abstract class Cell
     public abstract readonly brand: string
     /** public name / no i18n yet */
     public abstract label: string
+    /** icon displayed with the type */
+    public icon?: JSX.Element
 
     /** override rdg's default properties for `editorOptions`. */
     // Note: before overring these, look up what the defaul values look like

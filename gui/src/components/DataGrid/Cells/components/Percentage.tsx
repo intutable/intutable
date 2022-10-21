@@ -8,6 +8,7 @@ import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import Cell from "../abstract/Cell"
 import { NumericCell } from "../abstract/NumericCell"
+import PercentIcon from "@mui/icons-material/Percent"
 
 const LinearProgressWithLabel = (
     props: LinearProgressProps & { value: number }
@@ -33,6 +34,7 @@ const LinearProgressWithLabel = (
 export class Percentage extends NumericCell {
     readonly brand = "percentage"
     label = "Percentage"
+    icon = (<PercentIcon />)
 
     isValid(value: unknown): boolean {
         if (typeof value === "string" && NumericCell.isNumeric(value)) {

@@ -13,11 +13,11 @@ import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useEffect, useMemo } from "react"
 import { CalculatedColumn } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
 
 export type DetailedRowViewProps = {
     open: boolean
-    data?: { row: Row; column: CalculatedColumn<Row> }
+    data?: { row: Row; column?: Column | CalculatedColumn<Row> }
     onExpand: (expanded: boolean) => void
 }
 export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
@@ -27,7 +27,7 @@ export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
 
     const [expanded, setExpanded] = React.useState(false)
     useEffect(() => {
-        props.onExpand(expanded)
+        if (props.open && expanded) props.onExpand(true)
     }, [expanded, props])
 
     const row = useMemo(() => {

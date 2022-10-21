@@ -3,10 +3,12 @@ import React from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import Cell from "../abstract/Cell"
+import ToggleOnIcon from "@mui/icons-material/ToggleOn"
 
 export class Bool extends Cell {
     readonly brand = "boolean"
     label = "Boolean"
+    icon = (<ToggleOnIcon />)
 
     editor = () => null
 
