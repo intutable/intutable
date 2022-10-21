@@ -155,7 +155,10 @@ export type MetaColumnProps = {
      */
     __columnIndex__: number | null
     /**
-     * User defined primiary column
+     * User-facing "primary" column. This would be something like e.g. the
+     * name of a person - hopefully unique, but not necessarily. This is why
+     * the _real_ primary key is the hidden _id column which the user cannot
+     * see or edit.
      */
     userPrimary: boolean
 }

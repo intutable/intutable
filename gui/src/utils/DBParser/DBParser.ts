@@ -9,8 +9,22 @@ import { ColumnUtility } from "utils/ColumnUtility"
 import { Parsable } from "@datagrid/Cells/abstract/Cell"
 import cells from "@datagrid/Cells"
 
-const booleanToNumber = (value: boolean | undefined | null) =>
-    typeof value === "boolean" ? (value ? 1 : 0) : value
+function booleanToNumber(value: boolean): 1 | 0
+function booleanToNumber(
+    value: boolean | undefined | null
+): 1 | 0 | undefined | null
+function booleanToNumber(value: boolean | undefined | null) {
+    return typeof value === "boolean" ? (value ? 1 : 0) : value
+}
+function numberToBoolean(value: 1 | 0): boolean
+function numberToBoolean(
+    value: 1 | 0 | undefined | null
+): boolean | undefined |null
+function numberToBoolean(value: 1 | 0 | undefined | null){
+    return value === 1 ? true
+        : value === 0 ? false
+        : value
+}
 const numberToString = (value: string | number | undefined | null) =>
     typeof value === "number" ? value.toString() : value
 
@@ -152,16 +166,18 @@ export class DBParser {
             _id: column.id,
             name: displayName,
             key: column.key,
+            userPrimary: numberToBoolean(userPrimary),
         } as Column.Serialized
     }
 
     static deparseColumn(
         column: Column.Serialized
-    ): Omit<DB.Column, "userPrimary"> {
+    ): DB.Column {
         return {
             _kind: column._kind,
             _cellContentType: column._cellContentType,
             __columnIndex__: column.__columnIndex__,
+            userPrimary: booleanToNumber(column.userPrimary),
             displayName: column.name,
             editable: booleanToNumber(column.editable),
             width: numberToString(column.width),
