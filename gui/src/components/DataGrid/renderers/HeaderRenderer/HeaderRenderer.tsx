@@ -1,3 +1,4 @@
+import cells from "@datagrid/Cells"
 import { asView } from "@intutable/lazy-views/dist/selectable"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import KeyIcon from "@mui/icons-material/Key"
@@ -120,6 +121,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 fontWeight: "bold",
                             }}
                         >
+                            {cells.getCell(props.column._cellContentType!).icon}
                             {props.column.name}
                         </Typography>
                     </Tooltip>

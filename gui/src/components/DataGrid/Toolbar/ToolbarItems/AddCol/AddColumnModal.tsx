@@ -92,6 +92,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                         key={cell.brand}
                                         value={cell.brand}
                                     >
+                                        {cell.icon}
                                         {cell.label}
                                     </MenuItem>
                                 ))}

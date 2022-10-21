@@ -82,7 +82,7 @@ type RowModalProps = {
     onNavigateRow: (rowIndex: number) => void
 }
 
-export const RowModal: React.FC<RowModalProps> = props => {
+export const RowMask: React.FC<RowModalProps> = props => {
     const { data } = useView()
 
     const [state, setState] = useState(null)
@@ -187,4 +187,4 @@ export const RowModal: React.FC<RowModalProps> = props => {
     )
 }
 
-export default RowModal
+export default RowMask

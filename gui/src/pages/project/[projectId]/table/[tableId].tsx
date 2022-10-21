@@ -34,15 +34,15 @@ import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 import { useThemeToggler } from "pages/_app"
-import { DetailedRowView } from "@datagrid/Detail Window/DetailedRowView"
 import {
     SelectedRowsContextProvider,
     useSelectedRows,
 } from "context/SelectedRowsContext"
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { ClipboardUtil } from "utils/ClipboardUtil"
-import RowModal from "@datagrid/Detail Window/RowModal"
+import RowMask from "@datagrid/Detail Window/RowMask"
 import { ColumnUtility } from "utils/ColumnUtility"
+import { RowMaskProvider } from "context/RowMaskContext"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -85,8 +85,8 @@ const TablePage: React.FC = () => {
     // views side panel
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
 
-    // Detailed View
-    const [detailedViewOpen, setDetailedViewOpen] = useState<boolean>(false)
+    // Row Mask
+
     const [focusedRow, setFocusedRow] = useState<{
         row: Row
         column: Column | CalculatedColumn<Row>
@@ -110,18 +110,7 @@ const TablePage: React.FC = () => {
     }
 
     const tableSize = {
-        xs:
-            viewNavOpen && detailedViewOpen
-                ? 8
-                : viewNavOpen != detailedViewOpen
-                ? 10
-                : 12,
-        xl:
-            viewNavOpen && detailedViewOpen
-                ? 10
-                : viewNavOpen != detailedViewOpen
-                ? 11
-                : 12,
+        xs: viewNavOpen ? 10 : 12,
     }
     if (tableList == null || data == null) return <LoadingSkeleton />
 
@@ -154,15 +143,15 @@ const TablePage: React.FC = () => {
             {error ? (
                 <span>Die Tabelle konnte nicht geladen Werden</span>
             ) : (
-                <>
+                <RowMaskProvider>
                     <Grid container spacing={2}>
                         {viewNavOpen && (
-                            <Grid item xs={2} xl={1}>
+                            <Grid item xs={2}>
                                 <ViewNavigator open={viewNavOpen} />
                             </Grid>
                         )}
 
-                        <Grid item xs={tableSize.xs} xl={tableSize.xl}>
+                        <Grid item xs={tableSize.xs}>
                             <Box>
                                 <Toolbar position="top">
                                     <ToolbarItem.Views
@@ -176,12 +165,6 @@ const TablePage: React.FC = () => {
                                     <ToolbarItem.AddRow />
                                     <ToolbarItem.EditFilters />
                                     <ToolbarItem.ExportView />
-                                    <ToolbarItem.DetailView
-                                        handleClick={() =>
-                                            setDetailedViewOpen(prev => !prev)
-                                        }
-                                        open={detailedViewOpen}
-                                    />
                                 </Toolbar>
 
                                 <DndProvider backend={HTML5Backend}>
@@ -247,18 +230,8 @@ const TablePage: React.FC = () => {
                             </Box>
                         </Grid>
 
-                        {detailedViewOpen && (
-                            <Grid item xs={2} xl={1}>
-                                <DetailedRowView
-                                    data={focusedRow || undefined}
-                                    open={detailedViewOpen}
-                                    onExpand={() => setRowModalOpen(true)}
-                                />
-                            </Grid>
-                        )}
-
                         {focusedRow != null && (
-                            <RowModal
+                            <RowMask
                                 open={rowModalOpen}
                                 mode={focusedRow}
                                 onCloseHandler={() => setRowModalOpen(false)}
@@ -278,7 +251,7 @@ const TablePage: React.FC = () => {
                             />
                         )}
                     </Grid>
-                </>
+                </RowMaskProvider>
             )}
         </>
     )
