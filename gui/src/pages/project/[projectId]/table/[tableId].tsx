@@ -1,3 +1,4 @@
+import RowMask from "@datagrid/Detail Window/RowMask"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton"
 import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
 import { RowRenderer } from "@datagrid/renderers"
@@ -5,12 +6,12 @@ import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Grid, Box, Button, Typography } from "@mui/material"
+import { Box, Button, Grid, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
+import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
 import {
@@ -19,30 +20,28 @@ import {
     useAPI,
     useHeaderSearchField,
 } from "context"
-import { useBrowserInfo } from "hooks/useBrowserInfo"
-import { useRow } from "hooks/useRow"
-import { useSnacki } from "hooks/useSnacki"
-import { useView } from "hooks/useView"
-import { useTables } from "hooks/useTables"
-import { InferGetServerSidePropsType, NextPage } from "next"
-import React, { useEffect, useState } from "react"
-import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
-import { DndProvider } from "react-dnd"
-import { HTML5Backend } from "react-dnd-html5-backend"
-import type { Column, Row, TableData, ViewData } from "types"
-import { DynamicRouteQuery } from "types/DynamicRouteQuery"
-import { rowKeyGetter } from "utils/rowKeyGetter"
-import { withSSRCatch } from "utils/withSSRCatch"
-import { useThemeToggler } from "pages/_app"
+import { RowMaskProvider, useRowMask } from "context/RowMaskContext"
 import {
     SelectedRowsContextProvider,
     useSelectedRows,
 } from "context/SelectedRowsContext"
+import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { useCellNavigation } from "hooks/useCellNavigation"
+import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
+import { useTables } from "hooks/useTables"
+import { useView } from "hooks/useView"
+import { InferGetServerSidePropsType, NextPage } from "next"
+import { useThemeToggler } from "pages/_app"
+import React, { useEffect, useState } from "react"
+import DataGrid, { RowsChangeData } from "react-data-grid"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
+import type { Row, TableData, ViewData } from "types"
+import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
-import RowMask from "@datagrid/Detail Window/RowMask"
-import { ColumnUtility } from "utils/ColumnUtility"
-import { RowMaskProvider } from "context/RowMaskContext"
+import { rowKeyGetter } from "utils/rowKeyGetter"
+import { withSSRCatch } from "utils/withSSRCatch"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -81,17 +80,10 @@ const TablePage: React.FC = () => {
     const { data, error } = useView()
     const { tables: tableList } = useTables()
     const { getRowId, updateRow } = useRow()
+    const { setRowMaskState } = useRowMask()
 
     // views side panel
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
-
-    // Row Mask
-
-    const [focusedRow, setFocusedRow] = useState<{
-        row: Row
-        column: Column | CalculatedColumn<Row>
-    } | null>(null)
-    const [rowModalOpen, setRowModalOpen] = useState<boolean>(false)
 
     // TODO: this should not be here and does not work as intended in this way
     const partialRowUpdate = async (
@@ -143,115 +135,94 @@ const TablePage: React.FC = () => {
             {error ? (
                 <span>Die Tabelle konnte nicht geladen Werden</span>
             ) : (
-                <RowMaskProvider>
-                    <Grid container spacing={2}>
-                        {viewNavOpen && (
-                            <Grid item xs={2}>
-                                <ViewNavigator open={viewNavOpen} />
-                            </Grid>
-                        )}
-
-                        <Grid item xs={tableSize.xs}>
-                            <Box>
-                                <Toolbar position="top">
-                                    <ToolbarItem.Views
-                                        handleClick={() =>
-                                            setViewNavOpen(prev => !prev)
-                                        }
-                                        open={viewNavOpen}
-                                    />
-                                    <ToolbarItem.AddCol />
-                                    <ToolbarItem.AddLink />
-                                    <ToolbarItem.AddRow />
-                                    <ToolbarItem.EditFilters />
-                                    <ToolbarItem.ExportView />
-                                </Toolbar>
-
-                                <DndProvider backend={HTML5Backend}>
-                                    <DataGrid
-                                        className={
-                                            "rdg-" + getTheme() + " fill-grid"
-                                        }
-                                        rows={data.rows}
-                                        columns={data.columns}
-                                        components={{
-                                            noRowsFallback: <NoRowsFallback />,
-                                            rowRenderer: RowRenderer,
-                                            // checkboxFormatter: // TODO: adjust
-                                            // sortIcon: // TODO: adjust
-                                        }}
-                                        rowKeyGetter={rowKeyGetter}
-                                        defaultColumnOptions={{
-                                            sortable: true,
-                                            resizable: true,
-                                            // formatter: // TODO: adjust
-                                        }}
-                                        onCopy={event =>
-                                            clipboardUtil.handleOnCopy(
-                                                event,
-                                                error => {
-                                                    error
-                                                        ? snackError(error)
-                                                        : snack(
-                                                              "1 Zelle kopiert"
-                                                          )
-                                                }
-                                            )
-                                        }
-                                        // onFill={e =>
-                                        //     clipboardUtil.handleOnFill(e)
-                                        // }
-                                        onPaste={e =>
-                                            clipboardUtil.handleOnPaste(
-                                                e,
-                                                error => {
-                                                    error
-                                                        ? snackError(error)
-                                                        : snack(
-                                                              "1 Zelle eingefügt"
-                                                          )
-                                                }
-                                            )
-                                        }
-                                        selectedRows={selectedRows}
-                                        onSelectedRowsChange={setSelectedRows}
-                                        onRowsChange={partialRowUpdate}
-                                        headerRowHeight={headerHeight}
-                                        onRowClick={(row, column) =>
-                                            setFocusedRow({ row, column })
-                                        }
-                                        cellNavigationMode={cellNavigationMode}
-                                    />
-                                </DndProvider>
-
-                                <Toolbar position="bottom">
-                                    <ToolbarItem.Connection status="connected" />
-                                </Toolbar>
-                            </Box>
+                <Grid container spacing={2}>
+                    {viewNavOpen && (
+                        <Grid item xs={2}>
+                            <ViewNavigator open={viewNavOpen} />
                         </Grid>
+                    )}
 
-                        {focusedRow != null && (
-                            <RowMask
-                                open={rowModalOpen}
-                                mode={focusedRow}
-                                onCloseHandler={() => setRowModalOpen(false)}
-                                onNavigateRow={rowIndex => {
-                                    setFocusedRow({
-                                        row: data.rows.find(
-                                            row => row.__rowIndex__ === rowIndex
-                                        )!,
-                                        column: data.columns.filter(
-                                            column =>
-                                                ColumnUtility.isAppColumn(
-                                                    column
-                                                ) === false
-                                        )[0]!,
-                                    })
-                                }}
-                            />
-                        )}
+                    <Grid item xs={tableSize.xs}>
+                        <Box>
+                            <Toolbar position="top">
+                                <ToolbarItem.Views
+                                    handleClick={() =>
+                                        setViewNavOpen(prev => !prev)
+                                    }
+                                    open={viewNavOpen}
+                                />
+                                <ToolbarItem.AddCol />
+                                <ToolbarItem.AddLink />
+                                <ToolbarItem.AddRow />
+                                <ToolbarItem.EditFilters />
+                                <ToolbarItem.ExportView />
+                            </Toolbar>
+
+                            <DndProvider backend={HTML5Backend}>
+                                <DataGrid
+                                    className={
+                                        "rdg-" + getTheme() + " fill-grid"
+                                    }
+                                    rows={data.rows}
+                                    columns={data.columns}
+                                    components={{
+                                        noRowsFallback: <NoRowsFallback />,
+                                        rowRenderer: RowRenderer,
+                                        // checkboxFormatter: // TODO: adjust
+                                        // sortIcon: // TODO: adjust
+                                    }}
+                                    rowKeyGetter={rowKeyGetter}
+                                    defaultColumnOptions={{
+                                        sortable: true,
+                                        resizable: true,
+                                        // formatter: // TODO: adjust
+                                    }}
+                                    onCopy={event =>
+                                        clipboardUtil.handleOnCopy(
+                                            event,
+                                            error => {
+                                                error
+                                                    ? snackError(error)
+                                                    : snack("1 Zelle kopiert")
+                                            }
+                                        )
+                                    }
+                                    // onFill={e =>
+                                    //     clipboardUtil.handleOnFill(e)
+                                    // }
+                                    onPaste={e =>
+                                        clipboardUtil.handleOnPaste(
+                                            e,
+                                            error => {
+                                                error
+                                                    ? snackError(error)
+                                                    : snack("1 Zelle eingefügt")
+                                            }
+                                        )
+                                    }
+                                    selectedRows={selectedRows}
+                                    onSelectedRowsChange={setSelectedRows}
+                                    onRowsChange={partialRowUpdate}
+                                    headerRowHeight={headerHeight}
+                                    onRowClick={(row, column) =>
+                                        setRowMaskState({
+                                            mode: "edit",
+                                            row,
+                                            column,
+                                        })
+                                    }
+                                    cellNavigationMode={cellNavigationMode}
+                                />
+                            </DndProvider>
+
+                            <Toolbar position="bottom">
+                                <ToolbarItem.Connection status="connected" />
+                            </Toolbar>
+                        </Box>
                     </Grid>
-                </RowMaskProvider>
+
+                    <RowMask />
+                </Grid>
             )}
         </>
     )
@@ -284,7 +255,9 @@ const Page: NextPage<
         <APIContextProvider project={project} table={table} view={view}>
             <SelectedRowsContextProvider>
                 <HeaderSearchFieldProvider>
-                    <TablePage />
+                    <RowMaskProvider>
+                        <TablePage />
+                    </RowMaskProvider>
                 </HeaderSearchFieldProvider>
             </SelectedRowsContextProvider>
         </APIContextProvider>

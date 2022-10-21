@@ -7,7 +7,7 @@ import React from "react"
 /**
  * Toolbar Item for adding rows to the data grid.
  */
-export const AddRow: React.FC = () => {
+const AddRow: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
 
     const { createRow } = useRow()
@@ -30,3 +30,5 @@ export const AddRow: React.FC = () => {
         </>
     )
 }
+
+export default AddRow

@@ -1,10 +1,11 @@
 import cells from "@datagrid/Cells"
+import { ExposedInputUpdateCallback } from "@datagrid/Cells/abstract/Cell"
+import AddBoxIcon from "@mui/icons-material/AddBox"
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp"
+import CloseIcon from "@mui/icons-material/Close"
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
 import {
-    ExposedInputUpdateCallback,
-    ExposedInputUpdateHandler,
-} from "@datagrid/Cells/abstract/Cell"
-import {
-    Box,
     Button,
     Dialog,
     DialogActions,
@@ -12,36 +13,40 @@ import {
     DialogTitle,
     Divider,
     IconButton,
-    Slide,
     Stack,
     Typography,
 } from "@mui/material"
-import type { TransitionProps } from "@mui/material/transitions"
+import { useRowMask } from "context/RowMaskContext"
 import { useView } from "hooks/useView"
-import React, { useState } from "react"
-import { CalculatedColumn } from "react-data-grid"
-import { Row, Column } from "types"
+import React from "react"
+import { Column } from "types"
 import { ColumnUtility } from "utils/ColumnUtility"
-import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp"
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"
-import CloseIcon from "@mui/icons-material/Close"
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
-import AddBoxIcon from "@mui/icons-material/AddBox"
 
-type RowNavigatorProps = {
-    currentIndex: number
-    maxIndex: number
-    onNavigate: (index: number) => void
-}
-const RowNavigator: React.FC<RowNavigatorProps> = props => {
-    const next = () =>
-        props.onNavigate(
-            props.currentIndex + 1 > props.maxIndex ? 0 : props.currentIndex + 1
-        )
-    const previous = () =>
-        props.onNavigate(
-            props.currentIndex - 1 < 0 ? props.maxIndex : props.currentIndex - 1
-        )
+const RowNavigator: React.FC = () => {
+    const { data } = useView()
+    const { rowMaskState, setRowMaskState } = useRowMask()
+
+    const navigateRow = (action: "next" | "previous") => {
+        if (rowMaskState.mode !== "edit" || data == null) return
+        const maxIndex = data.rows.length
+        const nextIndex =
+            action === "next"
+                ? rowMaskState.row.__rowIndex__ + 1 > maxIndex
+                    ? 0
+                    : rowMaskState.row.__rowIndex__ + 1
+                : rowMaskState.row.__rowIndex__ - 1 < 0
+                ? maxIndex
+                : rowMaskState.row.__rowIndex__ - 1
+        setRowMaskState(prev => ({
+            mode: "edit",
+            row: data.rows.find(row => row.__rowIndex__ === nextIndex)!,
+            column: Object.prototype.hasOwnProperty.call(prev, "column")
+                ? (prev as { column: Column }).column
+                : data.columns.filter(
+                      column => ColumnUtility.isAppColumn(column) === false
+                  )[0],
+        }))
+    }
 
     return (
         <Stack
@@ -54,14 +59,14 @@ const RowNavigator: React.FC<RowNavigatorProps> = props => {
                 sx={{
                     cursor: "pointer",
                 }}
-                onClick={previous}
+                onClick={() => navigateRow("previous")}
             />
             <ArrowDropDownIcon
                 fontSize="small"
                 sx={{
                     cursor: "pointer",
                 }}
-                onClick={next}
+                onClick={() => navigateRow("next")}
             />
         </Stack>
     )
@@ -72,24 +77,12 @@ const getExposedInput = (type: Column.Serialized["_cellContentType"]) => {
     return cellUtil.ExposedInput
 }
 
-type RowModalProps = {
-    open: boolean
-    onCloseHandler: () => void
-    /**
-     * @default false
-     */
-    mode: "createNewRow" | { row: Row; column: Column | CalculatedColumn<Row> }
-    onNavigateRow: (rowIndex: number) => void
-}
-
-export const RowMask: React.FC<RowModalProps> = props => {
+export const RowMask: React.FC = () => {
     const { data } = useView()
 
-    const [state, setState] = useState(null)
+    const { rowMaskState, setRowMaskState } = useRowMask()
 
-    const abort = () => {
-        props.onCloseHandler()
-    }
+    const abort = () => setRowMaskState({ mode: "closed" })
     const create = () => {}
     const save = () => {}
 
@@ -97,28 +90,26 @@ export const RowMask: React.FC<RowModalProps> = props => {
 
     return (
         <Dialog
-            open={props.open}
+            open={rowMaskState.mode !== "closed"}
             fullWidth
             maxWidth="xs"
-            onClose={props.onCloseHandler}
+            onClose={() => setRowMaskState({ mode: "closed" })}
         >
             <DialogTitle>
                 <Stack direction="row">
-                    {props.mode !== "createNewRow" && (
-                        <RowNavigator
-                            currentIndex={props.mode.row.__rowIndex__}
-                            maxIndex={data.rows.length - 1}
-                            onNavigate={props.onNavigateRow}
-                        />
-                    )}
-                    {props.mode === "createNewRow"
+                    {rowMaskState.mode === "edit" && <RowNavigator />}
+                    {rowMaskState.mode === "create"
                         ? "Neue Zeile erstellen"
-                        : `Zeile ${props.mode.row.__rowIndex__}`}
+                        : rowMaskState.mode === "edit"
+                        ? `Zeile ${rowMaskState.row.__rowIndex__}`
+                        : ""}
                     <IconButton>
                         <MoreHorizIcon fontSize="small" />
                     </IconButton>
                     <Divider orientation="vertical" />
-                    <IconButton onClick={props.onCloseHandler}>
+                    <IconButton
+                        onClick={() => setRowMaskState({ mode: "closed" })}
+                    >
                         <CloseIcon fontSize="small" />
                     </IconButton>
                 </Stack>
@@ -143,6 +134,8 @@ export const RowMask: React.FC<RowModalProps> = props => {
                                 {column.name}
                             </Typography>
                             {(() => {
+                                if (rowMaskState.mode === "closed") return null
+
                                 const Input = getExposedInput(
                                     column._cellContentType!
                                 )
@@ -153,17 +146,17 @@ export const RowMask: React.FC<RowModalProps> = props => {
                                     }
 
                                 const content =
-                                    props.mode === "createNewRow"
-                                        ? undefined
-                                        : props.mode.row[column.key]
+                                    rowMaskState.mode === "create"
+                                        ? null
+                                        : rowMaskState.row[column.key]
 
                                 return (
                                     <Input
                                         content={content}
                                         updateHandler={
-                                            props.mode === "createNewRow"
+                                            rowMaskState.mode === "create"
                                                 ? updateCallback
-                                                : { ...props.mode }
+                                                : { ...rowMaskState }
                                         }
                                     />
                                 )
@@ -176,7 +169,7 @@ export const RowMask: React.FC<RowModalProps> = props => {
                     Neue Spalte erstellen
                 </Typography>
             </DialogContent>
-            {props.mode === "createNewRow" && (
+            {rowMaskState.mode === "create" && (
                 <DialogActions sx={{ flexWrap: "wrap" }}>
                     <Divider />
                     <Button onClick={abort}>Abbrechen</Button>
