@@ -9,7 +9,10 @@ export {
     ConditionKind,
     OperandKind,
 } from "@intutable/lazy-views/dist/condition"
-export type { Column, Literal } from "@intutable/lazy-views/dist/condition"
+export type {
+    Column as ColumnOperand,
+    Literal as LiteralOperand,
+} from "@intutable/lazy-views/dist/condition"
 
 /**
  * A filter  - may be any boolean combination of {@link SimpleFilter}s.

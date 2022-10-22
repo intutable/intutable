@@ -13,7 +13,7 @@ import { Table, View, Row } from "./base"
  * {@link https://github.com/adazzle/react-data-grid/blob/513a03606e5d8c8366f2f02cf78cc99212e059df/src/types.ts#L7}
  *
  * Note: We have augmented this type with
- *  [MetaColumnProps]{@link types.MetaColumnProps}, see 
+ *  [MetaColumnProps]{@link types.MetaColumnProps}, see
  * `types/module-augmentation/react-data-grid`
  */
 export type Column = ReactDataGrid_Column<Row> // useful because it sets the generic type be default

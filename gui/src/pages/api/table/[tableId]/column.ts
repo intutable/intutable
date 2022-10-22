@@ -9,7 +9,7 @@ import { createColumnInTable } from "@intutable/project-management/dist/requests
 import { ColumnDescriptor } from "@intutable/project-management/dist/types"
 import { Column } from "types"
 import { coreRequest } from "api/utils"
-import { DB, DBParser } from "utils/DBParser"
+import { DBParser } from "utils/DBParser"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
@@ -39,7 +39,7 @@ const POST = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
         const { column, attributes } = req.body as {
             column: StandardColumnSpecifier
-            attributes?: Partial<DB.Column>
+            attributes?: Partial<Column.Serialized>
         }
         const user = req.session.user!
 

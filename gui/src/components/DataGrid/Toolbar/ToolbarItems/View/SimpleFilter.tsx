@@ -17,7 +17,7 @@ import {
 import {
     FILTER_OPERATORS_LIST,
     FilterOperator,
-    Column,
+    ColumnOperand,
     OperandKind,
     PartialSimpleFilter,
 } from "types/filter"
@@ -57,7 +57,7 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
 
     const handleChangeColumn = (e: SelectChangeEvent<number | string>) => {
         const newColumnSpec = getColumn(e.target.value)
-        let newColumn: Column | undefined
+        let newColumn: ColumnOperand | undefined
         if (newColumnSpec)
             newColumn = {
                 kind: OperandKind.Column,
