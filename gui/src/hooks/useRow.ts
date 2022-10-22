@@ -5,8 +5,9 @@ import { ViewHookOptions, useView } from "hooks/useView"
 import { Column, Row } from "types"
 
 import { useColumn } from "./useColumn"
-import { APIContextProvider } from "context/APIContext"
 import { useSnacki } from "./useSnacki"
+
+type Column = Column.Deserialized
 
 /**
  * ### useRow hook.

@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ColumnInfo } from "@intutable/lazy-views"
-import { Column } from "types/rdg"
+import { Column } from "types"
 import { DB } from "utils/DBParser/DBParser"
 
 // Note: augments the `@intutable/lazy-views` module

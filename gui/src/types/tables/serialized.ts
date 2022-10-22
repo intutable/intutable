@@ -1,170 +1,15 @@
-import { Column as PM_Column, ColumnType } from "@intutable/database/dist/types"
-import type {
-    ColumnInfo,
-    ParentColumnSpecifier as GroupColumn,
-    SortColumn,
-    ViewDescriptor,
-    ViewInfo,
-} from "@intutable/lazy-views"
-import type { Filter } from "./filter"
-import { Column as ReactDataGrid_Column } from "react-data-grid"
-
 /**
- * The two basic columns that every table must have (in addition to _id, but
- * the plugin creates that automatically)
+ * @module types.tables.serialized
+ * Serialized variants of table, view, and column data for sending around
+ * the network (typically only from the backend to the frontend)
+ * see also `types.tables.rdg`
  */
-export const BASIC_TABLE_COLUMNS: PM_Column[] = [
-    { name: "index", type: ColumnType.integer, options: [] },
-    { name: "name", type: ColumnType.string, options: [] },
-]
 
-// #################################################################
-//       Table
-// #################################################################
-
-type Table<COL, ROW> = {
-    metadata: Omit<ViewInfo, "rowOptions">
-    columns: COL[]
-    rows: ROW[]
-}
-
-export type TableData = Table<SerializedColumn, Row>
-/**
- * @deprecated no GUI components directly display table data, only
- * @legacy
- * {@link ViewData}
- */
-export type DeserializedTableData = Table<Column, Row>
-
-export namespace TableData {
-    /**
-     * @deprecated
-     * @legacy
-     */
-    export type Deserialized = DeserializedTableData
-    export type Serialized = TableData
-}
-
-// #################################################################
-//       View
-// #################################################################
-type View<COL, ROW> = {
-    descriptor: ViewDescriptor
-    /**
-     * Since {@link columns} only contains direct display-relevant data and
-     * not backend-side metadata like IDs, we we also keep the original
-     * ColumnInfos around so we have access e.g. to the column's ID when it
-     * is to be deleted.
-     */
-    metaColumns: ColumnInfo[]
-    /** Filters for the displayed data. */
-    filters: Filter[]
-    /**
-     * What column data are sorted by (by the database; if you want to
-     * implement this client-side, do not use this prop).
-     * Not implemented yet.
-     */
-    sortColumns: SortColumn[]
-    /**
-     * What column data are grouped by (by the database; if you intend to
-     * implement this client-side, do not use this prop).
-     * Not implemented yet.
-     */
-    groupColumns: GroupColumn[]
-    /** RDG-side display columns. */
-    columns: COL[]
-    /** RDG-side display rows. */
-    rows: ROW[]
-}
-
-export type ViewData = View<Column, Row>
-
-type SerializedViewData = View<SerializedColumn, Row>
-
-export namespace ViewData {
-    export type Serialized = SerializedViewData
-    export type Deserialized = ViewData
-}
-// #################################################################
-//       Row
-// #################################################################
-
-export type Row = {
-    readonly _id: number
-    __rowIndex__: number
-    [key: string]: unknown
-}
-
-// #################################################################
-//       Column
-// #################################################################
+import { Table, View, MetaColumnProps, Row } from "./base"
 
 /**
- * {@link https://github.com/adazzle/react-data-grid/blob/513a03606e5d8c8366f2f02cf78cc99212e059df/src/types.ts#L7}
- *
- * alias
- */
-export type Column = ReactDataGrid_Column<Row> // useful because it sets the generic type be default
-
-/**
- * @description Additional properties for a column.
- *
- * __Note__: not every column will have these props. Some columns are automatically
- * inserted by rdg, like the Column Selector or Index Column. Be aware of this and careful.
- *
- * __Note__: in many rdg handlers you want get a column of type {@link Column}.
- * You will receive a column of type {@link CalculatedColumn}.
- * Then you need to provide this loss of information by a context e.g.
- *
- * __Note__: These properties must be add to {@link Column} __and__ {@link SerializedColumn}.
- *
- * __Note__: Once properties are supported in this type those values can not
- * be saved to the database, this type needs to be separated into
- * a derserialized and serialized one as well.
- */
-export type MetaColumnProps = {
-    /**
-     * core/plugion unique id
-     * used for columns, rows, tables etc.
-     */
-    readonly _id: number
-    /**
-     * @property {(standard | link | lookup)} _kind meta type of a column.
-     *
-     * ---
-     *
-     * __Note__: this is kind of redundant and could easly be merged with {@link SerializedColumn.formatter}.
-     * We decided not to in favor of keeping the type clean and preserve the meaning of {@link Column.formatter}.
-     *
-     * #### Options
-     * - `standard`: ignore this, only use whatever is defined in {@link FormatterComponentMap} in `standard` derived from {@link Formatter}.
-     * - `link`: use {@link LinkColumnFormatter}
-     * - `lookup`: use {@link LookupColumnFormatter}
-     * - `index`
-     *
-     */
-    _kind: "standard" | "link" | "lookup" | "index"
-    /**
-     * In addition to {@link SerializedColumn.editor} and {@link SerializedColumn.formatter},
-     * this explicitly sets the type.
-     */
-    _cellContentType: string
-    /**
-     * @property {number | null} __columnIndex__ ordering position of the
-     * column.
-     */
-    __columnIndex__: number | null
-    /**
-     * User-facing "primary" column. This would be something like e.g. the
-     * name of a person - hopefully unique, but not necessarily. This is why
-     * the _real_ primary key is the hidden _id column which the user cannot
-     * see or edit.
-     */
-    userPrimary: boolean
-}
-
-/**
- * @description This type is meant to describe {@link Column} in a way it can be serialized and saved to database.
+ * @description This type is meant to describe {@link Column} in a way
+ * it can be serialized and saved to database.
  *
  * See the original type in {@link https://github.com/adazzle/react-data-grid/blob/bc23189c4d41725ebd80fdacfa1ddd4054e29658/src/types.ts}).
  *
@@ -172,7 +17,7 @@ export type MetaColumnProps = {
  *
  * __Note__: Additional notes will explain how the property is modified compared to the original property.
  */
-type SerializedColumn = MetaColumnProps & {
+export type SerializedColumn = MetaColumnProps & {
     /**
      * @property {string} name The name of the column. By default it will be displayed in the header cell.
      *
@@ -440,10 +285,11 @@ type SerializedColumn = MetaColumnProps & {
     headerRenderer?: string | null
 }
 
-export namespace Column {
-    export type Serialized = SerializedColumn
-    export type Deserialized = Column
-}
+/**
+ * This type is not called SerializedTableData because table data are
+ * always serialized - the user only ever sees a view, so only a view ever
+ * needs to be "deserialized" in the sense of made compatible with RDG.
+ */
+export type TableData = Table<SerializedColumn, Row>
 
-export type TableColumn = Column.Serialized
-export type TableRow = Row
+export type SerializedViewData = View<SerializedColumn, Row>

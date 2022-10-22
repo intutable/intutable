@@ -25,7 +25,7 @@ import {
 } from "@mui/material"
 
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
-import { TableColumn } from "types/rdg"
+import { TableColumn } from "types"
 import {
     ConditionKind,
     Filter,

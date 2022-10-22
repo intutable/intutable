@@ -21,7 +21,7 @@ import {
     OperandKind,
     PartialSimpleFilter,
 } from "types/filter"
-import { TableColumn } from "types/rdg"
+import { TableColumn } from "types"
 import { getFilterColor } from "./utils"
 
 type SimpleFilterEditorProps = {

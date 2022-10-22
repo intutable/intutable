@@ -117,22 +117,22 @@ export class ColumnUtility {
         return this.cell.formatter
     }
 
-    public getHeaderRenderer(): Column["headerRenderer"] {
+    public getHeaderRenderer(): Column.Deserialized["headerRenderer"] {
         // for now no actions on index columns
         if (this.column._kind === "index") return null
 
         return headerRenderer
     }
 
-    public getEditorOptions(): Column["editorOptions"] {
+    public getEditorOptions(): Column.Deserialized["editorOptions"] {
         return this.cell.editorOptions
     }
 
     /** 'true' if yes, if no an array with indices of rows whose cells do not suit the new type */
     static canInterchangeColumnType(
         to: string,
-        column: Column | Column.Serialized,
-        view: ViewData
+        column: Column.Deserialized | Column.Serialized,
+        view: ViewData.Deserialized
     ): true | number[] {
         const targetUtil = cells.getCell(to)
         const data = view.rows.map(row => [

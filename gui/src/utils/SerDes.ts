@@ -15,6 +15,7 @@ export default class SerDes {
             _kind: column._kind!,
             _cellContentType: "string",
             __columnIndex__: column.__columnIndex__!,
+            userPrimary: column.userPrimary!,
             name: column.name as string,
             summaryFormatter: undefined, // currently not supported
             groupFormatter: undefined, // currently not supported

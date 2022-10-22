@@ -1,4 +1,4 @@
-import { MetaColumnProps } from "../rdg"
+import { MetaColumnProps } from "types"
 
 // Note: augments the `react-data-grid` module
 

@@ -1,1 +1,1 @@
-export * from "./rdg"
+export * from "./tables"

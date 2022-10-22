@@ -15,7 +15,7 @@ import { useTheme } from "@mui/material/styles"
 import { useView } from "hooks/useView"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
-import { Column, Row } from "types"
+import { Row } from "types"
 import InfoIcon from "@mui/icons-material/Info"
 import { ChangeCellType } from "./ChangeCellType"
 
@@ -83,9 +83,9 @@ const Modal: React.FC<ModalProps> = props => {
     const column = useMemo(
         () =>
             view
-                ? (view.columns.find(
+                ? view.columns.find(
                       c => c._id! === headerRendererProps.column._id
-                  ) as unknown as Column)
+                  )!
                 : null,
         [headerRendererProps.column._id, view]
     )

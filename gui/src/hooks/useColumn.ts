@@ -4,9 +4,10 @@ import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column } from "types"
 import { StandardColumnSpecifier } from "@shared/types"
-import { DB } from "utils/DBParser"
 
 export type { StandardColumnSpecifier } from "@shared/types"
+
+type Column = Column.Deserialized
 
 /**
  * Get the Column Info {@type {ColumnInfo}} for a column. Pass in a RDG column

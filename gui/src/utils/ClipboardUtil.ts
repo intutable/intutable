@@ -2,6 +2,8 @@ import cells from "@datagrid/Cells"
 import { CopyEvent, FillEvent, PasteEvent } from "react-data-grid"
 import { Column, Row } from "types"
 
+type Column = Column.Deserialized
+
 /** success if `error` is undefined */
 type EventHandlerCallback = (error?: string) => void
 

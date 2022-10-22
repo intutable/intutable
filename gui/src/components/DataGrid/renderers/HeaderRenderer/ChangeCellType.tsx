@@ -8,7 +8,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { useColumn } from "hooks/useColumn"
 
 type ChangeCellTypeProps = {
-    column: Column
+    column: Column.Deserialized
     onClose: () => void
 }
 

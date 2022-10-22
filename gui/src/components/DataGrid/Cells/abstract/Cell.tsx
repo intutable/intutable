@@ -36,7 +36,7 @@ const StyledInputElement = styled("input")`
     }
 `
 
-type EditorOptions = NonNullable<Column["editorOptions"]>
+type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
 // TODO: make this a static method, this increases performance
 export interface Validatable {

@@ -7,7 +7,7 @@ import {
 } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor } from "@intutable/project-management/dist/types"
-import { Column } from "types/rdg"
+import { Column } from "types"
 import { coreRequest } from "api/utils"
 import { DB, DBParser } from "utils/DBParser"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
