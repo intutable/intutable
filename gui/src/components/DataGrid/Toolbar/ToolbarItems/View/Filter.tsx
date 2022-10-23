@@ -13,7 +13,7 @@ import {
 import FormatIndentDecreaseIcon from "@mui/icons-material/FormatIndentDecrease"
 import * as c from "@intutable/lazy-views/dist/condition"
 import { PartialFilter, PartialSimpleFilter } from "types/filter"
-import { wherePartial, and, or, not, isValidFilter } from "utils/filter"
+import { wherePartial, and, or, not, isValidFilter } from "@shared/utils/filter"
 import { TableColumn } from "types"
 import { SimpleFilterEditor } from "./SimpleFilter"
 import { getFilterColor } from "./utils"

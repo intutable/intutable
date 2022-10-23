@@ -7,7 +7,7 @@ import {
     SimpleFilter,
     PartialFilter,
     PartialSimpleFilter,
-} from "types/filter"
+} from "../types/filter"
 
 const Infix = c.ConditionKind.Infix
 const Not = c.ConditionKind.Not

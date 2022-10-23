@@ -38,7 +38,7 @@ import {
     and,
     stripPartialFilter,
     partialFilterEquals,
-} from "utils/filter"
+} from "@shared/utils/filter"
 import { useAPI } from "context/APIContext"
 import { useUpdateTimer } from "hooks/useUpdateTimer"
 import { FilterEditor } from "./Filter"

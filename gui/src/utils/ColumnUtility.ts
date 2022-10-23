@@ -6,6 +6,7 @@ import { Column, MetaColumnProps, ViewData } from "types"
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 import cells, { Cell } from "@datagrid/Cells"
 import { ColumnInfo } from "@intutable/lazy-views"
+import { isInternalColumn } from "@shared/api"
 
 /**
  * // TODO: this flexbility could be a potential error cause.
@@ -164,6 +165,5 @@ export class ColumnUtility {
     }
 
     /** Used to filter the _id column */
-    static isInternalColumn = (column: ColumnInfo): boolean =>
-        column.name === "_id"
+    static isInternalColumn: (column: ColumnInfo) => boolean = isInternalColumn
 }

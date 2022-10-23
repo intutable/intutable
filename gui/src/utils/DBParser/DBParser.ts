@@ -5,7 +5,7 @@ import type { ViewData as RawViewData } from "@intutable/lazy-views"
 import type { ViewData, Filter } from "types"
 import { DB } from "@shared/types/tables/backend"
 import * as FilterParser from "utils/DBParser/filter"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { isInternalColumn } from "@shared/api"
 import { Parsable } from "@datagrid/Cells/abstract/Cell"
 import cells from "@datagrid/Cells"
 
@@ -216,7 +216,7 @@ export class DBParser {
 
         const parsedColumns = view.columns
             .sort(byIndex)
-            .filter(col => ColumnUtility.isInternalColumn(col) === false)
+            .filter(col => isInternalColumn(col) === false)
             .map(DBParser.parseColumnInfo)
 
         const parsedRows = DBParser.parseRows(view.rows, view.columns)
@@ -243,7 +243,7 @@ export class DBParser {
 
         const parsedColumns = view.columns
             .sort(byIndex)
-            .filter(col => ColumnUtility.isInternalColumn(col) === false)
+            .filter(col => isInternalColumn(col) === false)
             .map(DBParser.parseColumnInfo)
 
         const parsedRows = DBParser.parseRows(view.rows, view.columns)
