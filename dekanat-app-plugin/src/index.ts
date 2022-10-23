@@ -9,11 +9,6 @@ import { readFileSync } from "fs"
 import { randomBytes } from "crypto"
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import {
-    Column,
-    ColumnType,
-    SimpleColumnOption,
-} from "@intutable/database/dist/types"
-import {
     openConnection,
     closeConnection,
     insert,
@@ -349,14 +344,13 @@ async function changeTableColumnAttributes_({
     update,
     changeInViews,
 }: CoreRequest): Promise<CoreResponse> {
-    await changeTableColumnAttributes(
+    return changeTableColumnAttributes(
         sessionID,
         tableId,
         columnId,
         update,
         changeInViews
     )
-    return { message: `updated column #${columnId}'s attributes` }
 }
 
 async function changeTableColumnAttributes(
@@ -365,7 +359,7 @@ async function changeTableColumnAttributes(
     columnId: number,
     update: Record<string, unknown>,
     changeInViews = true
-): Promise<void> {
+): Promise<lvt.ColumnInfo[]> {
     const attributes = toSql(update)
     await core.events.request(
         lvr.changeColumnAttributes(sessionID, columnId, attributes)
@@ -384,7 +378,7 @@ async function changeColumnAttributesInViews(
     tableId: number,
     columnId: number,
     update: Record<string, unknown>
-): Promise<void> {
+): Promise<lvt.ColumnInfo[]> {
     const views = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
@@ -400,12 +394,13 @@ async function changeColumnAttributesInViews(
         })
     )
 
-    await Promise.all(
-        viewColumns.map(async c => {
-            if (c === undefined) return
-            core.events.request(
-                lvr.changeColumnAttributes(sessionID, c.id, update)
+    return Promise.all(
+        viewColumns
+            .filter(c => c !== undefined)
+            .map(async c =>
+                core.events.request(
+                    lvr.changeColumnAttributes(sessionID, c.id, update)
+                )
             )
-        })
     )
 }
