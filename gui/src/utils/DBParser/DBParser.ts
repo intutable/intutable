@@ -126,31 +126,74 @@ export class DBParser {
         } as Column.Serialized
     }
 
-    static deparseColumn(column: Column.Serialized): DB.Column {
+    static deparseColumn: (column: Column.Serialized) => DB.Column =
+        DBParser.partialDeparseColumn
+
+    /**
+     * Ugly, but we need this partial version so that e.g. you can specify
+     * incremental updates to columns, without pasting `undefined` over
+     * every meta prop that you didn't pass along.
+     */
+    static partialDeparseColumn(column: Column.Serialized): DB.Column
+    static partialDeparseColumn(
+        column: Partial<Column.Serialized>
+    ): Partial<DB.Column>
+    static partialDeparseColumn(
+        column: Partial<Column.Serialized>
+    ): Partial<DB.Column> {
         return {
-            _kind: column._kind,
-            _cellContentType: column._cellContentType,
-            __columnIndex__: column.__columnIndex__,
-            userPrimary: booleanToNumber(column.userPrimary),
-            displayName: column.name,
-            editable: booleanToNumber(column.editable),
-            width: numberToString(column.width),
-            minWidth: numberToString(column.minWidth),
-            maxWidth: numberToString(column.maxWidth),
-            cellClass: column.cellClass,
-            headerCellClass: column.headerCellClass,
-            summaryCellClass: column.summaryCellClass,
-            summaryFormatter: column.summaryFormatter,
-            groupFormatter: column.groupFormatter,
-            colSpan: column.colSpan,
-            frozen: booleanToNumber(column.frozen),
-            resizable: booleanToNumber(column.resizable),
-            sortable: booleanToNumber(column.sortable),
-            sortDescendingFirst: booleanToNumber(column.sortDescendingFirst),
-            headerRenderer: column.headerRenderer,
+            ...(column._kind && { _kind: column._kind }),
+            ...(column._cellContentType && {
+                _cellContentType: column._cellContentType,
+            }),
+            ...(column.__columnIndex__ && {
+                __columnIndex__: column.__columnIndex__,
+            }),
+            ...(column.userPrimary && {
+                userPrimary: booleanToNumber(column.userPrimary),
+            }),
+            ...(column.name && { displayName: column.name }),
+            ...(column.editable && {
+                editable: booleanToNumber(column.editable),
+            }),
+            ...(column.width && { width: numberToString(column.width) }),
+            ...(column.minWidth && {
+                minWidth: numberToString(column.minWidth),
+            }),
+            ...(column.maxWidth && {
+                maxWidth: numberToString(column.maxWidth),
+            }),
+            ...(column.cellClass && { cellClass: column.cellClass }),
+            ...(column.headerCellClass && {
+                headerCellClass: column.headerCellClass,
+            }),
+            ...(column.summaryCellClass && {
+                summaryCellClass: column.summaryCellClass,
+            }),
+            ...(column.summaryFormatter && {
+                summaryFormatter: column.summaryFormatter,
+            }),
+            ...(column.groupFormatter && {
+                groupFormatter: column.groupFormatter,
+            }),
+            ...(column.colSpan && { colSpan: column.colSpan }),
+            ...(column.frozen && { frozen: booleanToNumber(column.frozen) }),
+            ...(column.resizable && {
+                resizable: booleanToNumber(column.resizable),
+            }),
+            ...(column.sortable && {
+                sortable: booleanToNumber(column.sortable),
+            }),
+            ...(column.sortDescendingFirst && {
+                sortDescendingFirst: booleanToNumber(
+                    column.sortDescendingFirst
+                ),
+            }),
+            ...(column.headerRenderer && {
+                headerRenderer: column.headerRenderer,
+            }),
         }
     }
-
     static parseFilter(condition: Condition): Filter {
         return FilterParser.parse(condition)
     }

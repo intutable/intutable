@@ -51,7 +51,7 @@ export const useColumn = (
         await mutateView()
     }
 
-    /** Find a column in the base table. */
+    /** Find a column in the base table given a column of a view. */
     const getTableColumn = (
         column: Column.Serialized | Column.Deserialized
     ): ColumnInfo | null => {
@@ -71,6 +71,8 @@ export const useColumn = (
      * override the default properties defined by
      * {@link shared/attributes/standardColumnAttributes}, most of which are
      * essential to functionality and not just for display purposes.
+     * Note also that `standardColumnAttributes` are of type `DB.Column`,
+     * while this function takes `Column.Serialized`.
      */
     const createColumn = async (
         column: StandardColumnSpecifier,

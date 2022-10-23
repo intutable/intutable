@@ -69,7 +69,9 @@ const POST = withCatchingAPIRoute(
                         (acc, j) => acc + j.columns.length,
                         0
                     )
-                const customAttributes = attributes ?? {}
+                const customAttributes = DBParser.partialDeparseColumn(
+                    attributes ?? {}
+                )
 
                 const tableViewColumn = await coreRequest<ColumnInfo>(
                     addColumnToTable(sessionID, tableId, {
