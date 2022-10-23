@@ -1,11 +1,15 @@
 import { Column as DB_Column, ColumnType } from "@intutable/database/dist/types"
 
-import { Row } from "./base"
+import { Row } from "@shared/types/tables/base"
 import { DeserializedTableData, ViewData, Column } from "./rdg"
-import { SerializedColumn, TableData, SerializedViewData } from "./serialized"
-export type { Row, MetaColumnProps } from "./base"
+import {
+    SerializedColumn,
+    TableData,
+    SerializedViewData,
+} from "@shared/types/tables/serialized"
+export type { Row, MetaColumnProps } from "@shared/types/tables/base"
 export * from "./rdg"
-export * from "./serialized"
+export * from "@shared/types/tables/serialized"
 
 /**
  * The two basic columns that every table must have (in addition to _id, but

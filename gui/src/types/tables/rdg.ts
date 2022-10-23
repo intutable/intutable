@@ -7,7 +7,7 @@
  */
 
 import { Column as ReactDataGrid_Column } from "react-data-grid"
-import { Table, View, Row } from "./base"
+import { Table, View, Row } from "@shared/types/tables/base"
 
 /**
  * {@link https://github.com/adazzle/react-data-grid/blob/513a03606e5d8c8366f2f02cf78cc99212e059df/src/types.ts#L7}
