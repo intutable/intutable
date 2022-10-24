@@ -51,7 +51,7 @@ type DBParserStaticImplements = {
     // new (): {} // <-- instance methods
 } & ParsableStatic<{
     row: [DB._Row, Row]
-    columnInfo: [ColumnInfo, Column.Serialized]
+    columnInfo: [ColumnInfo, Column.Serialized] // does not work bidirectional, like some other methods, that is why `deparseColumn` is implemented separately
     filter: [Condition, Filter]
     table: [RawViewData, TableData.Serialized]
     view: [RawViewData, ViewData.Serialized]
