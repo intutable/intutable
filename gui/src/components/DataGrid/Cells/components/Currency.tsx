@@ -8,7 +8,7 @@ import PaidIcon from "@mui/icons-material/Paid"
 export class Currency extends NumericCell {
     readonly brand = "currency"
     label = "Currency"
-    icon = (<PaidIcon />)
+    icon = PaidIcon
 
     export(value: unknown): string {
         return value + "€"

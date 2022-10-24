@@ -22,6 +22,7 @@ import { Column } from "types"
 import { ColumnUtility } from "utils/ColumnUtility"
 import { RowNavigator } from "./RowNavigator"
 import KeyIcon from "@mui/icons-material/Key"
+import { waitForDebugger } from "inspector"
 
 const getExposedInput = (type: Column.Serialized["_cellContentType"]) => {
     const cellUtil = cells.getCell(type)
@@ -97,83 +98,97 @@ export const RowMask: React.FC = () => {
                             ? -1
                             : 1
                     )
-                    .map(column => (
-                        <>
-                            <Stack
-                                direction={
-                                    column.userPrimary ? "column" : "row"
-                                }
-                                key={column._id!}
-                                sx={{
-                                    mb: 6,
-                                }}
-                            >
-                                {column.userPrimary && (
-                                    <KeyIcon fontSize="small" />
-                                )}
-                                <Typography
+                    .map(column => {
+                        const util = cells.getCell(column._cellContentType!)
+                        const Icon = util.icon
+
+                        return (
+                            <>
+                                <Stack
+                                    direction={
+                                        column.userPrimary === true
+                                            ? "column"
+                                            : "row"
+                                    }
+                                    key={column._id!}
                                     sx={{
-                                        width: "150px",
-                                        textAlign: "right",
-                                        mr: 6,
+                                        mb: 6,
                                     }}
                                 >
-                                    {
-                                        cells.getCell(column._cellContentType!)
-                                            .icon
-                                    }
-                                    {column.name}
-                                </Typography>
-
-                                {(() => {
-                                    if (rowMaskState.mode === "closed")
-                                        return null
-
-                                    const Input = getExposedInput(
-                                        column._cellContentType!
-                                    )
-
-                                    const onChangeHandler = (
-                                        value: unknown
-                                    ) => {
-                                        console.log("new value:", value)
-                                    }
-
-                                    return (
-                                        <Input
-                                            content={
-                                                rowMaskState.mode === "create"
-                                                    ? null
-                                                    : rowMaskState.row[
-                                                          column.key
-                                                      ]
-                                            }
-                                            update={
-                                                rowMaskState.mode === "create"
-                                                    ? {
-                                                          mode: "alien",
-                                                          onChange:
-                                                              onChangeHandler,
-                                                      }
-                                                    : {
-                                                          mode: "self",
-                                                          row: rowMaskState.row,
-                                                          column: rowMaskState.column,
-                                                      }
-                                            }
+                                    {column.userPrimary === true && (
+                                        <KeyIcon fontSize="small" />
+                                    )}
+                                    <Typography
+                                        sx={{
+                                            width: "150px",
+                                            textAlign: "right",
+                                            mr: 6,
+                                            mb: 1.5,
+                                            display: "flex",
+                                            alignItems: "center",
+                                        }}
+                                        variant="caption"
+                                    >
+                                        <Icon
+                                            fontSize="small"
+                                            sx={{
+                                                mr: 1,
+                                            }}
                                         />
-                                    )
-                                })()}
-                            </Stack>
-                            {column.userPrimary && (
-                                <Divider
-                                    variant="middle"
-                                    flexItem
-                                    sx={{ my: 5 }}
-                                />
-                            )}
-                        </>
-                    ))}
+                                        {column.name}
+                                    </Typography>
+                                    {(() => {
+                                        if (rowMaskState.mode === "closed")
+                                            return null
+
+                                        const Input = getExposedInput(
+                                            column._cellContentType!
+                                        )
+
+                                        const onChangeHandler = (
+                                            value: unknown
+                                        ) => {
+                                            console.log("new value:", value)
+                                        }
+
+                                        return (
+                                            <Input
+                                                content={
+                                                    rowMaskState.mode ===
+                                                    "create"
+                                                        ? null
+                                                        : rowMaskState.row[
+                                                              column.key
+                                                          ]
+                                                }
+                                                update={
+                                                    rowMaskState.mode ===
+                                                    "create"
+                                                        ? {
+                                                              mode: "alien",
+                                                              onChange:
+                                                                  onChangeHandler,
+                                                          }
+                                                        : {
+                                                              mode: "self",
+                                                              row: rowMaskState.row,
+                                                              column: rowMaskState.column,
+                                                          }
+                                                }
+                                            />
+                                        )
+                                    })()}
+                                </Stack>
+                                {column.userPrimary === true && (
+                                    <Divider
+                                        variant="middle"
+                                        flexItem
+                                        sx={{ my: 5 }}
+                                    />
+                                )}
+                            </>
+                        )
+                    })}
 
                 <Button
                     startIcon={<AddBoxIcon fontSize="small" />}

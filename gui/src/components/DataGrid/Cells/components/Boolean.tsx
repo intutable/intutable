@@ -8,7 +8,7 @@ import ToggleOnIcon from "@mui/icons-material/ToggleOn"
 export class Bool extends Cell {
     readonly brand = "boolean"
     label = "Boolean"
-    icon = (<ToggleOnIcon />)
+    icon = ToggleOnIcon
 
     editor = () => null
 

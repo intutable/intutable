@@ -44,7 +44,7 @@ const ChipItem: React.FC<{
 export class MultiSelect extends Cell {
     readonly brand = "multiselect"
     label = "Mehrfach-Auswahlliste"
-    icon = (<BookmarksIcon />)
+    icon = BookmarksIcon
 
     isValid(value: unknown): boolean {
         return Array.isArray(value) && value.every(v => typeof v === "string")

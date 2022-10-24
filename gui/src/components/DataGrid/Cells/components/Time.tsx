@@ -15,7 +15,7 @@ import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled"
 export class Time extends TempusCell {
     readonly brand = "time"
     label = "Time"
-    icon = (<AccessTimeFilledIcon />)
+    icon = AccessTimeFilledIcon
 
     editor = () => null
 

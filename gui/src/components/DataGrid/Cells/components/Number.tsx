@@ -10,7 +10,7 @@ import LooksOneIcon from "@mui/icons-material/LooksOne"
 export class Num extends NumericCell {
     readonly brand = "number"
     label = "Number"
-    icon = (<LooksOneIcon />)
+    icon = LooksOneIcon
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)

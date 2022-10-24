@@ -43,7 +43,7 @@ const ChipItem: React.FC<{
 export class Select extends Cell {
     readonly brand = "select"
     label = "Auswahlliste"
-    icon = (<BookmarkIcon />)
+    icon = BookmarkIcon
 
     editor = () => null
 

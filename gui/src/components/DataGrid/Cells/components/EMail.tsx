@@ -10,7 +10,7 @@ import AlternateEmailIcon from "@mui/icons-material/AlternateEmail"
 export class EMail extends Cell {
     readonly brand = "email"
     label = "E-Mail"
-    icon = (<AlternateEmailIcon />)
+    icon = AlternateEmailIcon
 
     isValid(value: unknown): boolean {
         return value == null || value === "" || isValidEMailAddress(value)

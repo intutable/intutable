@@ -87,15 +87,18 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                     )
                                 }}
                             >
-                                {Cells.map(cell => (
-                                    <MenuItem
-                                        key={cell.brand}
-                                        value={cell.brand}
-                                    >
-                                        {cell.icon}
-                                        {cell.label}
-                                    </MenuItem>
-                                ))}
+                                {Cells.map(cell => {
+                                    const Icon = cell.icon
+                                    return (
+                                        <MenuItem
+                                            key={cell.brand}
+                                            value={cell.brand}
+                                        >
+                                            <Icon />
+                                            {cell.label}
+                                        </MenuItem>
+                                    )
+                                })}
                             </Select>
                         </FormControl>
                         <Tooltip

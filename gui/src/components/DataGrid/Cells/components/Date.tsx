@@ -15,7 +15,7 @@ import DateRangeIcon from "@mui/icons-material/DateRange"
 export class DateCell extends TempusCell {
     readonly brand = "date"
     label = "Date"
-    icon = (<DateRangeIcon />)
+    icon = DateRangeIcon
 
     editor = () => null
 

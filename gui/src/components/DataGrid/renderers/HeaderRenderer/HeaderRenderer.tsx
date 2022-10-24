@@ -48,6 +48,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const navigateToView = () =>
         router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
 
+    const util = cells.getCell(props.column._cellContentType!)
+    const Icon = util.icon
+
     if (col == null) return null
 
     return (
@@ -121,7 +124,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 fontWeight: "bold",
                             }}
                         >
-                            {cells.getCell(props.column._cellContentType!).icon}
+                            <Icon fontSize="small" />
                             {props.column.name}
                         </Typography>
                     </Tooltip>

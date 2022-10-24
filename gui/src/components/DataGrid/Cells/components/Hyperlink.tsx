@@ -8,7 +8,7 @@ import Cell from "../abstract/Cell"
 export class Hyperlink extends Cell {
     readonly brand = "hyperlink"
     label = "Hyperlink"
-    icon = (<LinkIcon />)
+    icon = LinkIcon
 
     isValid(value: unknown): boolean {
         if (value == null || value === "") return true

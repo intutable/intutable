@@ -10,6 +10,7 @@ import { CalculatedColumn, EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
+import { SvgIconComponent } from "@mui/icons-material"
 
 class CellError extends Error {
     constructor(message: string) {
@@ -137,7 +138,7 @@ export default abstract class Cell
     /** public name / no i18n yet */
     public abstract label: string
     /** icon displayed with the type */
-    public icon?: JSX.Element
+    public abstract icon: SvgIconComponent
 
     /** override rdg's default properties for `editorOptions`. */
     // Note: before overring these, look up what the defaul values look like

@@ -34,7 +34,7 @@ const LinearProgressWithLabel = (
 export class Percentage extends NumericCell {
     readonly brand = "percentage"
     label = "Percentage"
-    icon = (<PercentIcon />)
+    icon = PercentIcon
 
     isValid(value: unknown): boolean {
         if (typeof value === "string" && NumericCell.isNumeric(value)) {
