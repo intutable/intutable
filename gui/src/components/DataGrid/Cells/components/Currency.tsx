@@ -2,9 +2,9 @@ import { Box } from "@mui/material"
 import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import { NumericCell } from "../abstract/NumericCell"
+import { NumericCell, NumericSerializedCell } from "../abstract/NumericCell"
 
-export class Currency extends NumericCell {
+class CurrencySerialized extends NumericSerializedCell {
     readonly brand = "currency"
     label = "Currency"
 
@@ -19,6 +19,10 @@ export class Currency extends NumericCell {
             )
         return unexported
     }
+}
+
+export class Currency extends NumericCell {
+    serializedCellDelegate = new CurrencySerialized()
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)

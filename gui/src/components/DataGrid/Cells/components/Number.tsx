@@ -1,11 +1,14 @@
 import React from "react"
 import { EditorProps } from "react-data-grid"
 import { Row } from "types"
-import { NumericCell } from "../abstract/NumericCell"
+import { NumericCell, NumericSerializedCell } from "../abstract/NumericCell"
 
-export class Num extends NumericCell {
+class NumSerialized extends NumericSerializedCell {
     readonly brand = "number"
-    label = "Number"
+    label = "Number"    
+}
+export class Num extends NumericCell {
+    serializedCellDelegate = new NumSerialized()
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)

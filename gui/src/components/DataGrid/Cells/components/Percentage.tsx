@@ -6,31 +6,9 @@ import Typography from "@mui/material/Typography"
 import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
-import { NumericCell } from "../abstract/NumericCell"
+import { NumericCell, NumericSerializedCell } from "../abstract/NumericCell"
 
-const LinearProgressWithLabel = (
-    props: LinearProgressProps & { value: number }
-) => (
-    <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
-        <Box sx={{ width: "100%", mr: 1 }}>
-            <LinearProgress
-                variant="determinate"
-                sx={{
-                    borderRadius: 100,
-                }}
-                {...props}
-            />
-        </Box>
-        <Box sx={{ minWidth: 35 }}>
-            <Typography variant="body2" color="text.secondary">
-                {props.value} %
-            </Typography>
-        </Box>
-    </Box>
-)
-
-export class Percentage extends NumericCell {
+export class PercentageSerialized extends NumericSerializedCell {
     readonly brand = "percentage"
     label = "Percentage"
 
@@ -58,7 +36,32 @@ export class Percentage extends NumericCell {
                 "Percentage Cell Debug Error: value is not a number"
             )
         return unexported
-    }
+    }    
+}
+
+const LinearProgressWithLabel = (
+    props: LinearProgressProps & { value: number }
+) => (
+    <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+        <Box sx={{ width: "100%", mr: 1 }}>
+            <LinearProgress
+                variant="determinate"
+                sx={{
+                    borderRadius: 100,
+                }}
+                {...props}
+            />
+        </Box>
+        <Box sx={{ minWidth: 35 }}>
+            <Typography variant="body2" color="text.secondary">
+                {props.value} %
+            </Typography>
+        </Box>
+    </Box>
+)
+
+export class Percentage extends NumericCell {
+    serializedCellDelegate = new PercentageSerialized()
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct<number | null>(props)

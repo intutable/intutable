@@ -29,7 +29,7 @@ export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
             const wantedCell = cells.getCell(event.target.value)
 
             const invalidCells = ColumnUtility.canInterchangeColumnType(
-                wantedCell.brand,
+                wantedCell.getBrand(),
                 props.column,
                 view!
             )
@@ -38,11 +38,11 @@ export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
                 const allInvalid = invalidCells.length === view!.rows.length
                 if (allInvalid)
                     return snackError(
-                        `Der Spaltentyp '${currentCell.label}' kann nicht zu '${wantedCell.label}' konvertiert werden.`
+                        `Der Spaltentyp '${currentCell.getLabel()}' kann nicht zu '${wantedCell.getLabel()}' konvertiert werden.`
                     )
                 return snackError(
                     `Die Zeilen ${invalidCells.join(",")} können nicht zu '${
-                        wantedCell.label
+                        wantedCell.getLabel()
                     }' konvertiert werden.`,
                     {
                         persist: true,
@@ -59,11 +59,11 @@ export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
             }
 
             await changeAttributes(props.column, {
-                _cellContentType: wantedCell.brand,
+                _cellContentType: wantedCell.getBrand(),
             })
 
             snackSuccess(
-                `Der Spaltentype wurde von '${currentCell.label}' zu '${wantedCell.label}' konvertiert.`
+                `Der Spaltentype wurde von '${currentCell.getLabel()}' zu '${wantedCell.getLabel()}' konvertiert.`
             )
         } catch (error) {
             snackError("Es ist ein Fehler aufgetreten.")

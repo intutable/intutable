@@ -78,20 +78,86 @@ export interface Parsable {
     stringify: (value: any) => any
 }
 
-// export interface Convertable {
-//     convert: <T extends CellType>(to: T) => T
-// }
-
-/**
- * Base class for all cell components.
- */
-export default abstract class Cell
+export abstract class SerializedCell
     implements Validatable, Exportable, Parsable
 {
     /** unique identifier */
-    public abstract readonly brand: string
+    protected abstract readonly brand: string
+    public getBrand(): string {
+        return this.brand
+    }
+
     /** public name / no i18n yet */
-    public abstract label: string
+    protected abstract label: string
+    public getLabel(): string {
+    return this.label
+}
+
+    public isValid(value: unknown): boolean {
+        // default validation for text based editors
+        // it should either be a non object like string, a stringified number or emtpy (null or empty str '')
+        return (
+            (isJSONObject(value) === false &&
+                isJSONArray(value) === false &&
+                typeof value === "string") ||
+            typeof value === "number" ||
+            value === "" ||
+            value == null
+        )
+    }
+
+    public parse(value: unknown): unknown {
+        return value // default is to just return the value and don't parse it
+    }
+    public stringify(value: unknown): unknown {
+        return value // default is to just return the value and don't unparse it
+    }
+
+    public export(value: unknown): string | void {
+        // default export method
+
+        // if (typeof value !== "string" || typeof value !== "number")
+        //     throw new Error(`Could not export value: ${value}`)
+
+        return value as string
+    }
+    // used in clipboard
+    public unexport(value: string): unknown {
+        return value
+    }
+
+}
+/**
+ * Base class for all cell components.
+ */
+export default abstract class Cell {
+    protected abstract serializedCellDelegate: SerializedCell
+
+    public getBrand(): string {
+        return this.serializedCellDelegate.getBrand()
+    }
+    public getLabel(): string {
+        return this.serializedCellDelegate.getLabel()
+    }
+
+    public isValid(value: unknown): boolean {
+        return this.serializedCellDelegate.isValid(value)
+    }
+    public parse(value: unknown): unknown {
+        return this.serializedCellDelegate.parse(value)
+    }
+    public stringify(value: unknown): unknown {
+        return this.serializedCellDelegate.stringify(value)
+    }
+
+    public export(value: unknown): string | void {
+        return this.serializedCellDelegate.export(value)
+    }
+    // used in clipboard
+    public unexport(value: string): unknown {
+        return this.serializedCellDelegate.unexport(value)
+    }
+
 
     /** override rdg's default properties for `editorOptions`. */
     // Note: before overring these, look up what the defaul values look like
@@ -212,39 +278,6 @@ export default abstract class Cell
         const content = row[key] as string | null | undefined
 
         return <Box>{content}</Box>
-    }
-
-    public isValid(value: unknown): boolean {
-        // default validation for text based editors
-        // it should either be a non object like string, a stringified number or emtpy (null or empty str '')
-        return (
-            (isJSONObject(value) === false &&
-                isJSONArray(value) === false &&
-                typeof value === "string") ||
-            typeof value === "number" ||
-            value === "" ||
-            value == null
-        )
-    }
-
-    public parse(value: unknown): unknown {
-        return value // default is to just return the value and don't parse it
-    }
-    public stringify(value: unknown): unknown {
-        return value // default is to just return the value and don't unparse it
-    }
-
-    public export(value: unknown): string | void {
-        // default export method
-
-        // if (typeof value !== "string" || typeof value !== "number")
-        //     throw new Error(`Could not export value: ${value}`)
-
-        return value as string
-    }
-    // used in clipboard
-    public unexport(value: string): unknown {
-        return value
     }
 
     static Error = CellError

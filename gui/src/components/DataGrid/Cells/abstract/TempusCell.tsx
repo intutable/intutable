@@ -1,4 +1,4 @@
-import Cell from "./Cell"
+import Cell, { SerializedCell } from "./Cell"
 import { isValid as isValidTempus, parse as fns_parse } from "date-fns"
 import deLocale from "date-fns/locale/de"
 import { NumericCell } from "./NumericCell"
@@ -13,30 +13,11 @@ const parse_dd_MM_yyyy = (str: string) =>
         locale: deLocale,
     })
 
-export abstract class TempusCell extends Cell {
+export abstract class TempusSerializedCell extends SerializedCell {
     // https://date-fns.org/v2.29.3/docs/isValid
     isValid(value: unknown): boolean {
         return value == null || value === "" || isValidTempus(value)
     }
-
-    /** Wether the value is a formatted time or date string,
-     * if 'true', the parsed string is returned as Date object */
-    static isFormattedString(value: unknown): Date | false {
-        if (typeof value !== "string") return false
-
-        // Note: https://github.com/date-fns/date-fns/blob/main/docs/unicodeTokens.md
-        // https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-
-        const isTime = parse_HH_mm(value)
-        const isDate = parse_dd_MM_yyyy(value)
-
-        return isValidTempus(isTime)
-            ? isTime
-            : isValidTempus(isDate)
-            ? isDate
-            : false
-    }
-
     parse(value: string | null | undefined | Date): Date | null {
         // case nullish
         if (typeof value === "undefined" || value === null || value === "")
@@ -78,5 +59,28 @@ export abstract class TempusCell extends Cell {
             throw new RangeError("TempusCell.unexport: invalid value")
 
         return parsed
+    }
+    
+}
+
+export abstract class TempusCell extends Cell {
+    protected abstract serializedCellDelegate: TempusSerializedCell
+
+    /** Wether the value is a formatted time or date string,
+     * if 'true', the parsed string is returned as Date object */
+    static isFormattedString(value: unknown): Date | false {
+        if (typeof value !== "string") return false
+
+        // Note: https://github.com/date-fns/date-fns/blob/main/docs/unicodeTokens.md
+        // https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
+
+        const isTime = parse_HH_mm(value)
+        const isDate = parse_dd_MM_yyyy(value)
+
+        return isValidTempus(isTime)
+            ? isTime
+            : isValidTempus(isDate)
+            ? isDate
+            : false
     }
 }

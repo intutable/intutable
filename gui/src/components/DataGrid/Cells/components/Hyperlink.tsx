@@ -3,9 +3,9 @@ import { Box, IconButton, Tooltip } from "@mui/material"
 import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
+import Cell, { SerializedCell } from "../abstract/Cell"
 
-export class Hyperlink extends Cell {
+export class HyperlinkSerialized extends SerializedCell {
     readonly brand = "hyperlink"
     label = "Hyperlink"
 
@@ -20,6 +20,10 @@ export class Hyperlink extends Cell {
             return false
         }
     }
+}
+
+export class Hyperlink extends Cell {
+    serializedCellDelegate = new HyperlinkSerialized()
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)

@@ -70,7 +70,6 @@ export class DBParser {
             throw new RangeError(
                 `${DBParser.name}: Could not find any index column when parsing the view.`
             )
-
         const parsedRows = rows
 
         columns.forEach(column => {
@@ -81,7 +80,7 @@ export class DBParser {
                     row,
                     row[indexColumn.key] as number,
                     column.key,
-                    util.parse
+                    util.parse.bind(util)
                 )
             )
         })
@@ -103,16 +102,6 @@ export class DBParser {
             // TODO: Hack: __rowIndex__ is not saved in the database, the plugins keep the order of the rows. this should be removed in the future by saving the value and combining it with the index column
             __rowIndex__: rowIndex,
         } as Row
-    }
-    static deparseRow(
-        row: Row,
-        key: string,
-        deparse: Parsable["stringify"]
-    ): DB._Row {
-        const { __rowIndex__, ...serializedRow } = row // delete the rowIndex
-        const deparsed = serializedRow
-        deparsed[key] = deparse(row[key])
-        return deparsed as Row
     }
 
     static parseColumnInfo(column: ColumnInfo): Column.Serialized {
@@ -218,7 +207,6 @@ export class DBParser {
             .sort(byIndex)
             .filter(col => isInternalColumn(col) === false)
             .map(DBParser.parseColumnInfo)
-
         const parsedRows = DBParser.parseRows(view.rows, view.columns)
 
         return {

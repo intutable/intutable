@@ -2,11 +2,15 @@ import { Box, Checkbox } from "@mui/material"
 import React from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
+import Cell, { SerializedCell } from "../abstract/Cell"
 
-export class Bool extends Cell {
+class BoolSerialized extends SerializedCell {
     readonly brand = "boolean"
     label = "Boolean"
+}
+
+export class Bool extends Cell {
+    serializedCellDelegate = new BoolSerialized()
 
     editor = () => null
 

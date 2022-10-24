@@ -17,7 +17,12 @@ import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
-import Cell from "../abstract/Cell"
+import Cell, { SerializedCell } from "../abstract/Cell"
+
+export class SelectSerialized extends SerializedCell {
+    readonly brand = "select"
+    label = "Auswahlliste"
+}
 
 const ChipItem: React.FC<{
     label: string
@@ -40,8 +45,7 @@ const ChipItem: React.FC<{
 }
 
 export class Select extends Cell {
-    readonly brand = "select"
-    label = "Auswahlliste"
+    serializedCellDelegate = new SelectSerialized()
 
     editor = () => null
 

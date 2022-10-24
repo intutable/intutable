@@ -89,10 +89,10 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             >
                                 {Cells.map(cell => (
                                     <MenuItem
-                                        key={cell.brand}
-                                        value={cell.brand}
+                                        key={cell.getBrand()}
+                                        value={cell.getBrand()}
                                     >
-                                        {cell.label}
+                                        {cell.getLabel()}
                                     </MenuItem>
                                 ))}
                             </Select>

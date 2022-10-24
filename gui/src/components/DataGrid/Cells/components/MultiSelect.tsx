@@ -17,30 +17,9 @@ import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
-import Cell from "../abstract/Cell"
+import Cell, { SerializedCell }from "../abstract/Cell"
 
-const ChipItem: React.FC<{
-    label: string
-    onDelete?: () => void
-}> = ({ label, onDelete }) => {
-    const color = stringToColor(label)
-    const theme = useTheme()
-    return (
-        <Chip
-            label={label}
-            size="small"
-            onDelete={onDelete}
-            sx={{
-                color: theme.palette.getContrastText(color),
-                bgcolor: color,
-                cursor: "pointer",
-                mr: 0.5,
-            }}
-        />
-    )
-}
-
-export class MultiSelect extends Cell {
+export class MultiSelectSerialized extends SerializedCell {
     readonly brand = "multiselect"
     label = "Mehrfach-Auswahlliste"
 
@@ -66,9 +45,6 @@ export class MultiSelect extends Cell {
     stringify(value: string[]): string {
         return JSON.stringify(value)
     }
-
-    editor = () => null
-
     export(value: unknown): string | void {
         if (value == null || value === "") return
 
@@ -80,6 +56,38 @@ export class MultiSelect extends Cell {
     unexport(value: string): string[] {
         return value.split(";")
     }
+}
+
+const ChipItem: React.FC<{
+    label: string
+    onDelete?: () => void
+}> = ({ label, onDelete }) => {
+    const color = stringToColor(label)
+    const theme = useTheme()
+    return (
+        <Chip
+            label={label}
+            size="small"
+            onDelete={onDelete}
+            sx={{
+                color: theme.palette.getContrastText(color),
+                bgcolor: color,
+                cursor: "pointer",
+                mr: 0.5,
+            }}
+        />
+    )
+}
+
+export class MultiSelect extends Cell {
+    serializedCellDelegate = new MultiSelectSerialized()
+
+    /** More specific override. */
+    parse(value: unknown): string[] {
+        return this.serializedCellDelegate.parse(value)
+    }
+
+    editor = () => null
 
     formatter = (props: FormatterProps<Row>) => {
         const {

@@ -4,15 +4,18 @@ import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { isValidEMailAddress } from "utils/isValidEMailAddress"
-import Cell from "../abstract/Cell"
+import Cell, { SerializedCell } from "../abstract/Cell"
 
-export class EMail extends Cell {
+export class EMailSerialized extends SerializedCell {
     readonly brand = "email"
     label = "E-Mail"
-
     isValid(value: unknown): boolean {
         return value == null || value === "" || isValidEMailAddress(value)
     }
+}
+
+export class EMail extends Cell {
+    serializedCellDelegate = new EMailSerialized()
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)

@@ -9,13 +9,11 @@ import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import Cell from "../abstract/Cell"
-import { TempusCell } from "../abstract/TempusCell"
+import { TempusCell, TempusSerializedCell } from "../abstract/TempusCell"
 
-export class Time extends TempusCell {
+export class TimeSerialized extends TempusSerializedCell {
     readonly brand = "time"
-    label = "Time"
-
-    editor = () => null
+    label = "Time"    
 
     export(value: unknown): string | void {
         const parsed = this.parse(value as string)
@@ -25,6 +23,12 @@ export class Time extends TempusCell {
             minute: "2-digit",
         })
     }
+}
+
+export class Time extends TempusCell {
+    serializedCellDelegate = new TimeSerialized()
+
+    editor = () => null
 
     formatter = (props: FormatterProps<Row>) => {
         const {
