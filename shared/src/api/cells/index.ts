@@ -1,3 +1,14 @@
+/**
+ * @module api.cells
+ * The different data types that can be edited in the table. Each type is
+ * represented by a subtype of the {@link abstract.Cell} type, and provides
+ * functions for checking the validity of an input, storing it to a string
+ * in the database, exporting to a user-friendly string format. Normally,
+ * all their methods would be static, however we want to be able to branch
+ * on cell types at runtime, so it's all instance. The type {@link Cells}
+ * takes care of this.
+ */
+
 export * from "./abstract"
 export * from "./components"
 

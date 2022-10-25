@@ -45,6 +45,8 @@ type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
 /**
  * Base class for all cell components.
+ * Extends the functionality of {@link SerializedCell} with React-specific
+ * functionality that governs how to show the cell in the GUI.
  */
 export default abstract class Cell
     implements Validatable, Exportable, Parsable
