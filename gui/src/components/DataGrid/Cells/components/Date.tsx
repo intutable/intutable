@@ -7,24 +7,10 @@ import deLocale from "date-fns/locale/de"
 import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import { TempusCell, TempusSerializedCell } from "../abstract/TempusCell"
+import { TempusCell } from "../abstract/TempusCell"
+import { Date as DateSerialized } from "@shared/api/cells/components"
 
-export class DateSerialized extends TempusSerializedCell {
-    readonly brand = "date"
-    label = "Date"
-
-    export(value: unknown): string | void {
-        const parsed = this.parse(value as string)
-        if (parsed == null) return
-        return parsed.toLocaleDateString("de-DE", {
-            month: "2-digit",
-            day: "2-digit",
-            year: "numeric",
-        })
-    }
-}
-
-export class DateCell extends TempusCell {
+export class Date extends TempusCell {
     serializedCellDelegate = new DateSerialized()
 
     editor = () => null

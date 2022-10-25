@@ -1,13 +1,17 @@
-import type { Column, Row, TableData } from "types"
-import { static_implements } from "utils/static_implements"
+import type {
+    TableData,
+    SerializedViewData,
+    Row,
+    SerializedColumn,
+} from "../../types/tables"
+import { Filter } from "../../types/filter"
 import type { ColumnInfo, Condition } from "@intutable/lazy-views"
 import type { ViewData as RawViewData } from "@intutable/lazy-views"
-import type { ViewData, Filter } from "types"
-import { DB } from "@shared/types/tables/backend"
-import * as FilterParser from "utils/DBParser/filter"
-import { isInternalColumn } from "@shared/api"
-import { Parsable } from "@datagrid/Cells/abstract/Cell"
-import cells from "@datagrid/Cells"
+import { DB } from "../../types/tables/backend"
+import * as FilterParser from "./filter"
+import { isInternalColumn } from ".."
+import { Parsable } from "../cells/abstract"
+import { cells } from "../cells"
 
 function booleanToNumber(value: boolean): 1 | 0
 function booleanToNumber(
@@ -30,37 +34,9 @@ const numberToString = (value: string | number | undefined | null) =>
 export const byIndex = (a: ColumnInfo, b: ColumnInfo) =>
     a.attributes.__columnIndex__! > b.attributes.__columnIndex__! ? 1 : -1
 
-// TODO: should these parse methods use the `parse` methods from the cells based on the type?
-/** Creates a 'parse' and 'deparse' method with proper types for each property in `{ [KEY]: [DEPARSED, PARSED] }` */
-type ParsableStatic<T extends { [index: string]: [unknown, unknown] }> = {
-    [Key in keyof T as `parse${Capitalize<Key & string>}`]: (
-        value: T[Key][0],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ...args: any[]
-    ) => T[Key][1]
-} & {
-    [Key in keyof T as `deparse${Capitalize<Key & string>}`]?: (
-        value: T[Key][1],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ...args: any[]
-    ) => T[Key][0]
-}
-
-/** Instance methods & static methods implements  */
-type DBParserStaticImplements = {
-    // new (): {} // <-- instance methods
-} & ParsableStatic<{
-    row: [DB._Row, Row]
-    columnInfo: [ColumnInfo, Column.Serialized] // does not work bidirectional, like some other methods, that is why `deparseColumn` is implemented separately
-    filter: [Condition, Filter]
-    table: [RawViewData, TableData.Serialized]
-    view: [RawViewData, ViewData.Serialized]
-}>
-
 /**
  * Values get saved weirdly in the database. This parses the values to the correct data structure.
  */
-@static_implements<DBParserStaticImplements>()
 export class DBParser {
     static parseRows(rows: DB._Row[], columns: ColumnInfo[]): Row[] {
         const indexColumn = columns.find(
@@ -80,7 +56,7 @@ export class DBParser {
                     row,
                     row[indexColumn.key] as number,
                     column.key,
-                    util.parse.bind(util)
+                    util
                 )
             )
         })
@@ -92,10 +68,10 @@ export class DBParser {
         row: DB._Row,
         rowIndex: number,
         key: string,
-        parse: Parsable["parse"]
+        parser: Parsable
     ): Row {
         const parsedRow = row
-        parsedRow[key] = parse(row[key])
+        parsedRow[key] = parser.parse(row[key])
 
         return {
             ...parsedRow,
@@ -104,7 +80,7 @@ export class DBParser {
         } as Row
     }
 
-    static parseColumnInfo(column: ColumnInfo): Column.Serialized {
+    static parseColumnInfo(column: ColumnInfo): SerializedColumn {
         const { displayName, userPrimary, ...col } = column.attributes
         return {
             ...col,
@@ -112,10 +88,10 @@ export class DBParser {
             name: displayName,
             key: column.key,
             userPrimary: numberToBoolean(userPrimary),
-        } as Column.Serialized
+        } as SerializedColumn
     }
 
-    static deparseColumn: (column: Column.Serialized) => DB.Column =
+    static deparseColumn: (column: SerializedColumn) => DB.Column =
         DBParser.partialDeparseColumn
 
     /**
@@ -123,12 +99,12 @@ export class DBParser {
      * incremental updates to columns, without pasting `undefined` over
      * every meta prop that you didn't pass along.
      */
-    static partialDeparseColumn(column: Column.Serialized): DB.Column
+    static partialDeparseColumn(column: SerializedColumn): DB.Column
     static partialDeparseColumn(
-        column: Partial<Column.Serialized>
+        column: Partial<SerializedColumn>
     ): Partial<DB.Column>
     static partialDeparseColumn(
-        column: Partial<Column.Serialized>
+        column: Partial<SerializedColumn>
     ): Partial<DB.Column> {
         return {
             ...(column._kind && { _kind: column._kind }),
@@ -190,7 +166,7 @@ export class DBParser {
         return FilterParser.deparse(filter)
     }
 
-    static parseTable(view: RawViewData): TableData.Serialized {
+    static parseTable(view: RawViewData): TableData {
         // used to populate the  `__rowIndex__` property
         // TODO: in the future this will be reversed
         // instead the __rowIndex__ will populate the index column
@@ -216,7 +192,7 @@ export class DBParser {
         }
     }
 
-    static parseView(view: RawViewData): ViewData.Serialized {
+    static parseView(view: RawViewData): SerializedViewData {
         // used to populate the  `__rowIndex__` property
         // TODO: in the future this will be reversed
         // instead the __rowIndex__ will populate the index column

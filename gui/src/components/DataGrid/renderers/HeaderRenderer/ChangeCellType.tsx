@@ -41,9 +41,9 @@ export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
                         `Der Spaltentyp '${currentCell.getLabel()}' kann nicht zu '${wantedCell.getLabel()}' konvertiert werden.`
                     )
                 return snackError(
-                    `Die Zeilen ${invalidCells.join(",")} können nicht zu '${
-                        wantedCell.getLabel()
-                    }' konvertiert werden.`,
+                    `Die Zeilen ${invalidCells.join(
+                        ","
+                    )} können nicht zu '${wantedCell.getLabel()}' konvertiert werden.`,
                     {
                         persist: true,
                         action: key => (

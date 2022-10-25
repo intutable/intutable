@@ -1,3 +1,6 @@
+export * from "./abstract"
+export * from "./components"
+
 import { Cells } from "./Cells"
 import { Text } from "./components/Text"
 import { Num } from "./components/Number"
@@ -11,7 +14,7 @@ import { EMail } from "./components/EMail"
 import { Select } from "./components/Select"
 import { MultiSelect } from "./components/MultiSelect"
 
-const cells = new Cells(
+export const cells = new Cells(
     new Text(),
     new Num(),
     new Time(),
@@ -24,7 +27,3 @@ const cells = new Cells(
     new Select(),
     new MultiSelect()
 )
-
-export default cells
-
-export { default as Cell } from "./abstract/Cell"

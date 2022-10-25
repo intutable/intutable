@@ -2,24 +2,8 @@ import { Box } from "@mui/material"
 import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import { NumericCell, NumericSerializedCell } from "../abstract/NumericCell"
-
-class CurrencySerialized extends NumericSerializedCell {
-    readonly brand = "currency"
-    label = "Currency"
-
-    export(value: unknown): string {
-        return value + "€"
-    }
-    unexport(value: string): number {
-        const unexported = Number(value.replace("€", "").trim())
-        if (NumericCell.isNumeric(unexported) === false)
-            throw new RangeError(
-                "Currency Cell Debug Error: value is not a number"
-            )
-        return unexported
-    }
-}
+import { NumericCell } from "../abstract/NumericCell"
+import { Currency as CurrencySerialized } from "@shared/api/cells/components"
 
 export class Currency extends NumericCell {
     serializedCellDelegate = new CurrencySerialized()

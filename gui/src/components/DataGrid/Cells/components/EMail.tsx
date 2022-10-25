@@ -3,16 +3,8 @@ import { Box, IconButton, Tooltip } from "@mui/material"
 import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import { isValidEMailAddress } from "utils/isValidEMailAddress"
-import Cell, { SerializedCell } from "../abstract/Cell"
-
-export class EMailSerialized extends SerializedCell {
-    readonly brand = "email"
-    label = "E-Mail"
-    isValid(value: unknown): boolean {
-        return value == null || value === "" || isValidEMailAddress(value)
-    }
-}
+import Cell from "../abstract/Cell"
+import { EMail as EMailSerialized } from "@shared/api/cells/components"
 
 export class EMail extends Cell {
     serializedCellDelegate = new EMailSerialized()

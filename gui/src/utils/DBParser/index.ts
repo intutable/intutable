@@ -1,1 +1,1 @@
-export * from "./DBParser"
+export * from "@shared/api/parse/DBParser"

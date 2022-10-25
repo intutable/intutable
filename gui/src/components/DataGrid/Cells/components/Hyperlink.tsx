@@ -3,24 +3,8 @@ import { Box, IconButton, Tooltip } from "@mui/material"
 import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell, { SerializedCell } from "../abstract/Cell"
-
-export class HyperlinkSerialized extends SerializedCell {
-    readonly brand = "hyperlink"
-    label = "Hyperlink"
-
-    isValid(value: unknown): boolean {
-        if (value == null || value === "") return true
-        if (typeof value !== "string") return false
-
-        try {
-            new URL(value)
-            return true
-        } catch (e) {
-            return false
-        }
-    }
-}
+import Cell from "../abstract/Cell"
+import { Hyperlink as HyperlinkSerialized } from "@shared/api/cells/components"
 
 export class Hyperlink extends Cell {
     serializedCellDelegate = new HyperlinkSerialized()

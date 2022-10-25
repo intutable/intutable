@@ -7,8 +7,8 @@ import {
     OperandKind,
     mapCondition,
 } from "@intutable/lazy-views/dist/condition"
-import type { Filter, SimpleFilter } from "types/filter"
-import { isFilterOperator, not, and, or } from "@shared/utils/filter"
+import type { Filter, SimpleFilter } from "../../types/filter"
+import { isFilterOperator, not, and, or } from "../../utils/filter"
 
 /**
  * The (string) `contains` operator uses SQL `LIKE` under the hood,
