@@ -1,6 +1,6 @@
 version: "3.3"
 services:
-    pg-database:
+    pg-test:
         build: ..
         ports:
             - "5432:5432"
