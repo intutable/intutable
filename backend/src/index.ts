@@ -1,7 +1,17 @@
-import { Core, EventSystem } from "@intutable/core"
+import { randomBytes } from "crypto"
 import net from "net"
 import path from "path"
 import process from "process"
+import { Core, EventSystem } from "@intutable/core"
+import {
+    openConnection,
+    closeConnection,
+    select,
+    insert,
+} from "@intutable/database/dist/requests"
+import { getConfig } from "shared/dist/config"
+
+import { createExampleSchema, insertExampleData } from "./example/load"
 
 const PLUGIN_PATHS = [
     path.join(__dirname, "../../node_modules/@intutable/*"),
@@ -9,6 +19,13 @@ const PLUGIN_PATHS = [
 ]
 const PG_PORT = 5432
 const RETRIES = Math.pow(2, 30)
+
+// default credentials, if none are specified in the config:
+let ADMIN_USERNAME: string
+let ADMIN_PASSWORD: string
+let adminId: number
+
+let core: Core
 
 main()
 
@@ -20,7 +37,43 @@ async function main() {
     await waitForDatabase().catch(e => crash<Core>(e))
     const devMode = process.argv.includes("dev") // what could go wrong?
     const events: EventSystem = new EventSystem(devMode) // flag sets debug mode
-    await Core.create(PLUGIN_PATHS, events).catch(e => crash<Core>(e))
+
+    const config = getConfig()
+    ADMIN_USERNAME = config.appAdminUsername
+    ADMIN_PASSWORD = config.appAdminPassword
+
+    core = await Core.create(PLUGIN_PATHS, events).catch(e => crash<Core>(e))
+
+    const sessionID = "dekanat-app-backend_" + randomBytes(20).toString("hex")
+
+    await core.events.request(
+        openConnection(
+            sessionID,
+            config.databaseAdminUsername,
+            config.databaseAdminPassword
+        )
+    )
+
+    try {
+        // create some custom data
+        const maybeAdminId = await getAdminId(sessionID)
+        if (maybeAdminId === null) {
+            adminId = await createAdmin(sessionID)
+            console.log("set up admin user")
+        } else {
+            adminId = maybeAdminId
+            console.log("admin user already present")
+        }
+
+        // testing data
+        if (maybeAdminId === null) {
+            console.log("creating and populating example schema")
+            await createExampleSchema(core, sessionID, adminId)
+            await insertExampleData(core, sessionID)
+        } else console.log("skipped creating example schema")
+    } finally {
+        await core.events.request(closeConnection(sessionID))
+    }
 }
 
 async function waitForDatabase() {
@@ -71,4 +124,36 @@ async function testPort(port: number, host?: string) {
 function crash<A>(e: Error): A {
     console.log(e)
     return process.exit(1)
+}
+
+/** Get the ID of the admin user (if they exist) */
+async function getAdminId(sessionID: string): Promise<number | null> {
+    const userRows = await core.events.request(
+        select(sessionID, "users", {
+            columns: ["_id"],
+            condition: ["email", ADMIN_USERNAME],
+        })
+    )
+    if (userRows.length > 1)
+        return Promise.reject("fatal: multiple users with same name exist")
+    else if (userRows.length === 1) return userRows[0]["_id"]
+    else return null
+}
+
+/** Create an example admin user for dev mode */
+async function createAdmin(sessionID: string): Promise<number> {
+    const passwordHash: string = await core.events
+        .request({
+            channel: "user-authentication",
+            method: "hashPassword",
+            ADMIN_PASSWORD,
+        })
+        .then(response => response.hash)
+    await core.events.request(
+        insert(sessionID, "users", {
+            email: ADMIN_USERNAME,
+            password: passwordHash,
+        })
+    )
+    return getAdminId(sessionID).then(definitelyNumber => definitelyNumber!)
 }

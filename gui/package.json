@@ -39,9 +39,7 @@
         "react-dom": "^18.0.0",
         "react-spring": "^9.4.5",
         "swr": "^1.3.0",
-        "tmp": "^0.2.1",
-        "shared": "file:../shared",
-        "dekanat-app-plugin": "../dekanat-app-plugin"
+        "tmp": "^0.2.1"
     },
     "devDependencies": {
         "@mui/codemod": "^5.8.5",

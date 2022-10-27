@@ -5,15 +5,7 @@
  * even be a security bonus to create highly specific methods and expose only
  * them for use by the front-end.
  */
-import { readFileSync } from "fs"
-import { randomBytes } from "crypto"
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
-import {
-    openConnection,
-    closeConnection,
-    insert,
-    select,
-} from "@intutable/database/dist/requests"
 import * as pm from "@intutable/project-management/dist/requests"
 import {
     types as lvt,
@@ -40,54 +32,10 @@ import * as req from "./requests"
 import { error } from "./internal/error"
 import * as perm from "./permissions/requests"
 
-import { createExampleSchema, insertExampleData } from "./example/load"
-
 let core: PluginLoader
-// default credentials, if none are specified in the config:
-const ADMIN_NAME = "admin@dekanat.de"
-const ADMIN_PASSWORD = "password"
-let adminId: number
 
 export async function init(plugins: PluginLoader) {
     core = plugins
-
-    const configText = readFileSync(`${__dirname}/../../shared/config.json`, {
-        encoding: "utf8",
-    })
-    const configJson = JSON.parse(configText)
-    const username: string = configJson.databaseAdminUsername
-    const password: string = configJson.databaseAdminPassword
-    if (typeof username !== "string" || typeof password !== "string") {
-        // the error sometimes just causes silent failure
-        console.log("error: database credentials not present in config file")
-        throw TypeError("database credentials not present in config file")
-    }
-
-    const sessionID = "dekanat-app-plugin_" + randomBytes(20).toString("hex")
-
-    await core.events.request(openConnection(sessionID, username, password))
-
-    // in init.sql until db supports default values
-    // await configureColumnAttributes()
-
-    // create some custom data
-    const maybeAdminId = await getAdminId(sessionID)
-    if (maybeAdminId === null) {
-        const username: string = configJson.appAdminUsername ?? ADMIN_NAME
-        const password: string = configJson.appAdminPassword ?? ADMIN_PASSWORD
-        adminId = await createAdmin(sessionID, username, password)
-        console.log("set up admin user")
-    } else {
-        adminId = maybeAdminId
-        console.log("admin user already present")
-    }
-
-    // testing data
-    if (maybeAdminId === null) {
-        console.log("creating and populating example schema")
-        await createExampleSchema(core, sessionID, adminId)
-        await insertExampleData(core, sessionID)
-    } else console.log("skipped creating example schema")
 
     core.listenForRequests(req.CHANNEL)
         .on(req.createStandardColumn.name, createStandardColumn_)
@@ -103,47 +51,9 @@ export async function init(plugins: PluginLoader) {
         .on(perm.createUser.name, perm.createUser_)
         .on(perm.deleteUser.name, perm.deleteUser_)
         .on(perm.changeRole.name, perm.changeRole_)
-
-    await core.events.request(closeConnection(sessionID))
-}
-
-async function getAdminId(sessionID: string): Promise<number | null> {
-    const userRows = await core.events.request(
-        select(sessionID, "users", {
-            columns: ["_id"],
-            condition: ["email", ADMIN_NAME],
-        })
-    )
-    if (userRows.length > 1)
-        return Promise.reject("fatal: multiple users with same name exist")
-    else if (userRows.length === 1) return userRows[0]["_id"]
-    else return null
-}
-
-/** Create admin user */
-async function createAdmin(
-    sessionID: string,
-    username: string,
-    password: string
-): Promise<number> {
-    const passwordHash: string = await core.events
-        .request({
-            channel: "user-authentication",
-            method: "hashPassword",
-            password,
-        })
-        .then(response => response.hash)
-    await core.events.request(
-        insert(sessionID, "users", {
-            email: username,
-            password: passwordHash,
-        })
-    )
-    return getAdminId(sessionID).then(definitelyNumber => definitelyNumber!)
 }
 
 //==================== core methods ==========================
-
 async function createStandardColumn_({
     sessionID,
     tableId,

@@ -1,4 +1,4 @@
-import { PluginLoader } from "@intutable/core"
+import { Core, PluginLoader } from "@intutable/core"
 import { insert } from "@intutable/database/dist/requests"
 import {
     ProjectDescriptor,
@@ -16,10 +16,7 @@ import { requests as v_req } from "@intutable/lazy-views/"
 import { types as v_types } from "@intutable/lazy-views"
 import { tableId, viewId } from "@intutable/lazy-views"
 
-import {
-    emptyRowOptions,
-    defaultRowOptions,
-} from "../../../shared/dist/defaults"
+import { emptyRowOptions, defaultRowOptions } from "shared/dist/defaults"
 
 import {
     TableSpec,
@@ -39,7 +36,7 @@ let simpleTables: Table[]
 let rollen: Table
 
 export async function createExampleSchema(
-    core: PluginLoader,
+    core: Core | PluginLoader,
     sessionID: string,
     adminId: number
 ): Promise<void> {
@@ -52,7 +49,7 @@ export async function createExampleSchema(
     rollen = await createTable(core, sessionID, adminId, project.id, ROLLEN)
 }
 async function createTable(
-    core: PluginLoader,
+    core: Core | PluginLoader,
     sessionID: string,
     userId: number,
     projectId: number,
@@ -112,7 +109,7 @@ async function createTable(
 }
 
 async function addJoin(
-    core: PluginLoader,
+    core: Core | PluginLoader,
     sessionID: string,
     baseTable: TableDescriptor,
     tableView: v_types.ViewDescriptor,
@@ -150,7 +147,7 @@ async function addJoin(
 }
 
 export async function insertExampleData(
-    core: PluginLoader,
+    core: Core | PluginLoader,
     sessionID: string
 ): Promise<void> {
     await Promise.all(
