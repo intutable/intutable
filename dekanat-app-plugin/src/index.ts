@@ -66,7 +66,7 @@ async function createStandardColumn(
     sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
     column: StandardColumnSpecifier,
-    addToViews?: lvt.ViewDescriptor["id"][]
+    addToViews?: types.ViewId[]
 ) {
     const options = (await core.events.request(
         lvr.getViewOptions(sessionID, tableId)
@@ -85,17 +85,23 @@ async function createStandardColumn(
     const customAttributes = DBParser.partialDeparseColumn(
         column.attributes ?? {}
     )
-    const tableViewColumn = await addColumnToTable(sessionID, tableId, {
-        parentColumnId: tableColumn.id,
-        attributes: {
-            ...standardColumnAttributes(
-                column.name,
-                column._cellContentType,
-                columnIndex
-            ),
-            ...customAttributes,
+    const tableViewColumn = await addColumnToTable(
+        sessionID,
+        tableId,
+        {
+            parentColumnId: tableColumn.id,
+            attributes: {
+                ...standardColumnAttributes(
+                    column.name,
+                    column._cellContentType,
+                    columnIndex
+                ),
+                ...customAttributes,
+            },
         },
-    })
+        null,
+        addToViews
+    )
 
     const parsedColumn = DBParser.parseColumnInfo(tableViewColumn)
     return parsedColumn
@@ -106,25 +112,30 @@ async function addColumnToTable_({
     tableId,
     column,
     joinId,
-    createInViews,
+    addToViews,
 }: CoreRequest): Promise<CoreResponse> {
-    return addColumnToTable(sessionID, tableId, column, joinId, createInViews)
+    return addColumnToTable(sessionID, tableId, column, joinId, addToViews)
 }
 async function addColumnToTable(
     sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
     column: lvt.ColumnSpecifier,
     joinId: number | null = null,
-    createInViews = true
+    addToViews?: types.ViewId[]
 ): Promise<lvt.ColumnInfo> {
     const tableColumn = (await core.events.request(
         lvr.addColumnToView(sessionID, tableId, column, joinId)
     )) as lvt.ColumnInfo
-    if (createInViews)
-        await addColumnToFilterViews(sessionID, tableId, {
-            parentColumnId: tableColumn.id,
-            attributes: tableColumn.attributes,
-        })
+    if (addToViews === undefined || addToViews.length !== 0)
+        await addColumnToFilterViews(
+            sessionID,
+            tableId,
+            {
+                parentColumnId: tableColumn.id,
+                attributes: tableColumn.attributes,
+            },
+            addToViews
+        )
     return tableColumn
 }
 
@@ -132,19 +143,25 @@ async function addColumnToFilterViews_({
     sessionID,
     tableId,
     column,
+    views,
 }: CoreRequest): Promise<CoreResponse> {
-    return addColumnToFilterViews(sessionID, tableId, column)
+    return addColumnToFilterViews(sessionID, tableId, column, views)
 }
 async function addColumnToFilterViews(
     sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
-    column: lvt.ColumnSpecifier
+    column: lvt.ColumnSpecifier,
+    views?: types.ViewId[]
 ): Promise<lvt.ColumnInfo[]> {
     const filterViews = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
+    const selectedViews =
+        views === undefined
+            ? filterViews
+            : filterViews.filter(v => views.includes(v.id))
     return Promise.all(
-        filterViews.map(v =>
+        selectedViews.map(v =>
             core.events.request(lvr.addColumnToView(sessionID, v.id, column))
         )
     )

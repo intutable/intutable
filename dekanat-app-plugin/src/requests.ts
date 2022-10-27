@@ -22,9 +22,9 @@ export const CHANNEL = "dekanat-app-plugin"
  */
 export function createStandardColumn(
     sessionID: string,
-    tableId: lv.ViewDescriptor["id"],
+    tableId: TableId,
     column: StandardColumnSpecifier,
-    addToViews?: lv.ViewDescriptor["id"][]
+    addToViews?: ViewId[]
 ) {
     return {
         channel: CHANNEL,
@@ -43,14 +43,14 @@ export function createStandardColumn(
  */
 export function addColumnToTable(
     sessionID: string,
-    tableId: lv.ViewDescriptor["id"],
+    tableId: TableId,
     column: lv.ColumnSpecifier,
     joinId: number | null = null,
     /**
-     * @param {boolean} createInViews if true (default) also create a
-     * corresponding column in all of the table's views.
+     * @param {ViewId[] | undefined} addToViews which views to also
+     * corresponding column in. If undefined, add the column to all views
      */
-    createInViews = true
+    addToViews?: ViewId[]
 ) {
     return {
         channel: CHANNEL,
@@ -59,18 +59,23 @@ export function addColumnToTable(
         tableId,
         column,
         joinId,
-        createInViews,
+        addToViews,
     }
 }
 
 /**
- * Add a column of a table to all views. It must already be present
+ * Add a column of a table to some or all views. It must already be present
  * in the table.
  */
 export function addColumnToViews(
     sessionID: string,
-    tableId: lv.ViewDescriptor["id"],
-    column: lv.ColumnSpecifier
+    tableId: TableId,
+    column: lv.ColumnSpecifier,
+    /**
+     * @param {ViewId | undefined} views which views to add the column to.
+     * If undefined, add it to all views.
+     */
+    views?: ViewId[]
 ) {
     return {
         channel: CHANNEL,
@@ -78,6 +83,7 @@ export function addColumnToViews(
         sessionID,
         tableId,
         column,
+        views,
     }
 }
 
