@@ -1,65 +1,65 @@
-import { toSql, ATTRIBUTES as A } from "."
+import { CustomColumnAttributes } from "../types"
 
 /** Minimum width of a column. */
 export const COLUMN_MIN_WIDTH = 128
 
 export function standardColumnAttributes(
-    displayName: string,
+    name: string,
     contentType: string,
     columnIndex?: number,
     userPrimary?: boolean
-): Record<string, unknown> {
-    return toSql({
+): CustomColumnAttributes {
+    return {
         _kind: "standard",
         ...(userPrimary !== undefined && { userPrimary }),
-        displayName,
-        [A.COLUMN_INDEX.key]: columnIndex,
-        editable: 1,
+        name,
+        __columnIndex__: columnIndex,
+        editable: true,
         _cellContentType: contentType,
         minWidth: COLUMN_MIN_WIDTH,
-    })
+    }
 }
 
 export function linkColumnAttributes(
-    displayName: string,
+    name: string,
     columnIndex?: number
-): Record<string, unknown> {
-    return toSql({
+): CustomColumnAttributes {
+    return {
         _kind: "link",
-        displayName,
-        [A.COLUMN_INDEX.key]: columnIndex,
-        editable: 1,
+        name,
+        __columnIndex__: columnIndex,
+        editable: true,
         _cellContentType: "string",
         minWidth: COLUMN_MIN_WIDTH,
-    })
+    }
 }
 
 export function lookupColumnAttributes(
-    displayName: string,
+    name: string,
     contentType: string,
     columnIndex?: number
-): Record<string, unknown> {
-    return toSql({
+): CustomColumnAttributes {
+    return {
         _kind: "lookup",
-        displayName,
-        [A.COLUMN_INDEX.key]: columnIndex,
-        editable: 0,
+        name,
+        __columnIndex__: columnIndex,
+        editable: false,
         _cellContentType: contentType,
         minWidth: COLUMN_MIN_WIDTH,
-    })
+    }
 }
 
 export function indexColumnAttributes(
     columnIndex?: number
-): Record<string, unknown> {
-    return toSql({
-        displayName: "Index",
+): CustomColumnAttributes {
+    return {
+        name: "Index",
         _kind: "index",
         _cellContentType: "number",
-        [A.COLUMN_INDEX.key]: columnIndex,
+        __columnIndex__: columnIndex,
         editable: false,
         resizable: true,
         sortable: true,
         width: 80,
-    })
+    }
 }

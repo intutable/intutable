@@ -13,10 +13,7 @@ import {
     selectable,
     asTable,
 } from "@intutable/lazy-views/"
-import {
-    ATTRIBUTES as A,
-    standardColumnAttributes,
-} from "shared/dist/attributes"
+import { standardColumnAttributes } from "shared/dist/attributes"
 import {
     StandardColumnSpecifier,
     CustomColumnAttributes,
@@ -40,7 +37,6 @@ export async function init(plugins: PluginLoader) {
     core.listenForRequests(req.CHANNEL)
         .on(req.createStandardColumn.name, createStandardColumn_)
         .on(req.addColumnToTable.name, addColumnToTable_)
-        .on(req.addColumnToViews.name, addColumnToFilterViews_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
         .on(req.getTableData.name, getTableData_)
@@ -82,22 +78,20 @@ async function createStandardColumn(
             (acc, j) => acc + j.columns.length,
             0
         )
-    const customAttributes = DBParser.partialDeparseColumn(
-        column.attributes ?? {}
-    )
+    const allAttributes: CustomColumnAttributes = {
+        ...standardColumnAttributes(
+            column.name,
+            column._cellContentType,
+            columnIndex
+        ),
+        ...(column.attributes || {}),
+    }
     const tableViewColumn = await addColumnToTable(
         sessionID,
         tableId,
         {
             parentColumnId: tableColumn.id,
-            attributes: {
-                ...standardColumnAttributes(
-                    column.name,
-                    column._cellContentType,
-                    columnIndex
-                ),
-                ...customAttributes,
-            },
+            attributes: allAttributes,
         },
         null,
         addToViews
@@ -119,12 +113,16 @@ async function addColumnToTable_({
 async function addColumnToTable(
     sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
-    column: lvt.ColumnSpecifier,
+    column: req.ColumnSpecifier,
     joinId: number | null = null,
     addToViews?: types.ViewId[]
 ): Promise<lvt.ColumnInfo> {
+    const columnSpec = {
+        ...column,
+        attributes: DBParser.partialDeparseColumn(column.attributes),
+    }
     const tableColumn = (await core.events.request(
-        lvr.addColumnToView(sessionID, tableId, column, joinId)
+        lvr.addColumnToView(sessionID, tableId, columnSpec, joinId)
     )) as lvt.ColumnInfo
     if (addToViews === undefined || addToViews.length !== 0)
         await addColumnToFilterViews(
@@ -139,14 +137,6 @@ async function addColumnToTable(
     return tableColumn
 }
 
-async function addColumnToFilterViews_({
-    sessionID,
-    tableId,
-    column,
-    views,
-}: CoreRequest): Promise<CoreResponse> {
-    return addColumnToFilterViews(sessionID, tableId, column, views)
-}
 async function addColumnToFilterViews(
     sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
@@ -220,13 +210,12 @@ async function removeColumnFromTable(
     tableInfo = (await core.events.request(
         lvr.getViewInfo(sessionID, tableId)
     )) as lvt.ViewInfo
-    const indexKey = A.COLUMN_INDEX.key
     const columnUpdates = getColumnIndexUpdates(tableInfo.columns)
 
     await Promise.all(
         columnUpdates.map(async c =>
             changeTableColumnAttributes(sessionID, tableId, c.id, {
-                [indexKey]: c.index,
+                ["__columnIndex__"]: c.index,
             })
         )
     )
@@ -320,10 +309,11 @@ async function removeColumnFromViews(
 function getColumnIndexUpdates(
     columns: lvt.ColumnInfo[]
 ): { id: number; index: number }[] {
-    const indexKey = A.COLUMN_INDEX.key
     return columns
         .map((c, index) => ({ column: c, index }))
-        .filter(pair => pair.column.attributes[indexKey] !== pair.index)
+        .filter(
+            pair => pair.column.attributes["__columnIndex__"] !== pair.index
+        )
         .map(pair => ({
             id: pair.column.id,
             index: pair.index,
