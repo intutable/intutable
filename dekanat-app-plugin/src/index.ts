@@ -14,15 +14,29 @@ import {
     insert,
     select,
 } from "@intutable/database/dist/requests"
-import { removeColumn } from "@intutable/project-management/dist/requests"
+import * as pm from "@intutable/project-management/dist/requests"
 import {
     types as lvt,
     requests as lvr,
     selectable,
+    asTable,
 } from "@intutable/lazy-views/"
+import {
+    ATTRIBUTES as A,
+    standardColumnAttributes,
+} from "shared/dist/attributes"
+import {
+    StandardColumnSpecifier,
+    CustomColumnAttributes,
+    DB,
+    Filter,
+} from "shared/dist/types"
+import { DBParser } from "./api/parse"
+import sanitizeName from "shared/dist/utils/sanitizeName"
+import { defaultViewName } from "shared/dist/defaults"
 
+import * as types from "./types"
 import * as req from "./requests"
-import { ATTRIBUTES as A, toSql } from "../../shared/dist/attributes"
 import { error } from "./internal/error"
 import * as perm from "./permissions/requests"
 
@@ -76,10 +90,14 @@ export async function init(plugins: PluginLoader) {
     } else console.log("skipped creating example schema")
 
     core.listenForRequests(req.CHANNEL)
+        .on(req.createStandardColumn.name, createStandardColumn_)
         .on(req.addColumnToTable.name, addColumnToTable_)
         .on(req.addColumnToViews.name, addColumnToFilterViews_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
+        .on(req.getTableData.name, getTableData_)
+        .on(req.getViewData.name, getViewData_)
+        .on(req.changeViewFilters.name, changeViewFilters_)
         .on(perm.getUsers.name, perm.getUsers_)
         .on(perm.getRoles.name, perm.getRoles_)
         .on(perm.createUser.name, perm.createUser_)
@@ -125,6 +143,54 @@ async function createAdmin(
 }
 
 //==================== core methods ==========================
+
+async function createStandardColumn_({
+    sessionID,
+    tableId,
+    column,
+    addToViews,
+}: CoreRequest): Promise<CoreResponse> {
+    return createStandardColumn(sessionID, tableId, column, addToViews)
+}
+async function createStandardColumn(
+    sessionID: string,
+    tableId: lvt.ViewDescriptor["id"],
+    column: StandardColumnSpecifier,
+    addToViews?: lvt.ViewDescriptor["id"][]
+) {
+    const options = (await core.events.request(
+        lvr.getViewOptions(sessionID, tableId)
+    )) as lvt.ViewOptions
+    const key = sanitizeName(column.name)
+    const tableColumn = await core.events.request(
+        pm.createColumnInTable(sessionID, asTable(options.source).id, key)
+    )
+    // add column to table and filter views
+    const columnIndex =
+        options.columnOptions.columns.length +
+        options.columnOptions.joins.reduce(
+            (acc, j) => acc + j.columns.length,
+            0
+        )
+    const customAttributes = DBParser.partialDeparseColumn(
+        column.attributes ?? {}
+    )
+    const tableViewColumn = await addColumnToTable(sessionID, tableId, {
+        parentColumnId: tableColumn.id,
+        attributes: {
+            ...standardColumnAttributes(
+                column.name,
+                column._cellContentType,
+                columnIndex
+            ),
+            ...customAttributes,
+        },
+    })
+
+    const parsedColumn = DBParser.parseColumnInfo(tableViewColumn)
+    return parsedColumn
+}
+
 async function addColumnToTable_({
     sessionID,
     tableId,
@@ -274,7 +340,7 @@ async function removeLinkColumn(
     // remove join and FK column
     await core.events.request(lvr.removeJoinFromView(sessionID, join.id))
     const fkColumnId = join.on[0]
-    await core.events.request(removeColumn(sessionID, fkColumnId))
+    await core.events.request(pm.removeColumn(sessionID, fkColumnId))
 }
 
 async function removeStandardColumn(
@@ -284,7 +350,7 @@ async function removeStandardColumn(
 ): Promise<void> {
     await removeColumnFromViews(sessionID, tableId, column.id)
     await core.events.request(lvr.removeColumnFromView(sessionID, column.id))
-    await core.events.request(removeColumn(sessionID, column.parentColumnId))
+    await core.events.request(pm.removeColumn(sessionID, column.parentColumnId))
 }
 
 async function removeLookupColumn(
@@ -357,10 +423,10 @@ async function changeTableColumnAttributes(
     sessionID: string,
     tableId: number,
     columnId: number,
-    update: Record<string, unknown>,
+    update: CustomColumnAttributes,
     changeInViews = true
 ): Promise<lvt.ColumnInfo[]> {
-    const attributes = toSql(update)
+    const attributes = DBParser.partialDeparseColumn(update)
     await core.events.request(
         lvr.changeColumnAttributes(sessionID, columnId, attributes)
     )
@@ -377,7 +443,7 @@ async function changeColumnAttributesInViews(
     sessionID: string,
     tableId: number,
     columnId: number,
-    update: Record<string, unknown>
+    update: Partial<DB.Column>
 ): Promise<lvt.ColumnInfo[]> {
     const views = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
@@ -403,4 +469,58 @@ async function changeColumnAttributesInViews(
                 )
             )
     )
+}
+
+async function getTableData_({
+    sessionID,
+    tableId,
+}: CoreRequest): Promise<CoreResponse> {
+    return getTableData(sessionID, tableId)
+}
+async function getTableData(sessionID: string, tableId: types.TableId) {
+    return core.events
+        .request(lvr.getViewData(sessionID, tableId))
+        .then(DBParser.parseTable)
+}
+
+async function getViewData_({
+    sessionID,
+    viewId,
+}: CoreRequest): Promise<CoreResponse> {
+    return getViewData(sessionID, viewId)
+}
+async function getViewData(sessionID: string, viewId: types.ViewId) {
+    return core.events
+        .request(lvr.getViewData(sessionID, viewId))
+        .then(DBParser.parseView)
+}
+
+async function changeViewFilters_({
+    sessionID,
+    viewId,
+    newFilters,
+}: CoreRequest): Promise<CoreResponse> {
+    return changeViewFilters(sessionID, viewId, newFilters)
+}
+async function changeViewFilters(
+    sessionID: string,
+    viewId: types.ViewId,
+    newFilters: Filter[]
+) {
+    let options = (await core.events.request(
+        lvr.getViewOptions(sessionID, viewId)
+    )) as lvt.ViewOptions
+    if (options.name === defaultViewName())
+        return error("changeViewFilters", "cannot change default view")
+    const newRowOptions: lvt.RowOptions = {
+        ...options.rowOptions,
+        conditions: newFilters.map(DBParser.deparseFilter),
+    }
+    await core.events.request(
+        lvr.changeRowOptions(sessionID, viewId, newRowOptions)
+    )
+    options = (await core.events.request(
+        lvr.getViewOptions(sessionID, viewId)
+    )) as lvt.ViewOptions
+    return options.rowOptions.conditions.map(DBParser.parseFilter)
 }

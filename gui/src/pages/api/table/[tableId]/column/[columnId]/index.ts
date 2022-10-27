@@ -10,7 +10,6 @@ import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 
-import { DBParser } from "utils/DBParser"
 import {
     removeColumnFromTable,
     changeTableColumnAttributes,
@@ -49,7 +48,6 @@ const PATCH = withCatchingAPIRoute(
         const user = req.session.user!
         // only use the dedicated rename endpoint for changing the name
         if (update["name"] !== undefined) throw Error("useRenameEndpoint")
-        const databaseUpdate = DBParser.partialDeparseColumn(update)
 
         await withReadWriteConnection(user, async sessionID => {
             await coreRequest<void>(
@@ -57,7 +55,7 @@ const PATCH = withCatchingAPIRoute(
                     sessionID,
                     tableId,
                     columnId,
-                    databaseUpdate,
+                    update,
                     changeInViews_
                 ),
                 user.authCookie

@@ -10,7 +10,6 @@ import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 
-import { DBParser } from "utils/DBParser"
 import { changeTableColumnAttributes } from "@backend/requests"
 
 /**
@@ -46,9 +45,7 @@ const PATCH = withCatchingAPIRoute(
             )
                 throw Error("alreadyTaken")
             else {
-                const update = DBParser.partialDeparseColumn({
-                    name: newName,
-                })
+                const update = { name: newName }
                 await coreRequest<void>(
                     changeTableColumnAttributes(
                         sessionID,

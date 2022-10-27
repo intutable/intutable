@@ -1,10 +1,7 @@
-import {
-    getViewData,
-    ViewData as RawViewData,
-    ViewDescriptor,
-} from "@intutable/lazy-views"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
-import { DBParser } from "utils/DBParser"
+import { getViewData } from "@backend/requests"
+
 import fs from "fs-extra"
 import { parseAsync } from "json2csv"
 import { NextApiResponse } from "next"
@@ -96,13 +93,12 @@ export class ExportUtil {
 
     /** Get the view data */
     private async fetchData(): Promise<ViewData.Serialized> {
-        return withReadOnlyConnection(this.user, async sessionID => {
-            const rawViewData = await coreRequest<RawViewData>(
+        return withReadOnlyConnection(this.user, async sessionID =>
+            coreRequest<ViewData.Serialized>(
                 getViewData(sessionID, this.viewId),
                 this.user.authCookie
             )
-            return DBParser.parseView(rawViewData)
-        })
+        )
     }
 
     /** Only use columns selected by the user for export as well as rows, if marked */

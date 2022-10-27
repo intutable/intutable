@@ -7,7 +7,7 @@ import { DB } from "@shared/types/tables/backend"
 
 declare module "@intutable/lazy-views" {
     interface ColumnInfo {
-        attributes: DB.Column // TOOD: change to Column.Deserialized when DBParser moved to the backend
+        attributes: DB.Column
     }
     /** // TODO: is this suitable? a parsed version of ColumnInfo? */
     interface ColumnInfoParsed extends Omit<ColumnInfo, "attributes"> {

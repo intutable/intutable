@@ -1,17 +1,18 @@
 import {
     deleteView,
     getViewOptions,
-    getViewData,
     listViews,
     renameView,
     ViewOptions,
-    ViewData,
     ViewDescriptor,
     asView,
     isTable,
 } from "@intutable/lazy-views"
+import { defaultViewName } from "@shared/defaults"
+import { ViewData } from "types/tables"
+import { getViewData } from "@backend/requests"
+
 import { coreRequest } from "api/utils"
-import { DBParser } from "utils/DBParser"
 import { withSessionRoute } from "auth"
 import {
     withReadWriteConnection,
@@ -21,7 +22,6 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import type { NextApiRequest, NextApiResponse } from "next"
 
 import { withUserCheck } from "api/utils/withUserCheck"
-import { defaultViewName } from "@shared/defaults"
 
 /**
  * GET a single filter view's data {@type {ViewData.Serialized}}.
@@ -40,13 +40,12 @@ const GET = withCatchingAPIRoute(
     ) => {
         const user = req.session.user!
 
-        const data = await withReadOnlyConnection(user, async sessionID => {
-            const tableData = await coreRequest<ViewData>(
+        const data = await withReadOnlyConnection(user, async sessionID =>
+            coreRequest<ViewData.Serialized>(
                 getViewData(sessionID, viewId),
                 user.authCookie
             )
-            return DBParser.parseView(tableData)
-        })
+        )
 
         res.status(200).json(data)
     }

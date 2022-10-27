@@ -1,17 +1,17 @@
+import type { ColumnInfo, Condition } from "@intutable/lazy-views"
+import type { ViewData as RawViewData } from "@intutable/lazy-views"
 import type {
     TableData,
     SerializedViewData,
     Row,
     SerializedColumn,
+    DB,
 } from "../../types/tables"
 import { Filter } from "../../types/filter"
-import type { ColumnInfo, Condition } from "@intutable/lazy-views"
-import type { ViewData as RawViewData } from "@intutable/lazy-views"
-import { DB } from "../../types/tables/backend"
 import * as FilterParser from "./filter"
-import { isInternalColumn } from ".."
-import { Parsable } from "../cells/abstract"
-import { cells } from "../cells"
+import { isInternalColumn } from "shared/dist/api"
+import { Parsable } from "shared/dist/api/cells/abstract"
+import { cells } from "shared/dist/api/cells"
 
 function booleanToNumber(value: boolean): 1 | 0
 function booleanToNumber(

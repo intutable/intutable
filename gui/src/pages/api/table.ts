@@ -23,7 +23,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
-import sanitizeName from "utils/sanitizeName"
+import sanitizeName from "@shared/utils/sanitizeName"
 import {
     emptyRowOptions,
     defaultRowOptions,

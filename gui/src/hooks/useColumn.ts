@@ -3,7 +3,7 @@ import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column } from "types"
-import { StandardColumnSpecifier } from "@shared/types"
+import { StandardColumnSpecifier, CustomColumnAttributes } from "@shared/types"
 
 export type { StandardColumnSpecifier } from "@shared/types"
 
@@ -71,18 +71,14 @@ export const useColumn = (
      * override the default properties defined by
      * {@link shared/attributes/standardColumnAttributes}, most of which are
      * essential to functionality and not just for display purposes.
-     * Note also that `standardColumnAttributes` are of type `DB.Column`,
-     * while this function takes `Column.Serialized`.
      */
     const createColumn = async (
-        column: StandardColumnSpecifier,
-        attributes?: Partial<Column.Serialized>
-        // TODO: replace this by the column proxy
+        column: StandardColumnSpecifier
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         await fetcher({
             url: `/api/table/${tableId}/column`,
-            body: { column, attributes },
+            body: { column },
         })
         await mutate()
     }
@@ -107,7 +103,7 @@ export const useColumn = (
     // TODO: the state should be updated differently
     const changeAttributes = async (
         column: Column,
-        update: Partial<Column.Serialized>
+        update: CustomColumnAttributes
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const baseColumn = getTableColumn(column)
