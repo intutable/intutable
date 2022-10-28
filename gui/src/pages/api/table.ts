@@ -17,7 +17,7 @@ import {
     ProjectDescriptor,
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
-import { BASIC_TABLE_COLUMNS } from "types"
+import { APP_TABLE_COLUMNS } from "@shared/api"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
@@ -73,7 +73,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
                 user.id,
                 projectId,
                 internalName,
-                BASIC_TABLE_COLUMNS
+                APP_TABLE_COLUMNS
             ),
             user.authCookie
         )

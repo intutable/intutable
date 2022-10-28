@@ -6,7 +6,7 @@ import { Column, MetaColumnProps, ViewData } from "types"
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 import cells, { Cell } from "@datagrid/Cells"
 import { ColumnInfo } from "@intutable/lazy-views"
-import { isInternalColumn } from "@shared/api"
+import { isInternalColumn, isAppColumn } from "@shared/api"
 
 /**
  * // TODO: this flexbility could be a potential error cause.
@@ -157,12 +157,9 @@ export class ColumnUtility {
      * control elements specific to this GUI, such as the row index column and
      * selector checkbox.
      */
-    static isAppColumn(
+    static isAppColumn: (
         column: Column.Serialized | Column.Deserialized
-    ): boolean {
-        // `select-row` is defined by rdg – do NOT change this
-        return column.key === "select-row" || column._kind === "index"
-    }
+    ) => boolean = isAppColumn
 
     /** Used to filter the _id column */
     static isInternalColumn: (column: ColumnInfo) => boolean = isInternalColumn

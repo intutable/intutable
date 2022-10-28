@@ -4,7 +4,6 @@ import { MetaColumnProps } from "types"
 
 declare module "react-data-grid" {
     /* eslint-disable @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars */
-    interface Column<TRow, TSummaryRow = unknown>
-        extends Partial<MetaColumnProps> {}
+    interface Column<TRow, TSummaryRow = unknown> extends MetaColumnProps {}
     /* eslint-enable @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars */
 }
