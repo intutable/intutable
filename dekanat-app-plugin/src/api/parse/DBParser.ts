@@ -32,7 +32,7 @@ const numberToString = (value: string | number | undefined | null) =>
 
 /** sort a column by its index */
 export const byIndex = (a: ColumnInfo, b: ColumnInfo) =>
-    a.attributes.__columnIndex__! > b.attributes.__columnIndex__! ? 1 : -1
+    a.attributes.index! > b.attributes.index! ? 1 : -1
 
 /**
  * Values get saved weirdly in the database. This parses the values to the correct data structure.
@@ -40,7 +40,7 @@ export const byIndex = (a: ColumnInfo, b: ColumnInfo) =>
 export class DBParser {
     static parseRows(rows: DB.Row[], columns: ColumnInfo[]): Row[] {
         const indexColumn = columns.find(
-            column => column.attributes._kind === "index"
+            column => column.attributes.kind === "index"
         )
         if (indexColumn == null)
             throw new RangeError(
@@ -49,8 +49,8 @@ export class DBParser {
         const parsedRows = rows
 
         columns.forEach(column => {
-            const { _cellContentType } = column.attributes
-            const util = cells.getCell(_cellContentType)
+            const { cellType } = column.attributes
+            const util = cells.getCell(cellType)
             parsedRows.map(row =>
                 DBParser.parseRow(
                     row,
@@ -81,14 +81,14 @@ export class DBParser {
     }
 
     static parseColumnInfo(column: ColumnInfo): SerializedColumn {
-        const { displayName, userPrimary, ...col } = column.attributes
+        const { displayName, isUserPrimaryKey, ...col } = column.attributes
         return {
             ...col,
             id: column.id,
             name: displayName,
             key: column.key,
-            isPrimary: numberToBoolean(userPrimary),
-        } as SerializedColumn
+            isUserPrimaryKey: numberToBoolean(isUserPrimaryKey),
+        } as unknown as SerializedColumn
     }
 
     static deparseColumn: (column: SerializedColumn) => DB.Column =
@@ -106,50 +106,55 @@ export class DBParser {
     static partialDeparseColumn(
         column: Partial<SerializedColumn>
     ): Partial<DB.Column> {
+        const def = (a: unknown): boolean => a !== undefined && a !== null
         return {
-            ...(column.kind && { _kind: column.kind }),
-            ...(column.cellType && {
-                _cellContentType: column.cellType,
+            ...(def(column.kind) && { kind: column.kind }),
+            ...(def(column.cellType) && {
+                cellType: column.cellType,
             }),
-            ...(column.index && {
-                __columnIndex__: column.index,
+            ...(def(column.index) && {
+                index: column.index,
             }),
-            ...(column.isPrimary && {
-                userPrimary: booleanToNumber(column.isPrimary),
+            ...(def(column.isUserPrimaryKey) && {
+                isUserPrimaryKey: booleanToNumber(column.isUserPrimaryKey),
             }),
-            ...(column.name && { displayName: column.name }),
-            ...(column.editable && {
+            ...(def(column.name) && { displayName: column.name }),
+            ...(def(column.editable) && {
                 editable: booleanToNumber(column.editable),
             }),
-            ...(column.width && { width: numberToString(column.width) }),
-            ...(column.minWidth && {
+            ...(def(column.width) && {
+                width: numberToString(column.width),
+            }),
+            ...(def(column.minWidth) && {
                 minWidth: numberToString(column.minWidth),
             }),
-            ...(column.maxWidth && {
+            ...(def(column.maxWidth) && {
                 maxWidth: numberToString(column.maxWidth),
             }),
-            ...(column.cellClass && { cellClass: column.cellClass }),
-            ...(column.headerCellClass && {
+            ...(def(column.cellClass) && { cellClass: column.cellClass }),
+            ...(def(column.headerCellClass) && {
                 headerCellClass: column.headerCellClass,
             }),
-            ...(column.summaryCellClass && {
+            ...(def(column.summaryCellClass) && {
                 summaryCellClass: column.summaryCellClass,
             }),
-            ...(column.summaryFormatter && {
+            ...(def(column.summaryFormatter) && {
                 summaryFormatter: column.summaryFormatter,
             }),
-            ...(column.groupFormatter && {
+            ...(def(column.groupFormatter) && {
                 groupFormatter: column.groupFormatter,
             }),
-            ...(column.colSpan && { colSpan: column.colSpan }),
-            ...(column.frozen && { frozen: booleanToNumber(column.frozen) }),
-            ...(column.resizable && {
+            ...(def(column.colSpan) && { colSpan: column.colSpan }),
+            ...(def(column.frozen) && {
+                frozen: booleanToNumber(column.frozen),
+            }),
+            ...(def(column.resizable) && {
                 resizable: booleanToNumber(column.resizable),
             }),
-            ...(column.sortable && {
+            ...(def(column.sortable) && {
                 sortable: booleanToNumber(column.sortable),
             }),
-            ...(column.sortDescendingFirst && {
+            ...(def(column.sortDescendingFirst) && {
                 sortDescendingFirst: booleanToNumber(
                     column.sortDescendingFirst
                 ),
@@ -164,16 +169,14 @@ export class DBParser {
     }
 
     static parseTable(view: RawViewData): TableData {
-        // used to populate the  `__rowIndex__` property
-        // TODO: in the future this will be reversed
-        // instead the __rowIndex__ will populate the index column
         const indexColumn = view.columns.find(
-            column => column.attributes._kind === "index"
+            column => column.attributes.kind === "index"
         )
 
         if (indexColumn == null)
             throw new RangeError(
-                `${DBParser.name}: Could not find any index column when parsing the view ${view.descriptor.id}.`
+                `${DBParser.name}: Could not find any index column when` +
+                    ` parsing the view ${view.descriptor.id}.`
             )
 
         const parsedColumns = view.columns
@@ -194,7 +197,7 @@ export class DBParser {
         // TODO: in the future this will be reversed
         // instead the __rowIndex__ will populate the index column
         const indexColumn = view.columns.find(
-            column => column.attributes._kind === "index"
+            column => column.attributes.kind === "index"
         )
 
         if (indexColumn == null)

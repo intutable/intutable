@@ -67,7 +67,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
             c => c.name === "_id"
         )!
         const userPrimaryColumn = foreignTableInfo.columns.find(
-            c => c.attributes.userPrimary! === 1
+            c => c.attributes.isUserPrimaryKey! === 1
         )!
         const displayName = (userPrimaryColumn.attributes.displayName ||
             userPrimaryColumn.name) as string

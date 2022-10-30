@@ -105,7 +105,7 @@ export class ExportUtil {
     private select(data: ViewData.Serialized) {
         // only use the specified columns
         const columns: Column.Serialized[] = data.columns.filter(col =>
-            this.job.options.columnSelection.includes(col._id)
+            this.job.options.columnSelection.includes(col.id)
         )
 
         let rows: ViewData.Serialized["rows"] = data.rows
@@ -118,16 +118,16 @@ export class ExportUtil {
             // find the index column where the information about the indices are stored,
             // because the indices of each row are not accessible in the viewData
             // due to prefixes of the keys
-            const indexColumn = data.columns.find(c => c._kind === "index")!
+            const indexColumn = data.columns.find(c => c.kind === "index")!
             // and remap to the actual rows
             rows = rows.map(row => ({
                 ...row,
-                __rowIndex__: row[indexColumn.key] as number,
+                index: row[indexColumn.key] as number,
             }))
 
             // filter out the rows that are not selected
             rows = rows.filter(row =>
-                this.job.options.rowSelection!.includes(row.__rowIndex__)
+                this.job.options.rowSelection!.includes(row.index)
             )
         }
 

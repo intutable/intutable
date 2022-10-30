@@ -11,7 +11,7 @@ export function standardColumnAttributes(
 ): CustomColumnAttributes {
     return {
         kind: "standard",
-        ...(userPrimary !== undefined && { isPrimary: userPrimary }),
+        ...(userPrimary !== undefined && { isUserPrimaryKey: userPrimary }),
         name,
         index: columnIndex,
         editable: true,

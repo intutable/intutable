@@ -9,7 +9,7 @@ export type CustomColumnAttributes = Partial<SerializedColumn>
  */
 export type StandardColumnSpecifier = {
     name: string
-    _cellContentType: string
+    cellType: string
     editable: boolean
     attributes?: CustomColumnAttributes
 }

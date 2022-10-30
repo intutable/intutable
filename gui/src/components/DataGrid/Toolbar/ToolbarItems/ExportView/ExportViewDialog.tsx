@@ -224,7 +224,7 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                                         ColumnUtility.isAppColumn(col) === false
                                 )
                                 .map((col, i) => (
-                                    <MenuItem key={i} value={col._id}>
+                                    <MenuItem key={i} value={col.id}>
                                         {col.name}
                                     </MenuItem>
                                 ))}

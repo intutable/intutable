@@ -51,8 +51,8 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
     const { columns, filter, onPromote, onChange } = props
 
     const getColumn = (columnId: number | string) => {
-        const column = columns.find(c => c._id === columnId)
-        return column ? { parentColumnId: column._id, joinId: null } : undefined
+        const column = columns.find(c => c.id === columnId)
+        return column ? { parentColumnId: column.id, joinId: null } : undefined
     }
 
     const handleChangeColumn = (e: SelectChangeEvent<number | string>) => {
@@ -102,7 +102,7 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
                 size="small"
             >
                 {columns.map(c => (
-                    <MenuItem key={c._id} value={c._id}>
+                    <MenuItem key={c.id} value={c.id}>
                         {c.name}
                     </MenuItem>
                 ))}

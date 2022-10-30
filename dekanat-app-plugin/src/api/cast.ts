@@ -8,8 +8,7 @@ export type CastOperations = {
     toDate: (value: unknown) => Date
 }
 
-export const castRow = (row: DB.Restructured.Row): Row => {}
+export const castRow = (row: DB.Restructured.Row): Row => ({} as Row)
 
-export const castColumn = (
-    column: DB.Restructured.Column
-): SerializedColumn => {}
+export const castColumn = (column: DB.Restructured.Column): SerializedColumn =>
+    ({} as SerializedColumn)

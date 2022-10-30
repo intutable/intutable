@@ -60,7 +60,7 @@ export type View<COL, ROW> = {
 // #################################################################
 
 export type Row = {
-    readonly id: number
+    readonly _id: number
     index: number
     [key: string]: unknown
 }
@@ -90,7 +90,7 @@ export type MetaColumnProps = {
      */
     readonly id: number
     /**
-     * @property {(standard | link | lookup)} _kind meta type of a column.
+     * @property {(standard | link | lookup)} kind meta type of a column.
      *
      * ---
      *
@@ -104,22 +104,26 @@ export type MetaColumnProps = {
      * - `index`
      *
      */
-    kind: "standard" | "link" | "lookup" | "index" // TODO: `index` will be removed
+    kind: "standard" | "link" | "lookup" | "index"
     /**
      * In addition to {@link SerializedColumn.editor} and {@link SerializedColumn.formatter},
      * this explicitly sets the type.
      */
     cellType: string
     /**
-     * @property {number | null} __columnIndex__ ordering position of the
+     * @property {number | null} index ordering position of the
      * column.
      */
     index: number
     /**
-     * User-facing "primary" column. This would be something like e.g. the
-     * name of a person - hopefully unique, but not necessarily. This is why
-     * the _real_ primary key is the hidden _id column which the user cannot
-     * see or edit.
+     * In some cases, we may want to show the user a preview of a row,
+     * which needs a "main" or "primary" column. We also want to encourage
+     * the user to ensure that each row has a unique identifier of sorts.
+     * To avoid making the user deal with the auto-generated, meaningless
+     * numeric `_id`s that form our real, database primary keys, we add
+     * this fake "user primary" column, to be used in previews. It also has
+     * a tooltip saying "try to keep it unique" but does not impose any
+     * actual integrity conditions.
      */
-    isPrimaryKey: boolean
+    isUserPrimaryKey: boolean
 }

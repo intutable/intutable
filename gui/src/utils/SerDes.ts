@@ -11,11 +11,11 @@ export default class SerDes {
         // but since it is not used atm, this can be done later
         return {
             ...column,
-            _id: column._id!,
-            _kind: column._kind!,
-            _cellContentType: "string",
-            __columnIndex__: column.__columnIndex__!,
-            userPrimary: column.userPrimary!,
+            id: column.id!,
+            kind: column.kind!,
+            cellType: "string",
+            index: column.index!,
+            isUserPrimaryKey: column.isUserPrimaryKey!,
             name: column.name as string,
             summaryFormatter: undefined, // currently not supported
             groupFormatter: undefined, // currently not supported
@@ -23,7 +23,6 @@ export default class SerDes {
             cellClass: undefined, // currently not supported
             summaryCellClass: undefined, // currently not supported
             colSpan: undefined, // currently not supported
-            headerRenderer: undefined, // supported but gets a default value in the deserializer
         }
     }
 
@@ -48,7 +47,7 @@ export default class SerDes {
     static serializeRow(row: Row): Row {
         // TODO: has nothing to do with deserialization, should be moved in the parser
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { __rowIndex__, ...serializedRow } = row // see `deserializeRow`
+        const { index, ...serializedRow } = row // see `deserializeRow`
         return serializedRow as Row
     }
 
@@ -56,8 +55,7 @@ export default class SerDes {
     static deserializeRow(row: Row, index: number): Row {
         return {
             ...row,
-            // TODO: has nothing to do with deserialization, should be moved in the parser
-            __rowIndex__: index, // TODO: Hack: __rowIndex__ is not saved in the database, the plugins keep the order of the rows. this should be removed in the future by saving the value and combining it with the index column
+            index,
         } as Row
     }
 

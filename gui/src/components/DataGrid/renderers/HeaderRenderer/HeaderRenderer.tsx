@@ -30,9 +30,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         [data, getTableColumn, props.column]
     )
     // column that represents a link to another table
-    const isLinkCol = column._kind! === "link"
-    const isLookupCol = column._kind! === "lookup"
-    const isUserPrimary = column.userPrimary
+    const isLinkCol = column.kind! === "link"
+    const isLookupCol = column.kind! === "lookup"
+    const isUserPrimary = column.isUserPrimaryKey
 
     const foreignTable = useMemo(() => {
         if (col == null) return null

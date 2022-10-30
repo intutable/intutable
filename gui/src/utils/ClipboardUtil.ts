@@ -45,7 +45,7 @@ export class ClipboardUtil implements ClipboardEvents {
     }
 
     private util(column: Column) {
-        return cells.getCell(column._cellContentType!)
+        return cells.getCell(column.cellType!)
     }
 
     /** Copy Event – fires when a user copies a cell, e.g. cmd+c on a cell */

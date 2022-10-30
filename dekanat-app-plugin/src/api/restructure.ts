@@ -22,7 +22,7 @@ export const restructureRow = (
     columns: ColumnInfo[]
 ): DB.Restructured.Row => {
     const indexColumn = columns.find(
-        column => column.attributes._kind === "index"
+        column => column.attributes.kind === "index"
     )
     if (indexColumn == null)
         throw new RangeError(
@@ -46,10 +46,10 @@ export const restructureColumn = (
     const {
         headerRenderer, // omit
         displayName,
-        _kind,
-        _cellContentType,
-        __columnIndex__,
-        userPrimary,
+        kind,
+        cellType,
+        index,
+        isUserPrimaryKey,
         ...properties
     } = column.attributes as DB.Column
 
@@ -57,10 +57,10 @@ export const restructureColumn = (
         id: column.id,
         key: column.key,
         name: displayName,
-        isPrimaryKey: userPrimary,
-        kind: _kind as MetaColumnProps["kind"],
-        cellType: _cellContentType,
-        index: __columnIndex__,
+        isUserPrimaryKey,
+        kind: kind as MetaColumnProps["kind"],
+        cellType: cellType,
+        index: index,
         ...properties,
     }
 }

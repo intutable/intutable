@@ -5,7 +5,6 @@ import {
     getViewInfo,
     ViewInfo,
     ViewDescriptor,
-    ColumnSpecifier,
 } from "@intutable/lazy-views"
 import {
     createTableInProject,
@@ -17,12 +16,13 @@ import {
     ProjectDescriptor,
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
-import { APP_TABLE_COLUMNS } from "@shared/api"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
+import { CustomColumnAttributes } from "@shared/types"
+import { APP_TABLE_COLUMNS } from "@shared/api"
 import sanitizeName from "@shared/utils/sanitizeName"
 import {
     emptyRowOptions,
@@ -33,6 +33,7 @@ import {
     standardColumnAttributes,
     indexColumnAttributes,
 } from "@shared/attributes"
+import { DBParser } from "@backend/api/parse"
 
 /**
  * Create a new table with the specified name.
@@ -84,12 +85,28 @@ const POST = withCatchingAPIRoute(async (req, res) => {
             user.authCookie
         )
         const columnSpecs = baseColumns.map(c => {
-            const makeColumnAttributes =
-                defaultColumnAttributeMap[c.name] ||
-                (() => ({} as ColumnSpecifier["attributes"]))
+            let attributes: CustomColumnAttributes
+            switch (c.name) {
+                case "_id":
+                    attributes = standardColumnAttributes("ID", "number", 0)
+                    break
+                case "index":
+                    attributes = indexColumnAttributes(1)
+                    break
+                case "name":
+                    attributes = standardColumnAttributes(
+                        "Name",
+                        "string",
+                        2,
+                        true
+                    )
+                    break
+                default:
+                    attributes = {} as CustomColumnAttributes
+            }
             return {
                 parentColumnId: c.id,
-                attributes: makeColumnAttributes(),
+                attributes: DBParser.partialDeparseColumn(attributes),
             }
         })
 
@@ -140,12 +157,3 @@ export default withSessionRoute(
         }
     })
 )
-
-const defaultColumnAttributeMap: Record<
-    string,
-    () => ColumnSpecifier["attributes"]
-> = {
-    _id: () => standardColumnAttributes("ID", "number", 0),
-    index: indexColumnAttributes,
-    name: () => standardColumnAttributes("Name", "string", 1, true),
-}

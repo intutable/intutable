@@ -71,16 +71,20 @@ CREATE TABLE view_columns(
     column_id INTEGER NOT NULL,
     function TEXT NULL,
     -- custom metadata, see types/rdg.ts for explanations on them
-    -- userPrimary: a designated column that is shown to the user as a sort of primary key,
-    -- for example to create short previews of records.
-    "userPrimary" INTEGER DEFAULT 0 NOT NULL,
-    -- kinds of columns: plain data (text, date, ...), link to other table, lookup field, ...
-    _kind TEXT NOT NULL DEFAULT 'standard',
-    -- type of the content of a column
-    "_cellContentType" TEXT NOT NULL,
+    -- isUserPrimaryKey: a designated column that is shown to the user
+    -- as a sort of primary key,
+    -- for example to create short previews of records. Is distinct from the
+    -- actual primary key, of course.
+    "isUserPrimaryKey" INTEGER DEFAULT 0 NOT NULL,
+    -- kinds of columns: plain data (text, date, ...), link to another table,
+    -- non-editable row index column ...
+    kind TEXT NOT NULL DEFAULT 'standard',
+    -- type of the content of a column (string, date, currency, ...)
+    "cellType" TEXT NOT NULL,
     "displayName" TEXT NULL,
+    -- column index
+    index INTEGER NULL,
     -- various RDG props
-    "__columnIndex__" INTEGER NULL,
     editable INTEGER DEFAULT 1,
     editor TEXT NULL,
     formatter TEXT NUll,

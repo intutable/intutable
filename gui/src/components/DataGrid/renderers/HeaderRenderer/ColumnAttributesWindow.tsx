@@ -84,10 +84,10 @@ const Modal: React.FC<ModalProps> = props => {
         () =>
             view
                 ? view.columns.find(
-                      c => c._id! === headerRendererProps.column._id
+                      c => c.id! === headerRendererProps.column.id
                   )!
                 : null,
-        [headerRendererProps.column._id, view]
+        [headerRendererProps.column.id, view]
     )
 
     if (column == null) return null
@@ -100,7 +100,7 @@ const Modal: React.FC<ModalProps> = props => {
                 <Attribute
                     label="Spalten-Typ"
                     helperText="'Standard', 'Link', 'Lookup' und 'Index' sind die übergeordneten Spaltentypen."
-                    value={column._kind as string}
+                    value={column.kind as string}
                 />
                 <Attribute
                     label="Zellen-Typ"

@@ -28,7 +28,7 @@ export type SerializedColumn = MetaColumnProps & {
     summaryCellClass?: string | null
     summaryFormatter?: string | null
     groupFormatter?: string | null
-    editable?: boolean | null | string
+    editable?: boolean | null
     colSpan?: string | null
     frozen?: boolean | null
     resizable?: boolean | null

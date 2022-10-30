@@ -79,11 +79,7 @@ async function createStandardColumn(
             0
         )
     const allAttributes: CustomColumnAttributes = {
-        ...standardColumnAttributes(
-            column.name,
-            column._cellContentType,
-            columnIndex
-        ),
+        ...standardColumnAttributes(column.name, column.cellType, columnIndex),
         ...(column.attributes || {}),
     }
     const tableViewColumn = await addColumnToTable(
@@ -186,7 +182,7 @@ async function removeColumnFromTable(
             `view #${tableId} has no column with ID ${columnId}`
         )
 
-    const kind = column.attributes._kind
+    const kind = column.attributes.kind
     switch (kind) {
         case "standard":
             await removeStandardColumn(sessionID, tableId, column)
@@ -242,7 +238,7 @@ async function removeLinkColumn(
         )
     // remove lookup columns
     const lookupColumns = info.columns.filter(
-        c => c.joinId === join.id && c.attributes._kind === "lookup"
+        c => c.joinId === join.id && c.attributes.kind === "lookup"
     )
 
     await Promise.all(

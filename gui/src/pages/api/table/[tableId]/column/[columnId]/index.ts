@@ -93,7 +93,7 @@ const DELETE = withCatchingAPIRoute(
             const column = tableInfo.columns.find(c => c.id === columnId)
 
             if (!column) throw Error("columnNotFound")
-            if (column.attributes.userPrimary)
+            if (column.attributes.isUserPrimaryKey)
                 // cannot delete the primary column
                 throw Error("deleteUserPrimary")
 

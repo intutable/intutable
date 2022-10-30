@@ -51,8 +51,7 @@ const POST = withCatchingAPIRoute(
             // determine column meta attributes
             const displayName =
                 foreignColumn.attributes.displayName || foreignColumn.name
-            const contentType =
-                foreignColumn.attributes._cellContentType || "string"
+            const contentType = foreignColumn.attributes.cellType || "string"
             const columnIndex = tableInfo.columns.length
             const attributes = lookupColumnAttributes(
                 displayName,

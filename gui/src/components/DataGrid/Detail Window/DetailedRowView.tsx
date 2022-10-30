@@ -62,7 +62,7 @@ export const DetailedRowView: React.FC<DetailedRowViewProps> = props => {
                 }}
             >
                 Detail-Ansicht{" "}
-                {props.data ? `Zeile ${props.data.row.__rowIndex__}` : ""}
+                {props.data ? `Zeile ${props.data.row.index}` : ""}
             </Typography>
             <Divider />
             {props.data == null && (

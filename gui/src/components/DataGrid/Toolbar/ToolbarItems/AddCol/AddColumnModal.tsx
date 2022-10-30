@@ -35,7 +35,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const [moreOptionsActive, setMoreOptionsActive] = useState(false)
     const [options, setOptions] = useState<StandardColumnSpecifier>({
         name: "",
-        _cellContentType: "string",
+        cellType: "string",
         editable: true,
     })
     const [valid, setValid] = useState(false)
@@ -79,12 +79,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             <Select
                                 labelId="addcol-select-type"
                                 label="Typ"
-                                value={options._cellContentType}
+                                value={options.cellType}
                                 onChange={e => {
-                                    setOption(
-                                        "_cellContentType",
-                                        e.target.value
-                                    )
+                                    setOption("cellType", e.target.value)
                                 }}
                             >
                                 {Cells.map(cell => (

@@ -19,8 +19,8 @@ export const isInternalColumn = (column: ColumnInfo): boolean =>
  * workspaces, so we'd have to duplicate it here. Better to just enumerate
  * the props needed.
  */
-export const isAppColumn = (column: { key: string; _kind: string }): boolean =>
-    column.key === "select-row" || column._kind === "index"
+export const isAppColumn = (column: { key: string; kind: string }): boolean =>
+    column.key === "select-row" || column.kind === "index"
 // `select-row` is defined by rdg – do NOT change this
 
 /**
