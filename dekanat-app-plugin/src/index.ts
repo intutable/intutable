@@ -215,7 +215,7 @@ async function removeColumnFromTable(
     await Promise.all(
         columnUpdates.map(async c =>
             changeTableColumnAttributes(sessionID, tableId, c.id, {
-                ["__columnIndex__"]: c.index,
+                ["index"]: c.index,
             })
         )
     )

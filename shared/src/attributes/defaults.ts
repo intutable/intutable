@@ -10,12 +10,12 @@ export function standardColumnAttributes(
     userPrimary?: boolean
 ): CustomColumnAttributes {
     return {
-        _kind: "standard",
-        ...(userPrimary !== undefined && { userPrimary }),
+        kind: "standard",
+        ...(userPrimary !== undefined && { isPrimary: userPrimary }),
         name,
-        __columnIndex__: columnIndex,
+        index: columnIndex,
         editable: true,
-        _cellContentType: contentType,
+        cellType: contentType,
         minWidth: COLUMN_MIN_WIDTH,
     }
 }
@@ -25,11 +25,11 @@ export function linkColumnAttributes(
     columnIndex?: number
 ): CustomColumnAttributes {
     return {
-        _kind: "link",
+        kind: "link",
         name,
-        __columnIndex__: columnIndex,
+        index: columnIndex,
         editable: true,
-        _cellContentType: "string",
+        cellType: "string",
         minWidth: COLUMN_MIN_WIDTH,
     }
 }
@@ -40,11 +40,11 @@ export function lookupColumnAttributes(
     columnIndex?: number
 ): CustomColumnAttributes {
     return {
-        _kind: "lookup",
+        kind: "lookup",
         name,
-        __columnIndex__: columnIndex,
+        index: columnIndex,
         editable: false,
-        _cellContentType: contentType,
+        cellType: contentType,
         minWidth: COLUMN_MIN_WIDTH,
     }
 }
@@ -54,9 +54,9 @@ export function indexColumnAttributes(
 ): CustomColumnAttributes {
     return {
         name: "Index",
-        _kind: "index",
-        _cellContentType: "number",
-        __columnIndex__: columnIndex,
+        kind: "index",
+        cellType: "number",
+        index: columnIndex,
         editable: false,
         resizable: true,
         sortable: true,

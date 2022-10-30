@@ -1,4 +1,4 @@
-import type { Row } from "./base"
+import type { MetaColumnProps, Row as _Row } from "./base"
 
 // Note: These types, describing data in a special state, should not be imported into the frontend's scope
 // The namespace is exported only for module augmentation
@@ -33,11 +33,33 @@ export namespace DB {
         resizable?: 1 | 0 | null
         sortable?: 1 | 0 | null
         sortDescendingFirst?: 1 | 0 | null
-        headerRenderer?: string | null
+        headerRenderer?: string | null // TODO: remove from DB
     }
     /**
-     * `__rowIndex` is currently not saved in the db, although the backend
+     * // TODO: `__rowIndex` is currently not saved in the db, although the backend
      * has its own row ordering mechanism. Will be changed in the future
      */
-    export type _Row = Omit<Row, "__rowIndex__">
+    export type Row = Omit<_Row, "index">
+
+    /** Combines Column with ColumnInfo | Leftover of bad design, we'll fix this in the future and combine both */
+    export namespace Restructured {
+        /** Some renamed props and other information included */
+        export type Column = Omit<MetaColumnProps, "isPrimaryKey"> &
+            Omit<
+                DB.Column,
+                | "headerRenderer"
+                | "displayName"
+                | "_kind"
+                | "_cellContentType"
+                | "__columnIndex__"
+                | "userPrimary"
+            > & {
+                key: string
+                name: string
+                // from `MetaColumnProps`
+                isPrimaryKey: 0 | 1
+            }
+        /** Row with its index */
+        export type Row = _Row
+    }
 }

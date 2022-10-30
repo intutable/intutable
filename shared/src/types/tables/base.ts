@@ -60,8 +60,8 @@ export type View<COL, ROW> = {
 // #################################################################
 
 export type Row = {
-    readonly _id: number
-    __rowIndex__: number
+    readonly id: number
+    index: number
     [key: string]: unknown
 }
 
@@ -88,7 +88,7 @@ export type MetaColumnProps = {
      * core/plugion unique id
      * used for columns, rows, tables etc.
      */
-    readonly _id: number
+    readonly id: number
     /**
      * @property {(standard | link | lookup)} _kind meta type of a column.
      *
@@ -104,22 +104,22 @@ export type MetaColumnProps = {
      * - `index`
      *
      */
-    _kind: "standard" | "link" | "lookup" | "index"
+    kind: "standard" | "link" | "lookup" | "index" // TODO: `index` will be removed
     /**
      * In addition to {@link SerializedColumn.editor} and {@link SerializedColumn.formatter},
      * this explicitly sets the type.
      */
-    _cellContentType: string
+    cellType: string
     /**
      * @property {number | null} __columnIndex__ ordering position of the
      * column.
      */
-    __columnIndex__: number | null
+    index: number
     /**
      * User-facing "primary" column. This would be something like e.g. the
      * name of a person - hopefully unique, but not necessarily. This is why
      * the _real_ primary key is the hidden _id column which the user cannot
      * see or edit.
      */
-    userPrimary: boolean
+    isPrimaryKey: boolean
 }

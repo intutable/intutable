@@ -38,7 +38,7 @@ export const byIndex = (a: ColumnInfo, b: ColumnInfo) =>
  * Values get saved weirdly in the database. This parses the values to the correct data structure.
  */
 export class DBParser {
-    static parseRows(rows: DB._Row[], columns: ColumnInfo[]): Row[] {
+    static parseRows(rows: DB.Row[], columns: ColumnInfo[]): Row[] {
         const indexColumn = columns.find(
             column => column.attributes._kind === "index"
         )
@@ -65,7 +65,7 @@ export class DBParser {
     }
 
     static parseRow(
-        row: DB._Row,
+        row: DB.Row,
         rowIndex: number,
         key: string,
         parser: Parsable
@@ -76,7 +76,7 @@ export class DBParser {
         return {
             ...parsedRow,
             // TODO: Hack: __rowIndex__ is not saved in the database, the plugins keep the order of the rows. this should be removed in the future by saving the value and combining it with the index column
-            __rowIndex__: rowIndex,
+            index: rowIndex,
         } as Row
     }
 
@@ -84,10 +84,10 @@ export class DBParser {
         const { displayName, userPrimary, ...col } = column.attributes
         return {
             ...col,
-            _id: column.id,
+            id: column.id,
             name: displayName,
             key: column.key,
-            userPrimary: numberToBoolean(userPrimary),
+            isPrimary: numberToBoolean(userPrimary),
         } as SerializedColumn
     }
 
@@ -107,15 +107,15 @@ export class DBParser {
         column: Partial<SerializedColumn>
     ): Partial<DB.Column> {
         return {
-            ...(column._kind && { _kind: column._kind }),
-            ...(column._cellContentType && {
-                _cellContentType: column._cellContentType,
+            ...(column.kind && { _kind: column.kind }),
+            ...(column.cellType && {
+                _cellContentType: column.cellType,
             }),
-            ...(column.__columnIndex__ && {
-                __columnIndex__: column.__columnIndex__,
+            ...(column.index && {
+                __columnIndex__: column.index,
             }),
-            ...(column.userPrimary && {
-                userPrimary: booleanToNumber(column.userPrimary),
+            ...(column.isPrimary && {
+                userPrimary: booleanToNumber(column.isPrimary),
             }),
             ...(column.name && { displayName: column.name }),
             ...(column.editable && {
@@ -153,9 +153,6 @@ export class DBParser {
                 sortDescendingFirst: booleanToNumber(
                     column.sortDescendingFirst
                 ),
-            }),
-            ...(column.headerRenderer && {
-                headerRenderer: column.headerRenderer,
             }),
         }
     }
