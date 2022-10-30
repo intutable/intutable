@@ -33,7 +33,6 @@ export namespace DB {
         resizable?: 1 | 0 | null
         sortable?: 1 | 0 | null
         sortDescendingFirst?: 1 | 0 | null
-        headerRenderer?: string | null // TODO: remove from DB
     }
     /**
      * // TODO: `__rowIndex` is currently not saved in the db, although the backend

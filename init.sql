@@ -100,7 +100,6 @@ CREATE TABLE view_columns(
     frozen INTEGER NULL,
     resizable INTEGER NULL,
     sortable INTEGER NULL,
-    "sortDescendingFirst" INTEGER NULL,
-    "headerRenderer" VARCHAR(255) NULL
+    "sortDescendingFirst" INTEGER NULL
 );
 -- end lazy-views schema

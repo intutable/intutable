@@ -44,7 +44,6 @@ export const restructureColumn = (
     column: ColumnInfo
 ): DB.Restructured.Column => {
     const {
-        headerRenderer, // omit
         displayName,
         kind,
         cellType,
