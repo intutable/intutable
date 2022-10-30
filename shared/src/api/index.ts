@@ -6,7 +6,7 @@ import { ColumnInfo } from "@intutable/lazy-views/dist/types"
  * does not see.
  */
 export const isInternalColumn = (column: ColumnInfo): boolean =>
-    column.name === "_id"
+    column.attributes.isInternal === 1
 
 /**
  * "app" columns means ones that are created by the app for each table,

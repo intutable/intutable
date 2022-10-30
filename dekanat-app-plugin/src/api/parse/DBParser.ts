@@ -81,13 +81,15 @@ export class DBParser {
     }
 
     static parseColumnInfo(column: ColumnInfo): SerializedColumn {
-        const { displayName, isUserPrimaryKey, ...col } = column.attributes
+        const { displayName, isUserPrimaryKey, isInternal, ...col } =
+            column.attributes
         return {
             ...col,
             id: column.id,
             name: displayName,
             key: column.key,
             isUserPrimaryKey: numberToBoolean(isUserPrimaryKey),
+            isInternal: numberToBoolean(isInternal),
         } as unknown as SerializedColumn
     }
 
@@ -117,6 +119,9 @@ export class DBParser {
             }),
             ...(def(column.isUserPrimaryKey) && {
                 isUserPrimaryKey: booleanToNumber(column.isUserPrimaryKey),
+            }),
+            ...(def(column.isInternal) && {
+                isInternal: booleanToNumber(column.isInternal),
             }),
             ...(def(column.name) && { displayName: column.name }),
             ...(def(column.editable) && {

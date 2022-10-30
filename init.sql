@@ -84,6 +84,8 @@ CREATE TABLE view_columns(
     "displayName" TEXT NULL,
     -- column index
     index INTEGER NULL,
+    -- flag for internal (i.e. managed by the app, not the user) columns
+    "isInternal" INTEGER DEFAULT 0 NOT NULL,
     -- various RDG props
     editable INTEGER DEFAULT 1,
     editor TEXT NULL,

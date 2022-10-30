@@ -14,11 +14,12 @@ export namespace DB {
      * in `/types/module-augmenation/lazy-views.ts`.
      */
     export type Column = {
+        isUserPrimaryKey: 0 | 1
         kind: string
         cellType: string
-        index: number | null
-        isUserPrimaryKey: 0 | 1
         displayName: string
+        index: number | null
+        isInternal: 0 | 1
         editable?: 1 | 0 | null
         width?: string | null
         minWidth?: string | null
@@ -43,7 +44,10 @@ export namespace DB {
     /** Combines Column with ColumnInfo | Leftover of bad design, we'll fix this in the future and combine both */
     export namespace Restructured {
         /** Some renamed props and other information included */
-        export type Column = Omit<MetaColumnProps, "isUserPrimaryKey"> &
+        export type Column = Omit<
+            MetaColumnProps,
+            "isUserPrimaryKey" | "isInternal"
+        > &
             Omit<
                 DB.Column,
                 | "headerRenderer"
@@ -52,11 +56,13 @@ export namespace DB {
                 | "cellType"
                 | "index"
                 | "isUserPrimaryKey"
+                | "isInternal"
             > & {
                 key: string
                 name: string
                 // from `MetaColumnProps`
                 isUserPrimaryKey: 0 | 1
+                isInternal: 0 | 1
             }
         /** Row with its index */
         export type Row = _Row

@@ -31,6 +31,7 @@ import {
 } from "@shared/defaults"
 import {
     standardColumnAttributes,
+    idColumnAttributes,
     indexColumnAttributes,
 } from "@shared/attributes"
 import { DBParser } from "@backend/api/parse"
@@ -88,7 +89,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
             let attributes: CustomColumnAttributes
             switch (c.name) {
                 case "_id":
-                    attributes = standardColumnAttributes("ID", "number", 0)
+                    attributes = idColumnAttributes(0)
                     break
                 case "index":
                     attributes = indexColumnAttributes(1)

@@ -11,11 +11,9 @@ export default class SerDes {
         // but since it is not used atm, this can be done later
         return {
             ...column,
-            id: column.id!,
-            kind: column.kind!,
+            id: column.id,
+            kind: column.kind,
             cellType: "string",
-            index: column.index!,
-            isUserPrimaryKey: column.isUserPrimaryKey!,
             name: column.name as string,
             summaryFormatter: undefined, // currently not supported
             groupFormatter: undefined, // currently not supported

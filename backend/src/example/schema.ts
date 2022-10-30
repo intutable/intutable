@@ -14,6 +14,7 @@ import {
 import { CustomColumnAttributes } from "shared/dist/types"
 import {
     standardColumnAttributes,
+    idColumnAttributes,
     indexColumnAttributes,
     linkColumnAttributes,
 } from "shared/dist/attributes"
@@ -46,7 +47,7 @@ export const PERSONEN: TableSpec = {
                 type: ColumnType.increments,
                 options: [SimpleColumnOption.primary],
             },
-            attributes: standardColumnAttributes("ID", "number", 0),
+            attributes: idColumnAttributes(0),
         },
         {
             baseColumn: {
@@ -170,7 +171,7 @@ export const ORGANE: TableSpec = {
                 type: ColumnType.increments,
                 options: [SimpleColumnOption.primary],
             },
-            attributes: standardColumnAttributes("ID", "number", 0),
+            attributes: idColumnAttributes(0),
         },
         {
             baseColumn: {
@@ -308,7 +309,7 @@ export const ROLLEN = {
                 type: ColumnType.increments,
                 options: [SimpleColumnOption.primary],
             },
-            attributes: standardColumnAttributes("ID", "number", 0),
+            attributes: idColumnAttributes(0),
         },
         {
             baseColumn: {

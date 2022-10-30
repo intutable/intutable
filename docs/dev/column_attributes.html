@@ -1,0 +1,27 @@
+<h1 id="adding-new-column-attributes">Adding New Column Attributes</h1>
+<p>Adding new meta properties to columns is a serious challenge right now. This guide will hopefully help you through the worst.</p>
+<h2 id="overview">Overview</h2>
+<p>Data generally exist in three stages in this application.<br />
+- Relational data in the database (usually named <code>DB.&lt;something&gt;</code>)<br />
+- Serialized versions of the visible front-end data, often prefixed with <code>Serialized...</code><br />
+- Visible front-end, often prefixed with <code>Deserialized...</code>.</p>
+<p>See <code>gui/src/types/tables/index.ts</code> and follow imports for a rough overview. In addition to implementing these types, we must also implement conversions between them. The following section will explain this further.</p>
+<h2 id="what-to-change-when-adding-a-new-attribute">What to Change when Adding a New Attribute</h2>
+<ol type="1">
+<li>add to database schema in <code>init.sql</code></li>
+<li>add to the type representing the database <code>DB.Column</code> in <code>shared/src/types/tables/backend.ts</code></li>
+<li>add to front-end columns:</li>
+</ol>
+<ul>
+<li>the type <code>metaColumnProps</code> in <code>shared/src/types/tables/base</code> contains properties that both serialized and non-serialized front-end columns have. Most likely, you will want to add it here<br />
+</li>
+<li>If the type should only exist on serialized columns, add it to the definition of <code>SerializedColumn</code> in <code>shared/src/types/tables/serialized</code>.<br />
+</li>
+<li>To convert between DB and serialized columns, go to <code>dekanat-app-plugin/src/api/parse/DBParser.ts</code> and change the methods <code>parseColumnInfo</code> and <code>partialDeparseColumn</code> appropriately<br />
+</li>
+<li>You may also want to change <code>serializeColumn</code> or <code>deserializeColumn</code> in <code>gui/src/utils/SerDes.ts</code> if you want some conversion or other special treatment (default behavior is to just copy the prop)</li>
+</ul>
+<ol start="4" type="1">
+<li>Set it: Default meta props for various kinds of column are defined in <code>shared/src/attributes/defaults.ts</code>, or you can manually add it if it is only supposed to exist in specific situations.</li>
+<li>Use the property wherever you need to for the functionality it is supposed to achieve.</li>
+</ol>

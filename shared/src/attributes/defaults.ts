@@ -49,6 +49,18 @@ export function lookupColumnAttributes(
     }
 }
 
+export function idColumnAttributes(
+    columnIndex?: number
+): CustomColumnAttributes {
+    return {
+        kind: "standard",
+        name: "ID",
+        index: columnIndex,
+        isInternal: true,
+        editable: false,
+        cellType: "number",
+    }
+}
 export function indexColumnAttributes(
     columnIndex?: number
 ): CustomColumnAttributes {
