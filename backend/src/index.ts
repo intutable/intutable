@@ -146,7 +146,7 @@ async function createAdmin(sessionID: string): Promise<number> {
         .request({
             channel: "user-authentication",
             method: "hashPassword",
-            ADMIN_PASSWORD,
+            password: ADMIN_PASSWORD,
         })
         .then(response => response.hash)
     await core.events.request(
