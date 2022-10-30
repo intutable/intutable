@@ -169,16 +169,6 @@ export class DBParser {
     }
 
     static parseTable(view: RawViewData): TableData {
-        const indexColumn = view.columns.find(
-            column => column.attributes.kind === "index"
-        )
-
-        if (indexColumn == null)
-            throw new RangeError(
-                `${DBParser.name}: Could not find any index column when` +
-                    ` parsing the view ${view.descriptor.id}.`
-            )
-
         const parsedColumns = view.columns
             .sort(byIndex)
             .filter(col => isInternalColumn(col) === false)
@@ -193,18 +183,6 @@ export class DBParser {
     }
 
     static parseView(view: RawViewData): SerializedViewData {
-        // used to populate the  `__rowIndex__` property
-        // TODO: in the future this will be reversed
-        // instead the __rowIndex__ will populate the index column
-        const indexColumn = view.columns.find(
-            column => column.attributes.kind === "index"
-        )
-
-        if (indexColumn == null)
-            throw new RangeError(
-                `${DBParser.name}: Could not find any index column when parsing the view ${view.descriptor.id}.`
-            )
-
         const parsedColumns = view.columns
             .sort(byIndex)
             .filter(col => isInternalColumn(col) === false)
