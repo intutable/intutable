@@ -1,7 +1,8 @@
 import cells from "@datagrid/Cells"
-import { PrefixIcon } from "@datagrid/renderers/HeaderRenderer/PrefixIcon"
+import { AddColumnModal } from "@datagrid/Toolbar/ToolbarItems/AddCol/AddColumnModal"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import CloseIcon from "@mui/icons-material/Close"
+import KeyIcon from "@mui/icons-material/Key"
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
 import {
     Box,
@@ -12,17 +13,131 @@ import {
     DialogTitle,
     Divider,
     IconButton,
+    ListItemText,
+    Menu,
+    MenuItem,
     Stack,
     Typography,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
+import { StandardColumnSpecifier, useColumn } from "hooks/useColumn"
+import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
-import React, { useEffect, useMemo } from "react"
+import React, { useState } from "react"
 import { Column } from "types"
 import { ColumnUtility } from "utils/ColumnUtility"
 import { RowNavigator } from "./RowNavigator"
-import KeyIcon from "@mui/icons-material/Key"
-import { waitForDebugger } from "inspector"
+import EditIcon from "@mui/icons-material/Edit"
+import { ColumnContextMenu } from "@datagrid/renderers/HeaderRenderer/ColumnContextMenu"
+import { ColumnAttributesWindow } from "@datagrid/renderers/HeaderRenderer/ColumnAttributesWindow"
+
+const AddColumnButton: React.FC = () => {
+    const { snackError } = useSnacki()
+    const [anchorEL, setAnchorEL] = useState<Element | null>(null)
+    const handleOpenModal = (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    ) => {
+        setAnchorEL(event.currentTarget)
+    }
+    const handleCloseModal = () => setAnchorEL(null)
+
+    const { createColumn } = useColumn()
+
+    const handleCreateColumn = async (col: StandardColumnSpecifier) => {
+        try {
+            await createColumn(col)
+        } catch (error) {
+            snackError("Die Spalte konnte nicht erstellt werden!")
+        }
+    }
+
+    return (
+        <>
+            <Button
+                onClick={handleOpenModal}
+                startIcon={<AddBoxIcon fontSize="small" />}
+                variant="contained"
+                size="small"
+                fullWidth
+                color="info"
+                sx={{
+                    letterSpacing: 1,
+                    mt: 10,
+                    opacity: 0.6,
+                }}
+            >
+                Spalte hinzufügen
+            </Button>
+            <AddColumnModal
+                open={anchorEL != null}
+                onClose={handleCloseModal}
+                onHandleCreateColumn={handleCreateColumn}
+            />
+        </>
+    )
+}
+
+const RowMaskContextMenu: React.FC = () => {
+    const theme = useTheme()
+
+    const [anchorEL, setAnchorEL] = useState<Element | null>(null)
+    const openContextMenu = (e: React.MouseEvent<SVGSVGElement>) => {
+        e.preventDefault()
+        setAnchorEL(e.currentTarget)
+    }
+    const closeContextMenu = () => setAnchorEL(null)
+
+    return (
+        <>
+            <MoreHorizIcon
+                fontSize="small"
+                sx={{ cursor: "pointer" }}
+                onClick={openContextMenu}
+            />
+            <Menu
+                elevation={0}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                open={anchorEL != null}
+                anchorEl={anchorEL}
+                onClose={closeContextMenu}
+                PaperProps={{
+                    sx: {
+                        boxShadow: theme.shadows[1],
+                    },
+                }}
+            >
+                <MenuItem sx={{ color: theme.palette.warning.main }}>
+                    <ListItemText>Löschen</ListItemText>
+                </MenuItem>
+            </Menu>
+        </>
+    )
+}
+
+const ColumnAttributesWindowButton: React.FC<{ column: Column }> = ({
+    column,
+}) => {
+    const [anchorEL, setAnchorEL] = useState<Element | null>(null)
+    const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        setAnchorEL(e.currentTarget)
+    }
+    const closeContextMenu = () => setAnchorEL(null)
+
+    return (
+        <>
+            <IconButton onClick={openContextMenu}>
+                <EditIcon fontSize="small" />
+            </IconButton>
+            <ColumnAttributesWindow
+                open={anchorEL != null}
+                onClose={closeContextMenu}
+                column={column}
+            />
+        </>
+    )
+}
 
 const getExposedInput = (type: Column.Serialized["_cellContentType"]) => {
     const cellUtil = cells.getCell(type)
@@ -31,12 +146,11 @@ const getExposedInput = (type: Column.Serialized["_cellContentType"]) => {
 
 export const RowMask: React.FC = () => {
     const { data } = useView()
-
     const { rowMaskState, setRowMaskState } = useRowMask()
 
     const abort = () => setRowMaskState({ mode: "closed" })
 
-    const create = () => {}
+    const createRow = () => {}
 
     if (data == null) return null
 
@@ -60,10 +174,7 @@ export const RowMask: React.FC = () => {
 
                     <Box flexGrow={1} />
 
-                    <MoreHorizIcon
-                        fontSize="small"
-                        sx={{ cursor: "pointer" }}
-                    />
+                    <RowMaskContextMenu />
                     <Divider
                         orientation="vertical"
                         flexItem
@@ -178,6 +289,9 @@ export const RowMask: React.FC = () => {
                                             />
                                         )
                                     })()}
+                                    <ColumnAttributesWindowButton
+                                        column={column}
+                                    />
                                 </Stack>
                                 {column.userPrimary === true && (
                                     <Divider
@@ -190,26 +304,13 @@ export const RowMask: React.FC = () => {
                         )
                     })}
 
-                <Button
-                    startIcon={<AddBoxIcon fontSize="small" />}
-                    variant="contained"
-                    size="small"
-                    fullWidth
-                    color="info"
-                    sx={{
-                        letterSpacing: 1,
-                        mt: 10,
-                        opacity: 0.6,
-                    }}
-                >
-                    Spalte hinzufügen
-                </Button>
+                <AddColumnButton />
             </DialogContent>
             {rowMaskState.mode === "create" && (
                 <DialogActions sx={{ flexWrap: "wrap" }}>
                     <Divider />
                     <Button onClick={abort}>Abbrechen</Button>
-                    <Button onClick={create}>Erstellen</Button>
+                    <Button onClick={createRow}>Erstellen</Button>
                 </DialogActions>
             )}
         </Dialog>

@@ -13,7 +13,7 @@ import { useRouter } from "next/router"
 import React, { useMemo } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
-import { ContextMenu } from "./ContextMenu"
+import { ColumnContextMenu } from "./ColumnContextMenu"
 import { PrefixIcon } from "./PrefixIcon"
 import { SearchBar } from "./SearchBar"
 
@@ -141,7 +141,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         </IconButton>
                     </Tooltip>
 
-                    <ContextMenu
+                    <ColumnContextMenu
                         colInfo={col}
                         foreignTable={foreignTable}
                         headerRendererProps={props}

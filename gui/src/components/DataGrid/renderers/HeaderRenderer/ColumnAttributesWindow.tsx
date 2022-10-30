@@ -70,27 +70,16 @@ const Attribute: React.FC<AttributeProps> = props => {
     )
 }
 
-type ModalProps = {
+type ColumnAttributesWindowProps = {
     open: boolean
     onClose: () => void
-    headerRendererProps: HeaderRendererProps<Row>
+    column: Column
 }
 
-const Modal: React.FC<ModalProps> = props => {
-    const { open, onClose, headerRendererProps } = props
-
-    const { data: view } = useView()
-    const column = useMemo(
-        () =>
-            view
-                ? (view.columns.find(
-                      c => c._id! === headerRendererProps.column._id
-                  ) as unknown as Column)
-                : null,
-        [headerRendererProps.column._id, view]
-    )
-
-    if (column == null) return null
+export const ColumnAttributesWindow: React.FC<
+    ColumnAttributesWindowProps
+> = props => {
+    const { open, onClose, column } = props
 
     return (
         <Dialog open={open} onClose={() => onClose()}>
@@ -119,13 +108,13 @@ const Modal: React.FC<ModalProps> = props => {
     )
 }
 
-export type ColumnAttributesWindowProps = {
+export type ColumnAttributesWindowButtonProps = {
     headerRendererProps: HeaderRendererProps<Row>
     onCloseContextMenu: () => void
 }
 
-export const ColumnAttributesWindow: React.FC<
-    ColumnAttributesWindowProps
+export const ColumnAttributesWindowButton: React.FC<
+    ColumnAttributesWindowButtonProps
 > = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openModal = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -143,10 +132,10 @@ export const ColumnAttributesWindow: React.FC<
                 <ListItemText>Eigenschaften</ListItemText>
             </MenuItem>
 
-            <Modal
+            <ColumnAttributesWindow
                 open={anchorEL != null}
                 onClose={closeModal}
-                headerRendererProps={props.headerRendererProps}
+                column={props.headerRendererProps.column}
             />
         </>
     )
