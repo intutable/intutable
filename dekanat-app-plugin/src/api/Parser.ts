@@ -2,6 +2,7 @@ import type { Condition } from "@intutable/lazy-views"
 import { Filter } from "../types/filter"
 import { Cast, CastOperations } from "./cast"
 import * as FilterParser from "./parse/filter"
+import { Restructure } from "./restructure"
 
 /**
  * ### Parser
@@ -21,10 +22,9 @@ import * as FilterParser from "./parse/filter"
  */
 export class Parser {
     private cast: CastOperations = new Cast()
+    private restructure = new Restructure()
 
     constructor() {}
-
-    private processInternalColumns() {}
 
     public parseColumnInfo() {}
     public deparseColumn() {}
