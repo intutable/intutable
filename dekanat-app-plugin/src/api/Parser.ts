@@ -1,6 +1,6 @@
 import type { Condition } from "@intutable/lazy-views"
 import { Filter } from "../types/filter"
-import { Cast, CastOperations } from "./Cast"
+import { Cast, CastOperations } from "./cast"
 import * as FilterParser from "./parse/filter"
 
 /**
