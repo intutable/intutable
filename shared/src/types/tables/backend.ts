@@ -3,6 +3,7 @@ import type { MetaColumnProps, Row as _Row } from "./base"
 // Note: These types, describing data in a special state, should not be imported into the frontend's scope
 // The namespace is exported only for module augmentation
 export namespace DB {
+    export type Boolean = 0 | 1
     /**
      * This is how the data is saved in the sql based database.
      * Actually everything is saved as a string, even other primitives.
@@ -14,13 +15,13 @@ export namespace DB {
      * in `/types/module-augmenation/lazy-views.ts`.
      */
     export type Column = {
-        isUserPrimaryKey: 0 | 1
+        isUserPrimaryKey: DB.Boolean
         kind: string
         cellType: string
         displayName: string
-        index: number | null
-        isInternal: 0 | 1
-        editable?: 1 | 0 | null
+        index: number
+        isInternal: DB.Boolean
+        editable?: DB.Boolean | null
         width?: string | null
         minWidth?: string | null
         maxWidth?: string | null
@@ -30,10 +31,10 @@ export namespace DB {
         summaryFormatter?: string | null
         groupFormatter?: string | null
         colSpan?: string | null
-        frozen?: 1 | 0 | null
-        resizable?: 1 | 0 | null
-        sortable?: 1 | 0 | null
-        sortDescendingFirst?: 1 | 0 | null
+        frozen?: DB.Boolean | null
+        resizable?: DB.Boolean | null
+        sortable?: DB.Boolean | null
+        sortDescendingFirst?: DB.Boolean | null
     }
     /**
      * // TODO: `__rowIndex` is currently not saved in the db, although the backend
@@ -43,26 +44,25 @@ export namespace DB {
 
     /** Combines Column with ColumnInfo | Leftover of bad design, we'll fix this in the future and combine both */
     export namespace Restructured {
-        /** Some renamed props and other information included */
+        /** Some renamed props and other information included from `MetaColumnProps` */
         export type Column = Omit<
             MetaColumnProps,
-            "isUserPrimaryKey" | "isInternal"
+            "isUserPrimaryKey" | "isInternal" // redefined type below
         > &
             Omit<
                 DB.Column,
-                | "headerRenderer"
-                | "displayName"
-                | "kind"
-                | "cellType"
-                | "index"
-                | "isUserPrimaryKey"
-                | "isInternal"
+                | "displayName" // `name` instead
+                | "kind" // included in `MetaColumnProps`
+                | "cellType" // included in `MetaColumnProps`
+                | "index" // included in `MetaColumnProps`
+                | "isUserPrimaryKey" // included in `MetaColumnProps`
+                | "isInternal" // included in `MetaColumnProps`
             > & {
-                key: string
-                name: string
+                key: string // information from `ColumnInfo`
+                name: string // rename displayName
                 // from `MetaColumnProps`
-                isUserPrimaryKey: 0 | 1
-                isInternal: 0 | 1
+                isUserPrimaryKey: DB.Boolean
+                isInternal: DB.Boolean
             }
         /** Row with its index */
         export type Row = _Row
