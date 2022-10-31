@@ -70,7 +70,7 @@ export default class SerDes {
         // remove selector column
         columns.shift()
         // remove rdg indice column
-        columns.shift()
+        columns.shift() // TODO: is this still necessary?
 
         return {
             ...view,
