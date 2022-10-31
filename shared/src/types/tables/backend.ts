@@ -40,7 +40,11 @@ export namespace DB {
      * // TODO: `__rowIndex` is currently not saved in the db, although the backend
      * has its own row ordering mechanism. Will be changed in the future
      */
-    export type Row = Omit<_Row, "index">
+    export type Row = /* Omit<_Row, "index"> */ {
+        readonly _id: number
+        // index: number
+        [key: string]: unknown
+    }
 
     /** Combines Column with ColumnInfo | Leftover of bad design, we'll fix this in the future and combine both */
     export namespace Restructured {

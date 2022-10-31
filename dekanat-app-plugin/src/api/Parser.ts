@@ -1,4 +1,5 @@
 import type { Condition } from "@intutable/lazy-views"
+import { DB, SerializedColumn } from "shared/src/types"
 import { Filter } from "../types/filter"
 import { Cast, CastOperations } from "./Cast"
 import * as FilterParser from "./parse/filter"
@@ -36,6 +37,13 @@ export class Parser {
     }
     static deparseFilter(filter: Filter): Condition {
         return FilterParser.deparse(filter)
+    }
+
+    static sortByIndex<T extends DB.Restructured.Column | SerializedColumn>(
+        a: T,
+        b: T
+    ) {
+        return a.index > b.index ? 1 : -1
     }
 }
 

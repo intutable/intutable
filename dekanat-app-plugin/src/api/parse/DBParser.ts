@@ -9,9 +9,10 @@ import type {
 } from "../../types/tables"
 import { Filter } from "../../types/filter"
 import * as FilterParser from "./filter"
-import { isInternalColumn } from "shared/dist/api"
+
 import { Parsable } from "shared/dist/api/cells/abstract"
 import { cells } from "shared/dist/api/cells"
+import { Parser } from "../Parser"
 
 function booleanToNumber(value: boolean): 1 | 0
 function booleanToNumber(
@@ -29,10 +30,6 @@ function numberToBoolean(value: 1 | 0 | undefined | null) {
 }
 const numberToString = (value: string | number | undefined | null) =>
     typeof value === "number" ? value.toString() : value
-
-/** sort a column by its index */
-export const byIndex = (a: ColumnInfo, b: ColumnInfo) =>
-    a.attributes.index! > b.attributes.index! ? 1 : -1
 
 /**
  * Values get saved weirdly in the database. This parses the values to the correct data structure.
@@ -175,9 +172,9 @@ export class DBParser {
 
     static parseTable(view: RawViewData): TableData {
         const parsedColumns = view.columns
-            .sort(byIndex)
-            .filter(col => isInternalColumn(col) === false)
+            .filter(col => col.attributes.isInternal === 0)
             .map(DBParser.parseColumnInfo)
+            .sort(Parser.sortByIndex)
         const parsedRows = DBParser.parseRows(view.rows, view.columns)
 
         return {
@@ -189,9 +186,9 @@ export class DBParser {
 
     static parseView(view: RawViewData): SerializedViewData {
         const parsedColumns = view.columns
-            .sort(byIndex)
-            .filter(col => isInternalColumn(col) === false)
+            .filter(col => col.attributes.isInternal === 0)
             .map(DBParser.parseColumnInfo)
+            .sort(Parser.sortByIndex)
 
         const parsedRows = DBParser.parseRows(view.rows, view.columns)
 

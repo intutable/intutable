@@ -1,27 +1,12 @@
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import { DB, MetaColumnProps } from "shared/src/types"
-import { Cast } from "./cast"
+import { Cast } from "./Cast"
 /**
  * Restructures the data from the database to a more usable format.
  * Will be obsolete with a better design in the future.
  */
 
 export class Restructure {
-    public processInternalColumns(column: Column) {
-        if (column.isInternal) {
-            if (column.kind === "index") {
-            }
-
-            if (column.key === "#ID") {
-            }
-            // TODO: research: where is the id inserted?
-
-            throw new Error(
-                `SystemError: Not Implemented (This mechanism is not supported yet).`
-            )
-        }
-    }
-
     /** Restructures (e.g. renaming) the row. Information will be lost. This will be lost in the future */
     public row(row: DB.Row, columns: ColumnInfo[]): DB.Restructured.Row {
         const indexColumn = columns.find(
