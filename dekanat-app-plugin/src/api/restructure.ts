@@ -7,7 +7,20 @@ import { Cast } from "./cast"
  */
 
 export class Restructure {
-    public processInternalColumns() {}
+    public processInternalColumns(column: Column) {
+        if (column.isInternal) {
+            if (column.kind === "index") {
+            }
+
+            if (column.key === "#ID") {
+            }
+            // TODO: research: where is the id inserted?
+
+            throw new Error(
+                `SystemError: Not Implemented (This mechanism is not supported yet).`
+            )
+        }
+    }
 
     /** Restructures (e.g. renaming) the row. Information will be lost. This will be lost in the future */
     public row(row: DB.Row, columns: ColumnInfo[]): DB.Restructured.Row {
