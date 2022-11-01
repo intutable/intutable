@@ -2,11 +2,11 @@ import { DB } from "shared/src/types"
 
 /**
  * Internal columns are columns that should not be shipped to the frontend
- * but those data should be accessible in the row (just without a corresponding column, e.g. an index or id).
+ * but their data should be accessible in the row (just without a corresponding column, e.g. an index or id).
  *
  * Internal columns are identified by `column.isInternal`.
  */
-export class InternalColumn {
+export class InternalColumnUtil {
     /**
      * Writes the values of internal columns into rows
      * without a prefix. Then deletes the Row.
@@ -28,14 +28,17 @@ export class InternalColumn {
         columns: DB.Restructured.Column[],
         rows: DB.Row[]
     ): { columns: DB.Restructured.Column[]; rows: DB.Restructured.Row[] } {
-        const processedRows: DB.Restructured.Row[] = []
+        const processedRows = []
         const nonInternalColumns = columns.map(column => {
             if (column.isInternal) {
                 // TODO: automate this process
+
                 if (column.kind === "index") {
                     rows.forEach(row =>
                         processedRows.push({
-                            index: row[column.key] as number,
+                            index: row[
+                                column.key
+                            ] as DB.Restructured.Row["index"],
                             ...row,
                         })
                     )
@@ -43,7 +46,12 @@ export class InternalColumn {
                 }
 
                 if (column.name === "_id") {
-                    // TODO: research: where is the id inserted at?
+                    rows.forEach(row =>
+                        processedRows.push({
+                            _id: row[column.key] as DB.Restructured.Row["_id"],
+                            ...row,
+                        })
+                    )
                     return
                 }
 
@@ -55,11 +63,16 @@ export class InternalColumn {
             return column
         })
 
-        if (rows.length !== processedRows.length) throw new Error("")
+        if (rows.length !== processedRows.length)
+            throw new Error(
+                `InternalColumn: lost ${
+                    rows.length - processedRows.length
+                } rows when processing internal columns.`
+            )
 
         return {
             columns: nonInternalColumns,
-            rows: processedRows,
+            rows: processedRows as DB.Restructured.Row[],
         }
     }
 }

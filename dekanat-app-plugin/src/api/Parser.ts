@@ -2,6 +2,7 @@ import type { Condition } from "@intutable/lazy-views"
 import { DB, SerializedColumn } from "shared/src/types"
 import { Filter } from "../types/filter"
 import { Cast, CastOperations } from "./Cast"
+import { InternalColumnUtil } from "./InternalColumnUtil"
 import * as FilterParser from "./parse/filter"
 import { Restructure } from "./Restructure"
 
@@ -15,6 +16,11 @@ import { Restructure } from "./Restructure"
  * Some data structures need to be restructured when they come out ot the database.
  * This includes renaming properties and merging objects into a single one.
  *
+ * #### Internal Column Processing
+ *
+ * Internal columns are columns that should not be shipped to the frontend
+ * but their data should be accessible in the row (just without a corresponding column, e.g. an index or id).
+ *
  * #### Casting
  *
  * Values that are represented in the database format need to be casted before being sent to the frontend,
@@ -22,13 +28,14 @@ import { Restructure } from "./Restructure"
  *
  */
 export class Parser {
-    private cast: CastOperations = new Cast()
     private restructure = new Restructure()
+    private internalColumnUtil = new InternalColumnUtil()
+    private cast: CastOperations = new Cast()
 
     constructor() {}
 
     public parseColumnInfo() {}
-    public deparseColumn() {}
+    public deparseColumn(column: Partial<SerializedColumn>) {}
     public parseView() {}
     public parseTable() {}
 
@@ -39,6 +46,7 @@ export class Parser {
         return FilterParser.deparse(filter)
     }
 
+    /** sort algorithm for columns based on its index */
     static sortByIndex<T extends DB.Restructured.Column | SerializedColumn>(
         a: T,
         b: T

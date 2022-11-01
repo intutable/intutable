@@ -36,13 +36,8 @@ export namespace DB {
         sortable?: DB.Boolean | null
         sortDescendingFirst?: DB.Boolean | null
     }
-    /**
-     * // TODO: `__rowIndex` is currently not saved in the db, although the backend
-     * has its own row ordering mechanism. Will be changed in the future
-     */
-    export type Row = /* Omit<_Row, "index"> */ {
-        readonly _id: number
-        // index: number
+
+    export type Row = {
         [key: string]: unknown
     }
 
