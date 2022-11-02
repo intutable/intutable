@@ -8,7 +8,7 @@ import type {
     DB,
 } from "../../types/tables"
 import { Filter } from "../../types/filter"
-import * as FilterParser from "./filter"
+import * as FilterParser from "../filter"
 
 import { Parsable } from "shared/dist/api/cells/abstract"
 import { cells } from "shared/dist/api/cells"

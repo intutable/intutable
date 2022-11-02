@@ -10,10 +10,10 @@ import {
     TableData,
 } from "shared/src/types"
 import { Filter } from "../types/filter"
-import { Cast } from "./Cast"
+import { Cast } from "./cast"
 import { InternalColumnUtil } from "./InternalColumnUtil"
-import * as FilterParser from "./parse/filter"
-import { Restructure } from "./Restructure"
+import * as FilterParser from "./filter"
+import { Restructure } from "./restructure"
 
 /**
  * ### Parser
@@ -43,12 +43,18 @@ export class Parser {
 
     private castColumn(column: DB.Restructured.Column): SerializedColumn {
         const {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             isInternal, // omit
             ...serializedProps
         } = column
+
         const casted: SerializedColumn = {
             ...serializedProps,
             isUserPrimaryKey: this.cast.toBoolean(column.isUserPrimaryKey),
+            width: this.cast.orEmpty(
+                this.cast.or.bind(this.cast.toNumber, this.cast.toString),
+                column.width
+            ),
             minWidth: this.cast.orEmpty(this.cast.toNumber, column.minWidth),
             maxWidth: this.cast.orEmpty(this.cast.toNumber, column.maxWidth),
             editable: this.cast.orEmpty(this.cast.toBoolean, column.editable),
@@ -70,10 +76,69 @@ export class Parser {
     public deparseColumn(
         column: Partial<SerializedColumn>
     ): Partial<DB.Column> {
-        /**
-         * partially destructure
-         * then
-         */
+        /* This method included restructuring and casting */
+        const keys = Object.keys(column) as (keyof SerializedColumn)[]
+        const dbcolumn: Partial<DB.Column> = {}
+        keys.forEach(key => {
+            const value = column[key] as unknown
+            switch (key) {
+                case "id":
+                    throw new Error("Not allowed to change id")
+                case "index":
+                    throw new Error("Property 'index' is an internal column")
+                case "name":
+                    dbcolumn["displayName"] = value as string
+                    break
+                case "key":
+                    throw new Error("not allowed to change key") // TODO: or am I?
+                case "width":
+                    dbcolumn[key] = this.cast.orEmpty(this.cast.toString, value)
+                    break
+                case "minWidth":
+                    dbcolumn[key] = this.cast.orEmpty(this.cast.toString, value)
+                    break
+                case "maxWidth":
+                    dbcolumn[key] = this.cast.orEmpty(this.cast.toString, value)
+                    break
+                case "editable":
+                    dbcolumn[key] = dbcolumn[key] = this.cast.orEmpty(
+                        this.cast.toDatabaseBoolean,
+                        value
+                    )
+                    break
+                case "frozen":
+                    dbcolumn[key] = dbcolumn[key] = this.cast.orEmpty(
+                        this.cast.toDatabaseBoolean,
+                        value
+                    )
+                    break
+                case "resizable":
+                    dbcolumn[key] = dbcolumn[key] = this.cast.orEmpty(
+                        this.cast.toDatabaseBoolean,
+                        value
+                    )
+                    break
+                case "sortable":
+                    dbcolumn[key] = dbcolumn[key] = this.cast.orEmpty(
+                        this.cast.toDatabaseBoolean,
+                        value
+                    )
+                    break
+                case "sortDescendingFirst":
+                    dbcolumn[key] = this.cast.orEmpty(
+                        this.cast.toDatabaseBoolean,
+                        value
+                    )
+                    break
+                case "isUserPrimaryKey":
+                    dbcolumn[key] = this.cast.toDatabaseBoolean(value)
+                    break
+                default:
+                    dbcolumn[key] = value as string
+                    break
+            }
+        })
+        return dbcolumn
     }
 
     public parseTable(view: RawViewData): TableData {

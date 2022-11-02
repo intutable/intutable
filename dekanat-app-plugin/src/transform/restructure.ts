@@ -1,6 +1,6 @@
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import { DB, MetaColumnProps } from "shared/src/types"
-import { Cast } from "./Cast"
+
 /**
  * Restructures the data from the database to a more usable format.
  * Will be obsolete with a better design in the future.

@@ -20,7 +20,7 @@ import {
     DB,
     Filter,
 } from "shared/dist/types"
-import { DBParser } from "./api/parse"
+import { DBParser } from "./transform/parse"
 import sanitizeName from "shared/dist/utils/sanitizeName"
 import { defaultViewName } from "shared/dist/defaults"
 

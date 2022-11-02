@@ -8,6 +8,7 @@ export type CastOperation = {
     toBoolean: (value: unknown) => boolean
     toDatabaseBoolean: (value: unknown) => DB.Boolean
     toNumber: (value: unknown) => number
+    toString: (value: unknown) => string
     toArray: <T = unknown>(value: unknown) => T[]
     toDatabaseArray: (value: unknown) => string
     toDate: (value: unknown) => Date
@@ -45,6 +46,24 @@ export class Cast implements CastOperation, CastOperationEmpty {
         return this.isEmpty(value) ? value : (castFn(value) as ReturnType<T>)
     }
 
+    or<F1 extends ValueOf<CastOperation>, F2 extends ValueOf<CastOperation>>(
+        castFn1: F1,
+        castFn2: F2,
+        value: unknown
+    ): ReturnType<F1> | ReturnType<F2> {
+        try {
+            const casted1 = castFn1(value)
+            return casted1 as ReturnType<F1>
+        } catch (error1) {
+            try {
+                const casted2 = castFn2(value)
+                return casted2 as ReturnType<F2>
+            } catch (error2) {
+                throw new RangeError(`Could not cast value: ${value}`)
+            }
+        }
+    }
+
     toBoolean(value: unknown): boolean {
         if (typeof value === "boolean") return value
         if (value === 1 || value === "1" || value === "true") return true
@@ -71,6 +90,17 @@ export class Cast implements CastOperation, CastOperationEmpty {
         }
 
         throw new RangeError(`Could not cast value to number: ${value}`)
+    }
+
+    toString(value: unknown): string {
+        if (typeof value === "string") return value
+
+        try {
+            return JSON.stringify(value)
+            // eslint-disable-next-line no-empty
+        } catch (_) {}
+
+        throw new RangeError(`Could not cast value to string: ${value}`)
     }
 
     toArray<T = unknown>(value: unknown): T[] {
