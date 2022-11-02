@@ -24,10 +24,11 @@ export class InternalColumnUtil {
      * • which key to choose
      *
      */
-    public processInternalColumns(
-        columns: DB.Restructured.Column[],
+    public processInternalColumns(options: {
+        columns: DB.Restructured.Column[]
         rows: DB.Row[]
-    ): { columns: DB.Restructured.Column[]; rows: DB.Restructured.Row[] } {
+    }): { columns: DB.Restructured.Column[]; rows: DB.Restructured.Row[] } {
+        const { columns, rows } = options
         const processedRows = []
         const nonInternalColumns = columns.map(column => {
             if (column.isInternal) {

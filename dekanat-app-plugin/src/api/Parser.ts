@@ -1,7 +1,16 @@
-import type { ColumnInfo, Condition } from "@intutable/lazy-views"
-import { DB, SerializedColumn } from "shared/src/types"
+import type {
+    ColumnInfo,
+    Condition,
+    ViewData as RawViewData,
+} from "@intutable/lazy-views"
+import {
+    DB,
+    SerializedColumn,
+    SerializedViewData,
+    TableData,
+} from "shared/src/types"
 import { Filter } from "../types/filter"
-import { Cast, CastOperation } from "./Cast"
+import { Cast } from "./Cast"
 import { InternalColumnUtil } from "./InternalColumnUtil"
 import * as FilterParser from "./parse/filter"
 import { Restructure } from "./Restructure"
@@ -32,51 +41,74 @@ export class Parser {
     private internalColumnUtil = new InternalColumnUtil()
     private cast = new Cast()
 
-    public parseColumn(column: ColumnInfo) {
-        const restructured = this.restructure.column(column)
+    private castColumn(column: DB.Restructured.Column): SerializedColumn {
         const {
             isInternal, // omit
             ...serializedProps
-        } = restructured
+        } = column
         const casted: SerializedColumn = {
             ...serializedProps,
-            isUserPrimaryKey: this.cast.toBoolean(
-                restructured.isUserPrimaryKey
-            ),
-            minWidth: this.cast.orEmpty(
-                this.cast.toNumber,
-                restructured.minWidth
-            ),
-            maxWidth: this.cast.orEmpty(
-                this.cast.toNumber,
-                restructured.maxWidth
-            ),
-            editable: this.cast.orEmpty(
-                this.cast.toBoolean,
-                restructured.editable
-            ),
-            frozen: this.cast.orEmpty(this.cast.toBoolean, restructured.frozen),
-            resizable: this.cast.orEmpty(
-                this.cast.toBoolean,
-                restructured.resizable
-            ),
-            sortable: this.cast.orEmpty(
-                this.cast.toBoolean,
-                restructured.sortable
-            ),
+            isUserPrimaryKey: this.cast.toBoolean(column.isUserPrimaryKey),
+            minWidth: this.cast.orEmpty(this.cast.toNumber, column.minWidth),
+            maxWidth: this.cast.orEmpty(this.cast.toNumber, column.maxWidth),
+            editable: this.cast.orEmpty(this.cast.toBoolean, column.editable),
+            frozen: this.cast.orEmpty(this.cast.toBoolean, column.frozen),
+            resizable: this.cast.orEmpty(this.cast.toBoolean, column.resizable),
+            sortable: this.cast.orEmpty(this.cast.toBoolean, column.sortable),
             sortDescendingFirst: this.cast.orEmpty(
                 this.cast.toBoolean,
-                restructured.sortDescendingFirst
+                column.sortDescendingFirst
             ),
         }
-
         return casted
+    }
+
+    public parseColumn(column: ColumnInfo): SerializedColumn {
+        const restructured = this.restructure.column(column)
+        return this.castColumn(restructured)
     }
     public deparseColumn(
         column: Partial<SerializedColumn>
-    ): Partial<DB.Column> {}
-    public parseView() {}
-    public parseTable() {}
+    ): Partial<DB.Column> {
+        /**
+         * partially destructure
+         * then
+         */
+    }
+
+    public parseTable(view: RawViewData): TableData {
+        const restructuredColumns = view.columns.map(this.restructure.column)
+        const { columns: internalProcessedColumns, rows: internalProcessRows } =
+            this.internalColumnUtil.processInternalColumns({
+                columns: restructuredColumns,
+                rows: view.rows,
+            })
+        const castedColumns = internalProcessedColumns.map(this.castColumn)
+
+        return {
+            metadata: { ...view },
+            columns: castedColumns.sort(Parser.sortByIndex),
+            rows: internalProcessRows,
+        }
+    }
+    public parseView(view: RawViewData): SerializedViewData {
+        const restructuredColumns = view.columns.map(this.restructure.column)
+        const { columns: internalProcessedColumns, rows: internalProcessRows } =
+            this.internalColumnUtil.processInternalColumns({
+                columns: restructuredColumns,
+                rows: view.rows,
+            })
+        const castedColumns = internalProcessedColumns.map(this.castColumn)
+        return {
+            descriptor: view.descriptor,
+            metaColumns: view.columns,
+            filters: view.rowOptions.conditions.map(Parser.parseFilter),
+            sortColumns: view.rowOptions.sortColumns,
+            groupColumns: view.rowOptions.groupColumns,
+            columns: castedColumns.sort(Parser.sortByIndex),
+            rows: internalProcessRows,
+        }
+    }
 
     static parseFilter(condition: Condition): Filter {
         return FilterParser.parse(condition)
@@ -93,12 +125,3 @@ export class Parser {
         return a.index > b.index ? 1 : -1
     }
 }
-
-/**
- * what's used:
- * • parse ColumnInfo
- * • deparse (partial) Column
- * • parse Table
- * • parse View
- * • parse & deparse Filter
- */

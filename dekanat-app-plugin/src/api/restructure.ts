@@ -7,26 +7,6 @@ import { Cast } from "./Cast"
  */
 
 export class Restructure {
-    /** Restructures (e.g. renaming) the row. Information will be lost. This will be lost in the future */
-    public row(row: DB.Row, columns: ColumnInfo[]): DB.Restructured.Row {
-        const indexColumn = columns.find(
-            column => column.attributes.kind === "index"
-        )
-        if (indexColumn == null)
-            throw new RangeError(
-                `Could not find any index column when parsing the view.`
-            )
-
-        const index = row[indexColumn.key]
-        if (typeof index !== "number" || Cast.isInteger(index) === false)
-            throw new RangeError(`Index is null`)
-
-        return {
-            index: index as number,
-            ...row,
-        } as DB.Restructured.Row
-    }
-
     /** Restructures (e.g. renaming) the column. Information will be lost. This will be lost in the future */
     public column(column: ColumnInfo): DB.Restructured.Column {
         const {
@@ -49,4 +29,6 @@ export class Restructure {
             ...properties,
         }
     }
+
+    public revert() {}
 }

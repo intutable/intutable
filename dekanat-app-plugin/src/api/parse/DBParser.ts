@@ -117,9 +117,6 @@ export class DBParser {
             ...(def(column.isUserPrimaryKey) && {
                 isUserPrimaryKey: booleanToNumber(column.isUserPrimaryKey),
             }),
-            ...(def(column.isInternal) && {
-                isInternal: booleanToNumber(column.isInternal),
-            }),
             ...(def(column.name) && { displayName: column.name }),
             ...(def(column.editable) && {
                 editable: booleanToNumber(column.editable),
