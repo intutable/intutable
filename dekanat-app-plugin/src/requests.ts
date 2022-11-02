@@ -36,11 +36,6 @@ export function createStandardColumn(
     }
 }
 
-/** TEMP only for addColumnToTable, do not use. */
-export type ColumnSpecifier = Omit<lv.ColumnSpecifier, "attributes"> & {
-    attributes: CustomColumnAttributes
-}
-
 /**
  * Create a column in a table view, optionally (default is yes) adding it
  * to all of the table's filter views.
@@ -48,7 +43,7 @@ export type ColumnSpecifier = Omit<lv.ColumnSpecifier, "attributes"> & {
  * @deprecated we will soon expose only dedicated {@link createStandardColumn},
  ` createLinkColumn` and `createLookupColumn` methods and this will be
  * purely internal.
- */
+n */
 export function addColumnToTable(
     sessionID: string,
     tableId: TableId,
@@ -56,7 +51,7 @@ export function addColumnToTable(
      * Uses serialized attributes for now because there are still next
      * endpoints that use it.
      */
-    column: ColumnSpecifier,
+    column: lv.ColumnSpecifier,
     joinId: number | null = null,
     /**
      * @param {ViewId[] | undefined} addToViews which views to also

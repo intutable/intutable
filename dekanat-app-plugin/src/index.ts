@@ -78,9 +78,9 @@ async function createStandardColumn(
             (acc, j) => acc + j.columns.length,
             0
         )
-    const allAttributes: CustomColumnAttributes = {
+    const allAttributes: Partial<DB.Column> = {
         ...standardColumnAttributes(column.name, column.cellType, columnIndex),
-        ...(column.attributes || {}),
+        ...Parser.deparseColumn(column.attributes || {}),
     }
     const tableViewColumn = await addColumnToTable(
         sessionID,
@@ -109,16 +109,12 @@ async function addColumnToTable_({
 async function addColumnToTable(
     sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
-    column: req.ColumnSpecifier,
+    column: lvt.ColumnSpecifier,
     joinId: number | null = null,
     addToViews?: types.ViewId[]
 ): Promise<lvt.ColumnInfo> {
-    const columnSpec = {
-        ...column,
-        attributes: Parser.deparseColumn(column.attributes),
-    }
     const tableColumn = (await core.events.request(
-        lvr.addColumnToView(sessionID, tableId, columnSpec, joinId)
+        lvr.addColumnToView(sessionID, tableId, column, joinId)
     )) as lvt.ColumnInfo
     if (addToViews === undefined || addToViews.length !== 0)
         await addColumnToFilterViews(

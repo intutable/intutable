@@ -11,7 +11,7 @@ import {
     ViewDescriptor,
 } from "@intutable/lazy-views/dist/types"
 
-import { CustomColumnAttributes } from "shared/dist/types"
+import { DB } from "shared/dist/types"
 import {
     standardColumnAttributes,
     idColumnAttributes,
@@ -25,11 +25,11 @@ export type JoinSpec = {
     table: string
     fkColumn: Column
     pkColumn: string
-    linkColumns: { name: string; attributes: CustomColumnAttributes }[]
+    linkColumns: { name: string; attributes: Partial<DB.Column> }[]
 }
 export type TableSpec = {
     name: string
-    columns: { baseColumn: Column; attributes: CustomColumnAttributes }[]
+    columns: { baseColumn: Column; attributes: Partial<DB.Column> }[]
     joins: JoinSpec[]
 }
 export type Table = {

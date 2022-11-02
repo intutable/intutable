@@ -21,7 +21,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
-import { CustomColumnAttributes } from "@shared/types"
+import { DB } from "@shared/types"
 import { APP_TABLE_COLUMNS } from "@shared/api"
 import sanitizeName from "@shared/utils/sanitizeName"
 import {
@@ -34,7 +34,7 @@ import {
     idColumnAttributes,
     indexColumnAttributes,
 } from "@shared/attributes"
-import { Parser } from "@backend/api/Parser"
+
 
 /**
  * Create a new table with the specified name.
@@ -86,7 +86,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
             user.authCookie
         )
         const columnSpecs = baseColumns.map(c => {
-            let attributes: CustomColumnAttributes
+            let attributes: Partial<DB.Column>
             switch (c.name) {
                 case "_id":
                     attributes = idColumnAttributes(0)
@@ -103,12 +103,9 @@ const POST = withCatchingAPIRoute(async (req, res) => {
                     )
                     break
                 default:
-                    attributes = {} as CustomColumnAttributes
+                    attributes = {} as Partial<DB.Column>
             }
-            return {
-                parentColumnId: c.id,
-                attributes: Parser.deparseColumn(attributes),
-            }
+            return { parentColumnId: c.id, attributes }
         })
 
         // create table view

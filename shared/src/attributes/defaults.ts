@@ -1,36 +1,33 @@
-import { CustomColumnAttributes } from "../types"
-
-/** Minimum width of a column. */
-export const COLUMN_MIN_WIDTH = 128
+import { DB } from "../types"
 
 export function standardColumnAttributes(
     name: string,
     contentType: string,
     columnIndex?: number,
     userPrimary?: boolean
-): CustomColumnAttributes {
+): Partial<DB.Column> {
     return {
         kind: "standard",
-        ...(userPrimary !== undefined && { isUserPrimaryKey: userPrimary }),
-        name,
+        ...(userPrimary !== undefined && {
+            isUserPrimaryKey: userPrimary ? 1 : 0,
+        }),
+        displayName: name,
         index: columnIndex,
-        editable: true,
+        editable: 1,
         cellType: contentType,
-        minWidth: COLUMN_MIN_WIDTH,
     }
 }
 
 export function linkColumnAttributes(
     name: string,
     columnIndex?: number
-): CustomColumnAttributes {
+): Partial<DB.Column> {
     return {
         kind: "link",
-        name,
+        displayName: name,
         index: columnIndex,
-        editable: true,
+        editable: 1,
         cellType: "string",
-        minWidth: COLUMN_MIN_WIDTH,
     }
 }
 
@@ -38,40 +35,34 @@ export function lookupColumnAttributes(
     name: string,
     contentType: string,
     columnIndex?: number
-): CustomColumnAttributes {
+): Partial<DB.Column> {
     return {
         kind: "lookup",
-        name,
+        displayName: name,
         index: columnIndex,
-        editable: false,
+        editable: 0,
         cellType: contentType,
-        minWidth: COLUMN_MIN_WIDTH,
     }
 }
 
-export function idColumnAttributes(
-    columnIndex?: number
-): CustomColumnAttributes {
+export function idColumnAttributes(columnIndex?: number): Partial<DB.Column> {
     return {
         kind: "standard",
-        name: "ID",
+        displayName: "ID",
         index: columnIndex,
-        isInternal: true,
-        editable: false,
+        isInternal: 1,
+        editable: 0,
         cellType: "number",
     }
 }
 export function indexColumnAttributes(
     columnIndex?: number
-): CustomColumnAttributes {
+): Partial<DB.Column> {
     return {
-        name: "Index",
+        displayName: "Index",
         kind: "index",
         cellType: "number",
         index: columnIndex,
-        editable: false,
-        resizable: true,
-        sortable: true,
-        width: 80,
+        editable: 0,
     }
 }
