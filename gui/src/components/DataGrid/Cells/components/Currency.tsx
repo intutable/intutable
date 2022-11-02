@@ -3,13 +3,12 @@ import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { NumericCell } from "../abstract/NumericCell"
-import { Currency as CurrencySerialized } from "@shared/api/cells/components"
 
 export class Currency extends NumericCell {
     readonly brand = "currency"
     label = "Currency"
 
-    export(value: unknown): string {
+    export(value: number): string {
         return value + "€"
     }
     unexport(value: string): number {

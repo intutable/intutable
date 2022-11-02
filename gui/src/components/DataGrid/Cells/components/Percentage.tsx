@@ -2,13 +2,11 @@ import { Box } from "@mui/material"
 import LinearProgress, {
     LinearProgressProps,
 } from "@mui/material/LinearProgress"
-
 import Typography from "@mui/material/Typography"
 import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { NumericCell } from "../abstract/NumericCell"
-import { Percentage as PercentageSerialized } from "@shared/api/cells/components"
 
 const LinearProgressWithLabel = (
     props: LinearProgressProps & { value: number }
@@ -49,7 +47,7 @@ export class Percentage extends NumericCell {
         )
     }
 
-    export(value: unknown): string {
+    export(value: number): string {
         return value + "%"
     }
     unexport(value: string): number {

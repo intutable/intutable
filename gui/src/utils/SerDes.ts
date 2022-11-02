@@ -5,6 +5,9 @@ import { SelectColumn } from "react-data-grid"
 export default class SerDes {
     constructor() {}
 
+    static serializeRowProperty() {}
+    static deserializeRow() {}
+
     /** not used atm */
     static serializeColumn(column: Column.Deserialized): Column.Serialized {
         // I copied this piece of code from the old codebase in order to be implemented, it needs a refactoring

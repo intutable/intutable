@@ -8,16 +8,13 @@ import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { TempusCell } from "../abstract/TempusCell"
-import { Date as DateSerialized } from "@shared/api/cells/components"
 
-export class Date extends TempusCell {
+export class DateCell extends TempusCell {
     readonly brand = "date"
     label = "Date"
 
-    export(value: unknown): string | void {
-        const parsed = this.parse(value as string)
-        if (parsed == null) return
-        return parsed.toLocaleDateString("de-DE", {
+    export(value: Date): string {
+        return value.toLocaleDateString("de-DE", {
             month: "2-digit",
             day: "2-digit",
             year: "numeric",
@@ -34,13 +31,13 @@ export class Date extends TempusCell {
         } = this.destruct<Date | null>(props)
         const [content, setContent] = useState(_content)
 
-        const handleChange = (date: Date | null) => {
+        const handleChange = (date: DateCell | null) => {
             if (date === null) return erase()
             if (this.isValid(date) === false) return
 
             props.onRowChange({
                 ...row,
-                [key]: this.stringify(date),
+                [key]: date,
             })
         }
 
@@ -48,7 +45,7 @@ export class Date extends TempusCell {
         const erase = () => {
             props.onRowChange({
                 ...row,
-                [key]: "",
+                [key]: null,
             })
         }
 

@@ -49,31 +49,23 @@ export class MultiSelect extends Cell {
         return Array.isArray(value) && value.every(v => typeof v === "string")
     }
 
-    parse(value: unknown): string[] {
-        if (value == null) return []
-        if (Array.isArray(value)) return value
-
-        if (typeof value === "string") {
-            try {
-                const jsonparsed = JSON.parse(value ?? "[]")
-                if (Array.isArray(jsonparsed)) return jsonparsed
-            } catch (e) {
-                return [value]
-            }
-        }
-
-        return []
-    }
-    stringify(value: string[]): string {
+    serialize(value: string[]): string {
         return JSON.stringify(value)
     }
-    export(value: unknown): string | void {
-        if (value == null || value === "") return
+    deserialize(value: unknown): string[] {
+        if (Array.isArray(value)) return value
+        if (typeof value === "string") {
+            try {
+                const jsonparsed = JSON.parse(value)
+                if (Array.isArray(jsonparsed)) return jsonparsed
+                // eslint-disable-next-line no-empty
+            } catch (_) {}
+        }
+        throw new Error(`Could not deserialize value: ${value}`)
+    }
 
-        const arr = this.parse(value as string)
-        if (Array.isArray(arr)) return arr.join(";")
-
-        return
+    export(value: string[]): string {
+        return value.join(";")
     }
     unexport(value: string): string[] {
         return value.split(";")
@@ -106,14 +98,14 @@ export class MultiSelect extends Cell {
         const addChip = (value: string) => {
             props.onRowChange({
                 ...row,
-                [key]: this.stringify([...content, value]),
+                [key]: [...content, value],
             })
             closeModal()
         }
         const removeChip = (value: string) => {
             props.onRowChange({
                 ...row,
-                [key]: this.stringify(content.filter(v => v !== value)),
+                [key]: content.filter(v => v !== value),
             })
             closeModal()
         }
@@ -123,7 +115,7 @@ export class MultiSelect extends Cell {
             if (data == null) return null
 
             const values = data.rows
-                .map(row => this.parse(row[_column.key]))
+                // .map(row => this.parse(row[_column.key])) // deserialize instead
                 .flat()
                 .filter(value => typeof value === "string" && value.length > 0)
                 .filter(value => content.includes(value) === false)

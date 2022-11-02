@@ -2,7 +2,6 @@ import React from "react"
 import { EditorProps } from "react-data-grid"
 import { Row } from "types"
 import { NumericCell } from "../abstract/NumericCell"
-import { Num as NumSerialized } from "@shared/api/cells/components"
 
 export class Num extends NumericCell {
     readonly brand = "number"

@@ -30,20 +30,19 @@ export type CastOperationEmpty = {
     orEmpty: <T extends ValueOf<CastOperation>>(
         castFn: T,
         value: unknown
-    ) => ReturnType<T>
+    ) => null | undefined | ReturnType<T>
 }
 
 export class Cast implements CastOperation, CastOperationEmpty {
-    isEmpty(value: unknown): boolean {
-        // in case of `undefined` or an empty string we replace it with `null`
-        return value === null || typeof value === "undefined" || value === ""
+    isEmpty(value: unknown): value is null | undefined {
+        return value === null || typeof value === "undefined"
     }
 
     orEmpty<T extends ValueOf<CastOperation>>(
         castFn: T,
         value: unknown
-    ): null | ReturnType<T> {
-        return this.isEmpty(value) ? null : (castFn(value) as ReturnType<T>)
+    ): null | undefined | ReturnType<T> {
+        return this.isEmpty(value) ? value : (castFn(value) as ReturnType<T>)
     }
 
     toBoolean(value: unknown): boolean {

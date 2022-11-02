@@ -3,8 +3,7 @@ import { Box, IconButton, Tooltip } from "@mui/material"
 import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
-import { Hyperlink as HyperlinkSerialized } from "@shared/api/cells/components"
+import { Cell } from "../abstract/Cell"
 
 export class Hyperlink extends Cell {
     readonly brand = "hyperlink"

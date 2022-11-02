@@ -3,8 +3,7 @@ import { Box, IconButton, Tooltip } from "@mui/material"
 import { useEffect, useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
-import { EMail as EMailSerialized } from "@shared/api/cells/components"
+import { Cell } from "../abstract/Cell"
 
 export class EMail extends Cell {
     readonly brand = "email"

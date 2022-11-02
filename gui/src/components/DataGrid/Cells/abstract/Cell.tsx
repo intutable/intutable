@@ -7,7 +7,9 @@ import { styled } from "@mui/material/styles"
 import React, { useRef, useEffect } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
+import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
+import { ValueOf } from "utils/ValueOf"
 
 class CellError extends Error {
     constructor(message: string) {
@@ -36,12 +38,12 @@ const StyledInputElement = styled("input")`
 `
 
 // TODO: make this a static method, this increases performance
-export interface Validatable {
+export type Validatable = {
     /** validates parsed values – doesn't parse values for you */
     isValid: <T = unknown>(value: T) => boolean
 }
 // TODO: make this a static method, this increases performance
-export interface Exportable {
+export type Exportable = {
     /** exports parsed values, e.g. percentage '5' exports to '5%' */
     export: <T = unknown>(value: T) => unknown
     /**
@@ -55,13 +57,20 @@ export interface Exportable {
 
 // TODO: make this a static method, this increases performance
 // TODO: replace 'any'
-export interface Serializable {
+export type Serializable = {
     /** Note: Ensure that if a serialized value gets serialized again, this should work (idempotent). */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     serialize: (value: any) => any
     /** Note: Ensure that if a deserialized value gets deserialized again, this should work (idempotent). */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     deserialize: (value: any) => any
+}
+
+export type SerializableCatchEmpty = {
+    catchEmpty: <T extends ValueOf<Serializable>>(
+        fn: T,
+        value: unknown
+    ) => null | undefined | ReturnType<T>
 }
 
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
@@ -71,7 +80,9 @@ type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
  * Extends the functionality of {@link SerializedCell} with React-specific
  * functionality that governs how to show the cell in the GUI.
  */
-export abstract class Cell implements Validatable, Exportable, Serializable {
+export abstract class Cell
+    implements Validatable, Exportable, Serializable, SerializableCatchEmpty
+{
     public abstract readonly brand: string
     public abstract label: string
 
@@ -86,6 +97,20 @@ export abstract class Cell implements Validatable, Exportable, Serializable {
             value === "" ||
             value == null
         )
+    }
+
+    public catchEmpty<T extends ValueOf<Serializable>>(
+        fn: T,
+        value: unknown
+    ): null | undefined | ReturnType<T> {
+        if (value === null || typeof value === "undefined") return value
+        return fn(value) as ReturnType<T>
+    }
+    public serialize(value: unknown): unknown {
+        return value
+    }
+    public deserialize(value: unknown): unknown {
+        return value
     }
 
     public export(value: unknown): string | void {

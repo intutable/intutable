@@ -11,7 +11,7 @@ import { Cells } from "./Cells"
 import { Text } from "./components/Text"
 import { Num } from "./components/Number"
 import { Time } from "./components/Time"
-import { Date } from "./components/Date"
+import { DateCell } from "./components/Date"
 import { Bool } from "./components/Boolean"
 import { Percentage } from "./components/Percentage"
 import { Currency } from "./components/Currency"
@@ -24,7 +24,7 @@ const cells = new Cells(
     new Text(),
     new Num(),
     new Time(),
-    new Date(),
+    new DateCell(),
     new Bool(),
     new Percentage(),
     new Currency(),

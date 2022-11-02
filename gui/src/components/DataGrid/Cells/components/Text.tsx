@@ -1,5 +1,4 @@
-import Cell from "../abstract/Cell"
-import { Text as TextSerialized } from "@shared/api/cells/components"
+import { Cell } from "../abstract/Cell"
 
 export class Text extends Cell {
     readonly brand = "string"

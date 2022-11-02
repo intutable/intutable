@@ -8,16 +8,13 @@ import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { TempusCell } from "../abstract/TempusCell"
-import { Time as TimeSerialized } from "@shared/api/cells/components"
 
 export class Time extends TempusCell {
     readonly brand = "time"
     label = "Time"
 
-    export(value: unknown): string | void {
-        const parsed = this.parse(value as string)
-        if (parsed == null) return
-        return parsed.toLocaleTimeString("de-DE", {
+    export(value: Date): string {
+        return value.toLocaleTimeString("de-DE", {
             hour: "2-digit",
             minute: "2-digit",
         })
@@ -39,7 +36,7 @@ export class Time extends TempusCell {
 
             props.onRowChange({
                 ...row,
-                [key]: this.stringify(date),
+                [key]: date,
             })
         }
 
