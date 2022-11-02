@@ -83,56 +83,37 @@ export class Parser {
             const value = column[key] as unknown
             switch (key) {
                 case "id":
-                    throw new Error("Not allowed to change id")
+                    throw new Error("Not allowed to change 'id'!")
                 case "index":
-                    throw new Error("Property 'index' is an internal column")
+                    throw new Error("Property 'index' is an internal column!")
+                case "key":
+                    throw new Error("Not allowed to change 'key'!")
+
                 case "name":
                     dbcolumn["displayName"] = value as string
                     break
-                case "key":
-                    throw new Error("not allowed to change key") // TODO: or am I?
+
                 case "width":
-                    dbcolumn[key] = this.cast.orEmpty(this.cast.toString, value)
-                    break
                 case "minWidth":
-                    dbcolumn[key] = this.cast.orEmpty(this.cast.toString, value)
-                    break
                 case "maxWidth":
                     dbcolumn[key] = this.cast.orEmpty(this.cast.toString, value)
                     break
+
                 case "editable":
-                    dbcolumn[key] = dbcolumn[key] = this.cast.orEmpty(
-                        this.cast.toDatabaseBoolean,
-                        value
-                    )
-                    break
                 case "frozen":
-                    dbcolumn[key] = dbcolumn[key] = this.cast.orEmpty(
-                        this.cast.toDatabaseBoolean,
-                        value
-                    )
-                    break
                 case "resizable":
-                    dbcolumn[key] = dbcolumn[key] = this.cast.orEmpty(
-                        this.cast.toDatabaseBoolean,
-                        value
-                    )
-                    break
                 case "sortable":
-                    dbcolumn[key] = dbcolumn[key] = this.cast.orEmpty(
-                        this.cast.toDatabaseBoolean,
-                        value
-                    )
-                    break
                 case "sortDescendingFirst":
                     dbcolumn[key] = this.cast.orEmpty(
                         this.cast.toDatabaseBoolean,
                         value
                     )
                     break
+
                 case "isUserPrimaryKey":
                     dbcolumn[key] = this.cast.toDatabaseBoolean(value)
                     break
+
                 default:
                     dbcolumn[key] = value as string
                     break
