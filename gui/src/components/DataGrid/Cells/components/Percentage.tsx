@@ -63,7 +63,7 @@ export class Percentage extends NumericCell {
         const { row, key, content } = this.destruct<number | null>(props)
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const value = this.parse(e.target.value) // value gets back as a string and needs to be parsed
+            const value = Number.parseInt(e.target.value) // value gets back as a string and needs to be parsed
             if (this.isValid(value) || value == null)
                 // if it was an empty string, it became 'null'
                 props.onRowChange({

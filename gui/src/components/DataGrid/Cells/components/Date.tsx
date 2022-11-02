@@ -31,7 +31,7 @@ export class DateCell extends TempusCell {
         } = this.destruct<Date | null>(props)
         const [content, setContent] = useState(_content)
 
-        const handleChange = (date: DateCell | null) => {
+        const handleChange = (date: Date | null) => {
             if (date === null) return erase()
             if (this.isValid(date) === false) return
 

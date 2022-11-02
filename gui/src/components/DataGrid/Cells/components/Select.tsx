@@ -17,8 +17,7 @@ import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
-import Cell from "../abstract/Cell"
-import { Select as SelectSerialized } from "@shared/api/cells/components"
+import { Cell } from "../abstract/Cell"
 
 const ChipItem: React.FC<{
     label: string

@@ -33,8 +33,7 @@ import {
     standardColumnAttributes,
     idColumnAttributes,
     indexColumnAttributes,
-} from "@shared/attributes"
-
+} from "shared/dist/attributes/defaults"
 
 /**
  * Create a new table with the specified name.

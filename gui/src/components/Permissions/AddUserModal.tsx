@@ -12,7 +12,7 @@ import {
     MenuItem,
     InputLabel,
 } from "@mui/material"
-import { isValidEMailAddress } from "@shared/utils/isValidEMailAddress"
+import { isValidEMailAddress } from "utils/isValidEMailAddress"
 import { User } from "@backend/permissions"
 import { useRoles } from "hooks/useRoles"
 

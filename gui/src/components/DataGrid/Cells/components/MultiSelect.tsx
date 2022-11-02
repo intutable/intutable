@@ -17,8 +17,7 @@ import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
-import Cell from "../abstract/Cell"
-import { MultiSelect as MultiSelectSerialized } from "@shared/api/cells/components"
+import { Cell } from "../abstract/Cell"
 
 const ChipItem: React.FC<{
     label: string
@@ -111,17 +110,17 @@ export class MultiSelect extends Cell {
         }
 
         const { data } = useView()
-        const list: string[] | null = useMemo(() => {
-            if (data == null) return null
+        const list: string[] = useMemo(() => {
+            return []
 
-            const values = data.rows
-                // .map(row => this.parse(row[_column.key])) // deserialize instead
-                .flat()
-                .filter(value => typeof value === "string" && value.length > 0)
-                .filter(value => content.includes(value) === false)
+            // const values = data.rows
+            //     // .map(row => this.parse(row[_column.key])) // deserialize instead
+            //     .flat()
+            //     .filter(value => typeof value === "string" && value.length > 0)
+            // .filter(value => content.includes(value) === false)
 
-            return [...new Set(values)]
-        }, [_column.key, content, data])
+            // return [...new Set(values)]
+        }, [])
 
         return (
             <>

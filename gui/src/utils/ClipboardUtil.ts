@@ -107,11 +107,13 @@ export class ClipboardUtil implements ClipboardEvents {
             // })
 
             // passes source content the target validator?
-            const parsed = sourceUtil.parse(sourceRawContent)
-            if (targetUtil.isValid(parsed) === false) {
+            // const parsed = sourceUtil.parse(sourceRawContent)
+            if (targetUtil.isValid(sourceRawContent) === false) {
                 callback?.("1 Zelle konnte nicht eingefügt werden.")
                 return targetRow
             }
+
+            throw new Error("update this code")
 
             callback?.()
             return {
