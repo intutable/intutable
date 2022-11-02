@@ -159,6 +159,6 @@ export class ColumnUtility {
     static isAppColumn(
         column: Column.Serialized | Column.Deserialized
     ): boolean {
-        return column.key === "select-row" || column._kind === "index" // TODO: last one will be obsolete soon
+        return column.key === "select-row" || column.kind === "index" // TODO: last one will be obsolete soon
     }
 }

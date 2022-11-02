@@ -13,7 +13,8 @@ import {
     selectable,
     asTable,
 } from "@intutable/lazy-views/"
-import { standardColumnAttributes } from "shared/dist/attributes"
+import { standardColumnAttributes } from "shared/dist/attributes/defaults"
+
 import {
     StandardColumnSpecifier,
     CustomColumnAttributes,
