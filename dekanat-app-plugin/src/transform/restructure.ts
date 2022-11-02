@@ -29,6 +29,4 @@ export class Restructure {
             ...properties,
         }
     }
-
-    public revert() {}
 }
