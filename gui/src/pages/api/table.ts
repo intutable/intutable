@@ -34,7 +34,7 @@ import {
     idColumnAttributes,
     indexColumnAttributes,
 } from "@shared/attributes"
-import { DBParser } from "@backend/api/parse"
+import { Parser } from "@backend/api/Parser"
 
 /**
  * Create a new table with the specified name.
@@ -107,7 +107,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
             }
             return {
                 parentColumnId: c.id,
-                attributes: DBParser.partialDeparseColumn(attributes),
+                attributes: Parser.deparseColumn(attributes),
             }
         })
 

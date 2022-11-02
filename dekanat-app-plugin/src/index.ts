@@ -20,7 +20,7 @@ import {
     DB,
     Filter,
 } from "shared/dist/types"
-import { DBParser } from "./transform/parse"
+import { Parser, ParserClass } from "./transform/Parser"
 import sanitizeName from "shared/dist/utils/sanitizeName"
 import { defaultViewName } from "shared/dist/defaults"
 
@@ -93,7 +93,7 @@ async function createStandardColumn(
         addToViews
     )
 
-    const parsedColumn = DBParser.parseColumnInfo(tableViewColumn)
+    const parsedColumn = Parser.parseColumn(tableViewColumn)
     return parsedColumn
 }
 
@@ -115,7 +115,7 @@ async function addColumnToTable(
 ): Promise<lvt.ColumnInfo> {
     const columnSpec = {
         ...column,
-        attributes: DBParser.partialDeparseColumn(column.attributes),
+        attributes: Parser.deparseColumn(column.attributes),
     }
     const tableColumn = (await core.events.request(
         lvr.addColumnToView(sessionID, tableId, columnSpec, joinId)
@@ -339,7 +339,7 @@ async function changeTableColumnAttributes(
     update: CustomColumnAttributes,
     changeInViews = true
 ): Promise<lvt.ColumnInfo[]> {
-    const attributes = DBParser.partialDeparseColumn(update)
+    const attributes = Parser.deparseColumn(update)
     await core.events.request(
         lvr.changeColumnAttributes(sessionID, columnId, attributes)
     )
@@ -393,7 +393,7 @@ async function getTableData_({
 async function getTableData(sessionID: string, tableId: types.TableId) {
     return core.events
         .request(lvr.getViewData(sessionID, tableId))
-        .then(DBParser.parseTable)
+        .then(Parser.parseTable)
 }
 
 async function getViewData_({
@@ -405,7 +405,7 @@ async function getViewData_({
 async function getViewData(sessionID: string, viewId: types.ViewId) {
     return core.events
         .request(lvr.getViewData(sessionID, viewId))
-        .then(DBParser.parseView)
+        .then(Parser.parseView)
 }
 
 async function changeViewFilters_({
@@ -427,7 +427,7 @@ async function changeViewFilters(
         return error("changeViewFilters", "cannot change default view")
     const newRowOptions: lvt.RowOptions = {
         ...options.rowOptions,
-        conditions: newFilters.map(DBParser.deparseFilter),
+        conditions: newFilters.map(ParserClass.deparseFilter),
     }
     await core.events.request(
         lvr.changeRowOptions(sessionID, viewId, newRowOptions)
@@ -435,5 +435,5 @@ async function changeViewFilters(
     options = (await core.events.request(
         lvr.getViewOptions(sessionID, viewId)
     )) as lvt.ViewOptions
-    return options.rowOptions.conditions.map(DBParser.parseFilter)
+    return options.rowOptions.conditions.map(ParserClass.deparseFilter)
 }

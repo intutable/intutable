@@ -17,7 +17,7 @@ import { types as v_types } from "@intutable/lazy-views"
 import { tableId, viewId } from "@intutable/lazy-views"
 
 import { emptyRowOptions, defaultRowOptions } from "shared/dist/defaults"
-import { DBParser } from "dekanat-app-plugin/dist/api/parse"
+import { Parser } from "dekanat-app-plugin/dist/api/Parser"
 
 import {
     TableSpec,
@@ -74,7 +74,7 @@ async function createTable(
         )!
         return {
             parentColumnId: baseColumn.id,
-            attributes: DBParser.partialDeparseColumn(c.attributes),
+            attributes: Parser.deparseColumn(c.attributes),
         }
     })
     const tableView = (await core.events.request(
@@ -135,7 +135,7 @@ async function addJoin(
         const parentColumn = info.columns.find(c => c.name === l.name)!
         return {
             parentColumnId: parentColumn.id,
-            attributes: DBParser.partialDeparseColumn(l.attributes),
+            attributes: Parser.deparseColumn(l.attributes),
         }
     })
     await core.events.request(

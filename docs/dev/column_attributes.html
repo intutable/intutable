@@ -17,7 +17,7 @@
 </li>
 <li>If the type should only exist on serialized columns, add it to the definition of <code>SerializedColumn</code> in <code>shared/src/types/tables/serialized</code>.<br />
 </li>
-<li>To convert between DB and serialized columns, go to <code>dekanat-app-plugin/src/api/parse/DBParser.ts</code> and change the methods <code>parseColumnInfo</code> and <code>partialDeparseColumn</code> appropriately<br />
+<li>To convert between DB and serialized columns, go to <code>dekanat-app-plugin/src/api/Parser.ts</code> and change the methods <code>parseColumnInfo</code> and <code>partialDeparseColumn</code> appropriately<br />
 </li>
 <li>You may also want to change <code>serializeColumn</code> or <code>deserializeColumn</code> in <code>gui/src/utils/SerDes.ts</code> if you want some conversion or other special treatment (default behavior is to just copy the prop)</li>
 </ul>

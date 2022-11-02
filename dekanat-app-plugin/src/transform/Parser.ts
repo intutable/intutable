@@ -36,7 +36,7 @@ import { Restructure } from "./restructure"
  * since everthing is saved as a string.
  *
  */
-export class Parser {
+export class ParserClass {
     private restructure = new Restructure()
     private internalColumnUtil = new InternalColumnUtil()
     private cast = new Cast()
@@ -133,7 +133,7 @@ export class Parser {
 
         return {
             metadata: { ...view },
-            columns: castedColumns.sort(Parser.sortByIndex),
+            columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
         }
     }
@@ -148,10 +148,10 @@ export class Parser {
         return {
             descriptor: view.descriptor,
             metaColumns: view.columns,
-            filters: view.rowOptions.conditions.map(Parser.parseFilter),
+            filters: view.rowOptions.conditions.map(ParserClass.parseFilter),
             sortColumns: view.rowOptions.sortColumns,
             groupColumns: view.rowOptions.groupColumns,
-            columns: castedColumns.sort(Parser.sortByIndex),
+            columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
         }
     }
@@ -171,3 +171,5 @@ export class Parser {
         return a.index > b.index ? 1 : -1
     }
 }
+
+export const Parser = new ParserClass()
