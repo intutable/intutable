@@ -116,11 +116,6 @@ export type MetaColumnProps = {
      */
     index: number
     /**
-     * Flag for columns that are managed by the app, not the user, e.g.
-     * the hidden index column used as a primary key.
-     */
-    isInternal: boolean
-    /**
      * In some cases, we may want to show the user a preview of a row,
      * which needs a "main" or "primary" column. We also want to encourage
      * the user to ensure that each row has a unique identifier of sorts.

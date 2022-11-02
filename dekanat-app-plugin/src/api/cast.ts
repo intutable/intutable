@@ -2,29 +2,48 @@ import { DB } from "shared/src/types"
 import type { Row, SerializedColumn } from "../types/tables"
 import { isValid as isValidDate } from "date-fns"
 
-export type CastOperations = {
-    /**
-     * `null` is interpreted as 'not set'
-     * whereas other values like an empty string are
-     * interpreted by the frontend as a value set by the user.
-     * `undefined` and an empty string will be converted to `null`.
-     */
-    isEmpty: (value: unknown) => false | null
+type ValueOf<T> = T[keyof T]
+
+export type CastOperation = {
     toBoolean: (value: unknown) => boolean
     toDatabaseBoolean: (value: unknown) => DB.Boolean
+    toNumber: (value: unknown) => number
     toArray: <T = unknown>(value: unknown) => T[]
     toDatabaseArray: (value: unknown) => string
     toDate: (value: unknown) => Date
     toDatabaseDate: (value: unknown) => string
 }
 
-export class Cast implements CastOperations {
-    isEmpty(value: unknown): false | null {
-        // in case of `undefined` or an empty string we replace it with `null`
-        if (value === null || typeof value === "undefined" || value === "")
-            return null
+export type CastOperationEmpty = {
+    /**
+     * `null` is interpreted as 'not set'
+     * whereas other values like an empty string are
+     * interpreted by the frontend as a value set by the user.
+     * `undefined` and an empty string will be converted to `null`.
+     */
+    isEmpty: (value: unknown) => boolean
+    /**
+     * If you want to parse, but null/undefined is allowed,
+     * this wrapper ensures that null/undefined is returned
+     * in case.
+     */
+    orEmpty: <T extends ValueOf<CastOperation>>(
+        castFn: T,
+        value: unknown
+    ) => ReturnType<T>
+}
 
-        return false
+export class Cast implements CastOperation, CastOperationEmpty {
+    isEmpty(value: unknown): boolean {
+        // in case of `undefined` or an empty string we replace it with `null`
+        return value === null || typeof value === "undefined" || value === ""
+    }
+
+    orEmpty<T extends ValueOf<CastOperation>>(
+        castFn: T,
+        value: unknown
+    ): null | ReturnType<T> {
+        return this.isEmpty(value) ? null : (castFn(value) as ReturnType<T>)
     }
 
     toBoolean(value: unknown): boolean {
@@ -42,6 +61,17 @@ export class Cast implements CastOperations {
                 `Could not cast value to (database) boolean: ${value}`
             )
         }
+    }
+
+    toNumber(value: unknown): number {
+        if (typeof value === "number") return value
+
+        if (Cast.isNumeric(value)) {
+            if (Cast.isInteger(value)) return Number.parseInt(value as string)
+            if (Cast.isFloat(value)) return Number.parseFloat(value as string)
+        }
+
+        throw new RangeError(`Could not cast value to number: ${value}`)
     }
 
     toArray<T = unknown>(value: unknown): T[] {

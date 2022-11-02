@@ -1,7 +1,7 @@
-import type { Condition } from "@intutable/lazy-views"
+import type { ColumnInfo, Condition } from "@intutable/lazy-views"
 import { DB, SerializedColumn } from "shared/src/types"
 import { Filter } from "../types/filter"
-import { Cast, CastOperations } from "./Cast"
+import { Cast, CastOperation } from "./Cast"
 import { InternalColumnUtil } from "./InternalColumnUtil"
 import * as FilterParser from "./parse/filter"
 import { Restructure } from "./Restructure"
@@ -30,12 +30,51 @@ import { Restructure } from "./Restructure"
 export class Parser {
     private restructure = new Restructure()
     private internalColumnUtil = new InternalColumnUtil()
-    private cast: CastOperations = new Cast()
+    private cast = new Cast()
 
-    constructor() {}
+    public parseColumn(column: ColumnInfo) {
+        const restructured = this.restructure.column(column)
+        const {
+            isInternal, // omit
+            ...serializedProps
+        } = restructured
+        const casted: SerializedColumn = {
+            ...serializedProps,
+            isUserPrimaryKey: this.cast.toBoolean(
+                restructured.isUserPrimaryKey
+            ),
+            minWidth: this.cast.orEmpty(
+                this.cast.toNumber,
+                restructured.minWidth
+            ),
+            maxWidth: this.cast.orEmpty(
+                this.cast.toNumber,
+                restructured.maxWidth
+            ),
+            editable: this.cast.orEmpty(
+                this.cast.toBoolean,
+                restructured.editable
+            ),
+            frozen: this.cast.orEmpty(this.cast.toBoolean, restructured.frozen),
+            resizable: this.cast.orEmpty(
+                this.cast.toBoolean,
+                restructured.resizable
+            ),
+            sortable: this.cast.orEmpty(
+                this.cast.toBoolean,
+                restructured.sortable
+            ),
+            sortDescendingFirst: this.cast.orEmpty(
+                this.cast.toBoolean,
+                restructured.sortDescendingFirst
+            ),
+        }
 
-    public parseColumnInfo() {}
-    public deparseColumn(column: Partial<SerializedColumn>) {}
+        return casted
+    }
+    public deparseColumn(
+        column: Partial<SerializedColumn>
+    ): Partial<DB.Column> {}
     public parseView() {}
     public parseTable() {}
 

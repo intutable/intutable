@@ -57,11 +57,11 @@ export namespace DB {
                 | "isUserPrimaryKey" // included in `MetaColumnProps`
                 | "isInternal" // included in `MetaColumnProps`
             > & {
+                isInternal: DB.Boolean
                 key: string // information from `ColumnInfo`
                 name: string // rename displayName
                 // from `MetaColumnProps`
                 isUserPrimaryKey: DB.Boolean
-                isInternal: DB.Boolean
             }
         /** Row with its index */
         export type Row = _Row
