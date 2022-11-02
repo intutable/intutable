@@ -14,7 +14,7 @@ type Column = Column.Deserialized
  *
  * Provides methods for manipulating rows of a table.
  *
- * It uses the {@link APIContextProvider}
+ * It uses the APIContextProvider
  * to determine the current selected table.
  *
  * @param {Partial<PublicConfiguration<TableData, any, BareFetcher<TableData>>>} [options.swrOptions] Options for the underlying {@link useSWR} hook.

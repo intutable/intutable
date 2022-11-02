@@ -41,6 +41,7 @@ import {
 } from "context/SelectedRowsContext"
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { ClipboardUtil } from "utils/ClipboardUtil"
+import cells from "@datagrid/Cells"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -99,11 +100,10 @@ const TablePage: React.FC = () => {
         const col = changeData.column
         const changedValue = changedRow[col.key]
 
-        // BUG: in react-data-grid RowsChangeData.column is sometimes undefined here, this is a known bug
-        // hopefully (at least it seems like it did fix it) the last beta version (7.0.0-beta.14) fixed this bug
-        // (see 9753a70240afdaa1b6c7cca0c4d555abee77a01f)
+        const cellUtil = cells.getCell(col.cellType)
+        const serializedValue = cellUtil.serialize(changedValue)
 
-        await updateRow(col, getRowId(changedRow), changedValue)
+        await updateRow(col, getRowId(changedRow), serializedValue)
     }
 
     const tableSize = {
