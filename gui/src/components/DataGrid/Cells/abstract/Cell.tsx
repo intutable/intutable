@@ -10,6 +10,12 @@ import { Column, Row } from "types"
 import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
 import { ValueOf } from "utils/ValueOf"
+import {
+    Serializable,
+    SerializableCatchEmpty,
+    Exportable,
+    Validatable,
+} from "./protocols"
 
 class CellError extends Error {
     constructor(message: string) {
@@ -37,42 +43,6 @@ const StyledInputElement = styled("input")`
     }
 `
 
-// TODO: make this a static method, this increases performance
-export type Validatable = {
-    /** validates parsed values – doesn't parse values for you */
-    isValid: <T = unknown>(value: T) => boolean
-}
-// TODO: make this a static method, this increases performance
-export type Exportable = {
-    /** exports parsed values, e.g. percentage '5' exports to '5%' */
-    export: <T = unknown>(value: T) => unknown
-    /**
-     * Tries to revert the exported value to the original value.
-     *
-     * @throws Should throw an error if the value is invalid.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    unexport: (value: string) => any
-}
-
-// TODO: make this a static method, this increases performance
-// TODO: replace 'any'
-export type Serializable = {
-    /** Note: Ensure that if a serialized value gets serialized again, this should work (idempotent). */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    serialize: (value: any) => any
-    /** Note: Ensure that if a deserialized value gets deserialized again, this should work (idempotent). */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deserialize: (value: any) => any
-}
-
-export type SerializableCatchEmpty = {
-    catchEmpty: <T extends ValueOf<Serializable>>(
-        fn: T,
-        value: unknown
-    ) => null | undefined | ReturnType<T>
-}
-
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
 /**
@@ -81,6 +51,7 @@ type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
  * functionality that governs how to show the cell in the GUI.
  */
 export abstract class Cell
+    // TODO. make these static
     implements Validatable, Exportable, Serializable, SerializableCatchEmpty
 {
     public abstract readonly brand: string
