@@ -1,15 +1,15 @@
 import { ValueOf } from "utils/ValueOf"
 
 export type Validatable = {
-    /** validates parsed values – doesn't parse values for you */
+    /** Tells if the cell can interpret the value */
     isValid: <T = unknown>(value: T) => boolean
 }
 
 export type Exportable = {
-    /** exports parsed values, e.g. percentage '5' exports to '5%' */
+    /** exports values, e.g. percentage '5' exports to '5%' */
     export: <T = unknown>(value: T) => unknown
     /**
-     * Tries to revert the exported value to the original value.
+     * Tries to revert the exported value to the raw value.
      *
      * @throws Should throw an error if the value is invalid.
      */
@@ -27,6 +27,9 @@ export type Serializable = {
 }
 
 export type SerializableCatchEmpty = {
+    /**
+     *
+     */
     catchEmpty: <T extends ValueOf<Serializable>>(
         fn: T,
         value: unknown
