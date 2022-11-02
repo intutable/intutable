@@ -8,12 +8,6 @@ import React, { useRef, useEffect } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { mergeNonNullish } from "utils/mergeNonNullish"
-import {
-    Validatable,
-    Parsable,
-    Exportable,
-    Cell as SerializedCell,
-} from "@shared/api/cells/abstract"
 
 class CellError extends Error {
     constructor(message: string) {
@@ -41,6 +35,35 @@ const StyledInputElement = styled("input")`
     }
 `
 
+// TODO: make this a static method, this increases performance
+export interface Validatable {
+    /** validates parsed values – doesn't parse values for you */
+    isValid: <T = unknown>(value: T) => boolean
+}
+// TODO: make this a static method, this increases performance
+export interface Exportable {
+    /** exports parsed values, e.g. percentage '5' exports to '5%' */
+    export: <T = unknown>(value: T) => unknown
+    /**
+     * Tries to revert the exported value to the original value.
+     *
+     * @throws Should throw an error if the value is invalid.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unexport: (value: string) => any
+}
+
+// TODO: make this a static method, this increases performance
+// TODO: replace 'any'
+export interface Serializable {
+    /** Note: Ensure that if a serialized value gets serialized again, this should work (idempotent). */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    serialize: (value: any) => any
+    /** Note: Ensure that if a deserialized value gets deserialized again, this should work (idempotent). */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    deserialize: (value: any) => any
+}
+
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
 /**
@@ -48,34 +71,32 @@ type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
  * Extends the functionality of {@link SerializedCell} with React-specific
  * functionality that governs how to show the cell in the GUI.
  */
-export default abstract class Cell
-    implements Validatable, Exportable, Parsable
-{
-    protected abstract serializedCellDelegate: SerializedCell
-
-    public getBrand(): string {
-        return this.serializedCellDelegate.getBrand()
-    }
-    public getLabel(): string {
-        return this.serializedCellDelegate.getLabel()
-    }
+export abstract class Cell implements Validatable, Exportable, Serializable {
+    public abstract readonly brand: string
+    public abstract label: string
 
     public isValid(value: unknown): boolean {
-        return this.serializedCellDelegate.isValid(value)
-    }
-    public parse(value: unknown): unknown {
-        return this.serializedCellDelegate.parse(value)
-    }
-    public stringify(value: unknown): unknown {
-        return this.serializedCellDelegate.stringify(value)
+        // default validation for text based editors
+        // it should either be a non object like string, a stringified number or emtpy (null or empty str '')
+        return (
+            (isJSONObject(value) === false &&
+                isJSONArray(value) === false &&
+                typeof value === "string") ||
+            typeof value === "number" ||
+            value === "" ||
+            value == null
+        )
     }
 
     public export(value: unknown): string | void {
-        return this.serializedCellDelegate.export(value)
+        // default export method
+        // if (typeof value !== "string" || typeof value !== "number")
+        //     throw new Error(`Could not export value: ${value}`)
+        return value as string
     }
     // used in clipboard
     public unexport(value: string): unknown {
-        return this.serializedCellDelegate.unexport(value)
+        return value
     }
 
     /** override rdg's default properties for `editorOptions`. */
@@ -98,15 +119,14 @@ export default abstract class Cell
         )
     }
 
-    /** utilty that destructs the `props` argument for `editor` and `formatter`
-     * and automatically parses `content` by calling `parse` */
-    protected destruct<T = ReturnType<typeof this.parse>>(
+    /** utilty that destructs the `props` argument for `editor` and `formatter` */
+    protected destruct<T = unknown>(
         props: EditorProps<Row> | FormatterProps<Row>
     ) {
         const row = props.row
         const column = props.column
         const key = props.column.key as keyof Row
-        const content = this.parse(row[key]) as T
+        const content = row[key] as T
         return { row, column, key, content }
     }
 

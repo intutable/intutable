@@ -11,7 +11,17 @@ import { TempusCell } from "../abstract/TempusCell"
 import { Time as TimeSerialized } from "@shared/api/cells/components"
 
 export class Time extends TempusCell {
-    serializedCellDelegate = new TimeSerialized()
+    readonly brand = "time"
+    label = "Time"
+
+    export(value: unknown): string | void {
+        const parsed = this.parse(value as string)
+        if (parsed == null) return
+        return parsed.toLocaleTimeString("de-DE", {
+            hour: "2-digit",
+            minute: "2-digit",
+        })
+    }
 
     editor = () => null
 

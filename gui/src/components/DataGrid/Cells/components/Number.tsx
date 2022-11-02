@@ -5,7 +5,8 @@ import { NumericCell } from "../abstract/NumericCell"
 import { Num as NumSerialized } from "@shared/api/cells/components"
 
 export class Num extends NumericCell {
-    serializedCellDelegate = new NumSerialized()
+    readonly brand = "number"
+    label = "Number"
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)

@@ -7,7 +7,11 @@ import Cell from "../abstract/Cell"
 import { EMail as EMailSerialized } from "@shared/api/cells/components"
 
 export class EMail extends Cell {
-    serializedCellDelegate = new EMailSerialized()
+    readonly brand = "email"
+    label = "E-Mail"
+    isValid(value: unknown): boolean {
+        return value == null || value === "" || isValidEMailAddress(value)
+    }
 
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)

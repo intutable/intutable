@@ -4,6 +4,8 @@ import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 /**
  * "internal" columns means ones that are in every table, but that the user
  * does not see.
+ *
+ * @deprecated
  */
 export const isInternalColumn = (column: ColumnInfo): boolean =>
     column.attributes.isInternal === 1

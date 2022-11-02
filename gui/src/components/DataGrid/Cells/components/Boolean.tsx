@@ -6,7 +6,8 @@ import Cell from "../abstract/Cell"
 import { Bool as BoolSerialized } from "@shared/api/cells/components"
 
 export class Bool extends Cell {
-    serializedCellDelegate = new BoolSerialized()
+    readonly brand = "boolean"
+    label = "Boolean"
 
     editor = () => null
 

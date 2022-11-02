@@ -41,7 +41,8 @@ const ChipItem: React.FC<{
 }
 
 export class Select extends Cell {
-    serializedCellDelegate = new SelectSerialized()
+    readonly brand = "select"
+    label = "Auswahlliste"
 
     editor = () => null
 
