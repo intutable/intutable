@@ -21,7 +21,7 @@ import {
     DB,
     Filter,
 } from "shared/dist/types"
-import { Parser, ParserClass } from "./transform/Parser"
+import { parser, ParserClass } from "./transform/Parser"
 import sanitizeName from "shared/dist/utils/sanitizeName"
 import { defaultViewName } from "shared/dist/defaults"
 
@@ -81,7 +81,7 @@ async function createStandardColumn(
         )
     const allAttributes: Partial<DB.Column> = {
         ...standardColumnAttributes(column.name, column.cellType, columnIndex),
-        ...Parser.deparseColumn(column.attributes || {}),
+        ...parser.deparseColumn(column.attributes || {}),
     }
     const tableViewColumn = await addColumnToTable(
         sessionID,
@@ -94,7 +94,7 @@ async function createStandardColumn(
         addToViews
     )
 
-    const parsedColumn = Parser.parseColumn(tableViewColumn)
+    const parsedColumn = parser.parseColumn(tableViewColumn)
     return parsedColumn
 }
 
@@ -336,7 +336,7 @@ async function changeTableColumnAttributes(
     update: CustomColumnAttributes,
     changeInViews = true
 ): Promise<lvt.ColumnInfo[]> {
-    const attributes = Parser.deparseColumn(update)
+    const attributes = parser.deparseColumn(update)
     await core.events.request(
         lvr.changeColumnAttributes(sessionID, columnId, attributes)
     )
@@ -390,7 +390,7 @@ async function getTableData_({
 async function getTableData(sessionID: string, tableId: types.TableId) {
     return core.events
         .request(lvr.getViewData(sessionID, tableId))
-        .then(Parser.parseTable)
+        .then(table => parser.parseTable(table))
 }
 
 async function getViewData_({
@@ -402,7 +402,7 @@ async function getViewData_({
 async function getViewData(sessionID: string, viewId: types.ViewId) {
     return core.events
         .request(lvr.getViewData(sessionID, viewId))
-        .then(Parser.parseView)
+        .then(view => parser.parseView(view))
 }
 
 async function changeViewFilters_({

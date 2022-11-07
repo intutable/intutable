@@ -172,4 +172,4 @@ export class ParserClass {
     }
 }
 
-export const Parser = new ParserClass()
+export const parser = new ParserClass()
