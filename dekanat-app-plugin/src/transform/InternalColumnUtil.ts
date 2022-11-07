@@ -1,4 +1,5 @@
 import { DB } from "shared/src/types"
+import { inspect } from "util"
 
 /**
  * Internal columns are columns that should not be shipped to the frontend
@@ -29,7 +30,7 @@ export class InternalColumnUtil {
         rows: DB.Row[]
     }): { columns: DB.Restructured.Column[]; rows: DB.Restructured.Row[] } {
         const { columns, rows } = options
-        const processedRows = []
+        const processedRows = rows
         const nonInternalColumns = columns.map(column => {
             if (column.isInternal) {
                 // TODO: automate this process
@@ -46,7 +47,7 @@ export class InternalColumnUtil {
                     return
                 }
 
-                if (column.name === "_id") {
+                if (column.name === "ID") {
                     rows.forEach(row =>
                         processedRows.push({
                             _id: row[column.key] as DB.Restructured.Row["_id"],
@@ -57,19 +58,26 @@ export class InternalColumnUtil {
                 }
 
                 throw new Error(
-                    `SystemError: Not Implemented (This mechanism is not supported yet).`
+                    `SystemError: Not Implemented (This mechanism is not supported yet). Column ${inspect(
+                        column,
+                        { depth: null }
+                    )}`
                 )
             }
 
+            // only keep non internal columns
             return column
         })
 
-        if (rows.length !== processedRows.length)
+        if (rows.length !== processedRows.length) {
             throw new Error(
                 `InternalColumn: lost ${
                     rows.length - processedRows.length
-                } rows when processing internal columns.`
+                } rows when processing internal columns (rows: ${
+                    rows.length
+                }, processed: ${processedRows.length}).`
             )
+        }
 
         return {
             columns: nonInternalColumns,
@@ -77,3 +85,5 @@ export class InternalColumnUtil {
         }
     }
 }
+
+export const internalColumnUtil = new InternalColumnUtil()

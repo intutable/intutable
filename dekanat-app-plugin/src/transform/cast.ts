@@ -175,3 +175,5 @@ export class Cast implements CastOperation, CastOperationEmpty {
         return Cast.isInteger(str) || Cast.isFloat(str)
     }
 }
+
+export const cast = new Cast()

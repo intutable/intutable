@@ -15,7 +15,7 @@ export namespace DB {
      * in `/types/module-augmenation/lazy-views.ts`.
      */
     export type Column = {
-        isUserPrimaryKey: DB.Boolean
+        isUserPrimaryKey: DB.Boolean // BUG: isUserPrimaryKey is undefined, instead the old property name still exists
         kind: string
         cellType: string
         displayName: string

@@ -10,10 +10,11 @@ import {
     TableData,
 } from "shared/src/types"
 import { Filter } from "../types/filter"
-import { Cast } from "./cast"
-import { InternalColumnUtil } from "./InternalColumnUtil"
+import { cast } from "./cast"
+import { internalColumnUtil } from "./InternalColumnUtil"
 import * as FilterParser from "./filter"
-import { Restructure } from "./restructure"
+import { restructure } from "./restructure"
+import { inspect } from "util"
 
 /**
  * ### Parser
@@ -36,11 +37,8 @@ import { Restructure } from "./restructure"
  * since everthing is saved as a string.
  *
  */
-export class ParserClass {
-    private restructure = new Restructure()
-    private internalColumnUtil = new InternalColumnUtil()
-    private cast = new Cast()
 
+export class ParserClass {
     private castColumn(column: DB.Restructured.Column): SerializedColumn {
         const {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,19 +48,25 @@ export class ParserClass {
 
         const casted: SerializedColumn = {
             ...serializedProps,
-            isUserPrimaryKey: this.cast.toBoolean(column.isUserPrimaryKey),
-            width: this.cast.orEmpty(
-                this.cast.or.bind(this.cast.toNumber, this.cast.toString),
+            isUserPrimaryKey: cast.toBoolean(column.isUserPrimaryKey),
+            width: cast.orEmpty(
+                cast.or.bind(
+                    cast.toNumber.bind(cast),
+                    cast.toString.bind(cast)
+                ),
                 column.width
             ),
-            minWidth: this.cast.orEmpty(this.cast.toNumber, column.minWidth),
-            maxWidth: this.cast.orEmpty(this.cast.toNumber, column.maxWidth),
-            editable: this.cast.orEmpty(this.cast.toBoolean, column.editable),
-            frozen: this.cast.orEmpty(this.cast.toBoolean, column.frozen),
-            resizable: this.cast.orEmpty(this.cast.toBoolean, column.resizable),
-            sortable: this.cast.orEmpty(this.cast.toBoolean, column.sortable),
-            sortDescendingFirst: this.cast.orEmpty(
-                this.cast.toBoolean,
+            minWidth: cast.orEmpty(cast.toNumber.bind(cast), column.minWidth),
+            maxWidth: cast.orEmpty(cast.toNumber.bind(cast), column.maxWidth),
+            editable: cast.orEmpty(cast.toBoolean.bind(cast), column.editable),
+            frozen: cast.orEmpty(cast.toBoolean.bind(cast), column.frozen),
+            resizable: cast.orEmpty(
+                cast.toBoolean.bind(cast),
+                column.resizable
+            ),
+            sortable: cast.orEmpty(cast.toBoolean.bind(cast), column.sortable),
+            sortDescendingFirst: cast.orEmpty(
+                cast.toBoolean.bind(cast),
                 column.sortDescendingFirst
             ),
         }
@@ -70,7 +74,7 @@ export class ParserClass {
     }
 
     public parseColumn(column: ColumnInfo): SerializedColumn {
-        const restructured = this.restructure.column(column)
+        const restructured = restructure.column(column)
         return this.castColumn(restructured)
     }
     public deparseColumn(
@@ -96,7 +100,10 @@ export class ParserClass {
                 case "width":
                 case "minWidth":
                 case "maxWidth":
-                    dbcolumn[key] = this.cast.orEmpty(this.cast.toString, value)
+                    dbcolumn[key] = cast.orEmpty(
+                        cast.toString.bind(cast),
+                        value
+                    )
                     break
 
                 case "editable":
@@ -104,14 +111,14 @@ export class ParserClass {
                 case "resizable":
                 case "sortable":
                 case "sortDescendingFirst":
-                    dbcolumn[key] = this.cast.orEmpty(
-                        this.cast.toDatabaseBoolean,
+                    dbcolumn[key] = cast.orEmpty(
+                        cast.toDatabaseBoolean.bind(cast),
                         value
                     )
                     break
 
                 case "isUserPrimaryKey":
-                    dbcolumn[key] = this.cast.toDatabaseBoolean(value)
+                    dbcolumn[key] = cast.toDatabaseBoolean(value)
                     break
 
                 default:
@@ -123,9 +130,9 @@ export class ParserClass {
     }
 
     public parseTable(view: RawViewData): TableData {
-        const restructuredColumns = view.columns.map(this.restructure.column)
+        const restructuredColumns = view.columns.map(restructure.column)
         const { columns: internalProcessedColumns, rows: internalProcessRows } =
-            this.internalColumnUtil.processInternalColumns({
+            internalColumnUtil.processInternalColumns({
                 columns: restructuredColumns,
                 rows: view.rows,
             })
@@ -138,9 +145,9 @@ export class ParserClass {
         }
     }
     public parseView(view: RawViewData): SerializedViewData {
-        const restructuredColumns = view.columns.map(this.restructure.column)
+        const restructuredColumns = view.columns.map(restructure.column)
         const { columns: internalProcessedColumns, rows: internalProcessRows } =
-            this.internalColumnUtil.processInternalColumns({
+            internalColumnUtil.processInternalColumns({
                 columns: restructuredColumns,
                 rows: view.rows,
             })
