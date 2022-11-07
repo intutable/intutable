@@ -175,8 +175,3 @@ export class Cast implements CastOperation, CastOperationEmpty {
         return Cast.isInteger(str) || Cast.isFloat(str)
     }
 }
-
-export const castRow = (row: DB.Restructured.Row): Row => ({} as Row)
-
-export const castColumn = (column: DB.Restructured.Column): SerializedColumn =>
-    ({} as SerializedColumn)
