@@ -31,7 +31,17 @@ export class InternalColumnUtil {
     }): { columns: DB.Restructured.Column[]; rows: DB.Restructured.Row[] } {
         const { columns, rows } = options
         const processedRows = rows
-        const nonInternalColumns = columns.map(column => {
+        const nonInternalColumns = []
+        columns.forEach(column => {
+            console.log(
+                "column.isInternal: ",
+                Object.prototype.hasOwnProperty.call(column, "isInternal"),
+                "(exists),",
+                column.isInternal,
+                "(value)",
+                "name:",
+                column.name
+            )
             if (column.isInternal) {
                 // TODO: automate this process
 
@@ -66,7 +76,7 @@ export class InternalColumnUtil {
             }
 
             // only keep non internal columns
-            return column
+            nonInternalColumns.push(column)
         })
 
         if (rows.length !== processedRows.length) {
