@@ -111,6 +111,12 @@ const Modal: React.FC<ModalProps> = props => {
                     label={"Editierbar"}
                     value={column.editable ? "Ja" : "Nein"}
                 />
+                {/* 
+                • hidden
+                • frozen
+                • resizable
+                
+                */}
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => onClose()}>Schließen</Button>

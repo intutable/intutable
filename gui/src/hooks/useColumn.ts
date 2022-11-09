@@ -1,4 +1,4 @@
-import { ColumnInfo, ColumnSpecifier } from "@intutable/lazy-views"
+import { ColumnInfo } from "@intutable/lazy-views"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { useView, ViewHookOptions } from "hooks/useView"
@@ -6,9 +6,6 @@ import { Column } from "types"
 
 import { CustomColumnAttributes } from "@shared/types"
 import { ColumnFactory } from "utils/column utils/ColumnFactory"
-import { StandardColumnSpecifier } from "@shared/types"
-
-export type { StandardColumnSpecifier } from "@shared/types"
 
 type Column = Column.Deserialized
 
@@ -68,13 +65,12 @@ export const useColumn = (
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    const createColumn = async (
-        column: StandardColumnSpecifier
-    ): Promise<void> => {
+    const createColumn = async (column: ColumnFactory): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
+
         await fetcher({
             url: `/api/table/${tableId}/column`,
-            body: { column },
+            body: { ...column.properties, editable: true }, // BUG: Backend does not like this
         })
         await mutate()
     }

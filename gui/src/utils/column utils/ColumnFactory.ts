@@ -1,10 +1,8 @@
 import { Column } from "types"
 
-export type ColumnFactoryProps = Pick<
-    Column.Serialized,
-    "name" | "editable" | "frozen" | "resizable" | "sortable" | "kind"
->
+export type ColumnFactoryProps = Pick<Column.Serialized, "name" | "cellType">
 
 export class ColumnFactory {
-    constructor(properties: Column.Serialized) {}
+    constructor(public properties: ColumnFactoryProps) {}
+    // TODO: implement
 }

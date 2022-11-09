@@ -46,8 +46,6 @@ export class ParserClass {
             ...serializedProps
         } = column
 
-        console.log(column)
-
         const casted: SerializedColumn = {
             ...serializedProps,
             isUserPrimaryKey: cast.toBoolean(column.isUserPrimaryKey),

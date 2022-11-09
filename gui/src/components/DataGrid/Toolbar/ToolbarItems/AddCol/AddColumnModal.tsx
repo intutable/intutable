@@ -1,42 +1,53 @@
 import Cells from "@datagrid/Cells"
 import HelpIcon from "@mui/icons-material/Help"
 import {
-    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
     FormControl,
-    FormControlLabel,
     IconButton,
     InputLabel,
     MenuItem,
     Select,
     Stack,
-    Switch,
     TextField,
     Tooltip,
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
+import { useColumn } from "hooks/useColumn"
+import { useSnacki } from "hooks/useSnacki"
 import React, { useEffect, useState } from "react"
-import { StandardColumnSpecifier } from "hooks/useColumn"
+import {
+    ColumnFactory,
+    ColumnFactoryProps,
+} from "utils/column utils/ColumnFactory"
 
 type AddColumnModalProps = {
     open: boolean
     onClose: () => void
-    onHandleCreateColumn: (column: StandardColumnSpecifier) => Promise<void>
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const theme = useTheme()
 
-    const [moreOptionsActive, setMoreOptionsActive] = useState(false)
-    const [options, setOptions] = useState<StandardColumnSpecifier>({
+    const { snackError } = useSnacki()
+    const { createColumn: _createColumn } = useColumn()
+
+    const createColumn = async () => {
+        try {
+            const column = new ColumnFactory(options)
+            await _createColumn(column)
+        } catch (error) {
+            snackError("Die Spalte konnte nicht erstellt werden!")
+        }
+    }
+
+    const [options, setOptions] = useState<ColumnFactoryProps>({
         name: "",
         cellType: "string",
-        editable: true,
     })
     const [valid, setValid] = useState(false)
 
@@ -44,9 +55,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         if (options.name.length > 0) setValid(true)
     }, [options.name])
 
-    const setOption = <T extends keyof StandardColumnSpecifier>(
+    const setOption = <T extends keyof ColumnFactoryProps>(
         option: T,
-        value: StandardColumnSpecifier[T]
+        value: ColumnFactoryProps[T]
     ) => {
         setOptions(prev => ({
             ...prev,
@@ -116,56 +127,11 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             </IconButton>
                         </Tooltip>
                     </Stack>
-                    {moreOptionsActive && (
-                        // Editable
-                        <Box sx={{ mt: 2 }}>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={options.editable ?? true}
-                                        onChange={e =>
-                                            setOption(
-                                                "editable",
-                                                e.target.checked
-                                            )
-                                        }
-                                    />
-                                }
-                                label="Editierbar"
-                            />
-                        </Box>
-                        // Frozen
-                        // Resizable
-                        // sortable
-                    )}
                 </FormControl>
-                <Typography
-                    sx={{
-                        fontStyle: "italic",
-                        color: theme.palette.text.disabled,
-                        fontSize: theme.typography.caption,
-                        fontWeight: theme.typography.fontWeightLight,
-                        cursor: "pointer",
-                        textAlign: "right",
-                        mt: 2,
-                        "&:hover": {
-                            textDecoration: "underline",
-                        },
-                    }}
-                    onClick={() => setMoreOptionsActive(prev => !prev)}
-                >
-                    {moreOptionsActive ? "Weniger" : "Erweiterte"} Einstellungen
-                </Typography>
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
-                <Button
-                    onClick={async () => {
-                        await props.onHandleCreateColumn(options)
-                        props.onClose()
-                    }}
-                    disabled={valid == false}
-                >
+                <Button onClick={createColumn} disabled={valid == false}>
                     Erstellen
                 </Button>
             </DialogActions>
