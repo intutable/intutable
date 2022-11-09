@@ -42,6 +42,7 @@ import {
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import cells from "@datagrid/Cells"
+import SerDes from "utils/SerDes"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -98,10 +99,7 @@ const TablePage: React.FC = () => {
     ): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
-        const changedValue = changedRow[col.key]
-
-        const cellUtil = cells.getCell(col.cellType)
-        const serializedValue = cellUtil.serialize(changedValue)
+        const serializedValue = SerDes.serializeRowValue(changedRow, col)
 
         await updateRow(col, getRowId(changedRow), serializedValue)
     }
