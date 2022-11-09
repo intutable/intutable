@@ -9,6 +9,52 @@ import { TableId, ViewId } from "./types"
 export const CHANNEL = "dekanat-app-plugin"
 
 /**
+ * Create a table in the given project with the given name
+ * Also created:
+ * - columns ID and index, which are hidden to the user
+ * - a column named "Name" designated as "user primary key" (i.e. not really
+ * a PK in the database, but the user is _encouraged_ to keep it unique, and
+ * it is used as the "title" of a row when creating previews of rows)
+ * - a default view with the name "Standard", whose metadata
+ * (filters, name) cannot be edited.
+ * Exceptions:
+ * - name is already taken -> error
+ * Response: {@link types.TableDescriptor} name and ID of the newly
+ * created table.
+ */
+export function createTable(
+    sessionID: string,
+    projectId: number,
+    userId: number,
+    name: string
+) {
+    return {
+        channel: CHANNEL,
+        method: createTable.name,
+        sessionID,
+        userId,
+        projectId,
+        name,
+    }
+}
+
+/**
+ * Delete a table (along with all its views)
+ * Response: { message: string } a report that the table was deleted.
+ */
+export function deleteTable(sessionID: string, id: TableId) {
+    return { channel: CHANNEL, method: deleteTable.name, sessionID, id }
+}
+
+/**
+ * List views on a table.
+ * Response: {@link types.ViewDescriptor}[]
+ */
+export function listViews(sessionID: string, id: TableId) {
+    return { channel: CHANNEL, method: listViews.name, sessionID, id }
+}
+
+/**
  * Create a standard column: not a  link, not an index or checkbox column,
  * just a plain data column that the user can populate with whatever data
  * match its type.

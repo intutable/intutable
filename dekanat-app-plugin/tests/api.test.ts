@@ -9,13 +9,18 @@ import {
 } from "@intutable/database/dist/requests"
 import * as pm from "@intutable/project-management/dist/requests"
 import {
+    TableDescriptor as PmTable
+} from "@intutable/project-management/dist/types"
+import {
     types as lvt,
     requests as lvr,
     viewId,
     tableId
 } from "@intutable/lazy-views"
 import { ColumnType } from "@intutable/database/dist/types"
-import { createStandardColumn } from "../src/requests"
+import { TableDescriptor } from "../src/types"
+import { TableData, SerializedViewData } from "../src/types/tables"
+import * as req from "../src/requests"
 
 let core: Core
 let sessionID: string
@@ -57,6 +62,82 @@ afterAll(async () => {
 test("admin and project ID are set", async () => {
     expect(ADMIN_ID).toEqual(expect.any(Number))
     expect(PROJECT_ID).toEqual(expect.any(Number))
+})
+
+describe("create table", () => {
+    const TABLE_NAME = "employees"
+    let TABLE: TableDescriptor
+    let DATA: TableData
+
+    beforeAll(async () => {
+        TABLE = await core.events.request(
+            req.createTable(sessionID, PROJECT_ID, ADMIN_ID, TABLE_NAME)
+        )
+        DATA = await core.events.request(
+            req.getTableData(sessionID, TABLE.id)
+        )
+    })
+
+    afterAll(async () => {
+        await core.events.request(
+            req.deleteTable(sessionID, TABLE.id)
+        )
+    })
+
+    test("table with appropriate columns exists", async () => {
+        expect(DATA.columns.length).toBe(1)
+        expect(DATA.columns).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                id: expect.any(Number),
+                index: 2, // id: 0, (row)index: 1, name: 2
+                name: "Name",
+                kind: "standard",
+                isUserPrimaryKey: true
+            })
+        ]))
+        // check for hidden columns too
+        const rawData = await core.events.request(
+            lvr.getViewInfo(sessionID, TABLE.id)
+        ) as lvt.ViewData
+        expect(rawData.columns.length).toBe(3)
+        expect(rawData.columns).toEqual(expect.arrayContaining([
+            expect.objectContaining({ name: "_id" }),
+            expect.objectContaining({ name: "index" }),
+            expect.objectContaining({ name: "name" }),
+        ]))
+    })
+    test("table has default view", async () => {
+        const views: lvt.ViewDescriptor[] = await core.events.request(
+            req.listViews(sessionID, TABLE.id)
+        )
+        expect(views.length).toBe(1)
+        const view: SerializedViewData = await core.events.request(
+            req.getViewData(sessionID, views[0].id)
+        )
+        expect(view.descriptor.name).toBe("Standard")
+        expect(view.metaColumns).toEqual(expect.arrayContaining([
+            expect.objectContaining({ name: "_id" }),
+            expect.objectContaining({ name: "index" }),
+            expect.objectContaining({ name: "name" }),
+        ]))
+    })
+    test("delete table", async () => {
+        const otherTableName = "departments"
+        const otherTable: TableDescriptor = await core.events.request(
+            req.createTable(sessionID, PROJECT_ID, ADMIN_ID, otherTableName)
+        )
+        await core.events.request(
+            req.deleteTable(sessionID, otherTable.id)
+        )
+        let tables: PmTable[] = await core.events.request(
+            pm.getTablesFromProject(sessionID, PROJECT_ID)
+        )
+        expect(tables).not.toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                name: otherTableName
+            })
+        ]))
+    })
 })
 
 // TODO: get createView and createTable implemented first, because there

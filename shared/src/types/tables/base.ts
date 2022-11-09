@@ -33,6 +33,8 @@ export type View<COL, ROW> = {
      * not backend-side metadata like IDs, we we also keep the original
      * ColumnInfos around so we have access e.g. to the column's ID when it
      * is to be deleted.
+     * TODO: we are gradually expanding the display columns to contain
+     * everything needed, hopefully making this prop obsolete soon.
      */
     metaColumns: ColumnInfo[]
     /** Filters for the displayed data. */

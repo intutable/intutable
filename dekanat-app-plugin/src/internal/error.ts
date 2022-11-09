@@ -1,20 +1,27 @@
 export type JsonError = {
     method: string
     message: string
+    code?: ErrorCode
     reason: unknown
 }
 
-export function error(
+export enum ErrorCode {
+    alreadyTaken,
+}
+
+export function error<A>(
     method: string,
     message: string,
+    code?: ErrorCode,
     reason?: unknown
-): JsonError {
+): Promise<A> {
     let reason_: unknown
     if (reason instanceof Error) reason_ = reason.toString()
     else reason_ = reason
-    return {
+    return Promise.reject({
         method,
         message,
+        code,
         reason: reason_,
-    }
+    })
 }

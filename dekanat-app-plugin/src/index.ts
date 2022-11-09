@@ -7,13 +7,23 @@
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import * as pm from "@intutable/project-management/dist/requests"
+import { ColumnDescriptor as PmColumn } from "@intutable/project-management/dist/types"
 import {
     types as lvt,
     requests as lvr,
     selectable,
     asTable,
 } from "@intutable/lazy-views/"
-import { standardColumnAttributes } from "shared/dist/attributes/defaults"
+import {
+    idColumnAttributes,
+    indexColumnAttributes,
+    standardColumnAttributes,
+} from "shared/dist/attributes/defaults"
+import {
+    emptyRowOptions,
+    defaultRowOptions,
+    defaultViewName,
+} from "shared/dist/defaults"
 
 import {
     StandardColumnSpecifier,
@@ -21,13 +31,13 @@ import {
     DB,
     Filter,
 } from "shared/dist/types"
-import { parser, ParserClass } from "./transform/Parser"
 import sanitizeName from "shared/dist/utils/sanitizeName"
-import { defaultViewName } from "shared/dist/defaults"
+import { APP_TABLE_COLUMNS } from "shared/dist/api"
 
+import { parser, ParserClass } from "./transform/Parser"
 import * as types from "./types"
 import * as req from "./requests"
-import { error } from "./internal/error"
+import { error, ErrorCode } from "./internal/error"
 import * as perm from "./permissions/requests"
 
 let core: PluginLoader
@@ -36,6 +46,9 @@ export async function init(plugins: PluginLoader) {
     core = plugins
 
     core.listenForRequests(req.CHANNEL)
+        .on(req.createTable.name, createTable_)
+        .on(req.deleteTable.name, deleteTable_)
+        .on(req.listViews.name, listViews_)
         .on(req.createStandardColumn.name, createStandardColumn_)
         .on(req.addColumnToTable.name, addColumnToTable_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
@@ -51,6 +64,119 @@ export async function init(plugins: PluginLoader) {
 }
 
 //==================== core methods ==========================
+async function createTable_({
+    sessionID,
+    projectId,
+    userId,
+    name,
+}: CoreRequest): Promise<CoreResponse> {
+    return createTable(sessionID, projectId, userId, name)
+}
+async function createTable(
+    sessionID: string,
+    projectId: number,
+    userId: number,
+    name: string
+): Promise<types.TableDescriptor> {
+    const internalName = sanitizeName(name)
+    const existingTables = (await core.events.request(
+        pm.getTablesFromProject(sessionID, projectId)
+    )) as lvt.TableDescriptor[]
+    if (existingTables.some(t => t.name === internalName))
+        return error(
+            createTable.name,
+            "table name already taken",
+            ErrorCode.alreadyTaken
+        )
+    const pmTable = (await core.events.request(
+        pm.createTableInProject(
+            sessionID,
+            userId,
+            projectId,
+            internalName,
+            APP_TABLE_COLUMNS
+        )
+    )) as lvt.TableDescriptor
+    const pmColumns = (await core.events.request(
+        pm.getColumnsFromTable(sessionID, pmTable.id)
+    )) as PmColumn[]
+    const idColumn = pmColumns.find(c => c.name === "_id")!
+    const idxColumn = pmColumns.find(c => c.name === "index")!
+    const nameColumn = pmColumns.find(c => c.name === "name")!
+    const columnSpecs = [
+        { parentColumnId: idColumn.id, attributes: idColumnAttributes(0) },
+        { parentColumnId: idxColumn.id, attributes: indexColumnAttributes(1) },
+        {
+            parentColumnId: nameColumn.id,
+            attributes: standardColumnAttributes("Name", "string", 2, true),
+        },
+    ]
+    const tableView = (await core.events.request(
+        lvr.createView(
+            sessionID,
+            selectable.tableId(pmTable.id),
+            /* Doesn't need to be sanitized, as it's not used as an SQL name */
+            name,
+            { columns: columnSpecs, joins: [] },
+            emptyRowOptions(),
+            userId
+        )
+    )) as lvt.ViewDescriptor
+
+    // create default filter view
+    const tableViewColumns = (await core.events
+        .request(lvr.getViewInfo(sessionID, tableView.id))
+        .then(info => info.columns)) as lvt.ColumnInfo[]
+    await core.events.request(
+        lvr.createView(
+            sessionID,
+            selectable.viewId(tableView.id),
+            defaultViewName(),
+            { columns: [], /* [] means all columns */ joins: [] },
+            defaultRowOptions(tableViewColumns),
+            userId
+        )
+    )
+    return tableView
+}
+async function deleteTable_({
+    sessionID,
+    id,
+}: CoreRequest): Promise<CoreResponse> {
+    return deleteTable(sessionID, id)
+}
+async function deleteTable(sessionID: string, id: types.TableId) {
+    const filterViews = await listViews(sessionID, id)
+    Promise.all(
+        filterViews.map(v =>
+            core.events.request(lvr.deleteView(sessionID, v.id))
+        )
+    )
+    const tableViewOptions = (await core.events.request(
+        lvr.getViewOptions(sessionID, id)
+    )) as lvt.ViewOptions
+    await core.events.request(lvr.deleteView(sessionID, id))
+    await core.events.request(
+        pm.removeTable(
+            sessionID,
+            selectable.asTable(tableViewOptions.source).id
+        )
+    )
+    return { message: `deleted table ${id}` }
+}
+
+async function listViews_({
+    sessionID,
+    id,
+}: CoreRequest): Promise<CoreResponse> {
+    return listViews(sessionID, id)
+}
+async function listViews(sessionID: string, id: types.TableId) {
+    return core.events.request(
+        lvr.listViews(sessionID, selectable.viewId(id))
+    ) as Promise<lvt.ViewDescriptor[]>
+}
+
 async function createStandardColumn_({
     sessionID,
     tableId,
@@ -227,11 +353,9 @@ async function removeLinkColumn(
     const join = info.joins.find(j => j.id === column.joinId)
 
     if (!join)
-        return Promise.reject(
-            error(
-                "removeColumnFromTable",
-                `no join with ID ${column.joinId}, in table ${tableId}`
-            )
+        return error(
+            "removeColumnFromTable",
+            `no join with ID ${column.joinId}, in table ${tableId}`
         )
     // remove lookup columns
     const lookupColumns = info.columns.filter(
