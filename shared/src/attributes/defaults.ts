@@ -61,6 +61,7 @@ export function indexColumnAttributes(
     return {
         displayName: "Index",
         kind: "index",
+        isInternal: 1,
         cellType: "number",
         index: columnIndex,
         editable: 0,
