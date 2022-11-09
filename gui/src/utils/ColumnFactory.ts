@@ -1,8 +1,8 @@
 import { Column, Row } from "types"
 
-export type InterdependentAttributes = "_kind"
-// export type InterdependentAttributes = "editor" | "_kind" | "formatter"
-export type ReadonlyAttributes = "_id"
+export type InterdependentAttributes = "kind"
+// export type InterdependentAttributes = "editor" | "kind" | "formatter"
+export type ReadonlyAttributes = "id"
 
 export type SettableAttributes = keyof Exclude<
     Column.Serialized,
@@ -15,13 +15,12 @@ export type DefaultColumnOptions<T> = Record<string, never>
  * Our version of the default props for some properties of {@link SerializedColumn}.
  */
 export const SerializedColumnDefaultValues: Partial<Column.Serialized> = {
-    _kind: "standard",
+    kind: "standard",
     width: undefined,
     editable: true,
     frozen: false,
     resizable: true,
     sortable: true,
-    headerRenderer: "headerRenderer",
 } as const
 
 /**
@@ -34,7 +33,7 @@ export class ColumnFactory {
 
     constructor() {}
 
-    static DefaultColumn(): Exclude<Column.Serialized, "_id"> {
+    static DefaultColumn(): Exclude<Column.Serialized, "id"> {
         throw Error("not defined")
     }
 
@@ -48,7 +47,7 @@ export class ColumnFactory {
         value: Column.Serialized[T]
     ) {
         switch (attribute) {
-            case "_kind":
+            case "kind":
             case "editor":
             case "formatter":
                 break

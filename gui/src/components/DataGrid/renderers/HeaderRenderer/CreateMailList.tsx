@@ -38,8 +38,8 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
             viewData
                 ? viewData.columns
                       .filter(col => ColumnUtility.isAppColumn(col) === false)
-                      .filter(col => col._cellContentType === "email")
-                      .map(col => col._id!)
+                      .filter(col => col.cellType === "email")
+                      .map(col => col.id!)
                 : null,
         [viewData]
     )
@@ -47,7 +47,7 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
     if (
         (col &&
             Object.prototype.hasOwnProperty.call(col, "attributes") &&
-            col.attributes._cellContentType === "email") === false ||
+            col.attributes.cellType === "email") === false ||
         viewData == null
     )
         return null

@@ -5,211 +5,146 @@
  * even be a security bonus to create highly specific methods and expose only
  * them for use by the front-end.
  */
-import { readFileSync } from "fs"
-import { randomBytes } from "crypto"
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
-import {
-    Column,
-    ColumnType,
-    SimpleColumnOption,
-} from "@intutable/database/dist/types"
-import {
-    openConnection,
-    closeConnection,
-    insert,
-    select,
-} from "@intutable/database/dist/requests"
-import { removeColumn } from "@intutable/project-management/dist/requests"
+import * as pm from "@intutable/project-management/dist/requests"
 import {
     types as lvt,
     requests as lvr,
     selectable,
+    asTable,
 } from "@intutable/lazy-views/"
+import { standardColumnAttributes } from "shared/dist/attributes/defaults"
 
+import {
+    StandardColumnSpecifier,
+    CustomColumnAttributes,
+    DB,
+    Filter,
+} from "shared/dist/types"
+import { parser, ParserClass } from "./transform/Parser"
+import sanitizeName from "shared/dist/utils/sanitizeName"
+import { defaultViewName } from "shared/dist/defaults"
+
+import * as types from "./types"
 import * as req from "./requests"
-import { ATTRIBUTES as A, toSql } from "../../shared/dist/attributes"
 import { error } from "./internal/error"
 import * as perm from "./permissions/requests"
 
-import { createExampleSchema, insertExampleData } from "./example/load"
-
 let core: PluginLoader
-// default credentials, if none are specified in the config:
-const ADMIN_NAME = "admin@dekanat.de"
-const ADMIN_PASSWORD = "password"
-let adminId: number
 
 export async function init(plugins: PluginLoader) {
     core = plugins
 
-    const configText = readFileSync(`${__dirname}/../../shared/config.json`, {
-        encoding: "utf8",
-    })
-    const configJson = JSON.parse(configText)
-    const username: string = configJson.databaseAdminUsername
-    const password: string = configJson.databaseAdminPassword
-    if (typeof username !== "string" || typeof password !== "string") {
-        // the error sometimes just causes silent failure
-        console.log("error: database credentials not present in config file")
-        throw TypeError("database credentials not present in config file")
-    }
-
-    const sessionID = "dekanat-app-plugin_" + randomBytes(20).toString("hex")
-
-    await core.events.request(openConnection(sessionID, username, password))
-
-    // in init.sql until db supports default values
-    // await configureColumnAttributes()
-
-    // create some custom data
-    const maybeAdminId = await getAdminId(sessionID)
-    if (maybeAdminId === null) {
-        const username: string = configJson.appAdminUsername ?? ADMIN_NAME
-        const password: string = configJson.appAdminPassword ?? ADMIN_PASSWORD
-        adminId = await createAdmin(sessionID, username, password)
-        console.log("set up admin user")
-    } else {
-        adminId = maybeAdminId
-        console.log("admin user already present")
-    }
-
-    // testing data
-    if (maybeAdminId === null) {
-        console.log("creating and populating example schema")
-        await createExampleSchema(core, sessionID, adminId)
-        await insertExampleData(core, sessionID)
-    } else console.log("skipped creating example schema")
-
     core.listenForRequests(req.CHANNEL)
+        .on(req.createStandardColumn.name, createStandardColumn_)
         .on(req.addColumnToTable.name, addColumnToTable_)
-        .on(req.addColumnToViews.name, addColumnToFilterViews_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
+        .on(req.getTableData.name, getTableData_)
+        .on(req.getViewData.name, getViewData_)
+        .on(req.changeViewFilters.name, changeViewFilters_)
         .on(perm.getUsers.name, perm.getUsers_)
         .on(perm.getRoles.name, perm.getRoles_)
         .on(perm.createUser.name, perm.createUser_)
         .on(perm.deleteUser.name, perm.deleteUser_)
         .on(perm.changeRole.name, perm.changeRole_)
-
-    await core.events.request(closeConnection(sessionID))
-}
-
-async function getAdminId(sessionID: string): Promise<number | null> {
-    const userRows = await core.events.request(
-        select(sessionID, "users", {
-            columns: ["_id"],
-            condition: ["email", ADMIN_NAME],
-        })
-    )
-    if (userRows.length > 1)
-        return Promise.reject("fatal: multiple users with same name exist")
-    else if (userRows.length === 1) return userRows[0]["_id"]
-    else return null
-}
-
-/** Create admin user */
-async function createAdmin(
-    sessionID: string,
-    username: string,
-    password: string
-): Promise<number> {
-    const passwordHash: string = await core.events
-        .request({
-            channel: "user-authentication",
-            method: "hashPassword",
-            password,
-        })
-        .then(response => response.hash)
-    await core.events.request(
-        insert(sessionID, "users", {
-            email: username,
-            password: passwordHash,
-        })
-    )
-    return getAdminId(sessionID).then(definitelyNumber => definitelyNumber!)
-}
-
-/** Create the custom attributes for views' columns we need. */
-async function configureColumnAttributes(sessionID: string): Promise<void> {
-    const customColumns: Column[] = [
-        {
-            name: "displayName",
-            type: ColumnType.text,
-            options: [SimpleColumnOption.nullable],
-        },
-        {
-            name: "userPrimary",
-            type: ColumnType.integer,
-            options: [SimpleColumnOption.notNullable],
-        },
-        {
-            name: "editable",
-            type: ColumnType.integer,
-            options: [SimpleColumnOption.notNullable],
-        },
-        {
-            name: "editor",
-            type: ColumnType.text,
-            options: [SimpleColumnOption.nullable],
-        },
-        {
-            name: "formatter",
-            type: ColumnType.text,
-            options: [SimpleColumnOption.nullable],
-        },
-    ]
-    await Promise.all(
-        customColumns.map(c =>
-            core.events.request(lvr.addColumnAttribute(sessionID, c))
-        )
-    )
 }
 
 //==================== core methods ==========================
+async function createStandardColumn_({
+    sessionID,
+    tableId,
+    column,
+    addToViews,
+}: CoreRequest): Promise<CoreResponse> {
+    return createStandardColumn(sessionID, tableId, column, addToViews)
+}
+async function createStandardColumn(
+    sessionID: string,
+    tableId: lvt.ViewDescriptor["id"],
+    column: StandardColumnSpecifier,
+    addToViews?: types.ViewId[]
+) {
+    const options = (await core.events.request(
+        lvr.getViewOptions(sessionID, tableId)
+    )) as lvt.ViewOptions
+    const key = sanitizeName(column.name)
+    const tableColumn = await core.events.request(
+        pm.createColumnInTable(sessionID, asTable(options.source).id, key)
+    )
+    // add column to table and filter views
+    const columnIndex =
+        options.columnOptions.columns.length +
+        options.columnOptions.joins.reduce(
+            (acc, j) => acc + j.columns.length,
+            0
+        )
+    const allAttributes: Partial<DB.Column> = {
+        ...standardColumnAttributes(column.name, column.cellType, columnIndex),
+        ...parser.deparseColumn(column.attributes || {}),
+    }
+    const tableViewColumn = await addColumnToTable(
+        sessionID,
+        tableId,
+        {
+            parentColumnId: tableColumn.id,
+            attributes: allAttributes,
+        },
+        null,
+        addToViews
+    )
+
+    const parsedColumn = parser.parseColumn(tableViewColumn)
+    return parsedColumn
+}
+
 async function addColumnToTable_({
     sessionID,
     tableId,
     column,
     joinId,
-    createInViews,
+    addToViews,
 }: CoreRequest): Promise<CoreResponse> {
-    return addColumnToTable(sessionID, tableId, column, joinId, createInViews)
+    return addColumnToTable(sessionID, tableId, column, joinId, addToViews)
 }
 async function addColumnToTable(
     sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
     column: lvt.ColumnSpecifier,
     joinId: number | null = null,
-    createInViews = true
+    addToViews?: types.ViewId[]
 ): Promise<lvt.ColumnInfo> {
     const tableColumn = (await core.events.request(
         lvr.addColumnToView(sessionID, tableId, column, joinId)
     )) as lvt.ColumnInfo
-    if (createInViews)
-        await addColumnToFilterViews(sessionID, tableId, {
-            parentColumnId: tableColumn.id,
-            attributes: tableColumn.attributes,
-        })
+    if (addToViews === undefined || addToViews.length !== 0)
+        await addColumnToFilterViews(
+            sessionID,
+            tableId,
+            {
+                parentColumnId: tableColumn.id,
+                attributes: tableColumn.attributes,
+            },
+            addToViews
+        )
     return tableColumn
 }
 
-async function addColumnToFilterViews_({
-    sessionID,
-    tableId,
-    column,
-}: CoreRequest): Promise<CoreResponse> {
-    return addColumnToFilterViews(sessionID, tableId, column)
-}
 async function addColumnToFilterViews(
     sessionID: string,
     tableId: lvt.ViewDescriptor["id"],
-    column: lvt.ColumnSpecifier
+    column: lvt.ColumnSpecifier,
+    views?: types.ViewId[]
 ): Promise<lvt.ColumnInfo[]> {
     const filterViews = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
+    const selectedViews =
+        views === undefined
+            ? filterViews
+            : filterViews.filter(v => views.includes(v.id))
     return Promise.all(
-        filterViews.map(v =>
+        selectedViews.map(v =>
             core.events.request(lvr.addColumnToView(sessionID, v.id, column))
         )
     )
@@ -244,7 +179,7 @@ async function removeColumnFromTable(
             `view #${tableId} has no column with ID ${columnId}`
         )
 
-    const kind = column.attributes._kind
+    const kind = column.attributes.kind
     switch (kind) {
         case "standard":
             await removeStandardColumn(sessionID, tableId, column)
@@ -268,13 +203,12 @@ async function removeColumnFromTable(
     tableInfo = (await core.events.request(
         lvr.getViewInfo(sessionID, tableId)
     )) as lvt.ViewInfo
-    const indexKey = A.COLUMN_INDEX.key
     const columnUpdates = getColumnIndexUpdates(tableInfo.columns)
 
     await Promise.all(
         columnUpdates.map(async c =>
             changeTableColumnAttributes(sessionID, tableId, c.id, {
-                [indexKey]: c.index,
+                ["index"]: c.index,
             })
         )
     )
@@ -301,7 +235,7 @@ async function removeLinkColumn(
         )
     // remove lookup columns
     const lookupColumns = info.columns.filter(
-        c => c.joinId === join.id && c.attributes._kind === "lookup"
+        c => c.joinId === join.id && c.attributes.kind === "lookup"
     )
 
     await Promise.all(
@@ -315,7 +249,7 @@ async function removeLinkColumn(
     // remove join and FK column
     await core.events.request(lvr.removeJoinFromView(sessionID, join.id))
     const fkColumnId = join.on[0]
-    await core.events.request(removeColumn(sessionID, fkColumnId))
+    await core.events.request(pm.removeColumn(sessionID, fkColumnId))
 }
 
 async function removeStandardColumn(
@@ -325,7 +259,7 @@ async function removeStandardColumn(
 ): Promise<void> {
     await removeColumnFromViews(sessionID, tableId, column.id)
     await core.events.request(lvr.removeColumnFromView(sessionID, column.id))
-    await core.events.request(removeColumn(sessionID, column.parentColumnId))
+    await core.events.request(pm.removeColumn(sessionID, column.parentColumnId))
 }
 
 async function removeLookupColumn(
@@ -368,10 +302,11 @@ async function removeColumnFromViews(
 function getColumnIndexUpdates(
     columns: lvt.ColumnInfo[]
 ): { id: number; index: number }[] {
-    const indexKey = A.COLUMN_INDEX.key
     return columns
         .map((c, index) => ({ column: c, index }))
-        .filter(pair => pair.column.attributes[indexKey] !== pair.index)
+        .filter(
+            pair => pair.column.attributes["__columnIndex__"] !== pair.index
+        )
         .map(pair => ({
             id: pair.column.id,
             index: pair.index,
@@ -385,24 +320,23 @@ async function changeTableColumnAttributes_({
     update,
     changeInViews,
 }: CoreRequest): Promise<CoreResponse> {
-    await changeTableColumnAttributes(
+    return changeTableColumnAttributes(
         sessionID,
         tableId,
         columnId,
         update,
         changeInViews
     )
-    return { message: `updated column #${columnId}'s attributes` }
 }
 
 async function changeTableColumnAttributes(
     sessionID: string,
     tableId: number,
     columnId: number,
-    update: Record<string, unknown>,
+    update: CustomColumnAttributes,
     changeInViews = true
-): Promise<void> {
-    const attributes = toSql(update)
+): Promise<lvt.ColumnInfo[]> {
+    const attributes = parser.deparseColumn(update)
     await core.events.request(
         lvr.changeColumnAttributes(sessionID, columnId, attributes)
     )
@@ -419,8 +353,8 @@ async function changeColumnAttributesInViews(
     sessionID: string,
     tableId: number,
     columnId: number,
-    update: Record<string, unknown>
-): Promise<void> {
+    update: Partial<DB.Column>
+): Promise<lvt.ColumnInfo[]> {
     const views = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
@@ -436,12 +370,67 @@ async function changeColumnAttributesInViews(
         })
     )
 
-    await Promise.all(
-        viewColumns.map(async c => {
-            if (c === undefined) return
-            core.events.request(
-                lvr.changeColumnAttributes(sessionID, c.id, update)
+    return Promise.all(
+        viewColumns
+            .filter(c => c !== undefined)
+            .map(async c =>
+                core.events.request(
+                    lvr.changeColumnAttributes(sessionID, c.id, update)
+                )
             )
-        })
     )
+}
+
+async function getTableData_({
+    sessionID,
+    tableId,
+}: CoreRequest): Promise<CoreResponse> {
+    return getTableData(sessionID, tableId)
+}
+async function getTableData(sessionID: string, tableId: types.TableId) {
+    return core.events
+        .request(lvr.getViewData(sessionID, tableId))
+        .then(table => parser.parseTable(table))
+}
+
+async function getViewData_({
+    sessionID,
+    viewId,
+}: CoreRequest): Promise<CoreResponse> {
+    return getViewData(sessionID, viewId)
+}
+async function getViewData(sessionID: string, viewId: types.ViewId) {
+    return core.events
+        .request(lvr.getViewData(sessionID, viewId))
+        .then(view => parser.parseView(view))
+}
+
+async function changeViewFilters_({
+    sessionID,
+    viewId,
+    newFilters,
+}: CoreRequest): Promise<CoreResponse> {
+    return changeViewFilters(sessionID, viewId, newFilters)
+}
+async function changeViewFilters(
+    sessionID: string,
+    viewId: types.ViewId,
+    newFilters: Filter[]
+) {
+    let options = (await core.events.request(
+        lvr.getViewOptions(sessionID, viewId)
+    )) as lvt.ViewOptions
+    if (options.name === defaultViewName())
+        return error("changeViewFilters", "cannot change default view")
+    const newRowOptions: lvt.RowOptions = {
+        ...options.rowOptions,
+        conditions: newFilters.map(ParserClass.deparseFilter),
+    }
+    await core.events.request(
+        lvr.changeRowOptions(sessionID, viewId, newRowOptions)
+    )
+    options = (await core.events.request(
+        lvr.getViewOptions(sessionID, viewId)
+    )) as lvt.ViewOptions
+    return options.rowOptions.conditions.map(ParserClass.deparseFilter)
 }

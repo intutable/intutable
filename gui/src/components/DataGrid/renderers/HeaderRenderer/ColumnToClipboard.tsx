@@ -41,7 +41,7 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
             values = viewData!.rows
                 .map(row => {
                     const value = row[viewColInfo!.key]
-                    if (selectedRows.has(row.__rowIndex__)) return value
+                    if (selectedRows.has(row.index)) return value
                 })
                 .filter(e => e != null)
         }

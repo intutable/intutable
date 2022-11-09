@@ -17,6 +17,7 @@ import { PrefixIcon } from "./PrefixIcon"
 import { SearchBar } from "./SearchBar"
 
 export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
+    const { column } = props
     const router = useRouter()
 
     const { data } = useTable()
@@ -29,12 +30,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         [data, getTableColumn, props.column]
     )
     // column that represents a link to another table
-    const isLinkCol = props.column._kind! === "link"
-    const isLookupCol = props.column._kind! === "lookup"
-
-    // const t = props.column.editorOptions?.renderFormatter
-    // a user-facing primary column distinct from the table's real PK
-    const isUserPrimary = col ? col.attributes.userPrimary === 1 : null
+    const isLinkCol = column.kind! === "link"
+    const isLookupCol = column.kind! === "lookup"
+    const isUserPrimary = column.isUserPrimaryKey
 
     const foreignTable = useMemo(() => {
         if (col == null) return null

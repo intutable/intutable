@@ -18,7 +18,7 @@ export const useLink = (options: TableHookOptions) => {
     const getPrimaryColumn = useCallback((): ColumnInfo | null => {
         if (linkTableData == null) return null
         return linkTableData.metadata.columns.find(
-            c => c.attributes.userPrimary! === 1
+            c => c.attributes.isUserPrimaryKey! === 1
         )!
     }, [linkTableData])
 

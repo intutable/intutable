@@ -44,13 +44,18 @@ const PATCH = withCatchingAPIRoute(
                 )
             )
                 throw Error("alreadyTaken")
-            else
+            else {
+                const update = { name: newName }
                 await coreRequest<void>(
-                    changeTableColumnAttributes(sessionID, tableId, columnId, {
-                        displayName: newName,
-                    }),
+                    changeTableColumnAttributes(
+                        sessionID,
+                        tableId,
+                        columnId,
+                        update
+                    ),
                     user.authCookie
                 )
+            }
         })
 
         res.status(200).json({})

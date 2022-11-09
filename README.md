@@ -23,7 +23,9 @@ system of permissions in accordance with tight data protection regulations.
 1. Clone the repo
 2. `cd dekanat-app`
 3. `npm install`
-4.  - Dev mode: `npm run dev`
+4.  - Dev mode:
+      `npm run build` (only needed once)  
+      `npm run dev`
     - Production mode:  
       `npm run build`  
       `npm run start`

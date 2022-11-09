@@ -8,6 +8,8 @@ import { ViewDescriptor } from "@intutable/lazy-views"
 import { Filter } from "types/filter"
 import { fetcher } from "api/fetcher"
 
+type ViewData = ViewData.Deserialized
+
 export type ViewHookOptions = {
     view?: ViewDescriptor
     swrOptions?: Partial<

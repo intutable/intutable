@@ -131,7 +131,7 @@ export const AddLookup: React.FC<AddLookupProps> = props => {
     const { headerRendererProps, colInfo: col, foreignTable } = props
     const { snackError } = useSnacki()
 
-    const kind = headerRendererProps.column._kind!
+    const kind = headerRendererProps.column.kind!
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 

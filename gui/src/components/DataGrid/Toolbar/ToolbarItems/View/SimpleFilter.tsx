@@ -17,11 +17,11 @@ import {
 import {
     FILTER_OPERATORS_LIST,
     FilterOperator,
-    Column,
+    ColumnOperand,
     OperandKind,
     PartialSimpleFilter,
 } from "types/filter"
-import { TableColumn } from "types/rdg"
+import { TableColumn } from "types"
 import { getFilterColor } from "./utils"
 
 type SimpleFilterEditorProps = {
@@ -51,13 +51,13 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
     const { columns, filter, onPromote, onChange } = props
 
     const getColumn = (columnId: number | string) => {
-        const column = columns.find(c => c._id === columnId)
-        return column ? { parentColumnId: column._id, joinId: null } : undefined
+        const column = columns.find(c => c.id === columnId)
+        return column ? { parentColumnId: column.id, joinId: null } : undefined
     }
 
     const handleChangeColumn = (e: SelectChangeEvent<number | string>) => {
         const newColumnSpec = getColumn(e.target.value)
-        let newColumn: Column | undefined
+        let newColumn: ColumnOperand | undefined
         if (newColumnSpec)
             newColumn = {
                 kind: OperandKind.Column,
@@ -102,7 +102,7 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
                 size="small"
             >
                 {columns.map(c => (
-                    <MenuItem key={c._id} value={c._id}>
+                    <MenuItem key={c.id} value={c.id}>
                         {c.name}
                     </MenuItem>
                 ))}

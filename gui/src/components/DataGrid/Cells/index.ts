@@ -1,3 +1,12 @@
+/**
+ * @module components.DataGrid.Cells
+ * Cell types - utility classes for the different types of data that users
+ * can edit in the table. Each type has a class (Boolean, Number, ...) that
+ * represents the type as a whole - as such, you would expect all involved
+ * methods to be static, but then we could not do the "get correct cell type
+ * at runtime" thing (see {@link Cells})
+ * Builds on the functionality of {@link @shared.api.cells}
+ */
 import { Cells } from "./Cells"
 import { Text } from "./components/Text"
 import { Num } from "./components/Number"
@@ -27,4 +36,4 @@ const cells = new Cells(
 
 export default cells
 
-export { default as Cell } from "./abstract/Cell"
+export { Cell } from "./abstract/Cell"
