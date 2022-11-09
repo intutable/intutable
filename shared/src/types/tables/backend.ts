@@ -15,7 +15,8 @@ export namespace DB {
      * in `/types/module-augmenation/lazy-views.ts`.
      */
     export type Column = {
-        isUserPrimaryKey: DB.Boolean // BUG: isUserPrimaryKey is undefined, instead the old property name still exists
+        isUserPrimaryKey: DB.Boolean
+        hidden: DB.Boolean
         kind: string
         cellType: string
         displayName: string
@@ -46,7 +47,7 @@ export namespace DB {
         /** Some renamed props and other information included from `MetaColumnProps` */
         export type Column = Omit<
             MetaColumnProps,
-            "isUserPrimaryKey" | "isInternal" // redefined type below
+            "isUserPrimaryKey" | "isInternal" | "hidden" // redefined type below
         > &
             Omit<
                 DB.Column,
@@ -56,12 +57,14 @@ export namespace DB {
                 | "index" // included in `MetaColumnProps`
                 | "isUserPrimaryKey" // included in `MetaColumnProps`
                 | "isInternal" // included in `MetaColumnProps`
+                | "hidden" // included in `MetaColumnProps`
             > & {
                 isInternal: DB.Boolean
                 key: string // information from `ColumnInfo`
                 name: string // rename displayName
                 // from `MetaColumnProps`
                 isUserPrimaryKey: DB.Boolean
+                hidden: DB.Boolean
             }
         /** Row with its index */
         export type Row = _Row

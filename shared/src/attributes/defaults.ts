@@ -14,6 +14,7 @@ export function standardColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 1,
+        hidden: 0,
         cellType: contentType,
     }
 }
@@ -27,6 +28,7 @@ export function linkColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 1,
+        hidden: 0,
         cellType: "string",
     }
 }
@@ -41,6 +43,7 @@ export function lookupColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 0,
+        hidden: 0,
         cellType: contentType,
     }
 }

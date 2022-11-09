@@ -26,7 +26,11 @@ import { useView } from "hooks/useView"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import React, { useEffect, useState } from "react"
-import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import DataGrid, {
+    CalculatedColumn,
+    RowsChangeData,
+    SelectColumn,
+} from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
@@ -171,6 +175,7 @@ const TablePage: React.FC = () => {
                                     <ToolbarItem.AddRow />
                                     <ToolbarItem.EditFilters />
                                     <ToolbarItem.ExportView />
+                                    <ToolbarItem.HiddenColumns />
                                     <ToolbarItem.DetailView
                                         handleClick={() =>
                                             setDetailedViewOpen(prev => !prev)
@@ -185,7 +190,12 @@ const TablePage: React.FC = () => {
                                             "rdg-" + getTheme() + " fill-grid"
                                         }
                                         rows={data.rows}
-                                        columns={data.columns}
+                                        columns={[
+                                            SelectColumn,
+                                            ...data.columns.filter(
+                                                column => column.hidden !== true
+                                            ),
+                                        ]}
                                         components={{
                                             noRowsFallback: <NoRowsFallback />,
                                             rowRenderer: RowRenderer,

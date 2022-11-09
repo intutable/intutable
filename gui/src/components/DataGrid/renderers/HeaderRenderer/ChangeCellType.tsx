@@ -3,7 +3,7 @@ import { Button, MenuItem, Select, SelectChangeEvent } from "@mui/material"
 import cells from "@datagrid/Cells"
 import { Column } from "types"
 import { useView } from "hooks/useView"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { useSnacki } from "hooks/useSnacki"
 import { useColumn } from "hooks/useColumn"
 

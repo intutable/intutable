@@ -126,4 +126,8 @@ export type MetaColumnProps = {
      * actual integrity conditions.
      */
     isUserPrimaryKey: boolean
+    /**
+     * Wether the column is visible or not.
+     */
+    hidden: boolean
 }

@@ -23,7 +23,7 @@ export type ViewHookOptions = {
  *
  * Returns the data of a view.
  *
- * It uses the {@link APIContextProvider}
+ * It uses the APIContextProvider
  * to determine the current selected view.
  *
  * @param {Partial<PublicConfiguration<ViewData, any, BareFetcher<ViewData>>>} [options.swrOptions] Options for the underlying {@link useSWR} hook.

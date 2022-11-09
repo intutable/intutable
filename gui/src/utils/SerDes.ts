@@ -1,8 +1,7 @@
-import { Column, Row, ViewData } from "types"
-import { ColumnUtility } from "./ColumnUtility"
-import { SelectColumn } from "react-data-grid"
-import { applyColumnProxy, ProxyColumn } from "./column utils/ColumnProxy"
 import cells from "@datagrid/Cells"
+import { SelectColumn } from "react-data-grid"
+import { Column, Row, ViewData } from "types"
+import { mountColumnProxy } from "./column utils/ColumnProxy"
 
 export default class SerDes {
     static serializeRow(
@@ -25,7 +24,10 @@ export default class SerDes {
     ): T {
         const changedValue = row[column.key]
         const cellUtil = cells.getCell(column.cellType)
-        const serializedValue = cellUtil.serialize(changedValue)
+        const serializedValue = cellUtil.catchEmpty(
+            cellUtil.serialize.bind(cellUtil),
+            changedValue
+        )
 
         return serializedValue as T
     }
@@ -36,14 +38,17 @@ export default class SerDes {
     ): Row {
         columns.forEach(column => {
             const cellUtil = cells.getCell(column.cellType)
-            row[column.key] = cellUtil.deserialize(row[column.key])
+            row[column.key] = cellUtil.catchEmpty(
+                cellUtil.deserialize.bind(cellUtil),
+                row[column.key]
+            )
         })
         return row
     }
 
     /** deserialize a single column */
     static deserializeColumn(column: Column.Serialized): Column.Deserialized {
-        return applyColumnProxy(column)
+        return mountColumnProxy(column)
     }
 
     /** deserialize a view */
@@ -55,9 +60,6 @@ export default class SerDes {
         const deserializedColumns: Column.Deserialized[] = view.columns.map(
             SerDes.deserializeColumn
         )
-
-        // rdg's checkbox column for selecting rows
-        deserializedColumns.unshift(SelectColumn)
 
         return {
             ...view,
