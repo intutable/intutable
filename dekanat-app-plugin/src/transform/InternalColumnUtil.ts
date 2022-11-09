@@ -30,42 +30,24 @@ export class InternalColumnUtil {
         rows: DB.Row[]
     }): { columns: DB.Restructured.Column[]; rows: DB.Restructured.Row[] } {
         const { columns, rows } = options
-        const processedRows = rows
-        const nonInternalColumns = []
+        let processedRows = rows
+        const nonInternalColumns: DB.Restructured.Column[] = []
         columns.forEach(column => {
-            console.log(
-                "column.isInternal: ",
-                Object.prototype.hasOwnProperty.call(column, "isInternal"),
-                "(exists),",
-                column.isInternal,
-                "(value)",
-                "name:",
-                column.name
-            )
             if (column.isInternal) {
-                // TODO: automate this process
+                // TODO: automate this process, whenever a column is `isInternal === true` the values should be written into the rows,
+                // the key will be ? and must correspond with the type
 
-                if (column.kind === "index") {
-                    rows.forEach(row =>
-                        processedRows.push({
-                            index: row[
-                                column.key
-                            ] as DB.Restructured.Row["index"],
-                            ...row,
-                        })
-                    )
-                    return
-                }
+                if (column.kind === "index")
+                    return (processedRows = processedRows.map(row => ({
+                        index: row[column.key] as DB.Restructured.Row["index"],
+                        ...row,
+                    })))
 
-                if (column.name === "ID") {
-                    rows.forEach(row =>
-                        processedRows.push({
-                            _id: row[column.key] as DB.Restructured.Row["_id"],
-                            ...row,
-                        })
-                    )
-                    return
-                }
+                if (column.name === "ID")
+                    return (processedRows = processedRows.map(row => ({
+                        _id: row[column.key] as DB.Restructured.Row["_id"],
+                        ...row,
+                    })))
 
                 throw new Error(
                     `SystemError: Not Implemented (This mechanism is not supported yet). Column ${inspect(
@@ -73,25 +55,22 @@ export class InternalColumnUtil {
                         { depth: null }
                     )}`
                 )
-            }
-
-            // only keep non internal columns
-            nonInternalColumns.push(column)
+            } else nonInternalColumns.push(column) // only keep non internal columns
         })
 
-        if (rows.length !== processedRows.length) {
+        if (rows.length !== rows.length) {
             throw new Error(
                 `InternalColumn: lost ${
-                    rows.length - processedRows.length
+                    rows.length - rows.length
                 } rows when processing internal columns (rows: ${
                     rows.length
-                }, processed: ${processedRows.length}).`
+                }, processed: ${rows.length}).`
             )
         }
 
         return {
             columns: nonInternalColumns,
-            rows: processedRows as DB.Restructured.Row[],
+            rows: rows as DB.Restructured.Row[],
         }
     }
 }
