@@ -6,6 +6,8 @@ import { ViewDescriptor } from "@intutable/lazy-views"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 
+type TableData = TableData.Serialized
+
 export type TableHookOptions = {
     table?: ViewDescriptor | null
     swrOptions?: Partial<

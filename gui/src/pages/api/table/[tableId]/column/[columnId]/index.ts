@@ -14,6 +14,7 @@ import {
     removeColumnFromTable,
     changeTableColumnAttributes,
 } from "@backend/requests"
+import { Column } from "types"
 
 /**
  * Update the metadata of a column. Only its `attributes` can be changed, all
@@ -38,7 +39,7 @@ const PATCH = withCatchingAPIRoute(
         columnId: ColumnInfo["id"]
     ) => {
         const { update, changeInViews } = req.body as {
-            update: Record<string, unknown>
+            update: Partial<Column.Serialized>
             changeInViews?: boolean
         }
         const changeInViews_ =
@@ -46,8 +47,7 @@ const PATCH = withCatchingAPIRoute(
 
         const user = req.session.user!
         // only use the dedicated rename endpoint for changing the name
-        if (update["displayName"] !== undefined)
-            throw Error("useRenameEndpoint")
+        if (update["name"] !== undefined) throw Error("useRenameEndpoint")
 
         await withReadWriteConnection(user, async sessionID => {
             await coreRequest<void>(
@@ -93,7 +93,7 @@ const DELETE = withCatchingAPIRoute(
             const column = tableInfo.columns.find(c => c.id === columnId)
 
             if (!column) throw Error("columnNotFound")
-            if (column.attributes.userPrimary)
+            if (column.attributes.isUserPrimaryKey)
                 // cannot delete the primary column
                 throw Error("deleteUserPrimary")
 

@@ -15,7 +15,7 @@ import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 import makeForeignKeyName from "utils/makeForeignKeyName"
-import { linkColumnAttributes } from "@backend/defaults"
+import { linkColumnAttributes } from "shared/dist/attributes/defaults"
 import { addColumnToTable } from "@backend/requests"
 
 /**
@@ -67,7 +67,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
             c => c.name === "_id"
         )!
         const userPrimaryColumn = foreignTableInfo.columns.find(
-            c => c.attributes.userPrimary! === 1
+            c => c.attributes.isUserPrimaryKey! === 1
         )!
         const displayName = (userPrimaryColumn.attributes.displayName ||
             userPrimaryColumn.name) as string

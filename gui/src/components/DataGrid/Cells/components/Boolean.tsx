@@ -2,7 +2,7 @@ import { Box, Checkbox } from "@mui/material"
 import React from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
+import { Cell } from "../abstract/Cell"
 
 export class Bool extends Cell {
     readonly brand = "boolean"
@@ -21,26 +21,17 @@ export class Bool extends Cell {
         return typeof value === "boolean"
     }
 
-    parse(content: "true" | "false" | boolean | 1 | 0): boolean {
-        if (typeof content === "boolean") return content
-        return content === "true" || content === 1
+    serialize(value: boolean): string {
+        return value.toString()
     }
-    stringify(value: boolean): "true" | "false" | 1 | 0 {
-        return value ? "true" : "false"
+    deserialize(value: unknown): boolean {
+        if (typeof value === "boolean") return value
+        if (value === 1 || value === 0) return value === 1
+        throw new Error(`Could not deserialize value: ${value}`)
     }
 
-    export(value: unknown): string {
-        if (
-            (typeof value === "boolean" ||
-                value === "true" ||
-                value === "false") === false
-        )
-            throw new RangeError(
-                "Boolean Cell Debug Error: value is not a boolean"
-            ) // only for debugging
-
-        const bool = this.parse(value as "true" | "false" | boolean)
-        return bool ? "wahr" : "falsch"
+    export(value: boolean): string {
+        return value ? "wahr" : "falsch"
     }
     unexport(value: "wahr" | "falsch"): boolean {
         if (value !== "wahr" && value !== "falsch")
@@ -58,7 +49,7 @@ export class Bool extends Cell {
             if (e.target.checked !== content)
                 props.onRowChange({
                     ...row,
-                    [key]: this.stringify(Boolean(e.target.checked)),
+                    [key]: Boolean(e.target.checked),
                 })
         }
 

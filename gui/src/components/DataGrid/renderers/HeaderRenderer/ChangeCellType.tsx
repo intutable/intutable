@@ -8,7 +8,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { useColumn } from "hooks/useColumn"
 
 type ChangeCellTypeProps = {
-    column: Column
+    column: Column.Deserialized
     onClose: () => void
 }
 
@@ -17,15 +17,13 @@ export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
     const { changeAttributes } = useColumn()
     const { snackSuccess, snackError, closeSnackbar } = useSnacki()
 
-    const [cellType, setCellType] = React.useState(
-        props.column._cellContentType
-    )
+    const [cellType, setCellType] = React.useState(props.column.cellType)
 
     const handleChange = async (event: SelectChangeEvent<string>) => {
         setCellType(event.target.value)
 
         try {
-            const currentCell = cells.getCell(props.column._cellContentType!)
+            const currentCell = cells.getCell(props.column.cellType!)
             const wantedCell = cells.getCell(event.target.value)
 
             const invalidCells = ColumnUtility.canInterchangeColumnType(
@@ -59,7 +57,7 @@ export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
             }
 
             await changeAttributes(props.column, {
-                _cellContentType: wantedCell.brand,
+                cellType: wantedCell.brand,
             })
 
             snackSuccess(
@@ -72,7 +70,7 @@ export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
         }
     }
 
-    if (props.column._cellContentType == null) return null
+    if (props.column.cellType == null) return null
 
     return (
         <Select onChange={handleChange} value={cellType}>

@@ -10,7 +10,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
-import { lookupColumnAttributes } from "@backend/defaults"
+import { lookupColumnAttributes } from "shared/dist/attributes/defaults"
 import { addColumnToTable } from "@backend/requests"
 
 /**
@@ -51,8 +51,7 @@ const POST = withCatchingAPIRoute(
             // determine column meta attributes
             const displayName =
                 foreignColumn.attributes.displayName || foreignColumn.name
-            const contentType =
-                foreignColumn.attributes._cellContentType || "string"
+            const contentType = foreignColumn.attributes.cellType || "string"
             const columnIndex = tableInfo.columns.length
             const attributes = lookupColumnAttributes(
                 displayName,

@@ -1,5 +1,6 @@
 import { Column, MetaColumnProps, ViewData } from "types"
 import cells, { Cell } from "@datagrid/Cells"
+import { ColumnInfo } from "@intutable/lazy-views"
 
 /**
  * // TODO: this flexbility could be a potential error cause.
@@ -11,7 +12,7 @@ import cells, { Cell } from "@datagrid/Cells"
 /**
  * ### ColumnUtility class
  *
- * Since {@link Column.Serialized.editor}, {@link Column.Serialized.formatter} and {@link Column.Serialized._kind}
+ * Since {@link Column.Serialized.editor}, {@link Column.Serialized.formatter} and {@link Column.Serialized.kind}
  * are interdependent, choosing the right component in the process of deserialization is quite tricky.
  *
  * With this class, you can easily choose the right component for {@link Column.editor} __and__ {@link Column.formatter}
@@ -47,7 +48,7 @@ import cells, { Cell } from "@datagrid/Cells"
  * means that it is a normal column and the formatter is not affected. But when its kind is different, the formatter
  * must be ajusted. E.g. a lookup requires a special formatter in order to choose the right value.
  *
- * Also read {@link MetaColumnProps._kind}.
+ * Also read {@link MetaColumnProps.kind}.
  *
  * #### Formatter
  *
@@ -64,20 +65,20 @@ import cells, { Cell } from "@datagrid/Cells"
  * #### Explicit Type
  *
  * Because the editor and formatter can be nullish a new prop
- * explicitly sets this prop (see {@link MetaColumnProps._cellContentType}).
+ * explicitly sets this prop (see {@link MetaColumnProps.cellType}).
  */
 export class ColumnUtility {
     public cell: Cell
 
     constructor(public readonly column: Column.Serialized) {
-        this.cell = cells.getCell(this.column._cellContentType)
+        this.cell = cells.getCell(this.column.cellType)
     }
 
     /** 'true' if yes, if no an array with indices of rows whose cells do not suit the new type */
     static canInterchangeColumnType(
         to: string,
-        column: Column | Column.Serialized,
-        view: ViewData
+        column: Column.Deserialized | Column.Serialized,
+        view: ViewData.Deserialized
     ): true | number[] {
         const targetUtil = cells.getCell(to)
         const data = view.rows.map(row => [
@@ -102,8 +103,7 @@ export class ColumnUtility {
     static isAppColumn(
         column: Column.Serialized | Column.Deserialized
     ): boolean {
-        // `select-row` is defined by rdg – do NOT change this
-        return column.key === "select-row" || column._kind === "index"
+        return column.key === "select-row" || column.kind === "index" // TODO: last one will be obsolete soon
     }
 
     /**

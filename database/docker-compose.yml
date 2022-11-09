@@ -1,7 +1,7 @@
 version: "3.3"
 services:
     pg-database:
-        build: .
+        build: ..
         ports:
             - "5432:5432"
         volumes:

@@ -1,12 +1,15 @@
 import { ColumnInfo } from "@intutable/lazy-views"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { ViewHookOptions, useView } from "hooks/useView"
+import { useView, ViewHookOptions } from "hooks/useView"
 import { Column } from "types"
-import { StandardColumnSpecifier } from "@backend/types"
+
+import { CustomColumnAttributes } from "@shared/types"
 import { ColumnFactory } from "utils/ColumnFactory"
 
-export type { StandardColumnSpecifier } from "@backend/types"
+export type { StandardColumnSpecifier } from "@shared/types"
+
+type Column = Column.Deserialized
 
 /**
  * Get the Column Info {@type {ColumnInfo}} for a column. Pass in a RDG column
@@ -50,8 +53,10 @@ export const useColumn = (
         await mutateView()
     }
 
-    /** Find a column in the base table. */
-    const getTableColumn = (column: Column): ColumnInfo | null => {
+    /** Find a column in the base table given a column of a view. */
+    const getTableColumn = (
+        column: Column.Serialized | Column.Deserialized
+    ): ColumnInfo | null => {
         const viewColumn = view?.metaColumns.find(c => c.key === column.key)
         const tableColumn = table?.metadata.columns.find(
             c => c.id === viewColumn?.parentColumnId
@@ -94,13 +99,7 @@ export const useColumn = (
     // TODO: the state should be updated differently
     const changeAttributes = async (
         column: Column,
-        update: Record<string, unknown>
-        // {
-        // [key in keyof Omit<
-        //     Column.SQL,
-        //     "displayName" | "__columnIndex__"
-        // >]: Column.SQL[key]
-        // } // TODO: ?
+        update: CustomColumnAttributes
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const baseColumn = getTableColumn(column)
@@ -115,7 +114,9 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: get rid of `getColumnByKey`
-    const deleteColumn = async (column: Column): Promise<void> => {
+    const deleteColumn = async (
+        column: Column.Serialized | Column.Deserialized
+    ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const tableColumn = getTableColumn(column)
         await fetcher({

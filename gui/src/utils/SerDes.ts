@@ -2,16 +2,43 @@ import { Column, Row, ViewData } from "types"
 import { ColumnUtility } from "./ColumnUtility"
 import { SelectColumn } from "react-data-grid"
 import { applyColumnProxy, ProxyColumn } from "./column utils/ColumnProxy"
+import cells from "@datagrid/Cells"
 
 export default class SerDes {
-    constructor() {}
+    static serializeRow(
+        row: Row,
+        columns: Column.Serialized[] | Column.Deserialized[]
+    ): Row {
+        const serializedRow: Row = { ...row }
+        columns.forEach(column => {
+            const cellUtil = cells.getCell(column.cellType)
+            serializedRow[column.key] = cellUtil.serialize(
+                serializedRow[column.key]
+            )
+        })
+        return serializedRow
+    }
 
-    /** not used atm */
-    static serializeColumn(column: Column.Deserialized): Column.Serialized {
-        if (ColumnUtility.isProxy(column))
-            return (column as ProxyColumn).serialized
+    static serializeRowValue<T = unknown>(
+        row: Row,
+        column: Column.Deserialized
+    ): T {
+        const changedValue = row[column.key]
+        const cellUtil = cells.getCell(column.cellType)
+        const serializedValue = cellUtil.serialize(changedValue)
 
-        throw new RangeError("Column is not a proxy")
+        return serializedValue as T
+    }
+
+    static deserializeRow(
+        row: Row,
+        columns: Column.Serialized[] | Column.Deserialized[]
+    ): Row {
+        columns.forEach(column => {
+            const cellUtil = cells.getCell(column.cellType)
+            row[column.key] = cellUtil.deserialize(row[column.key])
+        })
+        return row
     }
 
     /** deserialize a single column */
@@ -19,48 +46,12 @@ export default class SerDes {
         return applyColumnProxy(column)
     }
 
-    /** not used atm */
-    static serializeRow(row: Row): Row {
-        // TODO: has nothing to do with deserialization, should be moved in the parser
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { __rowIndex__, ...serializedRow } = row // see `deserializeRow`
-        return serializedRow as Row
-    }
-
-    /** deserialize a single row */
-    static deserializeRow(row: Row, index: number): Row {
-        return {
-            ...row,
-            // TODO: has nothing to do with deserialization, should be moved in the parser
-            __rowIndex__: index, // TODO: Hack: __rowIndex__ is not saved in the database, the plugins keep the order of the rows. this should be removed in the future by saving the value and combining it with the index column
-        } as Row
-    }
-
-    /** not used atm */
-    static serializeView(view: ViewData.Deserialized): ViewData.Serialized {
-        // serializes each row
-        const rows: Row[] = view.rows.map(SerDes.serializeRow)
-
-        // serialize each column
-        const columns: Column.Serialized[] = view.columns.map(
-            SerDes.serializeColumn
-        )
-
-        // remove selector column
-        columns.shift()
-        // remove rdg indice column
-        columns.shift()
-
-        return {
-            ...view,
-            columns,
-            rows,
-        }
-    }
-
     /** deserialize a view */
     static deserializeView(view: ViewData.Serialized): ViewData.Deserialized {
-        const deserializedRows: Row[] = view.rows.map(SerDes.deserializeRow) // will be obsolete
+        const deserializedRows: Row[] = view.rows.map(row =>
+            SerDes.deserializeRow(row, view.columns)
+        )
+
         const deserializedColumns: Column.Deserialized[] = view.columns.map(
             SerDes.deserializeColumn
         )

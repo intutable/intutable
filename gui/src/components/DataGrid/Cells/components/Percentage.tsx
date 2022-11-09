@@ -6,7 +6,6 @@ import Typography from "@mui/material/Typography"
 import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
 import { NumericCell } from "../abstract/NumericCell"
 
 const LinearProgressWithLabel = (
@@ -48,7 +47,7 @@ export class Percentage extends NumericCell {
         )
     }
 
-    export(value: unknown): string {
+    export(value: number): string {
         return value + "%"
     }
     unexport(value: string): number {
@@ -64,7 +63,7 @@ export class Percentage extends NumericCell {
         const { row, key, content } = this.destruct<number | null>(props)
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const value = this.parse(e.target.value) // value gets back as a string and needs to be parsed
+            const value = Number.parseInt(e.target.value) // value gets back as a string and needs to be parsed
             if (this.isValid(value) || value == null)
                 // if it was an empty string, it became 'null'
                 props.onRowChange({

@@ -17,34 +17,7 @@ module.exports = withBundleAnalyzer({
         dirs: ["src"],
         ignoreDuringBuilds: true,
     },
-    compiler: { removeConsole: false },
-    webpack: (config, options) => {
-        config.module.rules.push({
-            test: /\/dekanat-app-plugin\/.*\.ts$/,
-            use: [
-                {
-                    loader: "ts-loader",
-                    options: {
-                        transpileOnly: true,
-                        onlyCompileBundledFiles: true,
-                    }
-                }
-            ],
-        })
-        config.module.rules.push({
-            test: /\/shared\/.*\.ts$/,
-            use: [
-                {
-                    loader: "ts-loader",
-                    options: {
-                        transpileOnly: true,
-                        onlyCompileBundledFiles: true,
-                    }
-                }
-            ],
-        })
-        return config
-    },
+    compiler: { removeConsole: false }
     // experimental: {
     // should improve the mui imports but does not work yet
     // modularizeImports: {

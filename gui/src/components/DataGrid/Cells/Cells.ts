@@ -1,4 +1,4 @@
-import Cell from "./abstract/Cell"
+import { Cell } from "./abstract/Cell"
 
 export class Cells extends Array<Cell> {
     constructor(...cells: Cell[]) {

@@ -1,4 +1,3 @@
-import { StandardColumnSpecifier } from "@backend/types"
 import Cells from "@datagrid/Cells"
 import HelpIcon from "@mui/icons-material/Help"
 import {
@@ -22,6 +21,7 @@ import {
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import React, { useEffect, useState } from "react"
+import { StandardColumnSpecifier } from "hooks/useColumn"
 
 type AddColumnModalProps = {
     open: boolean
@@ -35,7 +35,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const [moreOptionsActive, setMoreOptionsActive] = useState(false)
     const [options, setOptions] = useState<StandardColumnSpecifier>({
         name: "",
-        _cellContentType: "string",
+        cellType: "string",
         editable: true,
     })
     const [valid, setValid] = useState(false)
@@ -79,12 +79,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             <Select
                                 labelId="addcol-select-type"
                                 label="Typ"
-                                value={options._cellContentType}
+                                value={options.cellType}
                                 onChange={e => {
-                                    setOption(
-                                        "_cellContentType",
-                                        e.target.value
-                                    )
+                                    setOption("cellType", e.target.value)
                                 }}
                             >
                                 {Cells.map(cell => (

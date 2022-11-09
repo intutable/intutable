@@ -20,8 +20,7 @@ const ColumnFactoryDefaultAttributes: ColumnFactoryOptionalAttributes = {
     resizable: true,
     sortable: true,
     sortDescendingFirst: undefined,
-    headerRenderer: undefined, // atm we only use the default header renderer, will be inserted by serdes
-    __columnIndex__: null,
+    index: null,
 } as const
 const DefaultAttributes = (options?: {
     omit: (keyof ColumnFactoryOptionalAttributes)[]
@@ -38,8 +37,8 @@ type FactoryColumn = Omit<Column.Serialized, "_id" | "key">
 
 export abstract class ColumnFactory<A = ColumnFactoryOptionalAttributes> {
     // following properties are required, others have default values
-    public abstract readonly kind: Column.Serialized["_kind"]
-    public abstract readonly cellContentType: Column.Serialized["_cellContentType"]
+    public abstract readonly kind: Column.Serialized["kind"]
+    public abstract readonly cellContentType: Column.Serialized["cellType"]
     public abstract readonly name: Column.Serialized["name"]
 
     // optional properties
@@ -67,11 +66,16 @@ export class IndexColumn extends ColumnFactory<IndexColumnOptionalAttributes> {
 
     constructor(
         public attributes: IndexColumnOptionalAttributes = DefaultAttributes({
-            omit: ["editable", "resizable", "__columnIndex__"],
+            omit: ["editable", "resizable", "index"],
         })
     ) {
         super()
     }
+        switch (attribute) {
+            case "kind":
+            case "editor":
+            case "formatter":
+                break
 
     create(): FactoryColumn {
         return {
