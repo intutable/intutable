@@ -1,6 +1,6 @@
 import cells from "@datagrid/Cells"
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
-import { headerRenderer } from "@datagrid/renderers"
+import { headerRenderer, HeaderRenderer } from "@datagrid/renderers"
 import { Column } from "types"
 
 export const mountColumnProxy = (column: Column.Serialized): ProxyColumn =>

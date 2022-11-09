@@ -53,7 +53,6 @@ export const HiddenColumnsDialog: React.FC<
             )
         }
     }
-    if (data) console.log(data.columns.map(c => (c as ProxyColumn).formatter))
 
     if (data == null) return null
 

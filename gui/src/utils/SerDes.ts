@@ -1,4 +1,5 @@
 import cells from "@datagrid/Cells"
+import { headerRenderer } from "@datagrid/renderers"
 import { SelectColumn } from "react-data-grid"
 import { Column, Row, ViewData } from "types"
 import { mountColumnProxy } from "./column utils/ColumnProxy"
@@ -48,7 +49,11 @@ export default class SerDes {
 
     /** deserialize a single column */
     static deserializeColumn(column: Column.Serialized): Column.Deserialized {
-        return mountColumnProxy(column)
+        const proxy = mountColumnProxy(column)
+        return {
+            ...proxy,
+            headerRenderer: proxy.headerRenderer, // BUG: there's a bug with the proxy…
+        }
     }
 
     /** deserialize a view */
