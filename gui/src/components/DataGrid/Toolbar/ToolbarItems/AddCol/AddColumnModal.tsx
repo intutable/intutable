@@ -22,7 +22,7 @@ import { useSnacki } from "hooks/useSnacki"
 import React, { useEffect, useState } from "react"
 import {
     ColumnFactory,
-    ColumnFactoryProps,
+    CreateColumnFactoryProps,
 } from "utils/column utils/ColumnFactory"
 
 type AddColumnModalProps = {
@@ -45,7 +45,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         }
     }
 
-    const [options, setOptions] = useState<ColumnFactoryProps>({
+    const [options, setOptions] = useState<CreateColumnFactoryProps>({
         name: "",
         cellType: "string",
     })
@@ -55,9 +55,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
         if (options.name.length > 0) setValid(true)
     }, [options.name])
 
-    const setOption = <T extends keyof ColumnFactoryProps>(
+    const setOption = <T extends keyof CreateColumnFactoryProps>(
         option: T,
-        value: ColumnFactoryProps[T]
+        value: CreateColumnFactoryProps[T]
     ) => {
         setOptions(prev => ({
             ...prev,

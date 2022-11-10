@@ -1,7 +1,10 @@
 import { Column } from "types"
 import { Text } from "@datagrid/Cells/components/Text"
 
-export type ColumnFactoryProps = Pick<Column.Serialized, "name" | "cellType">
+export type CreateColumnFactoryProps = Pick<
+    Column.Serialized,
+    "name" | "cellType"
+>
 
 // properties that can be set programmatically from the frontend
 type SettableColumnProps = keyof Omit<
@@ -60,7 +63,7 @@ export class ColumnFactory {
         sortDescendingFirst: false,
     }
 
-    constructor(public properties: ColumnFactoryProps) {}
+    constructor(public properties: CreateColumnFactoryProps) {}
 
     /**
      * Here is some space for further modifications. Scenarios could be:
