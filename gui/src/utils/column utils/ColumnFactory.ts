@@ -1,5 +1,8 @@
 import { Column } from "types"
 import { Text } from "@datagrid/Cells/components/Text"
+import { useEffect, useState } from "react"
+import { useColumn } from "hooks/useColumn"
+import { useSnacki } from "hooks/useSnacki"
 
 export type CreateColumnFactoryProps = Pick<
     Column.Serialized,
@@ -81,4 +84,49 @@ export class ColumnFactory {
      * at then passed down to the lowest possible level (e.g. a hook).
      * The necessary properties are then passed down through network requests (by `properties` property).
      */
+}
+
+/**
+ * Hook for creating a new column.
+ */
+export const useColumnFactory = () => {
+    const { snackError } = useSnacki()
+    const { createColumn: _createColumn } = useColumn()
+
+    const [initialColumnProps, setInitialColumnProps] =
+        useState<CreateColumnFactoryProps>({
+            name: ColumnFactory.USER_DEFAULT_COLUMN.name,
+            cellType: ColumnFactory.USER_DEFAULT_COLUMN.cellType,
+        })
+
+    const [valid, setValid] = useState(false)
+    useEffect(() => {
+        if (initialColumnProps.name.length > 0) setValid(true)
+    }, [initialColumnProps.name])
+
+    const request = async () => {
+        try {
+            const column = new ColumnFactory(initialColumnProps)
+            await _createColumn(column)
+        } catch (error) {
+            snackError("Die Spalte konnte nicht erstellt werden!")
+        }
+    }
+
+    const setProperty = <T extends keyof CreateColumnFactoryProps>(
+        option: T,
+        value: CreateColumnFactoryProps[T]
+    ) => {
+        setInitialColumnProps(prev => ({
+            ...prev,
+            [option]: value,
+        }))
+    }
+
+    return {
+        valid,
+        initialColumnProps,
+        request,
+        setProperty,
+    }
 }

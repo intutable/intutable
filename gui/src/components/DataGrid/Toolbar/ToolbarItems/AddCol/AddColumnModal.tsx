@@ -14,16 +14,10 @@ import {
     Stack,
     TextField,
     Tooltip,
-    Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { useColumn } from "hooks/useColumn"
-import { useSnacki } from "hooks/useSnacki"
-import React, { useEffect, useState } from "react"
-import {
-    ColumnFactory,
-    CreateColumnFactoryProps,
-} from "utils/column utils/ColumnFactory"
+import React from "react"
+import { useColumnFactory } from "utils/column utils/ColumnFactory"
 
 type AddColumnModalProps = {
     open: boolean
@@ -33,37 +27,8 @@ type AddColumnModalProps = {
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const theme = useTheme()
 
-    const { snackError } = useSnacki()
-    const { createColumn: _createColumn } = useColumn()
-
-    const createColumn = async () => {
-        try {
-            const column = new ColumnFactory(options)
-            await _createColumn(column)
-        } catch (error) {
-            snackError("Die Spalte konnte nicht erstellt werden!")
-        }
-    }
-
-    const [options, setOptions] = useState<CreateColumnFactoryProps>({
-        name: "",
-        cellType: "string",
-    })
-    const [valid, setValid] = useState(false)
-
-    useEffect(() => {
-        if (options.name.length > 0) setValid(true)
-    }, [options.name])
-
-    const setOption = <T extends keyof CreateColumnFactoryProps>(
-        option: T,
-        value: CreateColumnFactoryProps[T]
-    ) => {
-        setOptions(prev => ({
-            ...prev,
-            [option]: value,
-        }))
-    }
+    const { request, setProperty, valid, initialColumnProps } =
+        useColumnFactory()
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
@@ -74,8 +39,8 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                     <TextField
                         label="Name"
                         variant="outlined"
-                        value={options.name}
-                        onChange={e => setOption("name", e.target.value)}
+                        value={initialColumnProps.name}
+                        onChange={e => setProperty("name", e.target.value)}
                     />
 
                     {/* Type */}
@@ -90,9 +55,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             <Select
                                 labelId="addcol-select-type"
                                 label="Typ"
-                                value={options.cellType}
+                                value={initialColumnProps.cellType}
                                 onChange={e => {
-                                    setOption("cellType", e.target.value)
+                                    setProperty("cellType", e.target.value)
                                 }}
                             >
                                 {Cells.map(cell => (
@@ -131,7 +96,10 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
-                <Button onClick={createColumn} disabled={valid == false}>
+                <Button
+                    onClick={async () => await request()}
+                    disabled={valid === false}
+                >
                     Erstellen
                 </Button>
             </DialogActions>
