@@ -68,9 +68,11 @@ export const useColumn = (
     const createColumn = async (column: ColumnFactory): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
 
+        const col = column.create()
+
         await fetcher({
             url: `/api/table/${tableId}/column`,
-            body: { ...column.properties, editable: true }, // BUG: Backend does not like this
+            body: { ...col }, // BUG: Backend does not like this
         })
         await mutate()
     }

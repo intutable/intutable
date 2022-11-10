@@ -63,7 +63,14 @@ export class ColumnFactory {
         sortDescendingFirst: false,
     }
 
-    constructor(public properties: CreateColumnFactoryProps) {}
+    constructor(private initialColumnProps: CreateColumnFactoryProps) {}
+
+    public create(): Pick<Column.Serialized, SettableColumnProps> {
+        return {
+            ...ColumnFactory.DEFAULT_COLUMN,
+            ...this.initialColumnProps,
+        }
+    }
 
     /**
      * Here is some space for further modifications. Scenarios could be:
