@@ -254,11 +254,6 @@ const TablePage: React.FC = () => {
                                         // sortIcon: // TODO: adjust
                                     }}
                                     rowKeyGetter={rowKeyGetter}
-                                    defaultColumnOptions={{
-                                        sortable: true,
-                                        resizable: true,
-                                        // formatter: // TODO: adjust
-                                    }}
                                     onCopy={event =>
                                         clipboardUtil.handleOnCopy(
                                             event,
