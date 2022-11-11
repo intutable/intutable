@@ -1,4 +1,4 @@
-import Cell from "@datagrid/Cells/abstract/Cell"
+import { Cell } from "@datagrid/Cells/abstract/Cell"
 
 export abstract class NumericCell extends Cell {
     isValid(value: unknown): boolean {
@@ -8,6 +8,24 @@ export abstract class NumericCell extends Cell {
             typeof value === "number" ||
             NumericCell.isNumeric(value)
         )
+    }
+    serialize(value: number): number {
+        return value
+    }
+    deserialize(value: unknown): number {
+        if (typeof value === "number") return value
+        if (NumericCell.isNumeric(value)) {
+            const int = Number.parseInt(value as string)
+            if (isNaN(int) === false) return int
+            const float = Number.parseFloat(value as string)
+            if (isNaN(float) === false) return float
+        }
+        throw new Error(`Could not deserialize value: ${value}`)
+    }
+
+    unexport(value: number | string): number | null {
+        // TODO: implement
+        throw new Error("Not Implemented")
     }
 
     static isInteger(str: unknown): boolean {
@@ -35,25 +53,5 @@ export abstract class NumericCell extends Cell {
         if (typeof str !== "string") return false
 
         return NumericCell.isInteger(str) || NumericCell.isFloat(str)
-    }
-
-    parse(value: string | number | null | undefined): number | null {
-        if (typeof value === "undefined" || value === null || value === "")
-            return null
-
-        if (typeof value === "number") return value
-
-        if (typeof value === "string") {
-            const int = Number.parseInt(value)
-            if (isNaN(int) === false) return int
-            const float = Number.parseFloat(value)
-            if (isNaN(float) === false) return float
-        }
-
-        return null
-    }
-
-    unexport(value: number | string): number | null {
-        return this.parse(value)
     }
 }

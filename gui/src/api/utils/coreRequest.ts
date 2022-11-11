@@ -75,5 +75,6 @@ export const passedLogin = async (res: Response): Promise<Response> => {
 
 export const checkError = async (res: Response): Promise<Response> => {
     if (res.ok) return res
+    console.log("core error:", res)
     throw new CoreRequestError(await res.text(), res.status)
 }

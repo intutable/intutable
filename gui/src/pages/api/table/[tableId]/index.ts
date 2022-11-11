@@ -1,14 +1,12 @@
 import {
     asTable,
     deleteView,
-    getViewData,
     getViewOptions,
     listViews,
     renameView,
     TableDescriptor,
     tableId as makeTableId,
     viewId,
-    ViewData,
     ViewDescriptor,
     ViewOptions,
 } from "@intutable/lazy-views"
@@ -17,8 +15,9 @@ import {
     removeTable,
 } from "@intutable/project-management/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { TableData } from "@shared/types"
+import { getTableData } from "@backend/requests"
 import { coreRequest } from "api/utils"
-import { Table } from "api/utils/parse"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import {
     withReadWriteConnection,
@@ -42,10 +41,10 @@ const GET = withCatchingAPIRoute(
         const parsedTableData = await withReadOnlyConnection(
             user,
             async sessionID =>
-                coreRequest<ViewData>(
-                    getViewData(sessionID, tableId),
+                coreRequest<TableData>(
+                    getTableData(sessionID, tableId),
                     user.authCookie
-                ).then(Table.parse)
+                )
         )
 
         res.status(200).json(parsedTableData)

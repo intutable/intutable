@@ -17,8 +17,8 @@ import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
-import Cell from "../abstract/Cell"
 import BookmarksIcon from "@mui/icons-material/Bookmarks"
+import { Cell } from "../abstract/Cell"
 
 const ChipItem: React.FC<{
     label: string
@@ -50,38 +50,29 @@ export class MultiSelect extends Cell {
         return Array.isArray(value) && value.every(v => typeof v === "string")
     }
 
-    parse(value: unknown): string[] {
-        if (value == null) return []
-        if (Array.isArray(value)) return value
-
-        if (typeof value === "string") {
-            try {
-                const jsonparsed = JSON.parse(value ?? "[]")
-                if (Array.isArray(jsonparsed)) return jsonparsed
-            } catch (e) {
-                return [value]
-            }
-        }
-
-        return []
-    }
-    stringify(value: string[]): string {
+    serialize(value: string[]): string {
         return JSON.stringify(value)
     }
+    deserialize(value: unknown): string[] {
+        if (Array.isArray(value)) return value
+        if (typeof value === "string") {
+            try {
+                const jsonparsed = JSON.parse(value)
+                if (Array.isArray(jsonparsed)) return jsonparsed
+                // eslint-disable-next-line no-empty
+            } catch (_) {}
+        }
+        throw new Error(`Could not deserialize value: ${value}`)
+    }
 
-    editor = () => null
-
-    export(value: unknown): string | void {
-        if (value == null || value === "") return
-
-        const arr = this.parse(value as string)
-        if (Array.isArray(arr)) return arr.join(";")
-
-        return
+    export(value: string[]): string {
+        return value.join(";")
     }
     unexport(value: string): string[] {
         return value.split(";")
     }
+
+    editor = () => null
 
     formatter = (props: FormatterProps<Row>) => {
         const {
@@ -108,30 +99,31 @@ export class MultiSelect extends Cell {
         const addChip = (value: string) => {
             props.onRowChange({
                 ...row,
-                [key]: this.stringify([...content, value]),
+                [key]: [...content, value],
             })
             closeModal()
         }
         const removeChip = (value: string) => {
             props.onRowChange({
                 ...row,
-                [key]: this.stringify(content.filter(v => v !== value)),
+                [key]: content.filter(v => v !== value),
             })
             closeModal()
         }
 
         const { data } = useView()
-        const list: string[] | null = useMemo(() => {
-            if (data == null) return null
+        const list: string[] = useMemo(() => {
+            return []
+            // BUG: get this working again
 
-            const values = data.rows
-                .map(row => this.parse(row[_column.key]))
-                .flat()
-                .filter(value => typeof value === "string" && value.length > 0)
-                .filter(value => content.includes(value) === false)
+            // const values = data.rows
+            //     // .map(row => this.parse(row[_column.key])) // deserialize instead
+            //     .flat()
+            //     .filter(value => typeof value === "string" && value.length > 0)
+            // .filter(value => content.includes(value) === false)
 
-            return [...new Set(values)]
-        }, [_column.key, content, data])
+            // return [...new Set(values)]
+        }, [])
 
         return (
             <>

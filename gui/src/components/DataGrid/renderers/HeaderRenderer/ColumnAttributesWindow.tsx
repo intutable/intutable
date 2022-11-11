@@ -1,79 +1,21 @@
+import * as Property from "@datagrid/ColumnProperties"
 import {
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Divider,
     ListItemText,
     MenuItem,
-    Stack,
-    Tooltip,
-    Typography,
 } from "@mui/material"
-import { useTheme } from "@mui/material/styles"
-import { useView } from "hooks/useView"
-import React, { useMemo, useState } from "react"
+import React, { useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
-import InfoIcon from "@mui/icons-material/Info"
-import { ChangeCellType } from "./ChangeCellType"
-
-type AttributeProps = {
-    label: string
-    helperText?: string
-    value: React.ReactNode
-}
-
-const Attribute: React.FC<AttributeProps> = props => {
-    const theme = useTheme()
-    const { label, value } = props
-
-    return (
-        <>
-            <Stack
-                sx={{
-                    my: 2,
-                }}
-            >
-                <Typography variant="body1">{value}</Typography>
-                <Typography
-                    variant="caption"
-                    sx={{
-                        mt: -0.3,
-                        fontStyle: "italic",
-                        color: theme.palette.grey[700],
-                        fontSize: "60%",
-                        display: "flex",
-                        alignItems: "center",
-                    }}
-                >
-                    {label}
-                    {props.helperText && (
-                        <Tooltip
-                            arrow
-                            title={props.helperText}
-                            placement="right"
-                        >
-                            <InfoIcon
-                                sx={{
-                                    ml: 0.4,
-                                    fontSize: 10,
-                                }}
-                            />
-                        </Tooltip>
-                    )}
-                </Typography>
-            </Stack>
-            <Divider />
-        </>
-    )
-}
 
 type ColumnAttributesWindowProps = {
     open: boolean
     onClose: () => void
-    column: Column
+    column: Column.Serialized
 }
 
 export const ColumnAttributesWindow: React.FC<
@@ -85,21 +27,13 @@ export const ColumnAttributesWindow: React.FC<
         <Dialog open={open} onClose={() => onClose()}>
             <DialogTitle>Eigenschaften</DialogTitle>
             <DialogContent>
-                <Attribute label={"Name"} value={column.name as string} />
-                <Attribute
-                    label="Spalten-Typ"
-                    helperText="'Standard', 'Link', 'Lookup' und 'Index' sind die übergeordneten Spaltentypen."
-                    value={column._kind as string}
-                />
-                <Attribute
-                    label="Zellen-Typ"
-                    helperText="Typ des Inhalts der Zellen einer Spalte, bspw. 'Text' oder 'Datum'."
-                    value={<ChangeCellType onClose={onClose} column={column} />}
-                />
-                <Attribute
-                    label={"Editierbar"}
-                    value={column.editable ? "Ja" : "Nein"}
-                />
+                <Property.Name column={column} />
+                <Property.ChangeCellType column={column} />
+                <Property.Hidden column={column} />
+                <Property.Editable column={column} />
+                <Property.Sortable column={column} />
+                <Property.Frozen column={column} />
+                <Property.Resizable column={column} />
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => onClose()}>Schließen</Button>
@@ -135,7 +69,7 @@ export const ColumnAttributesWindowButton: React.FC<
             <ColumnAttributesWindow
                 open={anchorEL != null}
                 onClose={closeModal}
-                column={props.headerRendererProps.column}
+                column={props.headerRendererProps.column as Column.Serialized}
             />
         </>
     )

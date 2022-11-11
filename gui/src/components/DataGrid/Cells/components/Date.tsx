@@ -3,12 +3,10 @@ import TextField from "@mui/material/TextField"
 import { DatePicker } from "@mui/x-date-pickers"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
-import { isValid as isValidDate } from "date-fns"
 import deLocale from "date-fns/locale/de"
 import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
 import { TempusCell } from "../abstract/TempusCell"
 import DateRangeIcon from "@mui/icons-material/DateRange"
 
@@ -17,17 +15,15 @@ export class DateCell extends TempusCell {
     label = "Date"
     icon = DateRangeIcon
 
-    editor = () => null
-
-    export(value: unknown): string | void {
-        const parsed = this.parse(value as string)
-        if (parsed == null) return
-        return parsed.toLocaleDateString("de-DE", {
+    export(value: Date): string {
+        return value.toLocaleDateString("de-DE", {
             month: "2-digit",
             day: "2-digit",
             year: "numeric",
         })
     }
+
+    editor = () => null
 
     formatter = (props: FormatterProps<Row>) => {
         const {
@@ -43,7 +39,7 @@ export class DateCell extends TempusCell {
 
             props.onRowChange({
                 ...row,
-                [key]: this.stringify(date),
+                [key]: date,
             })
         }
 
@@ -51,7 +47,7 @@ export class DateCell extends TempusCell {
         const erase = () => {
             props.onRowChange({
                 ...row,
-                [key]: "",
+                [key]: null,
             })
         }
 

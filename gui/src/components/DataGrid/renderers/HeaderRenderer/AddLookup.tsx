@@ -24,7 +24,7 @@ import {
 
 import { useLink } from "hooks/useLink"
 import { TableColumn } from "types"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 type ModalProps = {
     open: boolean
@@ -131,7 +131,7 @@ export const AddLookup: React.FC<AddLookupProps> = props => {
     const { headerRendererProps, colInfo: col, foreignTable } = props
     const { snackError } = useSnacki()
 
-    const kind = headerRendererProps.column._kind!
+    const kind = headerRendererProps.column.kind!
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 

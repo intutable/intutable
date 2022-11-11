@@ -5,7 +5,6 @@ import {
     getViewInfo,
     ViewInfo,
     ViewDescriptor,
-    ColumnSpecifier,
 } from "@intutable/lazy-views"
 import {
     createTableInProject,
@@ -17,20 +16,24 @@ import {
     ProjectDescriptor,
     TableDescriptor,
 } from "@intutable/project-management/dist/types"
-import { BASIC_TABLE_COLUMNS } from "types/rdg"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
-import sanitizeName from "utils/sanitizeName"
+import { DB } from "@shared/types"
+import { APP_TABLE_COLUMNS } from "@shared/api"
+import sanitizeName from "@shared/utils/sanitizeName"
 import {
     emptyRowOptions,
     defaultRowOptions,
     defaultViewName,
+} from "@shared/defaults"
+import {
     standardColumnAttributes,
+    idColumnAttributes,
     indexColumnAttributes,
-} from "@backend/defaults"
+} from "shared/dist/attributes/defaults"
 
 /**
  * Create a new table with the specified name.
@@ -71,7 +74,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
                 user.id,
                 projectId,
                 internalName,
-                BASIC_TABLE_COLUMNS
+                APP_TABLE_COLUMNS
             ),
             user.authCookie
         )
@@ -82,13 +85,26 @@ const POST = withCatchingAPIRoute(async (req, res) => {
             user.authCookie
         )
         const columnSpecs = baseColumns.map(c => {
-            const makeColumnAttributes =
-                defaultColumnAttributeMap[c.name] ||
-                (() => ({} as ColumnSpecifier["attributes"]))
-            return {
-                parentColumnId: c.id,
-                attributes: makeColumnAttributes(),
+            let attributes: Partial<DB.Column>
+            switch (c.name) {
+                case "_id":
+                    attributes = idColumnAttributes(0)
+                    break
+                case "index":
+                    attributes = indexColumnAttributes(1)
+                    break
+                case "name":
+                    attributes = standardColumnAttributes(
+                        "Name",
+                        "string",
+                        2,
+                        true
+                    )
+                    break
+                default:
+                    attributes = {} as Partial<DB.Column>
             }
+            return { parentColumnId: c.id, attributes }
         })
 
         // create table view
@@ -138,12 +154,3 @@ export default withSessionRoute(
         }
     })
 )
-
-const defaultColumnAttributeMap: Record<
-    string,
-    () => ColumnSpecifier["attributes"]
-> = {
-    _id: () => standardColumnAttributes("ID", "number", 0),
-    index: indexColumnAttributes,
-    name: () => standardColumnAttributes("Name", "string", 1, true),
-}

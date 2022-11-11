@@ -1,10 +1,7 @@
-import {
-    getViewData,
-    ViewData as RawViewData,
-    ViewDescriptor,
-} from "@intutable/lazy-views"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
-import { View as ViewParser } from "api/utils/parse"
+import { getViewData } from "@backend/requests"
+
 import fs from "fs-extra"
 import { parseAsync } from "json2csv"
 import { NextApiResponse } from "next"
@@ -14,7 +11,7 @@ import { withReadOnlyConnection } from "api/utils/databaseConnection"
 import Obj from "types/Obj"
 import { User } from "types/User"
 import { capitalizeFirstLetter } from "utils/capitalizeFirstLetter"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { TmpDir } from "../TmpDir"
 import { ExportRequest } from "./ExportRequest"
 
@@ -96,20 +93,19 @@ export class ExportUtil {
 
     /** Get the view data */
     private async fetchData(): Promise<ViewData.Serialized> {
-        return withReadOnlyConnection(this.user, async sessionID => {
-            const rawViewData = await coreRequest<RawViewData>(
+        return withReadOnlyConnection(this.user, async sessionID =>
+            coreRequest<ViewData.Serialized>(
                 getViewData(sessionID, this.viewId),
                 this.user.authCookie
             )
-            return ViewParser.parse(rawViewData)
-        })
+        )
     }
 
     /** Only use columns selected by the user for export as well as rows, if marked */
     private select(data: ViewData.Serialized) {
         // only use the specified columns
         const columns: Column.Serialized[] = data.columns.filter(col =>
-            this.job.options.columnSelection.includes(col._id)
+            this.job.options.columnSelection.includes(col.id)
         )
 
         let rows: ViewData.Serialized["rows"] = data.rows
@@ -122,16 +118,16 @@ export class ExportUtil {
             // find the index column where the information about the indices are stored,
             // because the indices of each row are not accessible in the viewData
             // due to prefixes of the keys
-            const indexColumn = data.columns.find(c => c._kind === "index")!
+            const indexColumn = data.columns.find(c => c.kind === "index")!
             // and remap to the actual rows
             rows = rows.map(row => ({
                 ...row,
-                __rowIndex__: row[indexColumn.key] as number,
+                index: row[indexColumn.key] as number,
             }))
 
             // filter out the rows that are not selected
             rows = rows.filter(row =>
-                this.job.options.rowSelection!.includes(row.__rowIndex__)
+                this.job.options.rowSelection!.includes(row.index)
             )
         }
 

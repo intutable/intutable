@@ -25,7 +25,7 @@ import {
 } from "@mui/material"
 
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
-import { TableColumn } from "types/rdg"
+import { TableColumn } from "types"
 import {
     ConditionKind,
     Filter,
@@ -38,7 +38,7 @@ import {
     and,
     stripPartialFilter,
     partialFilterEquals,
-} from "utils/filter"
+} from "@shared/utils/filter"
 import { useAPI } from "context/APIContext"
 import { useUpdateTimer } from "hooks/useUpdateTimer"
 import { FilterEditor } from "./Filter"

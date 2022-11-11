@@ -3,12 +3,10 @@ import { TextField } from "@mui/material"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 import { TimePicker } from "@mui/x-date-pickers"
-import { isValid as isValidTime } from "date-fns"
 import deLocale from "date-fns/locale/de"
 import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
-import Cell from "../abstract/Cell"
 import { TempusCell } from "../abstract/TempusCell"
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled"
 
@@ -17,16 +15,14 @@ export class Time extends TempusCell {
     label = "Time"
     icon = AccessTimeFilledIcon
 
-    editor = () => null
-
-    export(value: unknown): string | void {
-        const parsed = this.parse(value as string)
-        if (parsed == null) return
-        return parsed.toLocaleTimeString("de-DE", {
+    export(value: Date): string {
+        return value.toLocaleTimeString("de-DE", {
             hour: "2-digit",
             minute: "2-digit",
         })
     }
+
+    editor = () => null
 
     formatter = (props: FormatterProps<Row>) => {
         const {
@@ -42,7 +38,7 @@ export class Time extends TempusCell {
 
             props.onRowChange({
                 ...row,
-                [key]: this.stringify(date),
+                [key]: date,
             })
         }
 

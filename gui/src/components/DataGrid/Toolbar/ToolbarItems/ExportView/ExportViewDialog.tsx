@@ -22,7 +22,7 @@ import { useSelectedRows } from "context/SelectedRowsContext"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useMemo, useState } from "react"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { ExportJob } from "utils/Export/ExportJob"
 import { ExportOptions, ExportRequest } from "utils/Export/ExportRequest"
 
@@ -224,7 +224,7 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                                         ColumnUtility.isAppColumn(col) === false
                                 )
                                 .map((col, i) => (
-                                    <MenuItem key={i} value={col._id}>
+                                    <MenuItem key={i} value={col.id}>
                                         {col.name}
                                     </MenuItem>
                                 ))}

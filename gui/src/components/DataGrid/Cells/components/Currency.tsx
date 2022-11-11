@@ -10,7 +10,7 @@ export class Currency extends NumericCell {
     label = "Currency"
     icon = PaidIcon
 
-    export(value: unknown): string {
+    export(value: number): string {
         return value + "€"
     }
     unexport(value: string): number {

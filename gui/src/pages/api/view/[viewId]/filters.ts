@@ -1,19 +1,13 @@
-import {
-    ViewDescriptor,
-    ViewOptions,
-    getViewOptions,
-    changeRowOptions,
-} from "@intutable/lazy-views"
+import { ViewDescriptor } from "@intutable/lazy-views"
 
+import { changeViewFilters } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
-import { defaultViewName } from "@backend/defaults"
 import { Filter } from "types/filter"
-import { Filter as FilterParser } from "api/utils/parse"
 
 /**
  * PATCH/update the name of a single view.
@@ -37,26 +31,16 @@ const PATCH = withCatchingAPIRoute(
         }
         const user = req.session.user!
 
-        await withReadWriteConnection(user, async sessionID => {
-            const options = await coreRequest<ViewOptions>(
-                getViewOptions(sessionID, viewId),
+        await withReadWriteConnection(user, async sessionID =>
+            coreRequest<Filter[]>(
+                changeViewFilters(sessionID, viewId, filters),
                 user.authCookie
+            ).catch(e =>
+                e.message.includes("default view")
+                    ? Promise.reject("changeDefaultView")
+                    : Promise.reject(e)
             )
-
-            // prevent altering the default view
-            if (options.name === defaultViewName())
-                throw Error("changeDefaultView")
-
-            const newRowOptions = {
-                ...options.rowOptions,
-                conditions: filters.map(FilterParser.deparse),
-            }
-
-            await coreRequest(
-                changeRowOptions(sessionID, viewId, newRowOptions),
-                user.authCookie
-            )
-        })
+        )
         res.status(200).json({})
     }
 )

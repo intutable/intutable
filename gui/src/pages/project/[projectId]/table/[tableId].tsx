@@ -1,7 +1,7 @@
-import RowMask from "@datagrid/RowMask/RowMask"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton"
 import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
 import { RowRenderer } from "@datagrid/renderers"
+import RowMask from "@datagrid/RowMask/RowMask"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
@@ -34,13 +34,14 @@ import { useView } from "hooks/useView"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import { useThemeToggler } from "pages/_app"
 import React, { useEffect, useState } from "react"
-import DataGrid, { RowsChangeData } from "react-data-grid"
+import DataGrid, { RowsChangeData, SelectColumn } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import { rowKeyGetter } from "utils/rowKeyGetter"
+import SerDes from "utils/SerDes"
 import { withSSRCatch } from "utils/withSSRCatch"
 
 const TablePage: React.FC = () => {
@@ -92,13 +93,9 @@ const TablePage: React.FC = () => {
     ): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
-        const changedValue = changedRow[col.key]
+        const serializedValue = SerDes.serializeRowValue(changedRow, col)
 
-        // BUG: in react-data-grid RowsChangeData.column is sometimes undefined here, this is a known bug
-        // hopefully (at least it seems like it did fix it) the last beta version (7.0.0-beta.14) fixed this bug
-        // (see 9753a70240afdaa1b6c7cca0c4d555abee77a01f)
-
-        await updateRow(col, getRowId(changedRow), changedValue)
+        await updateRow(col, getRowId(changedRow), serializedValue)
     }
 
     const tableSize = {
@@ -141,6 +138,91 @@ const TablePage: React.FC = () => {
                             <ViewNavigator open={viewNavOpen} />
                         </Grid>
                     )}
+
+                    <Grid item xs={tableSize.xs}>
+                        <Box>
+                            <Toolbar position="top">
+                                <ToolbarItem.Views
+                                    handleClick={() =>
+                                        setViewNavOpen(prev => !prev)
+                                    }
+                                    open={viewNavOpen}
+                                />
+                                <ToolbarItem.AddCol />
+                                <ToolbarItem.AddLink />
+                                <ToolbarItem.AddRow />
+                                <ToolbarItem.EditFilters />
+                                <ToolbarItem.ExportView />
+                                <ToolbarItem.HiddenColumns />
+                            </Toolbar>
+
+                            <DndProvider backend={HTML5Backend}>
+                                <DataGrid
+                                    className={
+                                        "rdg-" + getTheme() + " fill-grid"
+                                    }
+                                    rows={data.rows}
+                                    columns={[
+                                        SelectColumn,
+                                        ...data.columns.filter(
+                                            column => column.hidden !== true
+                                        ),
+                                    ]}
+                                    components={{
+                                        noRowsFallback: <NoRowsFallback />,
+                                        rowRenderer: RowRenderer,
+                                        // checkboxFormatter: // TODO: adjust
+                                        // sortIcon: // TODO: adjust
+                                    }}
+                                    rowKeyGetter={rowKeyGetter}
+                                    defaultColumnOptions={{
+                                        sortable: true,
+                                        resizable: true,
+                                        // formatter: // TODO: adjust
+                                    }}
+                                    onCopy={event =>
+                                        clipboardUtil.handleOnCopy(
+                                            event,
+                                            error => {
+                                                error
+                                                    ? snackError(error)
+                                                    : snack("1 Zelle kopiert")
+                                            }
+                                        )
+                                    }
+                                    // onFill={e =>
+                                    //     clipboardUtil.handleOnFill(e)
+                                    // }
+                                    onPaste={e =>
+                                        clipboardUtil.handleOnPaste(
+                                            e,
+                                            error => {
+                                                error
+                                                    ? snackError(error)
+                                                    : snack("1 Zelle eingefügt")
+                                            }
+                                        )
+                                    }
+                                    selectedRows={selectedRows}
+                                    onSelectedRowsChange={setSelectedRows}
+                                    onRowsChange={partialRowUpdate}
+                                    headerRowHeight={headerHeight}
+                                    onRowClick={(row, column) =>
+                                        setRowMaskState({
+                                            mode: "edit",
+                                            row,
+                                            column,
+                                        })
+                                    }
+                                    cellNavigationMode={cellNavigationMode}
+                                />
+                            </DndProvider>
+
+                            <Toolbar position="bottom">
+                                <ToolbarItem.Connection status="connected" />
+                            </Toolbar>
+                        </Box>
+                    </Grid>
 
                     <Grid item xs={tableSize.xs}>
                         <Box>

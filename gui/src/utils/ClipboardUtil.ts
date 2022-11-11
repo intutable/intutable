@@ -2,6 +2,8 @@ import cells from "@datagrid/Cells"
 import { CopyEvent, FillEvent, PasteEvent } from "react-data-grid"
 import { Column, Row } from "types"
 
+type Column = Column.Deserialized
+
 /** success if `error` is undefined */
 type EventHandlerCallback = (error?: string) => void
 
@@ -43,7 +45,7 @@ export class ClipboardUtil implements ClipboardEvents {
     }
 
     private util(column: Column) {
-        return cells.getCell(column._cellContentType!)
+        return cells.getCell(column.cellType!)
     }
 
     /** Copy Event – fires when a user copies a cell, e.g. cmd+c on a cell */
@@ -105,11 +107,13 @@ export class ClipboardUtil implements ClipboardEvents {
             // })
 
             // passes source content the target validator?
-            const parsed = sourceUtil.parse(sourceRawContent)
-            if (targetUtil.isValid(parsed) === false) {
+            // const parsed = sourceUtil.parse(sourceRawContent)
+            if (targetUtil.isValid(sourceRawContent) === false) {
                 callback?.("1 Zelle konnte nicht eingefügt werden.")
                 return targetRow
             }
+
+            throw new Error("update this code")
 
             callback?.()
             return {

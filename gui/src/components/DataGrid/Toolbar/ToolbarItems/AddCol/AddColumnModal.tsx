@@ -1,58 +1,29 @@
-import { StandardColumnSpecifier } from "@backend/types"
 import Cells from "@datagrid/Cells"
-import HelpIcon from "@mui/icons-material/Help"
 import {
-    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
     FormControl,
-    FormControlLabel,
-    IconButton,
     InputLabel,
     MenuItem,
     Select,
     Stack,
-    Switch,
     TextField,
-    Tooltip,
-    Typography,
 } from "@mui/material"
-import { useTheme } from "@mui/material/styles"
-import React, { useEffect, useState } from "react"
+import { TooltipIcon } from "components/TooltipIcon"
+import React from "react"
+import { useColumnFactory } from "utils/column utils/ColumnFactory"
 
 type AddColumnModalProps = {
     open: boolean
     onClose: () => void
-    onHandleCreateColumn: (column: StandardColumnSpecifier) => Promise<void>
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
-    const theme = useTheme()
-
-    const [moreOptionsActive, setMoreOptionsActive] = useState(false)
-    const [options, setOptions] = useState<StandardColumnSpecifier>({
-        name: "",
-        _cellContentType: "string",
-        editable: true,
-    })
-    const [valid, setValid] = useState(false)
-
-    useEffect(() => {
-        if (options.name.length > 0) setValid(true)
-    }, [options.name])
-
-    const setOption = <T extends keyof StandardColumnSpecifier>(
-        option: T,
-        value: StandardColumnSpecifier[T]
-    ) => {
-        setOptions(prev => ({
-            ...prev,
-            [option]: value,
-        }))
-    }
+    const { request, setProperty, valid, initialColumnProps } =
+        useColumnFactory()
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
@@ -63,8 +34,8 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                     <TextField
                         label="Name"
                         variant="outlined"
-                        value={options.name}
-                        onChange={e => setOption("name", e.target.value)}
+                        value={initialColumnProps.name}
+                        onChange={e => setProperty("name", e.target.value)}
                     />
 
                     {/* Type */}
@@ -79,12 +50,9 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             <Select
                                 labelId="addcol-select-type"
                                 label="Typ"
-                                value={options._cellContentType}
+                                value={initialColumnProps.cellType}
                                 onChange={e => {
-                                    setOption(
-                                        "_cellContentType",
-                                        e.target.value
-                                    )
+                                    setProperty("cellType", e.target.value)
                                 }}
                             >
                                 {Cells.map(cell => {
@@ -101,77 +69,15 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                 })}
                             </Select>
                         </FormControl>
-                        <Tooltip
-                            title="Typ der Zellen einer Spalte"
-                            arrow
-                            enterDelay={1000}
-                            placement="right"
-                        >
-                            <IconButton
-                                size="small"
-                                sx={{
-                                    mt: 2,
-                                    ml: 0.5,
-                                }}
-                            >
-                                <HelpIcon
-                                    sx={{
-                                        cursor: "pointer",
-                                        fontSize: "85%",
-                                    }}
-                                />
-                            </IconButton>
-                        </Tooltip>
+                        <TooltipIcon tooltip="Typ der Zellen einer Spalte" />
                     </Stack>
-                    {moreOptionsActive && (
-                        // Editable
-                        <Box sx={{ mt: 2 }}>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={options.editable ?? true}
-                                        onChange={e =>
-                                            setOption(
-                                                "editable",
-                                                e.target.checked
-                                            )
-                                        }
-                                    />
-                                }
-                                label="Editierbar"
-                            />
-                        </Box>
-                        // Frozen
-                        // Resizable
-                        // sortable
-                    )}
                 </FormControl>
-                <Typography
-                    sx={{
-                        fontStyle: "italic",
-                        color: theme.palette.text.disabled,
-                        fontSize: theme.typography.caption,
-                        fontWeight: theme.typography.fontWeightLight,
-                        cursor: "pointer",
-                        textAlign: "right",
-                        mt: 2,
-                        "&:hover": {
-                            textDecoration: "underline",
-                        },
-                    }}
-                    onClick={() => setMoreOptionsActive(prev => !prev)}
-                >
-                    {moreOptionsActive ? "Weniger" : "Erweiterte"} Einstellungen
-                </Typography>
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <Button
-                    onClick={async () => {
-                        await props.onHandleCreateColumn(options)
-                        props.onClose()
-                    }}
-                    disabled={valid == false}
+                    onClick={async () => await request()}
+                    disabled={valid === false}
                 >
                     Erstellen
                 </Button>
