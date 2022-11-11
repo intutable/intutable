@@ -2,11 +2,13 @@ import { Box, Checkbox } from "@mui/material"
 import React from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
+import ToggleOnIcon from "@mui/icons-material/ToggleOn"
 import { Cell } from "../abstract/Cell"
 
 export class Bool extends Cell {
     readonly brand = "boolean"
     label = "Boolean"
+    icon = ToggleOnIcon
 
     editor = () => null
 

@@ -1,36 +1,27 @@
+import * as Property from "@datagrid/ColumnProperties"
 import {
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Divider,
     ListItemText,
     MenuItem,
-    Stack,
-    Tooltip,
-    Typography,
 } from "@mui/material"
-import { useTheme } from "@mui/material/styles"
-import { useView } from "hooks/useView"
-import React, { useMemo, useState } from "react"
+import React, { useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
-import { Row } from "types"
-import InfoIcon from "@mui/icons-material/Info"
-import * as Property from "@datagrid/ColumnProperties"
-import { ProxyColumn } from "utils/column utils/ColumnProxy"
-import { Column } from "types"
+import { Column, Row } from "types"
 
-type ModalProps = {
+type ColumnAttributesWindowProps = {
     open: boolean
     onClose: () => void
-    headerRendererProps: HeaderRendererProps<Row>
+    column: Column.Serialized
 }
 
-const Modal: React.FC<ModalProps> = props => {
-    const { open, onClose, headerRendererProps } = props
-
-    const column = headerRendererProps.column as Column.Serialized
+export const ColumnAttributesWindow: React.FC<
+    ColumnAttributesWindowProps
+> = props => {
+    const { open, onClose, column } = props
 
     return (
         <Dialog open={open} onClose={() => onClose()}>
@@ -51,13 +42,13 @@ const Modal: React.FC<ModalProps> = props => {
     )
 }
 
-export type ColumnAttributesWindowProps = {
+export type ColumnAttributesWindowButtonProps = {
     headerRendererProps: HeaderRendererProps<Row>
     onCloseContextMenu: () => void
 }
 
-export const ColumnAttributesWindow: React.FC<
-    ColumnAttributesWindowProps
+export const ColumnAttributesWindowButton: React.FC<
+    ColumnAttributesWindowButtonProps
 > = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openModal = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -75,10 +66,10 @@ export const ColumnAttributesWindow: React.FC<
                 <ListItemText>Eigenschaften</ListItemText>
             </MenuItem>
 
-            <Modal
+            <ColumnAttributesWindow
                 open={anchorEL != null}
                 onClose={closeModal}
-                headerRendererProps={props.headerRendererProps}
+                column={props.headerRendererProps.column as Column.Serialized}
             />
         </>
     )

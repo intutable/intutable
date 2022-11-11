@@ -8,10 +8,12 @@ import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { TempusCell } from "../abstract/TempusCell"
+import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled"
 
 export class Time extends TempusCell {
     readonly brand = "time"
     label = "Time"
+    icon = AccessTimeFilledIcon
 
     export(value: Date): string {
         return value.toLocaleTimeString("de-DE", {

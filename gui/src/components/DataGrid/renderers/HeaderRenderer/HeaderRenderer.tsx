@@ -1,3 +1,4 @@
+import cells from "@datagrid/Cells"
 import { asView } from "@intutable/lazy-views/dist/selectable"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import KeyIcon from "@mui/icons-material/Key"
@@ -12,7 +13,7 @@ import { useRouter } from "next/router"
 import React, { useMemo } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
-import { ContextMenu } from "./ContextMenu"
+import { ColumnContextMenu } from "./ColumnContextMenu"
 import { PrefixIcon } from "./PrefixIcon"
 import { SearchBar } from "./SearchBar"
 
@@ -44,6 +45,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
 
     const navigateToView = () =>
         router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
+
+    const util = cells.getCell(props.column.cellType)
+    const Icon = util.icon
 
     if (col == null) return null
 
@@ -118,6 +122,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 fontWeight: "bold",
                             }}
                         >
+                            <Icon fontSize="small" />
                             {props.column.name}
                         </Typography>
                     </Tooltip>
@@ -134,7 +139,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         </IconButton>
                     </Tooltip>
 
-                    <ContextMenu
+                    <ColumnContextMenu
                         colInfo={col}
                         foreignTable={foreignTable}
                         headerRendererProps={props}

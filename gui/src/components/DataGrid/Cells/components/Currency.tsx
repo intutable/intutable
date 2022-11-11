@@ -3,10 +3,12 @@ import React from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { NumericCell } from "../abstract/NumericCell"
+import PaidIcon from "@mui/icons-material/Paid"
 
 export class Currency extends NumericCell {
     readonly brand = "currency"
     label = "Currency"
+    icon = PaidIcon
 
     export(value: number): string {
         return value + "€"

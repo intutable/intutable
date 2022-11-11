@@ -17,17 +17,17 @@ import React, { useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
 import { AddLookup } from "./AddLookup"
-import { ColumnAttributesWindow } from "./ColumnAttributesWindow"
+import { ColumnAttributesWindowButton } from "./ColumnAttributesWindow"
 import { ColumnToClipboard } from "./ColumnToClipboard"
 import { CreateMailList } from "./CreateMailList"
 
-export type ContextMenuProps = {
+export type ColumnContextMenuProps = {
     colInfo: ColumnInfo
     foreignTable: ViewDescriptor | null | undefined
     headerRendererProps: HeaderRendererProps<Row>
 }
 
-export const ContextMenu: React.FC<ContextMenuProps> = props => {
+export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
     const { colInfo: col, foreignTable, headerRendererProps } = props
 
     const theme = useTheme()
@@ -115,7 +115,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                     <ListItemText>Suchleiste</ListItemText>
                 </MenuItem>
 
-                <ColumnAttributesWindow
+                <ColumnAttributesWindowButton
                     headerRendererProps={headerRendererProps}
                     onCloseContextMenu={closeContextMenu}
                 />

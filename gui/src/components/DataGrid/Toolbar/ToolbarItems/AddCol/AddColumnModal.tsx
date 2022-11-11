@@ -55,14 +55,18 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                     setProperty("cellType", e.target.value)
                                 }}
                             >
-                                {Cells.map(cell => (
-                                    <MenuItem
-                                        key={cell.brand}
-                                        value={cell.brand}
-                                    >
-                                        {cell.label}
-                                    </MenuItem>
-                                ))}
+                                {Cells.map(cell => {
+                                    const Icon = cell.icon
+                                    return (
+                                        <MenuItem
+                                            key={cell.brand}
+                                            value={cell.brand}
+                                        >
+                                            <Icon />
+                                            {cell.label}
+                                        </MenuItem>
+                                    )
+                                })}
                             </Select>
                         </FormControl>
                         <TooltipIcon tooltip="Typ der Zellen einer Spalte" />
