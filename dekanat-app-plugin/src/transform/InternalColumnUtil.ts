@@ -70,7 +70,7 @@ export class InternalColumnUtil {
 
         return {
             columns: nonInternalColumns,
-            rows: rows as DB.Restructured.Row[],
+            rows: processedRows as DB.Restructured.Row[],
         }
     }
 }
