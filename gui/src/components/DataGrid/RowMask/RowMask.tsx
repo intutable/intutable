@@ -142,8 +142,6 @@ export const RowMask: React.FC = () => {
 
     if (data == null) return null
 
-    console.dir(rowMaskState.row)
-
     return (
         <Dialog open={rowMaskState.mode !== "closed"} fullWidth onClose={abort}>
             <DialogTitle>
