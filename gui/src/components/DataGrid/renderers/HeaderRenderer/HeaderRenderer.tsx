@@ -46,7 +46,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const navigateToView = () =>
         router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
 
-    const util = cells.getCell(props.column._cellContentType!)
+    const util = cells.getCell(props.column.cellType)
     const Icon = util.icon
 
     if (col == null) return null

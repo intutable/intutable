@@ -5,7 +5,7 @@ import { useRowMask } from "context/RowMaskContext"
 import { useView } from "hooks/useView"
 import React, { useEffect } from "react"
 import { Column } from "types"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 const _RowNavigator: React.FC = () => {
     const { data } = useView()
@@ -15,22 +15,22 @@ const _RowNavigator: React.FC = () => {
         if (rowMaskState.mode !== "edit" || data == null) return
         const maxIndex = data.rows.length - 1
         const nextIndex =
-            rowMaskState.row.__rowIndex__ + 1 > maxIndex
+            rowMaskState.row.index + 1 > maxIndex
                 ? 0
-                : rowMaskState.row.__rowIndex__ + 1
+                : rowMaskState.row.index + 1
         const previousIndex =
-            rowMaskState.row.__rowIndex__ - 1 < 0
+            rowMaskState.row.index - 1 < 0
                 ? maxIndex
-                : rowMaskState.row.__rowIndex__ - 1
+                : rowMaskState.row.index - 1
         setRowMaskState(prev => ({
             mode: "edit",
             row: data.rows.find(
                 row =>
-                    row.__rowIndex__ ===
+                    row.index ===
                     (action === "next" ? nextIndex : previousIndex)
             )!,
             column: Object.prototype.hasOwnProperty.call(prev, "column")
-                ? (prev as { column: Column }).column
+                ? (prev as { column: Column.Deserialized }).column
                 : data.columns.filter(
                       column => ColumnUtility.isAppColumn(column) === false
                   )[0],

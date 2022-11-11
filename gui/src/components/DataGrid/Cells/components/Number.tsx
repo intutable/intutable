@@ -38,17 +38,13 @@ export class Num extends NumericCell {
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             setContent(e.target.value)
-            if (this.updateHandlerIsCallback(props.update)) {
-                const callback = (props.update as ExposedInputUpdateCallback)
-                    .onChange
-                callback(e.target.value)
-            }
+            if (props.update.mode === "alien")
+                props.update.onChange(e.target.value)
         }
 
         const handleBlur = async () => {
-            if (this.updateHandlerIsCallback(props.update) === false) {
-                const { row, column } =
-                    props.update as ExposedInputUpdateHandler
+            if (props.update.mode === "self") {
+                const { row, column } = props.update
                 await updateRow(column, getRowId(row), content)
             }
         }

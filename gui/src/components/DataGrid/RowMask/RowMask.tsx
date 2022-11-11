@@ -1,7 +1,9 @@
 import cells from "@datagrid/Cells"
+import { ColumnAttributesWindow } from "@datagrid/renderers/HeaderRenderer/ColumnAttributesWindow"
 import { AddColumnModal } from "@datagrid/Toolbar/ToolbarItems/AddCol/AddColumnModal"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import CloseIcon from "@mui/icons-material/Close"
+import EditIcon from "@mui/icons-material/Edit"
 import KeyIcon from "@mui/icons-material/Key"
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
 import {
@@ -21,19 +23,16 @@ import {
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
-import { StandardColumnSpecifier, useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useState } from "react"
 import { Column } from "types"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { RowNavigator } from "./RowNavigator"
-import EditIcon from "@mui/icons-material/Edit"
-import { ColumnContextMenu } from "@datagrid/renderers/HeaderRenderer/ColumnContextMenu"
-import { ColumnAttributesWindow } from "@datagrid/renderers/HeaderRenderer/ColumnAttributesWindow"
 
 const AddColumnButton: React.FC = () => {
     const { snackError } = useSnacki()
+
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (
         event: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -41,16 +40,6 @@ const AddColumnButton: React.FC = () => {
         setAnchorEL(event.currentTarget)
     }
     const handleCloseModal = () => setAnchorEL(null)
-
-    const { createColumn } = useColumn()
-
-    const handleCreateColumn = async (col: StandardColumnSpecifier) => {
-        try {
-            await createColumn(col)
-        } catch (error) {
-            snackError("Die Spalte konnte nicht erstellt werden!")
-        }
-    }
 
     return (
         <>
@@ -72,7 +61,6 @@ const AddColumnButton: React.FC = () => {
             <AddColumnModal
                 open={anchorEL != null}
                 onClose={handleCloseModal}
-                onHandleCreateColumn={handleCreateColumn}
             />
         </>
     )
@@ -115,9 +103,9 @@ const RowMaskContextMenu: React.FC = () => {
     )
 }
 
-const ColumnAttributesWindowButton: React.FC<{ column: Column }> = ({
-    column,
-}) => {
+const ColumnAttributesWindowButton: React.FC<{
+    column: Column.Serialized
+}> = ({ column }) => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -139,7 +127,7 @@ const ColumnAttributesWindowButton: React.FC<{ column: Column }> = ({
     )
 }
 
-const getExposedInput = (type: Column.Serialized["_cellContentType"]) => {
+const getExposedInput = (type: Column.Serialized["cellType"]) => {
     const cellUtil = cells.getCell(type)
     return cellUtil.ExposedInput
 }
@@ -203,30 +191,30 @@ export const RowMask: React.FC = () => {
                         column => ColumnUtility.isAppColumn(column) === false
                     )
                     .sort((a, b) =>
-                        a.userPrimary! === b.userPrimary!
+                        a.isUserPrimaryKey! === b.isUserPrimaryKey!
                             ? 0
-                            : a.userPrimary! === true
+                            : a.isUserPrimaryKey! === true
                             ? -1
                             : 1
                     )
                     .map(column => {
-                        const util = cells.getCell(column._cellContentType!)
+                        const util = cells.getCell(column.cellType!)
                         const Icon = util.icon
 
                         return (
                             <>
                                 <Stack
                                     direction={
-                                        column.userPrimary === true
+                                        column.isUserPrimaryKey === true
                                             ? "column"
                                             : "row"
                                     }
-                                    key={column._id!}
+                                    key={column.id}
                                     sx={{
                                         mb: 6,
                                     }}
                                 >
-                                    {column.userPrimary === true && (
+                                    {column.isUserPrimaryKey === true && (
                                         <KeyIcon fontSize="small" />
                                     )}
                                     <Typography
@@ -253,7 +241,7 @@ export const RowMask: React.FC = () => {
                                             return null
 
                                         const Input = getExposedInput(
-                                            column._cellContentType!
+                                            column.cellType
                                         )
 
                                         const onChangeHandler = (
@@ -290,10 +278,10 @@ export const RowMask: React.FC = () => {
                                         )
                                     })()}
                                     <ColumnAttributesWindowButton
-                                        column={column}
+                                        column={column as Column.Serialized}
                                     />
                                 </Stack>
-                                {column.userPrimary === true && (
+                                {column.isUserPrimaryKey === true && (
                                     <Divider
                                         variant="middle"
                                         flexItem

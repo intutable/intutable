@@ -7,7 +7,7 @@ export type RowMaskState<MODE extends RowMaskMode> = MODE extends "edit"
     ? {
           mode: "edit"
           row: Row
-          column: Column | CalculatedColumn<Row>
+          column: Column.Deserialized | CalculatedColumn<Row>
       }
     : MODE extends "create"
     ? { mode: "create" }
