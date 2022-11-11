@@ -14,6 +14,7 @@ import { capitalizeFirstLetter } from "utils/capitalizeFirstLetter"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { TmpDir } from "../TmpDir"
 import { ExportRequest } from "./ExportRequest"
+import { Cell } from "@datagrid/Cells/abstract/Cell"
 
 /**
  * Helps to export the data of views.
@@ -160,11 +161,29 @@ export class ExportUtil {
 
     /** Export the intersected data to CSV */
     private async toCSV() {
-        return await parseAsync(this.exportedData!, {
+        if (this.exportedData == null) throw new Error("No data was exported")
+
+        const _excludeEmptyRows = (
+            data: typeof this.exportedData
+        ): typeof this.exportedData =>
+            data.filter(row => ExportUtil.isEmptyRow(row) === false)
+
+        // `includeEmptyRows` does not work
+        // it probably depends on what `empty` means
+        const data =
+            this.job.options.includeEmptyRows ?? false
+                ? this.exportedData
+                : _excludeEmptyRows(this.exportedData)
+
+        return await parseAsync(data, {
             header: this.job.options.includeHeader ?? false, // default 'false' if not specified
-            includeEmptyRows: this.job.options.includeEmptyRows ?? false, // default 'false' if not specified // BUG: does not work somehow
+            // includeEmptyRows: this.job.options.includeEmptyRows ?? false, // default 'false' if not specified // BUG: does not work somehow
             withBOM: true,
         })
+    }
+
+    static isEmptyRow(row: Row | Obj<unknown>): boolean {
+        return Object.values(row).every(Cell.isEmpty)
     }
 
     // TODO: frontend just overrides the filename
