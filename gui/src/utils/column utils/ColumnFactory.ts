@@ -10,13 +10,13 @@ export type CreateColumnFactoryProps = Pick<
 >
 
 // properties that can be set programmatically from the frontend
-type SettableColumnProps = keyof Omit<
+export type SettableColumnProps = keyof Omit<
     Column.Serialized,
     "key" | "id" | "isUserPrimaryKey" | "index"
 >
 
 // properties that the user can set directly & arbitrarily
-type UserSettableColumnProps = Exclude<
+export type UserSettableColumnProps = Exclude<
     SettableColumnProps,
     "kind" | "minWidth" | "maxWidth"
 >

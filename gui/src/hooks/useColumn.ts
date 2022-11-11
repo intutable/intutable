@@ -5,7 +5,10 @@ import { useView, ViewHookOptions } from "hooks/useView"
 import { Column } from "types"
 
 import { CustomColumnAttributes } from "@shared/types"
-import { ColumnFactory } from "utils/column utils/ColumnFactory"
+import {
+    ColumnFactory,
+    SettableColumnProps,
+} from "utils/column utils/ColumnFactory"
 
 type Column = Column.Deserialized
 
@@ -80,7 +83,7 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const renameColumn = async (
-        column: Column,
+        column: Column.Deserialized | Column.Serialized,
         newName: Column["name"]
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
@@ -96,8 +99,8 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const changeAttributes = async (
-        column: Column,
-        update: CustomColumnAttributes
+        column: Column.Deserialized | Column.Serialized,
+        update: Partial<Pick<Column.Serialized, SettableColumnProps>>
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const baseColumn = getTableColumn(column)

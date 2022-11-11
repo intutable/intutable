@@ -1,5 +1,4 @@
 import Cells from "@datagrid/Cells"
-import HelpIcon from "@mui/icons-material/Help"
 import {
     Button,
     Dialog,
@@ -7,15 +6,13 @@ import {
     DialogContent,
     DialogTitle,
     FormControl,
-    IconButton,
     InputLabel,
     MenuItem,
     Select,
     Stack,
     TextField,
-    Tooltip,
 } from "@mui/material"
-import { useTheme } from "@mui/material/styles"
+import { TooltipIcon } from "components/TooltipIcon"
 import React from "react"
 import { useColumnFactory } from "utils/column utils/ColumnFactory"
 
@@ -25,8 +22,6 @@ type AddColumnModalProps = {
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
-    const theme = useTheme()
-
     const { request, setProperty, valid, initialColumnProps } =
         useColumnFactory()
 
@@ -70,27 +65,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                 ))}
                             </Select>
                         </FormControl>
-                        <Tooltip
-                            title="Typ der Zellen einer Spalte"
-                            arrow
-                            enterDelay={1000}
-                            placement="right"
-                        >
-                            <IconButton
-                                size="small"
-                                sx={{
-                                    mt: 2,
-                                    ml: 0.5,
-                                }}
-                            >
-                                <HelpIcon
-                                    sx={{
-                                        cursor: "pointer",
-                                        fontSize: "85%",
-                                    }}
-                                />
-                            </IconButton>
-                        </Tooltip>
+                        <TooltipIcon tooltip="Typ der Zellen einer Spalte" />
                     </Stack>
                 </FormControl>
             </DialogContent>
