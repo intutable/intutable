@@ -169,7 +169,7 @@ const TablePage: React.FC = () => {
                                         ),
                                     ]}
                                     components={{
-                                        noRowsFallback: <NoRowsFallback />,
+                                        // noRowsFallback: <NoRowsFallback />, // BUG: does not work with columns but no rows bc css
                                         rowRenderer: RowRenderer,
                                         // checkboxFormatter: // TODO: adjust
                                         // sortIcon: // TODO: adjust
