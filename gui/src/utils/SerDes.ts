@@ -1,7 +1,8 @@
-import { Column, Row, ViewData } from "types"
-import { ColumnUtility } from "./ColumnUtility"
-import { SelectColumn } from "react-data-grid"
 import cells from "@datagrid/Cells"
+import { headerRenderer } from "@datagrid/renderers"
+import { SelectColumn } from "react-data-grid"
+import { Column, Row, ViewData } from "types"
+import { mountColumnProxy } from "./column utils/ColumnProxy"
 
 export default class SerDes {
     static serializeRow(
@@ -18,31 +19,40 @@ export default class SerDes {
         return serializedRow
     }
 
+    static serializeRowValue<T = unknown>(
+        row: Row,
+        column: Column.Deserialized
+    ): T {
+        const changedValue = row[column.key]
+        const cellUtil = cells.getCell(column.cellType)
+        const serializedValue = cellUtil.catchEmpty(
+            cellUtil.serialize.bind(cellUtil),
+            changedValue
+        )
+
+        return serializedValue as T
+    }
+
     static deserializeRow(
         row: Row,
         columns: Column.Serialized[] | Column.Deserialized[]
     ): Row {
         columns.forEach(column => {
             const cellUtil = cells.getCell(column.cellType)
-            row[column.key] = cellUtil.deserialize(row[column.key])
+            row[column.key] = cellUtil.catchEmpty(
+                cellUtil.deserialize.bind(cellUtil),
+                row[column.key]
+            )
         })
         return row
     }
 
     /** deserialize a single column */
     static deserializeColumn(column: Column.Serialized): Column.Deserialized {
-        const util = new ColumnUtility(column) // TODO: will be replaced by a proxy object
-
+        const proxy = mountColumnProxy(column)
         return {
-            ...column,
-            editable: util.isEditable(),
-            editor: util.getEditor(),
-            formatter: util.getFormatter(),
-            summaryFormatter: undefined, // currently not supported  // TODO: will be replaced by a proxy object with default settings
-            groupFormatter: undefined, // currently not supported  // TODO: will be replaced by a proxy object with default settings
-            colSpan: undefined, // currently not supported  // TODO: will be replaced by a proxy object with default settings
-            editorOptions: util.getEditorOptions(),
-            headerRenderer: util.getHeaderRenderer(),
+            ...proxy,
+            headerRenderer: proxy.headerRenderer, // BUG: there's a bug with the proxy…
         }
     }
 
@@ -55,9 +65,6 @@ export default class SerDes {
         const deserializedColumns: Column.Deserialized[] = view.columns.map(
             SerDes.deserializeColumn
         )
-
-        // rdg's checkbox column for selecting rows
-        deserializedColumns.unshift(SelectColumn)
 
         return {
             ...view,

@@ -1,30 +1,28 @@
-import React from "react"
-import { Button, MenuItem, Select, SelectChangeEvent } from "@mui/material"
 import cells from "@datagrid/Cells"
-import { Column } from "types"
-import { useView } from "hooks/useView"
-import { ColumnUtility } from "utils/ColumnUtility"
-import { useSnacki } from "hooks/useSnacki"
+import { Button } from "@mui/material"
 import { useColumn } from "hooks/useColumn"
+import { useSnacki } from "hooks/useSnacki"
+import { useView } from "hooks/useView"
+import React from "react"
+import { Column } from "types"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
+import { ColumnPropertyInput } from "./ColumnPropertyInput"
 
-type ChangeCellTypeProps = {
-    column: Column.Deserialized
-    onClose: () => void
-}
-
-export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
+export const ChangeCellType: React.FC<{
+    column: Column.Serialized
+}> = props => {
     const { data: view } = useView()
     const { changeAttributes } = useColumn()
     const { snackSuccess, snackError, closeSnackbar } = useSnacki()
 
     const [cellType, setCellType] = React.useState(props.column.cellType)
 
-    const handleChange = async (event: SelectChangeEvent<string>) => {
-        setCellType(event.target.value)
+    const handleChange = async (value: string) => {
+        setCellType(value)
 
         try {
-            const currentCell = cells.getCell(props.column.cellType!)
-            const wantedCell = cells.getCell(event.target.value)
+            const currentCell = cells.getCell(props.column.cellType)
+            const wantedCell = cells.getCell(value)
 
             const invalidCells = ColumnUtility.canInterchangeColumnType(
                 wantedCell.brand,
@@ -65,20 +63,18 @@ export const ChangeCellType: React.FC<ChangeCellTypeProps> = props => {
             )
         } catch (error) {
             snackError("Es ist ein Fehler aufgetreten.")
-        } finally {
-            props.onClose()
         }
     }
 
-    if (props.column.cellType == null) return null
-
     return (
-        <Select onChange={handleChange} value={cellType}>
-            {Array.from(cells.getMap()).map(([brand, label]) => (
-                <MenuItem key={brand} value={brand}>
-                    {label}
-                </MenuItem>
-            ))}
-        </Select>
+        <ColumnPropertyInput
+            label="Spaltentyp"
+            type="select"
+            value={{
+                value: cellType,
+                options: Array.from(cells.getMap()),
+            }}
+            onChange={handleChange}
+        />
     )
 }

@@ -49,6 +49,7 @@ export class ParserClass {
         const casted: SerializedColumn = {
             ...serializedProps,
             isUserPrimaryKey: cast.toBoolean(column.isUserPrimaryKey),
+            hidden: cast.toBoolean(column.hidden),
             width: cast.orEmpty(
                 cast.or.bind(
                     cast.toNumber.bind(cast),
@@ -86,17 +87,29 @@ export class ParserClass {
         keys.forEach(key => {
             const value = column[key] as unknown
             switch (key) {
-                case "id":
-                    throw new Error("Not allowed to change 'id'!")
                 case "index":
-                    throw new Error("Property 'index' is an internal column!")
-                case "key":
-                    throw new Error("Not allowed to change 'key'!")
+                    throw new Error(
+                        "Not implemented. Internal Columns cannot not be edited atm."
+                    )
 
+                // restructure name
                 case "name":
                     dbcolumn["displayName"] = value as string
                     break
 
+                // default
+                case "kind":
+                case "cellType":
+                case "cellClass":
+                case "headerCellClass":
+                case "summaryCellClass":
+                case "summaryFormatter":
+                case "groupFormatter":
+                case "colSpan":
+                    dbcolumn[key] = value as string
+                    break
+
+                //
                 case "width":
                 case "minWidth":
                 case "maxWidth":
@@ -117,12 +130,14 @@ export class ParserClass {
                     )
                     break
 
+                case "hidden":
                 case "isUserPrimaryKey":
                     dbcolumn[key] = cast.toDatabaseBoolean(value)
                     break
 
+                // ignore others values from SerializedColumn that are not in DB.Column
                 default:
-                    dbcolumn[key] = value as string
+                    console.error("ignored:", key, value)
                     break
             }
         })

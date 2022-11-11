@@ -7,7 +7,7 @@ import { useView } from "hooks/useView"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { ExportViewDialog } from "../../Toolbar/ToolbarItems/ExportView/ExportViewDialog"
 
 export type CreateMailListProps = {

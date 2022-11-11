@@ -11,7 +11,7 @@ import { withReadOnlyConnection } from "api/utils/databaseConnection"
 import Obj from "types/Obj"
 import { User } from "types/User"
 import { capitalizeFirstLetter } from "utils/capitalizeFirstLetter"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { TmpDir } from "../TmpDir"
 import { ExportRequest } from "./ExportRequest"
 

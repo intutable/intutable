@@ -112,6 +112,7 @@ export class MultiSelect extends Cell {
         const { data } = useView()
         const list: string[] = useMemo(() => {
             return []
+            // BUG: get this working again
 
             // const values = data.rows
             //     // .map(row => this.parse(row[_column.key])) // deserialize instead

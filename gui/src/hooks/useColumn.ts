@@ -1,11 +1,14 @@
 import { ColumnInfo } from "@intutable/lazy-views"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { ViewHookOptions, useView } from "hooks/useView"
+import { useView, ViewHookOptions } from "hooks/useView"
 import { Column } from "types"
-import { StandardColumnSpecifier, CustomColumnAttributes } from "@shared/types"
 
-export type { StandardColumnSpecifier } from "@shared/types"
+import { CustomColumnAttributes } from "@shared/types"
+import {
+    ColumnFactory,
+    SettableColumnProps,
+} from "utils/column utils/ColumnFactory"
 
 type Column = Column.Deserialized
 
@@ -65,20 +68,14 @@ export const useColumn = (
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    /**
-     * Create a new column.
-     * Be very careful about using the `attributes` property, as you can also
-     * override the default properties defined by
-     * {@link shared/attributes/standardColumnAttributes}, most of which are
-     * essential to functionality and not just for display purposes.
-     */
-    const createColumn = async (
-        column: StandardColumnSpecifier
-    ): Promise<void> => {
+    const createColumn = async (column: ColumnFactory): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
+
+        const col = column.create()
+
         await fetcher({
             url: `/api/table/${tableId}/column`,
-            body: { column },
+            body: { ...col }, // BUG: Backend does not like this
         })
         await mutate()
     }
@@ -86,7 +83,7 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const renameColumn = async (
-        column: Column,
+        column: Column.Deserialized | Column.Serialized,
         newName: Column["name"]
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
@@ -102,8 +99,8 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const changeAttributes = async (
-        column: Column,
-        update: CustomColumnAttributes
+        column: Column.Deserialized | Column.Serialized,
+        update: Partial<Pick<Column.Serialized, SettableColumnProps>>
     ): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const baseColumn = getTableColumn(column)

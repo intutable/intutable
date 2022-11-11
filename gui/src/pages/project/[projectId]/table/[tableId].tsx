@@ -26,7 +26,11 @@ import { useView } from "hooks/useView"
 import { useTables } from "hooks/useTables"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import React, { useEffect, useState } from "react"
-import DataGrid, { CalculatedColumn, RowsChangeData } from "react-data-grid"
+import DataGrid, {
+    CalculatedColumn,
+    RowsChangeData,
+    SelectColumn,
+} from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
@@ -42,6 +46,7 @@ import {
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import cells from "@datagrid/Cells"
+import SerDes from "utils/SerDes"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -98,10 +103,7 @@ const TablePage: React.FC = () => {
     ): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
-        const changedValue = changedRow[col.key]
-
-        const cellUtil = cells.getCell(col.cellType)
-        const serializedValue = cellUtil.serialize(changedValue)
+        const serializedValue = SerDes.serializeRowValue(changedRow, col)
 
         await updateRow(col, getRowId(changedRow), serializedValue)
     }
@@ -173,6 +175,7 @@ const TablePage: React.FC = () => {
                                     <ToolbarItem.AddRow />
                                     <ToolbarItem.EditFilters />
                                     <ToolbarItem.ExportView />
+                                    <ToolbarItem.HiddenColumns />
                                     <ToolbarItem.DetailView
                                         handleClick={() =>
                                             setDetailedViewOpen(prev => !prev)
@@ -187,7 +190,12 @@ const TablePage: React.FC = () => {
                                             "rdg-" + getTheme() + " fill-grid"
                                         }
                                         rows={data.rows}
-                                        columns={data.columns}
+                                        columns={[
+                                            SelectColumn,
+                                            ...data.columns.filter(
+                                                column => column.hidden !== true
+                                            ),
+                                        ]}
                                         components={{
                                             noRowsFallback: <NoRowsFallback />,
                                             rowRenderer: RowRenderer,

@@ -27,6 +27,8 @@ export class Bool extends Cell {
     deserialize(value: unknown): boolean {
         if (typeof value === "boolean") return value
         if (value === 1 || value === 0) return value === 1
+        if (value === "1" || value === "0") return value === "1"
+        if (value === "true" || value === "false") return value === "true"
         throw new Error(`Could not deserialize value: ${value}`)
     }
 
