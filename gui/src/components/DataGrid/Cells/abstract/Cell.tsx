@@ -94,6 +94,8 @@ export interface ExposableInputComponent {
 
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
+export type CellEmptyValue = "" | null | undefined | []
+
 /**
  * Base class for all cell components.
  * Extends the functionality of {@link SerializedCell} with React-specific
@@ -125,7 +127,7 @@ export abstract class Cell
             value == null
         )
     }
-    static isEmpty(value: unknown): boolean {
+    static isEmpty(value: unknown): value is CellEmptyValue {
         // empty values are: empty strings (""), null, undefined and empty arrays
         try {
             return (
@@ -144,8 +146,9 @@ export abstract class Cell
     public catchEmpty<T extends ValueOf<Serializable>>(
         fn: T,
         value: unknown
-    ): null | undefined | ReturnType<T> {
-        if (value === null || typeof value === "undefined") return value
+    ): null | ReturnType<T> {
+        if (value === null || typeof value === "undefined" || value === "")
+            return null
         return fn(value) as ReturnType<T>
     }
     public serialize(value: unknown): unknown {
@@ -167,7 +170,7 @@ export abstract class Cell
     }
 
     /** override rdg's default properties for `editorOptions`. */
-    // Note: before overring these, look up what the defaul values look like
+    // Note: before overring these, look up what the default values look like
     private _editorOptions: EditorOptions = {
         // Gets exposed to rdg internally. Needed for internal 'tab'/arrow key navigation.
         // Indicates what type of KeyboardEvent should be such a navigation event.

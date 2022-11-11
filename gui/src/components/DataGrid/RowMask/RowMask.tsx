@@ -142,6 +142,8 @@ export const RowMask: React.FC = () => {
 
     if (data == null) return null
 
+    console.dir(rowMaskState.row)
+
     return (
         <Dialog open={rowMaskState.mode !== "closed"} fullWidth onClose={abort}>
             <DialogTitle>
@@ -156,7 +158,7 @@ export const RowMask: React.FC = () => {
                         {rowMaskState.mode === "create"
                             ? "Neue Zeile erstellen"
                             : rowMaskState.mode === "edit"
-                            ? `Zeile ${rowMaskState.row.__rowIndex__}`
+                            ? `Zeile ${rowMaskState.row.index}`
                             : ""}
                     </Typography>
 

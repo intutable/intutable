@@ -87,11 +87,6 @@ export class ParserClass {
         keys.forEach(key => {
             const value = column[key] as unknown
             switch (key) {
-                case "index":
-                    throw new Error(
-                        "Not implemented. Internal Columns cannot not be edited atm."
-                    )
-
                 // restructure name
                 case "name":
                     dbcolumn["displayName"] = value as string
