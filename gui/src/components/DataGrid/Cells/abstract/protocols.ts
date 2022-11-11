@@ -3,6 +3,8 @@ import { ValueOf } from "utils/ValueOf"
 export type Validatable = {
     /** Tells if the cell can interpret the value */
     isValid: <T = unknown>(value: T) => boolean
+    /** Tells if the cell is empty. Must be implemented at the abstract class, because it should work for every type. */
+    // isEmpty: (value: unknown) => boolean
 }
 
 export type Exportable = {

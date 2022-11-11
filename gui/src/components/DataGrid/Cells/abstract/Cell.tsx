@@ -125,6 +125,21 @@ export abstract class Cell
             value == null
         )
     }
+    static isEmpty(value: unknown): boolean {
+        // empty values are: empty strings (""), null, undefined and empty arrays
+        try {
+            return (
+                value === "" ||
+                value == null ||
+                typeof value === "undefined" ||
+                (Array.isArray(value) && value.length === 0) ||
+                (isJSONArray(value) && JSON.parse(value as string).length === 0)
+            )
+        } catch (error) {
+            console.error(error)
+            return false
+        }
+    }
 
     public catchEmpty<T extends ValueOf<Serializable>>(
         fn: T,
