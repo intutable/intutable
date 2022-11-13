@@ -69,7 +69,7 @@ export const useColumn = (
      * Create a new column.
      * Be very careful about using the `attributes` property, as you can also
      * override the default properties defined by
-     * {@link shared/attributes/standardColumnAttributes}, most of which are
+     * {@link shared.defaults.standardColumnAttributes}, most of which are
      * essential to functionality and not just for display purposes.
      */
     const createColumn = async (

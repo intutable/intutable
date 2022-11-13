@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "build": "tsc --build",
+        "build": "tsc --build --force",
         "start": "node dist/index.js",
         "dev": "npx nodemon -c nodemon.json dev",
         "lint": "cross-env NODE_ENV=development eslint src",

@@ -8,7 +8,7 @@ import {
     SerializedColumn,
     SerializedViewData,
     TableData,
-} from "shared/src/types"
+} from "shared/dist/types"
 import { Filter } from "../types/filter"
 import { cast } from "./cast"
 import { internalColumnUtil } from "./InternalColumnUtil"

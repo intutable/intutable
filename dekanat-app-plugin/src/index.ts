@@ -15,14 +15,13 @@ import {
     asTable,
 } from "@intutable/lazy-views/"
 import {
+    defaultViewName,
+    APP_TABLE_COLUMNS,
     idColumnAttributes,
     indexColumnAttributes,
     standardColumnAttributes,
-} from "shared/dist/attributes/defaults"
-import {
     emptyRowOptions,
     defaultRowOptions,
-    defaultViewName,
 } from "shared/dist/defaults"
 
 import {
@@ -32,7 +31,6 @@ import {
     Filter,
 } from "shared/dist/types"
 import sanitizeName from "shared/dist/utils/sanitizeName"
-import { APP_TABLE_COLUMNS } from "shared/dist/api"
 
 import { parser, ParserClass } from "./transform/Parser"
 import * as types from "./types"
@@ -222,6 +220,7 @@ async function createStandardColumn(
 
     const parsedColumn = parser.parseColumn(tableViewColumn)
     return parsedColumn
+    return {}
 }
 
 async function addColumnToTable_({
