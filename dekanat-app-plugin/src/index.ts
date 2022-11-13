@@ -31,6 +31,7 @@ import {
     CustomColumnAttributes,
     DB,
     Filter,
+    SerializedColumn,
 } from "shared/dist/types"
 import sanitizeName from "shared/dist/utils/sanitizeName"
 
@@ -459,18 +460,21 @@ async function changeTableColumnAttributes(
     columnId: number,
     update: CustomColumnAttributes,
     changeInViews = true
-): Promise<lvt.ColumnInfo[]> {
+): Promise<SerializedColumn[]> {
     const attributes = parser.deparseColumn(update)
-    await core.events.request(
-        lvr.changeColumnAttributes(sessionID, columnId, attributes)
-    )
+    const tableColumn = await core.events
+        .request(lvr.changeColumnAttributes(sessionID, columnId, attributes))
+        .then(c => parser.parseColumn(c))
     if (changeInViews)
-        return changeColumnAttributesInViews(
-            sessionID,
-            tableId,
-            columnId,
-            attributes
+        return [tableColumn].concat(
+            await changeColumnAttributesInViews(
+                sessionID,
+                tableId,
+                columnId,
+                attributes
+            )
         )
+    else return [tableColumn]
 }
 
 async function changeColumnAttributesInViews(
@@ -478,7 +482,7 @@ async function changeColumnAttributesInViews(
     tableId: number,
     columnId: number,
     update: Partial<DB.Column>
-): Promise<lvt.ColumnInfo[]> {
+): Promise<SerializedColumn[]> {
     const views = (await core.events.request(
         lvr.listViews(sessionID, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
@@ -498,9 +502,11 @@ async function changeColumnAttributesInViews(
         viewColumns
             .filter(c => c !== undefined)
             .map(async c =>
-                core.events.request(
-                    lvr.changeColumnAttributes(sessionID, c.id, update)
-                )
+                core.events
+                    .request(
+                        lvr.changeColumnAttributes(sessionID, c.id, update)
+                    )
+                    .then(c => parser.parseColumn(c))
             )
     )
 }

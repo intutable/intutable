@@ -129,7 +129,8 @@ export function removeColumnFromTable(
  * Change the attributes of a column of a table, and optionally all its views.
  * All boolean values in the attributes are changed into ones and zeros,
  * other than that no transformation takes place.
- * Response: An array of all columns that were changed.
+ * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn}
+ * An array of all columns that were changed.
  */
 export function changeTableColumnAttributes(
     sessionID: string,
