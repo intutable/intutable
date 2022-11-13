@@ -86,17 +86,25 @@ export class ParserClass {
         keys.forEach(key => {
             const value = column[key] as unknown
             switch (key) {
+                // substantial properties that cannot be changed even
+                // by internal functions
                 case "id":
                     throw new Error("Not allowed to change 'id'!")
-                case "index":
-                    throw new Error("Property 'index' is an internal column!")
                 case "key":
                     throw new Error("Not allowed to change 'key'!")
 
+                // keys that cannot be nullish
                 case "name":
                     dbcolumn["displayName"] = value as string
                     break
+                case "isUserPrimaryKey":
+                    dbcolumn[key] = cast.toDatabaseBoolean(value)
+                    break
+                case "index":
+                    dbcolumn[key] = cast.toNumber(value)
+                    break
 
+                // optionally null keys
                 case "width":
                 case "minWidth":
                 case "maxWidth":
@@ -105,7 +113,6 @@ export class ParserClass {
                         value
                     )
                     break
-
                 case "editable":
                 case "frozen":
                 case "resizable":
@@ -115,10 +122,6 @@ export class ParserClass {
                         cast.toDatabaseBoolean.bind(cast),
                         value
                     )
-                    break
-
-                case "isUserPrimaryKey":
-                    dbcolumn[key] = cast.toDatabaseBoolean(value)
                     break
 
                 default:

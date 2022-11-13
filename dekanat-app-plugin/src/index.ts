@@ -17,11 +17,13 @@ import {
 import {
     defaultViewName,
     APP_TABLE_COLUMNS,
+    immutableColumnAttributes,
     idColumnAttributes,
     indexColumnAttributes,
     standardColumnAttributes,
     emptyRowOptions,
     defaultRowOptions,
+    COLUMN_INDEX_KEY,
 } from "shared/dist/defaults"
 
 import {
@@ -46,12 +48,13 @@ export async function init(plugins: PluginLoader) {
     core.listenForRequests(req.CHANNEL)
         .on(req.createTable.name, createTable_)
         .on(req.deleteTable.name, deleteTable_)
-        .on(req.listViews.name, listViews_)
         .on(req.createStandardColumn.name, createStandardColumn_)
         .on(req.addColumnToTable.name, addColumnToTable_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
         .on(req.getTableData.name, getTableData_)
+        .on(req.createView.name, createView_)
+        .on(req.listViews.name, listViews_)
         .on(req.getViewData.name, getViewData_)
         .on(req.changeViewFilters.name, changeViewFilters_)
         .on(perm.getUsers.name, perm.getUsers_)
@@ -64,16 +67,16 @@ export async function init(plugins: PluginLoader) {
 //==================== core methods ==========================
 async function createTable_({
     sessionID,
-    projectId,
     userId,
+    projectId,
     name,
 }: CoreRequest): Promise<CoreResponse> {
-    return createTable(sessionID, projectId, userId, name)
+    return createTable(sessionID, userId, projectId, name)
 }
 async function createTable(
     sessionID: string,
-    projectId: number,
     userId: number,
+    projectId: number,
     name: string
 ): Promise<types.TableDescriptor> {
     const internalName = sanitizeName(name)
@@ -99,7 +102,7 @@ async function createTable(
         pm.getColumnsFromTable(sessionID, pmTable.id)
     )) as PmColumn[]
     const idColumn = pmColumns.find(c => c.name === "_id")!
-    const idxColumn = pmColumns.find(c => c.name === "index")!
+    const idxColumn = pmColumns.find(c => c.name === COLUMN_INDEX_KEY)!
     const nameColumn = pmColumns.find(c => c.name === "name")!
     const columnSpecs = [
         { parentColumnId: idColumn.id, attributes: idColumnAttributes(0) },
@@ -163,18 +166,6 @@ async function deleteTable(sessionID: string, id: types.TableId) {
     return { message: `deleted table ${id}` }
 }
 
-async function listViews_({
-    sessionID,
-    id,
-}: CoreRequest): Promise<CoreResponse> {
-    return listViews(sessionID, id)
-}
-async function listViews(sessionID: string, id: types.TableId) {
-    return core.events.request(
-        lvr.listViews(sessionID, selectable.viewId(id))
-    ) as Promise<lvt.ViewDescriptor[]>
-}
-
 async function createStandardColumn_({
     sessionID,
     tableId,
@@ -218,8 +209,8 @@ async function createStandardColumn(
         addToViews
     )
 
-//    const parsedColumn = parser.parseColumn(tableViewColumn)
-//    return parsedColumn
+    //    const parsedColumn = parser.parseColumn(tableViewColumn)
+    //    return parsedColumn
     return {}
 }
 
@@ -328,14 +319,17 @@ async function removeColumnFromTable(
     tableInfo = (await core.events.request(
         lvr.getViewInfo(sessionID, tableId)
     )) as lvt.ViewInfo
-    const columnUpdates = getColumnIndexUpdates(tableInfo.columns)
 
+    const idxKey = COLUMN_INDEX_KEY
     await Promise.all(
-        columnUpdates.map(async c =>
-            changeTableColumnAttributes(sessionID, tableId, c.id, {
-                ["index"]: c.index,
+        tableInfo.columns
+            .filter(c => c.attributes[idxKey] > column.attributes[idxKey])
+            .map(async c => {
+                console.log("updating index of column " + c.id)
+                changeTableColumnAttributes(sessionID, tableId, c.id, {
+                    [idxKey]: c.attributes[idxKey] - 1,
+                })
             })
-        )
     )
 
     return { message: `removed ${kind} column #${columnId}` }
@@ -394,6 +388,24 @@ async function removeLookupColumn(
     await core.events.request(lvr.removeColumnFromView(sessionID, columnId))
 }
 
+/**
+ * Given a list of columns, return a list of columns whose index is wrong
+ * and the new index it they should have.
+ */
+function getColumnIndexUpdates(
+    columns: lvt.ColumnInfo[]
+): { id: number; index: number }[] {
+    return columns
+        .map((c, index) => ({ column: c, index }))
+        .filter(
+            pair => pair.column.attributes["__columnIndex__"] !== pair.index
+        )
+        .map(pair => ({
+            id: pair.column.id,
+            index: pair.index,
+        }))
+}
+
 async function removeColumnFromViews(
     sessionID: string,
     tableId: number,
@@ -418,24 +430,6 @@ async function removeColumnFromViews(
     )
 }
 
-/**
- * Given a list of columns, return a list of columns whose index is wrong
- * and the new index it they should have.
- */
-function getColumnIndexUpdates(
-    columns: lvt.ColumnInfo[]
-): { id: number; index: number }[] {
-    return columns
-        .map((c, index) => ({ column: c, index }))
-        .filter(
-            pair => pair.column.attributes["__columnIndex__"] !== pair.index
-        )
-        .map(pair => ({
-            id: pair.column.id,
-            index: pair.index,
-        }))
-}
-
 async function changeTableColumnAttributes_({
     sessionID,
     tableId,
@@ -443,6 +437,13 @@ async function changeTableColumnAttributes_({
     update,
     changeInViews,
 }: CoreRequest): Promise<CoreResponse> {
+    for (const illegalAttribute of immutableColumnAttributes)
+        if (illegalAttribute in update)
+            return error(
+                req.changeTableColumnAttributes.name,
+                `cannot edit immutable column attribute ${illegalAttribute}`,
+                ErrorCode.writeInternalData
+            )
     return changeTableColumnAttributes(
         sessionID,
         tableId,
@@ -514,6 +515,54 @@ async function getTableData(sessionID: string, tableId: types.TableId) {
     return core.events
         .request(lvr.getViewData(sessionID, tableId))
         .then(table => parser.parseTable(table))
+}
+
+async function createView_({
+    sessionID,
+    tableId,
+    userId,
+    name,
+}: CoreRequest): Promise<CoreResponse> {
+    const existingViews = await listViews(sessionID, tableId)
+    if (existingViews.some(v => v.name === name))
+        return error(
+            req.createView.name,
+            `view named ${name} already exists`,
+            ErrorCode.alreadyTaken
+        )
+    return createView(sessionID, userId, tableId, name)
+}
+async function createView(
+    sessionID: string,
+    userId: number,
+    tableId: types.TableId,
+    name: string
+): Promise<types.ViewDescriptor> {
+    const tableInfo = (await core.events.request(
+        lvr.getViewInfo(sessionID, tableId)
+    )) as lvt.ViewInfo
+    return core.events.request(
+        lvr.createView(
+            sessionID,
+            selectable.viewId(tableId),
+            name,
+            { columns: [], joins: [] },
+            defaultRowOptions(tableInfo.columns),
+            userId
+        )
+    )
+}
+
+async function listViews_({
+    sessionID,
+    id,
+}: CoreRequest): Promise<CoreResponse> {
+    return listViews(sessionID, id)
+}
+async function listViews(sessionID: string, id: types.TableId) {
+    return core.events.request(
+        lvr.listViews(sessionID, selectable.viewId(id))
+    ) as Promise<lvt.ViewDescriptor[]>
 }
 
 async function getViewData_({

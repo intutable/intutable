@@ -1,7 +1,5 @@
 import path from "path"
 import { Core } from "@intutable/core"
-import { SerializedColumn } from "../../shared/dist/types/tables"
-import { emptyRowOptions } from "../../shared/dist/defaults"
 import {
     openConnection,
     closeConnection,
@@ -11,15 +9,14 @@ import * as pm from "@intutable/project-management/dist/requests"
 import {
     TableDescriptor as PmTable
 } from "@intutable/project-management/dist/types"
+import { types as lvt, requests as lvr } from "@intutable/lazy-views"
+import { COLUMN_INDEX_KEY, defaultViewName } from "shared/dist/defaults"
+import { TableDescriptor, ViewDescriptor } from "../src/types"
 import {
-    types as lvt,
-    requests as lvr,
-    viewId,
-    tableId
-} from "@intutable/lazy-views"
-import { ColumnType } from "@intutable/database/dist/types"
-import { TableDescriptor } from "../src/types"
-import { TableData, SerializedViewData } from "../src/types/tables"
+    TableData,
+    SerializedViewData,
+    SerializedColumn
+} from "../src/types/tables"
 import * as req from "../src/requests"
 
 let core: Core
@@ -71,7 +68,7 @@ describe("create table", () => {
 
     beforeAll(async () => {
         TABLE = await core.events.request(
-            req.createTable(sessionID, PROJECT_ID, ADMIN_ID, TABLE_NAME)
+            req.createTable(sessionID, ADMIN_ID, PROJECT_ID, TABLE_NAME)
         )
         DATA = await core.events.request(
             req.getTableData(sessionID, TABLE.id)
@@ -124,7 +121,7 @@ describe("create table", () => {
     test("delete table", async () => {
         const otherTableName = "departments"
         const otherTable: TableDescriptor = await core.events.request(
-            req.createTable(sessionID, PROJECT_ID, ADMIN_ID, otherTableName)
+            req.createTable(sessionID, ADMIN_ID, PROJECT_ID, otherTableName)
         )
         await core.events.request(
             req.deleteTable(sessionID, otherTable.id)
@@ -140,75 +137,85 @@ describe("create table", () => {
     })
 })
 
-// TODO: get createView and createTable implemented first, because there
-// are too many conditions that they create and that this method depends on...
-// ugh.
+describe("create view", () => {
+    const TABLE_NAME = "Employees"
+    const VIEW_NAME = "Developers"
+    let TABLE: TableDescriptor
+    let VIEW: ViewDescriptor
 
-// describe("create specialized columns", () => {
-//     const TEST_TABLE_SPEC = {
-//         name: "employees",
-//         columns: [
-//             { name: "Name", type: ColumnType.string },
-//             { name: "department", type: ColumnType.string }
-//         ]
-//     }
-//     let TEST_TABLE: lvt.ViewDescriptor
-//     const TEST_VIEW_SPEC = {
-//         name: "development"
-//     }
-//     let TEST_VIEW: lvt.ViewDescriptor
+    beforeAll(async () => {
+        TABLE = await core.events.request(
+            req.createTable(sessionID, ADMIN_ID, PROJECT_ID, TABLE_NAME)
+        )
+        VIEW = await core.events.request(
+            req.createView(sessionID, ADMIN_ID, TABLE.id, VIEW_NAME)
+        )
+    })
 
-//     beforeAll(async () => {
-//         const tableDesc = await core.events.request(
-//             pm.createTableInProject(
-//                 sessionID, ADMIN_ID, PROJECT_ID,
-//                 TEST_TABLE_SPEC.name, TEST_TABLE_SPEC.columns
-//             )
-//         )
-//         TEST_TABLE = await core.events.request(
-//             lvr.createView(
-//                 sessionID,
-//                 tableId(tableDesc.id),
-//                 TEST_TABLE_SPEC.name,
-//                 { columns: [], joins: [] },
-//                 emptyRowOptions()
-//             )
-//         ).catch(e => { console.dir(e); return Promise.reject(e) })
-//         TEST_VIEW = await core.events.request(
-//             lvr.createView(
-//                 sessionID,
-//                 viewId(TEST_TABLE.id),
-//                 TEST_VIEW_SPEC.name,
-//                 { columns: [], joins: [] },
-//                 emptyRowOptions()
-//             )
-//         ).catch(e => { console.dir(e); return Promise.reject(e) })
-//     })
-//     test("create standard column", async () => {
-//         const COLUMN_NAME = "salary"
-//         const newColumn = await core.events.request(
-//             createStandardColumn(
-//                 sessionID,
-//                 TEST_TABLE.id,
-//                 {
-//                     name: COLUMN_NAME,
-//                     _cellContentType: "number",
-//                     editable: true
-//                 }
-//             )
-//         ) as SerializedColumn
-//         expect(newColumn).toEqual(expect.objectContaining({
-//             _kind: "standard",
-//             userPrimary: false,
-//             name: COLUMN_NAME,
-//             key: COLUMN_NAME,
-//         }))
-//         const testViewInfo = await core.events.request(
-//             lvr.getViewInfo(sessionID, TEST_VIEW.id)
-//         ) as lvt.ViewInfo
-//         const childColumn = testViewInfo.columns.find(
-//             c => c.name === "salary"
-//         )
-//         expect(childColumn).toBeDefined()
-//     })
-// })
+    afterAll(async () => {
+        await core.events.request(
+            req.deleteTable(sessionID, TABLE.id)
+        )
+    })
+
+    test("another view on the given table exists", async () => {
+        const views = await core.events.request(
+            req.listViews(sessionID, TABLE.id)
+        ) as ViewDescriptor[]
+        expect(views).toEqual(expect.arrayContaining([
+            expect.objectContaining({ name: defaultViewName() }),
+            expect.objectContaining({ name: VIEW_NAME }),
+        ]))
+
+        const viewData = await core.events.request(
+            req.getViewData(sessionID, VIEW.id)
+        ) as SerializedViewData
+        expect(viewData.columns).toEqual(expect.arrayContaining([
+            expect.objectContaining({ [COLUMN_INDEX_KEY]: 2, name: "Name" })
+        ]))
+    })
+})
+
+describe("create different kinds of columns", () => {
+    const TABLE_SPEC = {
+        name: "employees",
+        columns: [
+            { name: "Department", cellType: "string", editable: true },
+            { name: "Salary", cellType: "number", editable: true}
+        ]
+    }
+    let TEST_TABLE: TableDescriptor
+
+    beforeAll(async () => {
+        TEST_TABLE = await core.events.request(
+            req.createTable(sessionID, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name)
+        )
+    })
+
+    test("create standard column", async () => {
+        const column = TABLE_SPEC.columns[0]
+        const newColumn = await core.events.request(
+            req.createStandardColumn(
+                sessionID,
+                TEST_TABLE.id,
+                column,
+            )
+        ) as SerializedColumn
+        // expect(newColumn).toEqual(expect.objectContaining({
+        //     kind: "standard",
+        //     isUserPrimaryKey: false,
+        //     name: column.name,
+        //     key: expect.stringContaining(column.name),
+        //     cellType: expect.stringContaining(column.cellType),
+        // }))
+
+        // make sure column also exists in the view
+        const testViewData = await core.events.request(
+            req.getViewData(sessionID, TEST_TABLE.id)
+        ) as SerializedViewData
+        const childColumn = testViewData.columns.find(
+            c => c.name === column.name
+        )
+        expect(childColumn).toBeDefined()
+    })
+})

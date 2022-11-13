@@ -5,7 +5,7 @@ import {
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
 
-import { DB } from "./types"
+import { SerializedColumn, DB } from "./types"
 
 /**
  * The two basic columns that every table must have (in addition to _id, but
@@ -21,6 +21,20 @@ export const APP_TABLE_COLUMNS: Column[] = [
 export function defaultViewName() {
     return "Standard"
 }
+
+/**
+ * Subset of a column's props (note: these are metadata: "id" and
+ * "index" (column index) are totally distinct from the ID and index
+ * (row index) _columns_ that exist in object tables)
+ * They cannot be changed by the back-ends "change column attributes" method.
+ */
+export const immutableColumnAttributes: (keyof SerializedColumn)[] = [
+    "id",
+    "key",
+    "kind",
+    "index",
+    "isUserPrimaryKey",
+]
 
 export function standardColumnAttributes(
     name: string,
@@ -91,6 +105,7 @@ export function indexColumnAttributes(
 }
 
 export const ROW_INDEX_KEY = "index"
+export const COLUMN_INDEX_KEY = "index"
 
 /**
  * Blank row options - no filters, no grouping, no sorting.
@@ -109,8 +124,9 @@ export function emptyRowOptions(): RowOptions {
  */
 export function defaultRowOptions(
     /**
-     * The interface {@link ParentColumnDescriptor} can take columns of
-     * a table or a view. */
+     * To order by the index column, we need to have access to that column's
+     * ID, so you unfortunately have to pass the source table's columns in.
+     */
     columns: ParentColumnDescriptor[]
 ): RowOptions {
     const indexColumn = columns.find(c => c.name === ROW_INDEX_KEY)!

@@ -24,8 +24,8 @@ export const CHANNEL = "dekanat-app-plugin"
  */
 export function createTable(
     sessionID: string,
-    projectId: number,
     userId: number,
+    projectId: number,
     name: string
 ) {
     return {
@@ -44,14 +44,6 @@ export function createTable(
  */
 export function deleteTable(sessionID: string, id: TableId) {
     return { channel: CHANNEL, method: deleteTable.name, sessionID, id }
-}
-
-/**
- * List views on a table.
- * Response: {@link types.ViewDescriptor}[]
- */
-export function listViews(sessionID: string, id: TableId) {
-    return { channel: CHANNEL, method: listViews.name, sessionID, id }
 }
 
 /**
@@ -163,6 +155,36 @@ export function changeTableColumnAttributes(
  */
 export function getTableData(sessionID: string, tableId: TableId) {
     return { channel: CHANNEL, method: getTableData.name, sessionID, tableId }
+}
+
+/**
+ * Create a view on a given table with the specified name. By default, it
+ * has all columns of the table included and no filters, sorting, or grouping.
+ * Filters can be added with {@link changeViewFilters}, while
+ * hiding columns, sorting, and grouping are not yet implemented at all.
+ */
+export function createView(
+    sessionID: string,
+    userId: number,
+    tableId: TableId,
+    name: string
+) {
+    return {
+        channel: CHANNEL,
+        method: createView.name,
+        sessionID,
+        userId,
+        tableId,
+        name,
+    }
+}
+
+/**
+ * List views on a table.
+ * Response: {@link types.ViewDescriptor}[]
+ */
+export function listViews(sessionID: string, id: TableId) {
+    return { channel: CHANNEL, method: listViews.name, sessionID, id }
 }
 
 /**
