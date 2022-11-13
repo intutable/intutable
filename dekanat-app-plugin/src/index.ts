@@ -218,8 +218,8 @@ async function createStandardColumn(
         addToViews
     )
 
-    const parsedColumn = parser.parseColumn(tableViewColumn)
-    return parsedColumn
+//    const parsedColumn = parser.parseColumn(tableViewColumn)
+//    return parsedColumn
     return {}
 }
 
