@@ -36,7 +36,6 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
     const [options, setOptions] = useState<StandardColumnSpecifier>({
         name: "",
         cellType: "string",
-        editable: true,
     })
     const [valid, setValid] = useState(false)
 
@@ -122,12 +121,14 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={options.editable ?? true}
+                                        checked={
+                                            options.attributes?.editable ?? true
+                                        }
                                         onChange={e =>
-                                            setOption(
-                                                "editable",
-                                                e.target.checked
-                                            )
+                                            setOption("attributes", {
+                                                ...options.attributes,
+                                                editable: e.target.checked,
+                                            })
                                         }
                                     />
                                 }
