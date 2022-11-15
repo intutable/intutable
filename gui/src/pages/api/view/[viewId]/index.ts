@@ -1,16 +1,6 @@
-import {
-    deleteView,
-    getViewOptions,
-    listViews,
-    renameView,
-    ViewOptions,
-    ViewDescriptor,
-    asView,
-    isTable,
-} from "@intutable/lazy-views"
-import { defaultViewName } from "@shared/defaults"
 import { ViewData } from "types/tables"
-import { getViewData } from "@backend/requests"
+import { ViewDescriptor } from "@backend/types"
+import { getViewData, deleteView, renameView } from "@backend/requests"
 
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
@@ -75,31 +65,11 @@ const PATCH = withCatchingAPIRoute(
 
         const updatedView = await withReadWriteConnection(
             user,
-            async sessionID => {
-                const options = await coreRequest<ViewOptions>(
-                    getViewOptions(sessionID, viewId),
-                    user.authCookie
-                )
-                // prevent renaming the default view
-                if (options.name === defaultViewName())
-                    throw Error("changeDefaultView")
-
-                // check if name is taken
-                const otherViews = await coreRequest<ViewDescriptor[]>(
-                    listViews(sessionID, asView(options.source)),
-                    user.authCookie
-                )
-                const isTaken = otherViews
-                    .map(view => view.name.toLowerCase())
-                    .includes(newName.toLowerCase())
-                if (isTaken) throw new Error("alreadyTaken")
-
-                const updatedView = await coreRequest<ViewDescriptor>(
+            async sessionID =>
+                coreRequest<ViewDescriptor>(
                     renameView(sessionID, viewId, newName),
                     user.authCookie
                 )
-                return updatedView
-            }
         )
         res.status(200).json(updatedView)
     }
@@ -122,24 +92,9 @@ const DELETE = withCatchingAPIRoute(
     ) => {
         const user = req.session.user!
 
-        await withReadWriteConnection(user, async sessionID => {
-            const options = await coreRequest<ViewOptions>(
-                getViewOptions(sessionID, viewId),
-                user.authCookie
-            )
-            // prevent deleting the default view
-            if (options.name === defaultViewName())
-                throw Error("changeDefaultView")
-
-            /**
-             * If the view's source is a table, it must be a table view, and you
-             * can only delete those through their dedicated endpoint.
-             */
-            if (isTable(options.source))
-                throw Error("deleteTableThroughViewEndpoint")
-
-            await coreRequest(deleteView(sessionID, viewId), user.authCookie)
-        })
+        await withReadWriteConnection(user, async sessionID =>
+            coreRequest<void>(deleteView(sessionID, viewId), user.authCookie)
+        )
         res.status(200).send({})
     }
 )

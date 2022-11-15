@@ -181,6 +181,27 @@ export function createView(
 }
 
 /**
+ * Rename a view. The default view cannot be renamed.
+ * Response: {@link ViewDescriptor} the descriptor of the updated view.
+ */
+export function renameView(sessionID: string, viewId: ViewId, newName: string) {
+    return {
+        channel: CHANNEL,
+        method: renameView.name,
+        sessionID,
+        viewId,
+        newName,
+    }
+}
+
+/**
+ * Delete a view. The default view cannot be deleted.
+ * Response: { message: string } a report that the view was deleted.
+ */
+export function deleteView(sessionID: string, viewId: ViewId) {
+    return { channel: CHANNEL, method: deleteView.name, sessionID, viewId }
+}
+/**
  * List views on a table.
  * Response: {@link types.ViewDescriptor}[]
  */

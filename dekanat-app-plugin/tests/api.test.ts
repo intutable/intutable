@@ -18,6 +18,7 @@ import {
     SerializedColumn
 } from "../src/types/tables"
 import * as req from "../src/requests"
+import { ErrorCode } from "../src/error"
 
 let core: Core
 let sessionID: string
@@ -140,15 +141,23 @@ describe("create table", () => {
 describe("create view", () => {
     const TABLE_NAME = "Employees"
     const VIEW_NAME = "Developers"
+    const NEW_NAME = "Layabouts"
     let TABLE: TableDescriptor
     let VIEW: ViewDescriptor
 
+    async function createView(){
+        VIEW = await core.events.request(
+            req.createView(sessionID, ADMIN_ID, TABLE.id, VIEW_NAME)
+        )
+    }
+    async function deleteView(){
+        await core.events.request(
+            req.deleteView(sessionID, VIEW.id)
+        )
+    }
     beforeAll(async () => {
         TABLE = await core.events.request(
             req.createTable(sessionID, ADMIN_ID, PROJECT_ID, TABLE_NAME)
-        )
-        VIEW = await core.events.request(
-            req.createView(sessionID, ADMIN_ID, TABLE.id, VIEW_NAME)
         )
     })
 
@@ -158,8 +167,9 @@ describe("create view", () => {
         )
     })
 
-    test("another view on the given table exists", async () => {
-        const views = await core.events.request(
+    test("create/delete view", async () => {
+        await createView()
+        let views = await core.events.request(
             req.listViews(sessionID, TABLE.id)
         ) as ViewDescriptor[]
         expect(views).toEqual(expect.arrayContaining([
@@ -173,6 +183,46 @@ describe("create view", () => {
         expect(viewData.columns).toEqual(expect.arrayContaining([
             expect.objectContaining({ [COLUMN_INDEX_KEY]: 2, name: "Name" })
         ]))
+
+        await deleteView()
+        views = await core.events.request(
+            req.listViews(sessionID, TABLE.id)
+        ) as ViewDescriptor[]
+        expect(views).not.toEqual(expect.arrayContaining([
+            expect.objectContaining({ name: defaultViewName() }),
+            expect.objectContaining({ name: VIEW_NAME }),
+        ]))
+    })
+    test("rename view", async () => {
+        await createView()
+        await core.events.request(req.renameView(sessionID, VIEW.id, NEW_NAME))
+        let views = await core.events.request(
+            req.listViews(sessionID, TABLE.id)
+        ) as ViewDescriptor[]
+        expect(views).toEqual(expect.arrayContaining([
+            expect.objectContaining({ name: defaultViewName() }),
+            expect.objectContaining({ name: NEW_NAME }),
+        ]))
+        await deleteView()
+    })
+
+    test("cannot rename or delete default view", async () => {
+        let views = await core.events.request(
+            req.listViews(sessionID, TABLE.id)
+        ) as ViewDescriptor[]
+        const defaultView = views.find(v => v.name === defaultViewName())
+        const deletePromise = core.events.request(
+            req.deleteView(sessionID, defaultView.id)
+        )
+        expect(deletePromise).rejects.toEqual(expect.objectContaining({
+            code: ErrorCode.changeDefaultView
+        }))
+        const renamePromise = core.events.request(
+            req.renameView(sessionID, defaultView.id, NEW_NAME)
+        )
+        expect(renamePromise).rejects.toEqual(expect.objectContaining({
+            code: ErrorCode.changeDefaultView
+        }))
     })
 })
 
@@ -201,6 +251,8 @@ describe("create different kinds of columns", () => {
                 column,
             )
         ) as SerializedColumn
+        // method currently just returns empty object as a workaround
+        
         // expect(newColumn).toEqual(expect.objectContaining({
         //     kind: "standard",
         //     isUserPrimaryKey: false,

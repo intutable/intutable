@@ -8,6 +8,7 @@ export type JsonError = {
 export enum ErrorCode {
     alreadyTaken,
     writeInternalData,
+    changeDefaultView,
 }
 
 export function error<A>(

@@ -38,7 +38,7 @@ import sanitizeName from "shared/dist/utils/sanitizeName"
 import { parser, ParserClass } from "./transform/Parser"
 import * as types from "./types"
 import * as req from "./requests"
-import { error, ErrorCode } from "./internal/error"
+import { error, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
 
 let core: PluginLoader
@@ -55,6 +55,8 @@ export async function init(plugins: PluginLoader) {
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
         .on(req.getTableData.name, getTableData_)
         .on(req.createView.name, createView_)
+        .on(req.renameView.name, renameView_)
+        .on(req.deleteView.name, deleteView_)
         .on(req.listViews.name, listViews_)
         .on(req.getViewData.name, getViewData_)
         .on(req.changeViewFilters.name, changeViewFilters_)
@@ -65,6 +67,9 @@ export async function init(plugins: PluginLoader) {
         .on(perm.changeRole.name, perm.changeRole_)
 }
 
+function coreRequest<T = unknown>(req: CoreRequest): Promise<T> {
+    return core.events.request(req)
+}
 //==================== core methods ==========================
 async function createTable_({
     sessionID,
@@ -557,6 +562,65 @@ async function createView(
             userId
         )
     )
+}
+
+async function renameView_({
+    sessionID,
+    viewId,
+    newName,
+}: CoreRequest): Promise<CoreResponse> {
+    return renameView(sessionID, viewId, newName)
+}
+async function renameView(
+    sessionID: string,
+    viewId: types.ViewId,
+    newName: string
+): Promise<types.ViewDescriptor> {
+    const options = await coreRequest<lvt.ViewOptions>(
+        lvr.getViewOptions(sessionID, viewId)
+    )
+    // prevent renaming the default view
+    if (options.name === defaultViewName())
+        return error(
+            "renameView",
+            "cannot rename default view",
+            ErrorCode.changeDefaultView
+        )
+
+    // check if name is taken
+    const otherViews = await listViews(sessionID, viewId)
+    const isTaken = otherViews
+        .map(view => view.name.toLowerCase())
+        .includes(newName.toLowerCase())
+    if (isTaken)
+        return error(
+            "renameView",
+            `name ${newName} already taken`,
+            ErrorCode.alreadyTaken
+        )
+
+    return coreRequest<types.ViewDescriptor>(
+        lvr.renameView(sessionID, viewId, newName)
+    )
+}
+async function deleteView_({
+    sessionID,
+    viewId,
+}: CoreRequest): Promise<CoreResponse> {
+    return deleteView(sessionID, viewId)
+}
+async function deleteView(sessionID: string, viewId: types.ViewId) {
+    const options = await coreRequest<lvt.ViewOptions>(
+        lvr.getViewOptions(sessionID, viewId)
+    )
+    if (options.name === defaultViewName())
+        return error(
+            "deleteView",
+            "cannot delete the default view",
+            ErrorCode.changeDefaultView
+        )
+    await coreRequest(lvr.deleteView(sessionID, viewId))
+    return { message: `deleted view #${viewId}` }
 }
 
 async function listViews_({
