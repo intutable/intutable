@@ -64,7 +64,11 @@
 <p>After logging in, you should be redirected to the project page and see one project named “Fakultät MathInf”. Click on it to see its table list, then select “Personen”. In the middle of the screen is the table itself. You can click on a cell and start typing to edit it. The toolbar has “add column”, “add row”, “add link”, an export button (download icon) and a “detail view” button. You can experiment with these, they are fairly self-explanatory. The “add link” button allows you to add a link to another table. To see an example of this, check the “Rollen” table. If you click on a cell in the “Nachname” column, you can pick a different record to link with. If you do, the corresponding “Vorname” cell will change, too.</p>
 <p>To accomplish the linking functionality, what the user sees as a table is actually a view. The app manages the view and the underlying table, which contains the actual data, as a unit. This abstraction happens between the client and server in the Next.js app. What the user sees as views is implemented as a set of views on top of the “table” view:</p>
 <figure>
-<img src="tables_views.drawio.png" alt="How Tables and Views are Implemented" /><figcaption aria-hidden="true">How Tables and Views are Implemented</figcaption>
+<img src="tables_views_old.drawio.png" alt="How Tables and Views are Implemented" /><figcaption aria-hidden="true">How Tables and Views are Implemented</figcaption>
+</figure>
+<p>Currently, a refactoring is taking place where the app’s custom plugin (the <code>dekanat-app-plugin</code> workspace) exposes all core calls that the front-end needs, so that front-end developers do not have to know too much about the <code>project-management</code> and <code>lazy-views</code> plugins. This means that the new abstraction layer will eventually be offered by that plugin and not by the GUI’s endpoints:</p>
+<figure>
+<img src="tables_views_new.drawio.png" alt="How Tables and Views are Implemented, v2" /><figcaption aria-hidden="true">How Tables and Views are Implemented, v2</figcaption>
 </figure>
 <h3 id="gui-workspace-structure">GUI: Workspace Structure</h3>
 <p>The GUI workspace is probably larger than all other code of the app combined. To help you get into it nonetheless, here is an overview of the most important source directories and files:<br />

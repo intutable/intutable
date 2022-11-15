@@ -1,9 +1,25 @@
 /**
- * This plugin allows us to run initialization (config, example data)
- * on starting up the core. We can also create methods to allow complex
- * tasks to be accomplished with only one network request. It may eventually
- * even be a security bonus to create highly specific methods and expose only
- * them for use by the front-end.
+ * This plugin provides the abstraction layer that dresses up views as
+ * fancy tables: The user does not deal with SQL or with any SQL-y abstractions
+ * like the @intutable/lazy-views plugin provides. Instead, they just see
+ * a table which can have "links" to other tables, allowing rows in tables
+ * to be linked to others by a foreign key. Internally, this is implemented
+ * as a table with a foreign key, plus a view that contains the join.
+ * So the table manipulation methods in this plugin e.g. ensure that
+ * the table and view are always created, changed, and deleted
+ * together. Another abstraction provided by this plugin is the conversion
+ * to more GUI-friendly data types defined in
+ * `shared/src/types/tables/serialized.ts`.
+ *
+ * Since this plugin is just the GUI's delegate or agent inside the Core,
+ * responsible for pretty much anything that is too fiddly and complex to
+ * burden the front-end team with, all kinds of functionality are
+ * likely to accumulate here in the future. There is nothing stopping
+ * us from breaking it up into multiple plugins (each in their
+ * own workspace) in the future.
+ * 
+ * It may eventually also be a security bonus to hide all methods that are not
+ * provided by this plugin from the front-end.
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import * as pm from "@intutable/project-management/dist/requests"

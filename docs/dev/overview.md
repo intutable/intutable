@@ -123,7 +123,16 @@ which contains the actual data, as a unit. This abstraction happens between
 the client and server in the Next.js app. What the user sees as views
 is implemented as a set of views on top of the "table" view:
 
-![How Tables and Views are Implemented](tables_views.drawio.png)
+![How Tables and Views are Implemented](tables_views_old.drawio.png)
+
+Currently, a refactoring is taking place where the app's custom plugin
+(the `dekanat-app-plugin` workspace) exposes all core calls that the
+front-end needs, so that front-end developers do not have to know too much
+about the `project-management` and `lazy-views` plugins. This means that
+the new abstraction layer will eventually be offered by that plugin and not
+by the GUI's endpoints:
+
+![How Tables and Views are Implemented, v2](tables_views_new.drawio.png)
 
 ### GUI: Workspace Structure
 The GUI workspace is probably larger than all other code of the
