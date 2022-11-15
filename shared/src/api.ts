@@ -1,3 +1,6 @@
+/**
+ * Helper functions and constants for the `dekanat-app-plugin`'s API.
+ */
 import { Column, ColumnType } from "@intutable/database/dist/types"
 import {
     ParentColumnDescriptor,

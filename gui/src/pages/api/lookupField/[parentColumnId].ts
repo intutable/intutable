@@ -10,7 +10,7 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
-import { lookupColumnAttributes } from "shared/dist/defaults"
+import { lookupColumnAttributes } from "shared/dist/api"
 import { addColumnToTable } from "@backend/requests"
 
 /**

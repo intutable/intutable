@@ -17,7 +17,7 @@
  * likely to accumulate here in the future. There is nothing stopping
  * us from breaking it up into multiple plugins (each in their
  * own workspace) in the future.
- * 
+ *
  * It may eventually also be a security bonus to hide all methods that are not
  * provided by this plugin from the front-end.
  */
@@ -40,7 +40,7 @@ import {
     emptyRowOptions,
     defaultRowOptions,
     COLUMN_INDEX_KEY,
-} from "shared/dist/defaults"
+} from "shared/dist/api"
 
 import {
     StandardColumnSpecifier,
