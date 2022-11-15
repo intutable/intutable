@@ -1,116 +1,39 @@
+import * as Property from "@datagrid/ColumnProperties"
 import {
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Divider,
     ListItemText,
     MenuItem,
-    Stack,
-    Tooltip,
-    Typography,
 } from "@mui/material"
-import { useTheme } from "@mui/material/styles"
-import { useView } from "hooks/useView"
-import React, { useMemo, useState } from "react"
+import React, { useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
-import { Row } from "types"
-import InfoIcon from "@mui/icons-material/Info"
-import { ChangeCellType } from "./ChangeCellType"
+import { Column, Row } from "types"
 
-type AttributeProps = {
-    label: string
-    helperText?: string
-    value: React.ReactNode
-}
-
-const Attribute: React.FC<AttributeProps> = props => {
-    const theme = useTheme()
-    const { label, value } = props
-
-    return (
-        <>
-            <Stack
-                sx={{
-                    my: 2,
-                }}
-            >
-                <Typography variant="body1">{value}</Typography>
-                <Typography
-                    variant="caption"
-                    sx={{
-                        mt: -0.3,
-                        fontStyle: "italic",
-                        color: theme.palette.grey[700],
-                        fontSize: "60%",
-                        display: "flex",
-                        alignItems: "center",
-                    }}
-                >
-                    {label}
-                    {props.helperText && (
-                        <Tooltip
-                            arrow
-                            title={props.helperText}
-                            placement="right"
-                        >
-                            <InfoIcon
-                                sx={{
-                                    ml: 0.4,
-                                    fontSize: 10,
-                                }}
-                            />
-                        </Tooltip>
-                    )}
-                </Typography>
-            </Stack>
-            <Divider />
-        </>
-    )
-}
-
-type ModalProps = {
+type ColumnAttributesWindowProps = {
     open: boolean
     onClose: () => void
-    headerRendererProps: HeaderRendererProps<Row>
+    column: Column.Serialized
 }
 
-const Modal: React.FC<ModalProps> = props => {
-    const { open, onClose, headerRendererProps } = props
-
-    const { data: view } = useView()
-    const column = useMemo(
-        () =>
-            view
-                ? view.columns.find(
-                      c => c.id! === headerRendererProps.column.id
-                  )!
-                : null,
-        [headerRendererProps.column.id, view]
-    )
-
-    if (column == null) return null
+export const ColumnAttributesWindow: React.FC<
+    ColumnAttributesWindowProps
+> = props => {
+    const { open, onClose, column } = props
 
     return (
         <Dialog open={open} onClose={() => onClose()}>
             <DialogTitle>Eigenschaften</DialogTitle>
             <DialogContent>
-                <Attribute label={"Name"} value={column.name as string} />
-                <Attribute
-                    label="Spalten-Typ"
-                    helperText="'Standard', 'Link', 'Lookup' und 'Index' sind die übergeordneten Spaltentypen."
-                    value={column.kind as string}
-                />
-                <Attribute
-                    label="Zellen-Typ"
-                    helperText="Typ des Inhalts der Zellen einer Spalte, bspw. 'Text' oder 'Datum'."
-                    value={<ChangeCellType onClose={onClose} column={column} />}
-                />
-                <Attribute
-                    label={"Editierbar"}
-                    value={column.editable ? "Ja" : "Nein"}
-                />
+                <Property.Name column={column} />
+                <Property.ChangeCellType column={column} />
+                <Property.Hidden column={column} />
+                <Property.Editable column={column} />
+                <Property.Sortable column={column} />
+                <Property.Frozen column={column} />
+                <Property.Resizable column={column} />
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => onClose()}>Schließen</Button>
@@ -119,13 +42,13 @@ const Modal: React.FC<ModalProps> = props => {
     )
 }
 
-export type ColumnAttributesWindowProps = {
+export type ColumnAttributesWindowButtonProps = {
     headerRendererProps: HeaderRendererProps<Row>
     onCloseContextMenu: () => void
 }
 
-export const ColumnAttributesWindow: React.FC<
-    ColumnAttributesWindowProps
+export const ColumnAttributesWindowButton: React.FC<
+    ColumnAttributesWindowButtonProps
 > = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openModal = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -143,10 +66,10 @@ export const ColumnAttributesWindow: React.FC<
                 <ListItemText>Eigenschaften</ListItemText>
             </MenuItem>
 
-            <Modal
+            <ColumnAttributesWindow
                 open={anchorEL != null}
                 onClose={closeModal}
-                headerRendererProps={props.headerRendererProps}
+                column={props.headerRendererProps.column as Column.Serialized}
             />
         </>
     )

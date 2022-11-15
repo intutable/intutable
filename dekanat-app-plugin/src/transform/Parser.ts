@@ -49,6 +49,7 @@ export class ParserClass {
         const casted: SerializedColumn = {
             ...serializedProps,
             isUserPrimaryKey: cast.toBoolean(column.isUserPrimaryKey),
+            hidden: cast.toBoolean(column.hidden),
             width: cast.orEmpty(
                 cast.or.bind(
                     cast.toNumber.bind(cast),
@@ -97,6 +98,7 @@ export class ParserClass {
                 case "name":
                     dbcolumn["displayName"] = value as string
                     break
+                case "hidden":
                 case "isUserPrimaryKey":
                     dbcolumn[key] = cast.toDatabaseBoolean(value)
                     break
@@ -105,6 +107,17 @@ export class ParserClass {
                     break
 
                 // optionally null keys
+                case "kind":
+                case "cellType":
+                case "cellClass":
+                case "headerCellClass":
+                case "summaryCellClass":
+                case "summaryFormatter":
+                case "groupFormatter":
+                case "colSpan":
+                    dbcolumn[key] = value as string
+                    break
+
                 case "width":
                 case "minWidth":
                 case "maxWidth":
@@ -124,8 +137,9 @@ export class ParserClass {
                     )
                     break
 
+                // ignore keys of SerializedColumn that are not in DB.Column
                 default:
-                    dbcolumn[key] = value as string
+                    console.error("ignored:", key, value)
                     break
             }
         })

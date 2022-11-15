@@ -2,11 +2,13 @@ import { Box, Checkbox } from "@mui/material"
 import React from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
+import ToggleOnIcon from "@mui/icons-material/ToggleOn"
 import { Cell } from "../abstract/Cell"
 
 export class Bool extends Cell {
     readonly brand = "boolean"
     label = "Boolean"
+    icon = ToggleOnIcon
 
     editor = () => null
 
@@ -27,6 +29,8 @@ export class Bool extends Cell {
     deserialize(value: unknown): boolean {
         if (typeof value === "boolean") return value
         if (value === 1 || value === 0) return value === 1
+        if (value === "1" || value === "0") return value === "1"
+        if (value === "true" || value === "false") return value === "true"
         throw new Error(`Could not deserialize value: ${value}`)
     }
 

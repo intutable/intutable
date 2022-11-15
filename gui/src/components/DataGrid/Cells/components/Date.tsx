@@ -8,10 +8,12 @@ import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { TempusCell } from "../abstract/TempusCell"
+import DateRangeIcon from "@mui/icons-material/DateRange"
 
 export class DateCell extends TempusCell {
     readonly brand = "date"
     label = "Date"
+    icon = DateRangeIcon
 
     export(value: Date): string {
         return value.toLocaleDateString("de-DE", {

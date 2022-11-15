@@ -24,7 +24,7 @@ import {
 
 import { useLink } from "hooks/useLink"
 import { TableColumn } from "types"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 type ModalProps = {
     open: boolean

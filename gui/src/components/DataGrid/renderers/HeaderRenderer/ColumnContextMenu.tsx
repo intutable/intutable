@@ -16,20 +16,18 @@ import { useSnacki } from "hooks/useSnacki"
 import React, { useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
-import { makeError } from "utils/error-handling/utils/makeError"
-import { prepareName } from "utils/validateName"
 import { AddLookup } from "./AddLookup"
-import { ColumnAttributesWindow } from "./ColumnAttributesWindow"
+import { ColumnAttributesWindowButton } from "./ColumnAttributesWindow"
 import { ColumnToClipboard } from "./ColumnToClipboard"
 import { CreateMailList } from "./CreateMailList"
 
-export type ContextMenuProps = {
+export type ColumnContextMenuProps = {
     colInfo: ColumnInfo
     foreignTable: ViewDescriptor | null | undefined
     headerRendererProps: HeaderRendererProps<Row>
 }
 
-export const ContextMenu: React.FC<ContextMenuProps> = props => {
+export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
     const { colInfo: col, foreignTable, headerRendererProps } = props
 
     const theme = useTheme()
@@ -40,7 +38,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
         openSearchField,
         closeSearchField,
     } = useHeaderSearchField()
-    const { renameColumn, deleteColumn } = useColumn()
+    const { deleteColumn } = useColumn()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -52,22 +50,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
     const toggleHeaderSearchbar = () => {
         if (headerOpen) closeSearchField()
         else openSearchField()
-    }
-
-    const handleRenameColumn = async () => {
-        try {
-            const name = prompt("Gib einen neuen Namen für diese Spalte ein:")
-            if (!name) return
-            await renameColumn(headerRendererProps.column, prepareName(name))
-            closeContextMenu()
-        } catch (error) {
-            const err = makeError(error)
-            snackError(
-                err.message === "alreadyTaken"
-                    ? "Dieser Name ist bereits vergeben."
-                    : "Die Spalte konnte nicht umbenannt werden!"
-            )
-        }
     }
 
     const handleDeleteColumn = async () => {
@@ -133,11 +115,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = props => {
                     <ListItemText>Suchleiste</ListItemText>
                 </MenuItem>
 
-                <MenuItem onClick={handleRenameColumn}>
-                    <ListItemText>Umbenennen</ListItemText>
-                </MenuItem>
-
-                <ColumnAttributesWindow
+                <ColumnAttributesWindowButton
                     headerRendererProps={headerRendererProps}
                     onCloseContextMenu={closeContextMenu}
                 />

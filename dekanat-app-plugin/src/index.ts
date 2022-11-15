@@ -202,6 +202,7 @@ async function createStandardColumn(
     column: StandardColumnSpecifier,
     addToViews?: types.ViewId[]
 ) {
+    console.log("column: " + JSON.stringify(column))
     const options = (await core.events.request(
         lvr.getViewOptions(sessionID, tableId)
     )) as lvt.ViewOptions

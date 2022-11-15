@@ -17,6 +17,7 @@ import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { stringToColor } from "utils/stringToColor"
+import BookmarksIcon from "@mui/icons-material/Bookmarks"
 import { Cell } from "../abstract/Cell"
 
 const ChipItem: React.FC<{
@@ -43,6 +44,7 @@ const ChipItem: React.FC<{
 export class MultiSelect extends Cell {
     readonly brand = "multiselect"
     label = "Mehrfach-Auswahlliste"
+    icon = BookmarksIcon
 
     isValid(value: unknown): boolean {
         return Array.isArray(value) && value.every(v => typeof v === "string")
@@ -112,6 +114,7 @@ export class MultiSelect extends Cell {
         const { data } = useView()
         const list: string[] = useMemo(() => {
             return []
+            // BUG: get this working again
 
             // const values = data.rows
             //     // .map(row => this.parse(row[_column.key])) // deserialize instead

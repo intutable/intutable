@@ -81,9 +81,10 @@ CREATE TABLE view_columns(
     kind TEXT NOT NULL DEFAULT 'standard',
     -- type of the content of a column (string, date, currency, ...)
     "cellType" TEXT NOT NULL,
+    "hidden" INTEGER NOT NULL DEFAULT 0,
     "displayName" TEXT NULL,
     -- column index
-    index INTEGER NULL,
+    "index" INTEGER NULL,
     -- flag for internal (i.e. managed by the app, not the user) columns
     "isInternal" INTEGER DEFAULT 0 NOT NULL,
     -- various RDG props
@@ -99,9 +100,9 @@ CREATE TABLE view_columns(
     "summaryFormatter" VARCHAR(255) NULL,
     "groupFormatter" VARCHAR(255) NULL,
     "colSpan" VARCHAR(255) NULL,
-    frozen INTEGER NULL,
-    resizable INTEGER NULL,
-    sortable INTEGER NULL,
+    frozen INTEGER NULL DEFAULT 0,
+    resizable INTEGER NULL DEFAULT 1,
+    sortable INTEGER NULL DEFAULT 1,
     "sortDescendingFirst" INTEGER NULL
 );
 -- end lazy-views schema

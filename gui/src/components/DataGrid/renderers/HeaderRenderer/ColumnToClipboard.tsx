@@ -7,7 +7,7 @@ import { useView } from "hooks/useView"
 import React, { useCallback } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
-import { ColumnUtility } from "utils/ColumnUtility"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 export type ColumnToClipboardProps = {
     headerRendererProps: HeaderRendererProps<Row>
