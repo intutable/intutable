@@ -3,7 +3,7 @@
 <h2 id="technologies-components">Technologies, Components</h2>
 <p>The app consists of a Next.js web-application that the user accesses through the browser, a PostgreSQL database, and a standalone back-end written in node.js to mediate between the two. All node.js code is written in TypeScript.</p>
 <figure>
-<img src="overview_1.jpg" alt="Application Overview" /><figcaption aria-hidden="true">Application Overview</figcaption>
+<img src="overview_1.drawio.png" alt="Application Overview" /><figcaption aria-hidden="true">Application Overview</figcaption>
 </figure>
 <h2 id="database">Database</h2>
 <p>The database is a PostgreSQL server. Currently, it runs in a Docker container to facilitate development, we have not yet decided whether to maintain this in production.</p>
@@ -56,7 +56,7 @@
 - <code>gui</code>: The Next.js application that serves as a front-end. It is a full web application; user inputs are serviced entirely through its own API endpoints. These, however, get their data from the <code>core</code> back-end.</p>
 <p>To avoid confusion with the terms “back-end” and “front-end”, we will use the terms “client” and “server” for the parts of the Next.js app, and refer to the standalone back-end as “core”.</p>
 <figure>
-<img src="overview_2.jpg" alt="Application Overview II: Components" /><figcaption aria-hidden="true">Application Overview II: Components</figcaption>
+<img src="overview_2.drawio.png" alt="Application Overview II: Components" /><figcaption aria-hidden="true">Application Overview II: Components</figcaption>
 </figure>
 <h2 id="dekanat-app-how-it-works"><code>dekanat-app</code>: How it Works</h2>
 <h3 id="tables-and-views">Tables and Views</h3>
@@ -64,7 +64,7 @@
 <p>After logging in, you should be redirected to the project page and see one project named “Fakultät MathInf”. Click on it to see its table list, then select “Personen”. In the middle of the screen is the table itself. You can click on a cell and start typing to edit it. The toolbar has “add column”, “add row”, “add link”, an export button (download icon) and a “detail view” button. You can experiment with these, they are fairly self-explanatory. The “add link” button allows you to add a link to another table. To see an example of this, check the “Rollen” table. If you click on a cell in the “Nachname” column, you can pick a different record to link with. If you do, the corresponding “Vorname” cell will change, too.</p>
 <p>To accomplish the linking functionality, what the user sees as a table is actually a view. The app manages the view and the underlying table, which contains the actual data, as a unit. This abstraction happens between the client and server in the Next.js app. What the user sees as views is implemented as a set of views on top of the “table” view:</p>
 <figure>
-<img src="tables_views.jpg" alt="How Tables and Views are Implemented" /><figcaption aria-hidden="true">How Tables and Views are Implemented</figcaption>
+<img src="tables_views.drawio.png" alt="How Tables and Views are Implemented" /><figcaption aria-hidden="true">How Tables and Views are Implemented</figcaption>
 </figure>
 <h3 id="gui-workspace-structure">GUI: Workspace Structure</h3>
 <p>The GUI workspace is probably larger than all other code of the app combined. To help you get into it nonetheless, here is an overview of the most important source directories and files:<br />

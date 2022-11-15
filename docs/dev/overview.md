@@ -11,7 +11,7 @@ The app consists of a Next.js web-application that the user accesses through
 the browser, a PostgreSQL database, and a standalone back-end written in
 node.js to mediate between the two. All node.js code is written in TypeScript.
 
-![Application Overview](overview_1.jpg)
+![Application Overview](overview_1.drawio.png)
 
 ## Database
 The database is a PostgreSQL server. Currently, it runs in a Docker container
@@ -99,7 +99,7 @@ To avoid confusion with the terms "back-end" and "front-end", we will use
 the terms "client" and "server" for the parts of the Next.js app, and
 refer to the standalone back-end as "core".
 
-![Application Overview II: Components](overview_2.jpg)
+![Application Overview II: Components](overview_2.drawio.png)
 
 ## `dekanat-app`: How it Works
 ### Tables and Views
@@ -123,7 +123,7 @@ which contains the actual data, as a unit. This abstraction happens between
 the client and server in the Next.js app. What the user sees as views
 is implemented as a set of views on top of the "table" view:
 
-![How Tables and Views are Implemented](tables_views.jpg)
+![How Tables and Views are Implemented](tables_views.drawio.png)
 
 ### GUI: Workspace Structure
 The GUI workspace is probably larger than all other code of the
