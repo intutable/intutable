@@ -10,6 +10,5 @@ export type CustomColumnAttributes = Partial<SerializedColumn>
 export type StandardColumnSpecifier = {
     name: string
     cellType: string
-    editable: boolean
     attributes?: CustomColumnAttributes
 }

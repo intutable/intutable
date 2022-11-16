@@ -1,22 +1,14 @@
 import {
-    asTable,
-    deleteView,
-    getViewOptions,
     listViews,
     renameView,
     TableDescriptor,
     tableId as makeTableId,
-    viewId,
     ViewDescriptor,
-    ViewOptions,
 } from "@intutable/lazy-views"
-import {
-    getTablesFromProject,
-    removeTable,
-} from "@intutable/project-management/dist/requests"
+import { getTablesFromProject } from "@intutable/project-management/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { TableData } from "@shared/types"
-import { getTableData } from "@backend/requests"
+import { getTableData, deleteTable } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import {
@@ -122,33 +114,12 @@ const DELETE = withCatchingAPIRoute(
     async (req, res, tableId: ViewDescriptor["id"]) => {
         const user = req.session.user!
 
-        await withReadWriteConnection(user, async sessionID => {
-            // delete filter views
-            const filterViews = await coreRequest<ViewDescriptor[]>(
-                listViews(sessionID, viewId(tableId)),
+        await withReadWriteConnection(user, async sessionID =>
+            coreRequest<{ message: string }>(
+                deleteTable(sessionID, tableId),
                 user.authCookie
             )
-
-            Promise.all(
-                filterViews.map(v =>
-                    coreRequest(deleteView(sessionID, v.id), user.authCookie)
-                )
-            )
-
-            const options = await coreRequest<ViewOptions>(
-                getViewOptions(sessionID, tableId),
-                user.authCookie
-            )
-
-            // delete table view
-            await coreRequest(deleteView(sessionID, tableId), user.authCookie)
-
-            // delete table in project-management
-            await coreRequest(
-                removeTable(sessionID, asTable(options.source).id),
-                user.authCookie
-            )
-        })
+        )
         res.status(200).json({})
     }
 )

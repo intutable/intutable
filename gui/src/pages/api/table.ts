@@ -1,39 +1,11 @@
-import {
-    createView,
-    tableId,
-    viewId,
-    getViewInfo,
-    ViewInfo,
-    ViewDescriptor,
-} from "@intutable/lazy-views"
-import {
-    createTableInProject,
-    getColumnsFromTable,
-    getTablesFromProject,
-} from "@intutable/project-management/dist/requests"
-import {
-    ColumnDescriptor as PM_Column,
-    ProjectDescriptor,
-    TableDescriptor,
-} from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
-import { DB } from "@shared/types"
-import { APP_TABLE_COLUMNS } from "@shared/api"
-import sanitizeName from "@shared/utils/sanitizeName"
-import {
-    emptyRowOptions,
-    defaultRowOptions,
-    defaultViewName,
-} from "@shared/defaults"
-import {
-    standardColumnAttributes,
-    idColumnAttributes,
-    indexColumnAttributes,
-} from "shared/dist/attributes/defaults"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { TableDescriptor } from "@backend/types/index" // yes, really.
+import { createTable } from "@backend/requests"
 
 /**
  * Create a new table with the specified name.
@@ -57,87 +29,12 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     }
     const user = req.session.user!
 
-    const internalName = sanitizeName(name)
-
-    const tableView = await withReadWriteConnection(user, async sessionID => {
-        const existingTables = await coreRequest<TableDescriptor[]>(
-            getTablesFromProject(sessionID, projectId),
+    const tableView = await withReadWriteConnection(user, async sessionID =>
+        coreRequest<TableDescriptor>(
+            createTable(sessionID, user.id, projectId, name),
             user.authCookie
         )
-        if (existingTables.some(t => t.name === internalName))
-            throw Error("alreadyTaken")
-
-        // create table in project-management with primary "name" column
-        const table = await coreRequest<TableDescriptor>(
-            createTableInProject(
-                sessionID,
-                user.id,
-                projectId,
-                internalName,
-                APP_TABLE_COLUMNS
-            ),
-            user.authCookie
-        )
-
-        // make specifiers for view columns
-        const baseColumns = await coreRequest<PM_Column[]>(
-            getColumnsFromTable(sessionID, table.id),
-            user.authCookie
-        )
-        const columnSpecs = baseColumns.map(c => {
-            let attributes: Partial<DB.Column>
-            switch (c.name) {
-                case "_id":
-                    attributes = idColumnAttributes(0)
-                    break
-                case "index":
-                    attributes = indexColumnAttributes(1)
-                    break
-                case "name":
-                    attributes = standardColumnAttributes(
-                        "Name",
-                        "string",
-                        2,
-                        true
-                    )
-                    break
-                default:
-                    attributes = {} as Partial<DB.Column>
-            }
-            return { parentColumnId: c.id, attributes }
-        })
-
-        // create table view
-        const tableView = await coreRequest<ViewDescriptor>(
-            createView(
-                sessionID,
-                tableId(table.id),
-                name,
-                { columns: columnSpecs, joins: [] },
-                emptyRowOptions(),
-                user.id
-            ),
-            user.authCookie
-        )
-
-        // create default filter view
-        const tableColumns = await coreRequest<ViewInfo>(
-            getViewInfo(sessionID, tableView.id),
-            user.authCookie
-        ).then(i => i.columns)
-        await coreRequest<ViewDescriptor>(
-            createView(
-                sessionID,
-                viewId(tableView.id),
-                defaultViewName(),
-                { columns: [], joins: [] },
-                defaultRowOptions(tableColumns),
-                user.id
-            ),
-            user.authCookie
-        )
-        return tableView
-    })
+    )
 
     res.status(200).json(tableView)
 })

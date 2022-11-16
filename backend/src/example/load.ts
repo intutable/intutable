@@ -16,7 +16,7 @@ import { requests as v_req } from "@intutable/lazy-views/"
 import { types as v_types } from "@intutable/lazy-views"
 import { tableId, viewId } from "@intutable/lazy-views"
 
-import { emptyRowOptions, defaultRowOptions } from "shared/dist/defaults"
+import { emptyRowOptions, defaultRowOptions } from "shared/dist/api"
 
 import {
     TableSpec,

@@ -1,5 +1,5 @@
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
-import { DB, MetaColumnProps } from "shared/src/types"
+import { DB, MetaColumnProps } from "shared/dist/types"
 
 /**
  * Restructures the data from the database to a more usable format.

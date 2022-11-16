@@ -1,17 +1,10 @@
-import {
-    createView,
-    viewId,
-    getViewInfo,
-    listViews,
-    ViewInfo,
-    ViewDescriptor,
-} from "@intutable/lazy-views"
+import { ViewDescriptor } from "@backend/types/index"
+import { createView } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
-import { defaultRowOptions } from "@shared/defaults"
 import { withUserCheck } from "api/utils/withUserCheck"
 
 /**
@@ -33,32 +26,11 @@ const POST = withCatchingAPIRoute(
 
         const filterView = await withReadWriteConnection(
             user,
-            async sessionID => {
-                // avoid duplicates
-                const existingViews = await coreRequest<ViewDescriptor[]>(
-                    listViews(sessionID, viewId(tableId)),
+            async sessionID =>
+                coreRequest<ViewDescriptor>(
+                    createView(sessionID, user.id, tableId, name),
                     user.authCookie
                 )
-                if (existingViews.some(v => v.name === name))
-                    throw Error("alreadyTaken")
-
-                // create new filter view
-                const tableColumns = await coreRequest<ViewInfo>(
-                    getViewInfo(sessionID, tableId),
-                    user.authCookie
-                ).then(i => i.columns)
-                return coreRequest<ViewDescriptor>(
-                    createView(
-                        sessionID,
-                        viewId(tableId),
-                        name,
-                        { columns: [], joins: [] },
-                        defaultRowOptions(tableColumns),
-                        user.id
-                    ),
-                    user.authCookie
-                )
-            }
         )
 
         res.status(200).json(filterView)

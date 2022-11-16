@@ -17,7 +17,7 @@ import {
     idColumnAttributes,
     indexColumnAttributes,
     linkColumnAttributes,
-} from "shared/dist/attributes/defaults"
+} from "shared/dist/api"
 
 export const PK_COLUMN = "_id"
 
