@@ -24,16 +24,16 @@ const ChipItem: React.FC<{
     label: string
     onDelete?: () => void
 }> = ({ label, onDelete }) => {
-    // const color = stringToColor(label)
-    // const theme = useTheme()
+    const color = stringToColor(label)
+    const theme = useTheme()
     return (
         <Chip
             label={label}
             size="small"
             onDelete={onDelete}
             sx={{
-                // color: theme.palette.getContrastText(color),
-                // bgcolor: color,
+                color: theme.palette.getContrastText(color),
+                bgcolor: color,
                 cursor: "pointer",
                 mr: 0.5,
             }}
@@ -92,17 +92,19 @@ export class MultiSelect extends Cell {
         const options = rows
             .map(row => row[column.key])
             .flat()
-            .filter(option => Cell.isEmpty(option)) // remove empty values
+            .filter(option => Cell.isEmpty(option) === false) // remove empty values
 
-        console.log("options", options)
-
-        return (
+        const optionsWithoutSelf = (
             self == null
                 ? options
                 : options.filter(
                       option => self.includes(option as string) === false
                   )
-        ) as string[] // remove already selected values
+        ) as string[]
+
+        const uniqueOptions = new Set(optionsWithoutSelf)
+
+        return [...uniqueOptions]
     }
 
     formatter = (props: FormatterProps<Row>) => {
@@ -141,8 +143,10 @@ export class MultiSelect extends Cell {
         }
 
         const { data } = useView()
-        const list = data ? this.getOptions(column, data.rows, content) : null
-        // console.log(list)
+        const list = useMemo(
+            () => (data ? this.getOptions(column, data.rows, content) : null),
+            [data, column, content]
+        )
 
         return (
             <>
