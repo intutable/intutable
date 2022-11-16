@@ -76,7 +76,10 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <Button
-                    onClick={async () => await request()}
+                    onClick={async () => {
+                        await request()
+                        props.onClose()
+                    }}
                     disabled={valid === false}
                 >
                     Erstellen

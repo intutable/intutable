@@ -45,6 +45,13 @@ export class Select extends Cell {
     label = "Auswahlliste"
     icon = BookmarkIcon
 
+    constructor() {
+        super()
+        this.setEditorOptions({
+            renderFormatter: true,
+        })
+    }
+
     editor = () => null
 
     formatter = (props: FormatterProps<Row>) => {

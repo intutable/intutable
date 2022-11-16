@@ -1,7 +1,9 @@
 import { ViewData } from "types/tables"
-import { ViewDescriptor } from "@backend/types"
-import { getViewData, deleteView, renameView } from "@backend/requests"
 
+// import { ViewDescriptor } from "@backend/types"
+import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+
+import { getViewData, deleteView, renameView } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import {
@@ -10,7 +12,6 @@ import {
 } from "api/utils/databaseConnection"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import type { NextApiRequest, NextApiResponse } from "next"
-
 import { withUserCheck } from "api/utils/withUserCheck"
 
 /**

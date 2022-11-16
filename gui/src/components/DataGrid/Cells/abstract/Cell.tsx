@@ -110,7 +110,9 @@ export abstract class Cell
         SerializableCatchEmpty,
         ExposableInputComponent
 {
+    /** do NOT change in production */
     public abstract readonly brand: string
+    // but this can be changed
     public abstract label: string
     /** icon displayed with the type */
     public abstract icon: SvgIconComponent
