@@ -30,10 +30,13 @@ export type Serializable = {
 
 export type SerializableCatchEmpty = {
     /**
+     * Almost every cell type allows empty values.
+     * Wrap this function around the de-/serialize function to catch those empty values.
      *
+     * For empty values (null, undefined, "") it returns null
      */
     catchEmpty: <T extends ValueOf<Serializable>>(
         fn: T,
         value: unknown
-    ) => null | undefined | ReturnType<T>
+    ) => null | ReturnType<T>
 }

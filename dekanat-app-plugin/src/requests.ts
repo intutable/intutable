@@ -9,6 +9,44 @@ import { TableId, ViewId } from "./types"
 export const CHANNEL = "dekanat-app-plugin"
 
 /**
+ * Create a table in the given project with the given name
+ * Also created:
+ * - columns ID and index, which are hidden to the user
+ * - a column named "Name" designated as "user primary key" (i.e. not really
+ * a PK in the database, but the user is _encouraged_ to keep it unique, and
+ * it is used as the "title" of a row when creating previews of rows)
+ * - a default view with the name "Standard", whose metadata
+ * (filters, name) cannot be edited.
+ * Exceptions:
+ * - name is already taken -> error
+ * Response: {@link types.TableDescriptor} name and ID of the newly
+ * created table.
+ */
+export function createTable(
+    sessionID: string,
+    userId: number,
+    projectId: number,
+    name: string
+) {
+    return {
+        channel: CHANNEL,
+        method: createTable.name,
+        sessionID,
+        userId,
+        projectId,
+        name,
+    }
+}
+
+/**
+ * Delete a table (along with all its views)
+ * Response: { message: string } a report that the table was deleted.
+ */
+export function deleteTable(sessionID: string, id: TableId) {
+    return { channel: CHANNEL, method: deleteTable.name, sessionID, id }
+}
+
+/**
  * Create a standard column: not a  link, not an index or checkbox column,
  * just a plain data column that the user can populate with whatever data
  * match its type.
@@ -91,7 +129,8 @@ export function removeColumnFromTable(
  * Change the attributes of a column of a table, and optionally all its views.
  * All boolean values in the attributes are changed into ones and zeros,
  * other than that no transformation takes place.
- * Response: An array of all columns that were changed.
+ * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn}
+ * An array of all columns that were changed.
  */
 export function changeTableColumnAttributes(
     sessionID: string,
@@ -117,6 +156,57 @@ export function changeTableColumnAttributes(
  */
 export function getTableData(sessionID: string, tableId: TableId) {
     return { channel: CHANNEL, method: getTableData.name, sessionID, tableId }
+}
+
+/**
+ * Create a view on a given table with the specified name. By default, it
+ * has all columns of the table included and no filters, sorting, or grouping.
+ * Filters can be added with {@link changeViewFilters}, while
+ * hiding columns, sorting, and grouping are not yet implemented at all.
+ */
+export function createView(
+    sessionID: string,
+    userId: number,
+    tableId: TableId,
+    name: string
+) {
+    return {
+        channel: CHANNEL,
+        method: createView.name,
+        sessionID,
+        userId,
+        tableId,
+        name,
+    }
+}
+
+/**
+ * Rename a view. The default view cannot be renamed.
+ * Response: {@link ViewDescriptor} the descriptor of the updated view.
+ */
+export function renameView(sessionID: string, viewId: ViewId, newName: string) {
+    return {
+        channel: CHANNEL,
+        method: renameView.name,
+        sessionID,
+        viewId,
+        newName,
+    }
+}
+
+/**
+ * Delete a view. The default view cannot be deleted.
+ * Response: { message: string } a report that the view was deleted.
+ */
+export function deleteView(sessionID: string, viewId: ViewId) {
+    return { channel: CHANNEL, method: deleteView.name, sessionID, viewId }
+}
+/**
+ * List views on a table.
+ * Response: {@link types.ViewDescriptor}[]
+ */
+export function listViews(sessionID: string, id: TableId) {
+    return { channel: CHANNEL, method: listViews.name, sessionID, id }
 }
 
 /**

@@ -6,7 +6,7 @@
     "main": "./dist/index.js",
     "scripts": {
         "build": "tsc --build --force",
-        "test": "docker-compose up -d && npx jest; docker-compose down --volumes",
+        "test": "docker-compose up -d && npm run build && npx jest; docker-compose down --volumes",
         "build:db": "docker-compose build --pull",
         "lint": "cross-env NODE_ENV=development eslint src",
         "lint:fix": "npm run lint -- --fix",

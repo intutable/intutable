@@ -15,7 +15,7 @@ import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
 import BookmarkIcon from "@mui/icons-material/Bookmark"
 import { Cell } from "../abstract/Cell"
@@ -45,15 +45,37 @@ export class Select extends Cell {
     label = "Auswahlliste"
     icon = BookmarkIcon
 
+    constructor() {
+        super()
+        this.setEditorOptions({
+            renderFormatter: true,
+        })
+    }
+
     editor = () => null
 
+    getOptions(
+        column: Column.Deserialized,
+        rows: Row[],
+        self?: string | null
+    ): string[] {
+        const options = rows
+            .map(row => row[column.key])
+            .filter(option => Cell.isEmpty(option) === false) // remove empty values
+
+        const optionsWithoutSelf = (
+            self == null ? options : options.filter(option => self !== option)
+        ) as string[]
+
+        const uniqueOptions = new Set(optionsWithoutSelf)
+
+        return [...uniqueOptions]
+    }
+
     formatter = (props: FormatterProps<Row>) => {
-        const {
-            content,
-            column: _column,
-            row,
-            key,
-        } = this.destruct<string | null | undefined>(props)
+        const { content, column, row, key } = this.destruct<
+            string | null | undefined
+        >(props)
         const isEmpty = content == null || content === ""
 
         const [hovering, setHovering] = useState<boolean>(false)
@@ -76,16 +98,10 @@ export class Select extends Cell {
         }
 
         const { data } = useView()
-        const list: string[] | null = useMemo(() => {
-            if (data == null) return null
-
-            const values = data.rows
-                .map(row => row[_column.key] as string)
-                .filter(value => typeof value === "string" && value.length > 0)
-                .filter(item => item !== content)
-
-            return [...new Set(values)]
-        }, [_column.key, content, data])
+        const list = useMemo(
+            () => (data ? this.getOptions(column, data.rows, content) : null),
+            [data, column, content]
+        )
 
         return (
             <>

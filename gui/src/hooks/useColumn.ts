@@ -4,7 +4,7 @@ import { TableHookOptions, useTable } from "hooks/useTable"
 import { useView, ViewHookOptions } from "hooks/useView"
 import { Column } from "types"
 
-import { CustomColumnAttributes } from "@shared/types"
+import { StandardColumnSpecifier, CustomColumnAttributes } from "@shared/types"
 import {
     ColumnFactory,
     SettableColumnProps,
@@ -72,10 +72,19 @@ export const useColumn = (
         const tableId = table!.metadata.descriptor.id
 
         const col = column.create()
-
+        // kludge here, turning the column into the type that the backend
+        // understands as of now
+        const attributes: CustomColumnAttributes = { ...col }
+        delete attributes.name
+        delete attributes.cellType
+        const columnSpec: StandardColumnSpecifier = {
+            name: col.name,
+            cellType: col.cellType,
+            attributes,
+        }
         await fetcher({
             url: `/api/table/${tableId}/column`,
-            body: { ...col }, // BUG: Backend does not like this
+            body: { column: columnSpec },
         })
         await mutate()
     }

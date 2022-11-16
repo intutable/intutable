@@ -1,4 +1,5 @@
-import { ViewDescriptor, listViews, viewId } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@backend/types/index"
+import { listViews } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -22,8 +23,7 @@ const GET = async (
         const user = req.session.user!
         const views = await withReadOnlyConnection(user, async sessionID =>
             coreRequest<ViewDescriptor[]>(
-                // remember, the table is itself a view
-                listViews(sessionID, viewId(tableId)),
+                listViews(sessionID, tableId),
                 user.authCookie
             )
         )

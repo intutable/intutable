@@ -156,7 +156,7 @@ export const RowMask: React.FC = () => {
                         {rowMaskState.mode === "create"
                             ? "Neue Zeile erstellen"
                             : rowMaskState.mode === "edit"
-                            ? `Zeile ${rowMaskState.row.__rowIndex__}`
+                            ? `Zeile ${rowMaskState.row.index}`
                             : ""}
                     </Typography>
 

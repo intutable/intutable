@@ -16,7 +16,7 @@ export class ColumnUtility {
     ): true | number[] {
         const targetUtil = cells.getCell(to)
         const data = view.rows.map(row => [
-            row.__rowIndex__,
+            row.index,
             row[column.key],
         ]) as Array<[number, unknown]>
 

@@ -8,7 +8,7 @@ import {
     SerializedColumn,
     SerializedViewData,
     TableData,
-} from "shared/src/types"
+} from "shared/dist/types"
 import { Filter } from "../types/filter"
 import { cast } from "./cast"
 import { internalColumnUtil } from "./InternalColumnUtil"
@@ -87,17 +87,19 @@ export class ParserClass {
         keys.forEach(key => {
             const value = column[key] as unknown
             switch (key) {
-                case "index":
-                    throw new Error(
-                        "Not implemented. Internal Columns cannot not be edited atm."
-                    )
-
                 // restructure name
                 case "name":
                     dbcolumn["displayName"] = value as string
                     break
+                case "hidden":
+                case "isUserPrimaryKey":
+                    dbcolumn[key] = cast.toDatabaseBoolean(value)
+                    break
+                case "index":
+                    dbcolumn[key] = cast.toNumber(value)
+                    break
 
-                // default
+                // optionally null keys
                 case "kind":
                 case "cellType":
                 case "cellClass":
@@ -109,7 +111,6 @@ export class ParserClass {
                     dbcolumn[key] = value as string
                     break
 
-                //
                 case "width":
                 case "minWidth":
                 case "maxWidth":
@@ -118,7 +119,6 @@ export class ParserClass {
                         value
                     )
                     break
-
                 case "editable":
                 case "frozen":
                 case "resizable":
@@ -130,12 +130,7 @@ export class ParserClass {
                     )
                     break
 
-                case "hidden":
-                case "isUserPrimaryKey":
-                    dbcolumn[key] = cast.toDatabaseBoolean(value)
-                    break
-
-                // ignore others values from SerializedColumn that are not in DB.Column
+                // ignore keys of SerializedColumn that are not in DB.Column
                 default:
                     console.error("ignored:", key, value)
                     break

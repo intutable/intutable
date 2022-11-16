@@ -36,17 +36,7 @@ export class Percentage extends NumericCell {
     icon = PercentIcon
 
     isValid(value: unknown): boolean {
-        if (typeof value === "string" && NumericCell.isNumeric(value)) {
-            const number = NumericCell.isInteger(value)
-                ? Number.parseInt(value)
-                : Number.parseFloat(value)
-            return number >= 0 && number <= 100
-        }
-        return (
-            (typeof value === "number" && value >= 0 && value <= 100) ||
-            value == null ||
-            value === ""
-        )
+        return typeof value === "number" && value >= 0 && value <= 100
     }
 
     export(value: number): string {
@@ -64,14 +54,34 @@ export class Percentage extends NumericCell {
     editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct<number | null>(props)
 
+        const [percentage, setPercentage] = React.useState<number | null>(
+            content
+        )
+
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const value = Number.parseInt(e.target.value) // value gets back as a string and needs to be parsed
-            if (this.isValid(value) || value == null)
-                // if it was an empty string, it became 'null'
+            const value = e.target.value
+            let parsedValue: number | null
+
+            // parse
+            try {
+                if (
+                    value === null ||
+                    (typeof value === "string" && value === "")
+                )
+                    parsedValue = null // return null instead of an empty string
+                else parsedValue = Number.parseInt(value)
+            } catch (e) {
+                return
+            }
+
+            // validate AND update
+            if (parsedValue === null || this.isValid(parsedValue)) {
+                setPercentage(parsedValue)
                 props.onRowChange({
                     ...row,
-                    [key]: value ?? "", // and then it needs to be saved as an empty string
+                    [key]: parsedValue,
                 })
+            }
         }
 
         return (
@@ -79,13 +89,13 @@ export class Percentage extends NumericCell {
                 onChange={handleChange}
                 type="number"
                 onBlur={() => props.onClose(true)}
-                value={content}
-                componentsProps={{
-                    input: {
-                        min: 0,
-                        max: 100,
-                    },
-                }}
+                value={percentage}
+                // componentsProps={{
+                //     input: {
+                //         min: 0,
+                //         max: 100,
+                //     },
+                // }}
             />
         )
     }

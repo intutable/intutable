@@ -1,4 +1,4 @@
-import { DB } from "shared/src/types"
+import { DB } from "shared/dist/types"
 import { inspect } from "util"
 
 /**

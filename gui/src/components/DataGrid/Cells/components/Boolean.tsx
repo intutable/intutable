@@ -49,7 +49,10 @@ export class Bool extends Cell {
     formatter = (props: FormatterProps<Row>) => {
         const { row, key, content } = this.destruct<boolean>(props)
 
+        const [value, setValue] = React.useState(content)
+
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setValue(e.target.checked)
             if (e.target.checked !== content)
                 props.onRowChange({
                     ...row,
@@ -67,7 +70,7 @@ export class Bool extends Cell {
                     alignItems: "center",
                 }}
             >
-                <Checkbox checked={content} onChange={handleChange} />
+                <Checkbox checked={value} onChange={handleChange} />
             </Box>
         )
     }

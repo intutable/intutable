@@ -202,13 +202,13 @@ const TablePage: React.FC = () => {
                                     onSelectedRowsChange={setSelectedRows}
                                     onRowsChange={partialRowUpdate}
                                     headerRowHeight={headerHeight}
-                                    onRowClick={(row, column) =>
-                                        setRowMaskState({
-                                            mode: "edit",
-                                            row,
-                                            column,
-                                        })
-                                    }
+                                    // onRowClick={(row, column) =>
+                                    //     setRowMaskState({
+                                    //         mode: "edit",
+                                    //         row,
+                                    //         column,
+                                    //     })
+                                    // }
                                     cellNavigationMode={cellNavigationMode}
                                 />
                             </DndProvider>

@@ -15,7 +15,7 @@ import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
 import BookmarksIcon from "@mui/icons-material/Bookmarks"
 import { Cell } from "../abstract/Cell"
@@ -46,6 +46,16 @@ export class MultiSelect extends Cell {
     label = "Mehrfach-Auswahlliste"
     icon = BookmarksIcon
 
+    constructor() {
+        super()
+        this.setEditorOptions({
+            renderFormatter: true,
+            // onCellKeyDown: e => {
+            //     console.log(e)
+            // },
+        })
+    }
+
     isValid(value: unknown): boolean {
         return Array.isArray(value) && value.every(v => typeof v === "string")
     }
@@ -74,13 +84,33 @@ export class MultiSelect extends Cell {
 
     editor = () => null
 
+    getOptions(
+        column: Column.Deserialized,
+        rows: Row[],
+        self?: string[] | null
+    ): string[] {
+        const options = rows
+            .map(row => row[column.key])
+            .flat()
+            .filter(option => Cell.isEmpty(option) === false) // remove empty values
+
+        const optionsWithoutSelf = (
+            self == null
+                ? options
+                : options.filter(
+                      option => self.includes(option as string) === false
+                  )
+        ) as string[]
+
+        const uniqueOptions = new Set(optionsWithoutSelf)
+
+        return [...uniqueOptions]
+    }
+
     formatter = (props: FormatterProps<Row>) => {
-        const {
-            content,
-            column: _column,
-            row,
-            key,
-        } = this.destruct<string[]>(props)
+        const { content, column, row, key } = this.destruct<string[] | null>(
+            props
+        )
         const isEmpty = content == null || content.length === 0
 
         const [hovering, setHovering] = useState<boolean>(false)
@@ -99,31 +129,24 @@ export class MultiSelect extends Cell {
         const addChip = (value: string) => {
             props.onRowChange({
                 ...row,
-                [key]: [...content, value],
+                [key]: content ? [...content, value] : [value],
             })
             closeModal()
         }
         const removeChip = (value: string) => {
+            if (content == null) return
             props.onRowChange({
                 ...row,
-                [key]: content.filter(v => v !== value),
+                [key]: content.filter(option => option !== value),
             })
             closeModal()
         }
 
         const { data } = useView()
-        const list: string[] = useMemo(() => {
-            return []
-            // BUG: get this working again
-
-            // const values = data.rows
-            //     // .map(row => this.parse(row[_column.key])) // deserialize instead
-            //     .flat()
-            //     .filter(value => typeof value === "string" && value.length > 0)
-            // .filter(value => content.includes(value) === false)
-
-            // return [...new Set(values)]
-        }, [])
+        const list = useMemo(
+            () => (data ? this.getOptions(column, data.rows, content) : null),
+            [data, column, content]
+        )
 
         return (
             <>
