@@ -147,7 +147,11 @@ export abstract class Cell
         fn: T,
         value: unknown
     ): null | ReturnType<T> {
-        if (value === null || typeof value === "undefined" || value === "")
+        if (
+            value === null ||
+            typeof value === "undefined" ||
+            (typeof value === "string" && value === "")
+        )
             return null
         return fn(value) as ReturnType<T>
     }
