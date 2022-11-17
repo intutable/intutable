@@ -3,9 +3,7 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp"
 import { Stack } from "@mui/material"
 import { useRowMask } from "context/RowMaskContext"
 import { useView } from "hooks/useView"
-import React, { useEffect } from "react"
-import { Column } from "types"
-import { ColumnUtility } from "utils/column utils/ColumnUtility"
+import React from "react"
 
 const _RowNavigator: React.FC = () => {
     const { data } = useView()
@@ -22,19 +20,14 @@ const _RowNavigator: React.FC = () => {
             rowMaskState.row.index - 1 < 0
                 ? maxIndex
                 : rowMaskState.row.index - 1
-        setRowMaskState(prev => ({
+        setRowMaskState({
             mode: "edit",
             row: data.rows.find(
                 row =>
                     row.index ===
                     (action === "next" ? nextIndex : previousIndex)
             )!,
-            column: Object.prototype.hasOwnProperty.call(prev, "column")
-                ? (prev as { column: Column.Deserialized }).column
-                : data.columns.filter(
-                      column => ColumnUtility.isAppColumn(column) === false
-                  )[0],
-        }))
+        })
     }
 
     return (

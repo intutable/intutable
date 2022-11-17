@@ -1,5 +1,6 @@
 import cells, { Cell } from "@datagrid/Cells"
 import { Column, ViewData } from "types"
+import { SELECT_COLUMN_KEY } from "react-data-grid"
 
 export class ColumnUtility {
     public cell: Cell
@@ -33,11 +34,14 @@ export class ColumnUtility {
      * Identifies columns which are not part of the real object data, but rather
      * control elements specific to this GUI, such as the row index column and
      * selector checkbox.
+     *
+     * @deprecated This is probably deprecated, because the SelectorColumn is not a part of the data anymore.
+     * It gets injected before giving the data to the grid component.
      */
     static isAppColumn(
         column: Column.Serialized | Column.Deserialized
     ): boolean {
-        return column.key === "select-row"
+        return column.key === SELECT_COLUMN_KEY
     }
 
     /**

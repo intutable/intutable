@@ -9,6 +9,9 @@ import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { TempusCell } from "../abstract/TempusCell"
 import DateRangeIcon from "@mui/icons-material/DateRange"
+import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
+import { ExposedInputProps } from "../abstract/protocols"
 
 export class DateCell extends TempusCell {
     readonly brand = "date"
@@ -105,6 +108,51 @@ export class DateCell extends TempusCell {
                     />
                 </LocalizationProvider>
             </Box>
+        )
+    }
+
+    public ExposedInput: React.FC<ExposedInputProps<number | null>> = props => {
+        const { getRowId, updateRow } = useRow()
+        const { snackError } = useSnacki()
+
+        const [content, setContent] = useState(props.content)
+
+        const handleChange = async (value: number | null) => {
+            if (this.isValid(value)) setContent(value)
+            try {
+                await updateRow(props.column, getRowId(props.row), value)
+            } catch (e) {
+                snackError("Der Wert konnte nicht geändert werden")
+            }
+        }
+
+        return (
+            <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={deLocale}
+                localeText={{
+                    openPreviousView: "Stunde setzen",
+                    openNextView: "Minuten setzen",
+                    clearButtonLabel: "Löschen",
+                    cancelButtonLabel: "Abbrechen",
+                    okButtonLabel: "OK",
+                    todayButtonLabel: "Jetzt",
+                    // start: "Start",
+                    // end: "Ende",
+                }}
+            >
+                <DatePicker
+                    showToolbar
+                    value={content}
+                    onChange={handleChange}
+                    renderInput={props => <TextField {...props} />}
+                    componentsProps={{
+                        actionBar: {
+                            actions: ["clear", "today", "accept"],
+                        },
+                    }}
+                />
+            </LocalizationProvider>
         )
     }
 }

@@ -4,6 +4,9 @@ import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import ToggleOnIcon from "@mui/icons-material/ToggleOn"
 import { Cell } from "../abstract/Cell"
+import { ExposedInputProps } from "../abstract/protocols"
+import { useSnacki } from "hooks/useSnacki"
+import { useRow } from "hooks/useRow"
 
 export class Bool extends Cell {
     readonly brand = "boolean"
@@ -73,5 +76,29 @@ export class Bool extends Cell {
                 <Checkbox checked={value} onChange={handleChange} />
             </Box>
         )
+    }
+
+    public ExposedInput: React.FC<ExposedInputProps<boolean>> = props => {
+        const { getRowId, updateRow } = useRow()
+        const { snackError } = useSnacki()
+
+        const [value, setValue] = React.useState(props.content)
+
+        const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+            setValue(e.target.checked)
+            if (e.target.checked !== value) {
+                try {
+                    await updateRow(
+                        props.column,
+                        getRowId(props.row),
+                        e.target.checked
+                    )
+                } catch (e) {
+                    snackError("Der Wert konnte nicht geändert werden")
+                }
+            }
+        }
+
+        return <Checkbox checked={value} onChange={handleChange} />
     }
 }

@@ -1,3 +1,5 @@
+import { CalculatedColumn } from "react-data-grid"
+import { Column, Row } from "types"
 import { ValueOf } from "utils/ValueOf"
 
 export type Validatable = {
@@ -39,4 +41,22 @@ export type SerializableCatchEmpty = {
         fn: T,
         value: unknown
     ) => null | ReturnType<T>
+}
+
+export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {
+    content: T
+    row: Row
+    column: Column.Deserialized | CalculatedColumn<Row>
+    InputProps?: R
+}
+
+export type ExposableInputComponent = {
+    /**
+     * Reference to the input component of the cell class.
+     * Can be used outside the cell for other components.
+     *
+     * __Note__: This adapts the behaviour of native rdg cells and is NOT fully developed.
+     * Bugs may occur.
+     */
+    ExposedInput: React.FC<ExposedInputProps>
 }

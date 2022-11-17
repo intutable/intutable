@@ -19,6 +19,9 @@ import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
 import BookmarksIcon from "@mui/icons-material/Bookmarks"
 import { Cell } from "../abstract/Cell"
+import { ExposedInputProps } from "../abstract/protocols"
+import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
 
 const ChipItem: React.FC<{
     label: string
@@ -259,6 +262,33 @@ export class MultiSelect extends Cell {
                     </MenuList>
                 </Menu>
             </>
+        )
+    }
+
+    public ExposedInput: React.FC<ExposedInputProps<string | null>> = props => {
+        const { getRowId, updateRow } = useRow()
+        const { snackError } = useSnacki()
+
+        const [value, setValue] = useState(props.content ?? "")
+
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(e.target.value)
+
+        const handleBlur = async () => {
+            try {
+                await updateRow(props.column, getRowId(props.row), value)
+            } catch (e) {
+                snackError("Der Wert konnte nicht geändert werden")
+            }
+        }
+
+        return (
+            <TextField
+                size="small"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={value}
+            />
         )
     }
 }

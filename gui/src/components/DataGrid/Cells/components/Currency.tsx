@@ -1,9 +1,12 @@
-import { Box } from "@mui/material"
-import React from "react"
+import { Box, InputAdornment, TextField } from "@mui/material"
+import React, { useState } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { NumericCell } from "../abstract/NumericCell"
 import PaidIcon from "@mui/icons-material/Paid"
+import { ExposedInputProps } from "../abstract/protocols"
+import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
 
 export class Currency extends NumericCell {
     readonly brand = "currency"
@@ -60,6 +63,41 @@ export class Currency extends NumericCell {
                     {content && " €"}
                 </>
             </Box>
+        )
+    }
+
+    public ExposedInput: React.FC<ExposedInputProps<number | null>> = props => {
+        const { getRowId, updateRow } = useRow()
+        const { snackError } = useSnacki()
+
+        const [value, setValue] = useState(props.content)
+
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (this.isValid(e.target.value))
+                setValue(Number.parseInt(e.target.value))
+        }
+
+        const handleBlur = async () => {
+            try {
+                await updateRow(props.column, getRowId(props.row), value)
+            } catch (e) {
+                snackError("Der Wert konnte nicht geändert werden")
+            }
+        }
+
+        return (
+            <TextField
+                size="small"
+                type="number"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={value}
+                InputProps={{
+                    endAdornment: (
+                        <InputAdornment position="end">€</InputAdornment>
+                    ),
+                }}
+            />
         )
     }
 }

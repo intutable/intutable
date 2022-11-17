@@ -2,20 +2,22 @@
 import EditorComponent from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { InputUnstyled, InputUnstyledProps } from "@mui/base"
+import { SvgIconComponent } from "@mui/icons-material"
 import { Box, TextField } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import { useRow } from "hooks/useRow"
 import React, { useEffect, useRef, useState } from "react"
-import { CalculatedColumn, EditorProps, FormatterProps } from "react-data-grid"
+import { EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
-import { SvgIconComponent } from "@mui/icons-material"
 import { ValueOf } from "utils/ValueOf"
 import {
+    Exportable,
+    ExposableInputComponent,
+    ExposedInputProps,
     Serializable,
     SerializableCatchEmpty,
-    Exportable,
     Validatable,
 } from "./protocols"
 
@@ -44,53 +46,6 @@ const StyledInputElement = styled("input")`
         outline: none;
     }
 `
-
-export type ExposedInputUpdateMode = "self" | "alien"
-export type ExposedInputUpdate<MODE extends ExposedInputUpdateMode> =
-    MODE extends "self"
-        ? {
-              mode: "self"
-              row: Row
-              column: Column.Deserialized | CalculatedColumn<Row>
-          }
-        : {
-              mode: "alien"
-              onChange: (value: unknown) => void
-          }
-export type ExposedInputProps = {
-    /**
-     * If focus is lost, instead the formatted value will be displayed (formatter).
-     * By clicking the value, the input component will be reactivated for editing (editor).
-     *
-     * @default true
-     */
-    keepFormatter?: boolean
-    /**
-     *
-     */
-    content?: unknown
-    /**
-     * 1: will update itself
-     * 2: returns the (updated) value
-     */
-    update: ExposedInputUpdate<ExposedInputUpdateMode>
-    sx?: null
-}
-
-export interface ExposableInputComponent {
-    /**
-     * Reference to the input component of the cell class.
-     * Can be used outside the cell for other components.
-     *
-     * __Note__: This adapts the behaviour of native rdg cells and is NOT fully developed.
-     * Bugs may occur.
-     */
-    ExposedInput: React.FC<ExposedInputProps>
-    /**
-     * Updates the cell's `value`. Can be used outside the cell in other components.
-     */
-    // update: (value: unknown) => void
-}
 
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
@@ -295,35 +250,8 @@ export abstract class Cell
         return <Box>{content}</Box>
     }
 
-    public ExposedInput = (props: ExposedInputProps) => {
-        const { getRowId, updateRow } = useRow()
-
-        const [content, setContent] = useState(props.content ?? "")
-
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            setContent(e.target.value)
-            if (props.update.mode === "alien") {
-                const callback = props.update.onChange
-                callback(e.target.value)
-            }
-        }
-
-        const handleBlur = async () => {
-            if (props.update.mode === "self") {
-                const { row, column } = props.update
-                await updateRow(column, getRowId(row), content)
-            }
-        }
-
-        return (
-            <TextField
-                size="small"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={content}
-            />
-        )
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public abstract ExposedInput: React.FC<ExposedInputProps<any, any>>
 
     static Error = CellError
 }

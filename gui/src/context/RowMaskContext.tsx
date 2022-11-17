@@ -1,13 +1,11 @@
 import React, { useState } from "react"
-import { CalculatedColumn } from "react-data-grid"
-import { Column, Row } from "types"
+import { Row } from "types"
 
 export type RowMaskMode = "edit" | "create" | "closed"
 export type RowMaskState<MODE extends RowMaskMode> = MODE extends "edit"
     ? {
           mode: "edit"
           row: Row
-          column: Column.Deserialized | CalculatedColumn<Row>
       }
     : MODE extends "create"
     ? { mode: "create" }
