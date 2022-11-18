@@ -50,17 +50,8 @@ export const RowMask: React.FC = () => {
                     <Box flexGrow={1} />
 
                     <RowMaskContextMenu />
-                    <Divider
-                        orientation="vertical"
-                        flexItem
-                        sx={{ mx: 2 }}
-                        variant="middle"
-                    />
-                    <CloseIcon
-                        onClick={abort}
-                        fontSize="small"
-                        sx={{ cursor: "pointer" }}
-                    />
+                    <Divider orientation="vertical" flexItem sx={{ mx: 2 }} variant="middle" />
+                    <CloseIcon onClick={abort} fontSize="small" sx={{ cursor: "pointer" }} />
                 </Stack>
             </DialogTitle>
 
@@ -74,16 +65,10 @@ export const RowMask: React.FC = () => {
                 }}
             >
                 {data.columns
-                    .filter(
-                        column => ColumnUtility.isAppColumn(column) === false
-                    )
+                    .filter(column => ColumnUtility.isAppColumn(column) === false)
                     .filter(column => column.hidden !== true)
                     .sort((a, b) =>
-                        a.isUserPrimaryKey! === b.isUserPrimaryKey!
-                            ? 0
-                            : a.isUserPrimaryKey! === true
-                            ? -1
-                            : 1
+                        a.isUserPrimaryKey! === b.isUserPrimaryKey! ? 0 : a.isUserPrimaryKey! === true ? -1 : 1
                     )
                     .map(column => (
                         <RowMaskColumn column={column} key={column.id} />
