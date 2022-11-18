@@ -1,11 +1,5 @@
 import LinkIcon from "@mui/icons-material/Attachment"
-import {
-    Box,
-    IconButton,
-    InputAdornment,
-    TextField,
-    Tooltip,
-} from "@mui/material"
+import { Box, IconButton, InputAdornment, TextField, Tooltip } from "@mui/material"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useEffect, useState } from "react"
@@ -45,24 +39,13 @@ export class Hyperlink extends Cell {
             }
         }, [input, key, props, row])
 
-        return (
-            <this.Input
-                onChange={e => setInput(e.target.value)}
-                onBlur={() => props.onClose(true)}
-                value={input}
-            />
-        )
+        return <this.Input onChange={e => setInput(e.target.value)} onBlur={() => props.onClose(true)} value={input} />
     }
 
     formatter = (props: FormatterProps<Row>) => {
         const { content } = this.destruct<string | null | undefined>(props)
 
-        if (
-            this.isValid(content) === false ||
-            content == null ||
-            content.length < 1
-        )
-            return null
+        if (this.isValid(content) === false || content == null || content.length < 1) return null
 
         return (
             <Box
@@ -76,11 +59,7 @@ export class Hyperlink extends Cell {
                 }}
             >
                 <Tooltip title={content!} arrow placement="top">
-                    <IconButton
-                        size="small"
-                        onClick={() => open(content)}
-                        color="success"
-                    >
+                    <IconButton size="small" onClick={() => open(content)} color="success">
                         <LinkIcon
                             sx={{
                                 fontSize: "90%",
@@ -98,8 +77,7 @@ export class Hyperlink extends Cell {
 
         const [value, setValue] = useState(props.content ?? "")
 
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-            setValue(e.target.value)
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
         const handleBlur = async () => {
             if (this.isValid(value) === false) return

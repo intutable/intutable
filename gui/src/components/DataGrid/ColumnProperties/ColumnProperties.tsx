@@ -25,22 +25,12 @@ export const Name: React.FC<{ column: Column.Serialized }> = props => {
         }
     }
 
-    return (
-        <ColumnPropertyInput
-            label="Name"
-            type="text"
-            value={props.column.name}
-            onChange={changeName}
-        />
-    )
+    return <ColumnPropertyInput label="Name" type="text" value={props.column.name} onChange={changeName} />
 }
 
 // boolean based
 
-const _makeBooleanInput = (
-    label: string,
-    columnKey: keyof Column.Serialized
-) => {
+const _makeBooleanInput = (label: string, columnKey: keyof Column.Serialized) => {
     const BooleanInput: React.FC<{ column: Column.Serialized }> = props => {
         const { snackError } = useSnacki()
         const { changeAttributes } = useColumn()

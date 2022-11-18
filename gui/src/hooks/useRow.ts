@@ -21,10 +21,7 @@ type Column = Column.Deserialized
  *
  * @param {ViewDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
  */
-export const useRow = (
-    tableOptions?: TableHookOptions,
-    viewOptions?: ViewHookOptions
-) => {
+export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOptions) => {
     const { snackError } = useSnacki()
 
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
@@ -104,11 +101,7 @@ export const useRow = (
     // TODO: do not use the col key, use its id
     // TODO: `value` needs a (better) type
     // TODO: put `asTable` into the corresponding api route
-    const updateRow = async (
-        column: Column,
-        rowId: Row["_id"],
-        value: unknown
-    ): Promise<void> => {
+    const updateRow = async (column: Column, rowId: Row["_id"], value: unknown): Promise<void> => {
         // it's a view on top of a view, but the property `column.name`
         // reflects the actual name in the DB regardless of how deep the
         // tree is.
@@ -117,9 +110,7 @@ export const useRow = (
 
         // TODO: put this in the api route
         if (metaColumn.joinId !== null) {
-            snackError(
-                "Dies ist ein Lookup. Änderungen dürfen nur in der Originaltabelle vorgenommen werden."
-            )
+            snackError("Dies ist ein Lookup. Änderungen dürfen nur in der Originaltabelle vorgenommen werden.")
             return
             // throw Error("attempted to edit data of a different table")
         }

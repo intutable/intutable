@@ -13,9 +13,7 @@ export type RowMaskState<MODE extends RowMaskMode> = MODE extends "edit"
 
 export type RowMaskContextProps = {
     rowMaskState: RowMaskState<RowMaskMode>
-    setRowMaskState: React.Dispatch<
-        React.SetStateAction<RowMaskState<RowMaskMode>>
-    >
+    setRowMaskState: React.Dispatch<React.SetStateAction<RowMaskState<RowMaskMode>>>
 }
 
 const initialState: RowMaskContextProps = {
@@ -32,9 +30,7 @@ type RowMaskProviderProps = {
 }
 
 export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
-    const [rowMaskState, setRowMaskState] = useState<RowMaskState<RowMaskMode>>(
-        initialState.rowMaskState
-    )
+    const [rowMaskState, setRowMaskState] = useState<RowMaskState<RowMaskMode>>(initialState.rowMaskState)
 
     return (
         <RowMaskContext.Provider

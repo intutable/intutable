@@ -22,11 +22,7 @@ type TitleProps = {
  * @param {TitleProps} param
  * @returns
  */
-const MetaTitle: React.FC<TitleProps> = ({
-    title,
-    prefix,
-    suffix = "| Fakultät für Mathematik und Informatik",
-}) => (
+const MetaTitle: React.FC<TitleProps> = ({ title, prefix, suffix = "| Fakultät für Mathematik und Informatik" }) => (
     <Head>
         <title>
             {prefix ? prefix + "" : ""}

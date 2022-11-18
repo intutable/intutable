@@ -7,20 +7,8 @@
 import React from "react"
 import { IconButton } from "@mui/material"
 import FormatIndentIncreaseIcon from "@mui/icons-material/FormatIndentIncrease"
-import {
-    Select,
-    SelectChangeEvent,
-    MenuItem,
-    TextField,
-    Box,
-} from "@mui/material"
-import {
-    FILTER_OPERATORS_LIST,
-    FilterOperator,
-    ColumnOperand,
-    OperandKind,
-    PartialSimpleFilter,
-} from "types/filter"
+import { Select, SelectChangeEvent, MenuItem, TextField, Box } from "@mui/material"
+import { FILTER_OPERATORS_LIST, FilterOperator, ColumnOperand, OperandKind, PartialSimpleFilter } from "types/filter"
 import { TableColumn } from "types"
 import { getFilterColor } from "./utils"
 
@@ -129,10 +117,7 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
                     mr: 1,
                 }}
             />
-            <IconButton
-                sx={{ verticalAlign: "revert" }}
-                onClick={() => onPromote(filter)}
-            >
+            <IconButton sx={{ verticalAlign: "revert" }} onClick={() => onPromote(filter)}>
                 <FormatIndentIncreaseIcon
                     sx={{
                         fontSize: "80%",

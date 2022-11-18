@@ -14,20 +14,13 @@ export const useViews = (options?: TableHookOptions) => {
     const { view: currentView, setView, table: api_table } = useAPI()
 
     // if the table param is specified, use that over the api context
-    const tableToFetch = useMemo(
-        () => (options?.table ? options.table : api_table),
-        [api_table, options?.table]
-    )
+    const tableToFetch = useMemo(() => (options?.table ? options.table : api_table), [api_table, options?.table])
 
     const {
         data: views,
         error,
         mutate,
-    } = useSWR<ViewDescriptor[]>(
-        tableToFetch
-            ? { url: `/api/views/${tableToFetch.id}`, method: "GET" }
-            : null
-    )
+    } = useSWR<ViewDescriptor[]>(tableToFetch ? { url: `/api/views/${tableToFetch.id}`, method: "GET" } : null)
 
     /**
      * Create a new view with a given name, returning its descriptor.
@@ -45,10 +38,7 @@ export const useViews = (options?: TableHookOptions) => {
         return view
     }
 
-    const renameView = async (
-        viewId: ViewDescriptor["id"],
-        newName: string
-    ): Promise<void> => {
+    const renameView = async (viewId: ViewDescriptor["id"], newName: string): Promise<void> => {
         if (!currentView) return
         await fetcher({
             url: `/api/view/${viewId}`,
@@ -68,8 +58,7 @@ export const useViews = (options?: TableHookOptions) => {
             body: {},
             method: "DELETE",
         }).then(async () => {
-            if (viewId === currentView?.id && views && views.length > 0)
-                setView(views[0])
+            if (viewId === currentView?.id && views && views.length > 0) setView(views[0])
             await mutate()
         })
     }

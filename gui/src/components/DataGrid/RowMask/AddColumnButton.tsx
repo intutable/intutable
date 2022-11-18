@@ -8,9 +8,7 @@ export const AddColumnButton: React.FC = () => {
     const { snackError } = useSnacki()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const handleOpenModal = (
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-    ) => {
+    const handleOpenModal = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         setAnchorEL(event.currentTarget)
     }
     const handleCloseModal = () => setAnchorEL(null)
@@ -32,10 +30,7 @@ export const AddColumnButton: React.FC = () => {
             >
                 Spalte hinzufügen
             </Button>
-            <AddColumnModal
-                open={anchorEL != null}
-                onClose={handleCloseModal}
-            />
+            <AddColumnModal open={anchorEL != null} onClose={handleCloseModal} />
         </>
     )
 }

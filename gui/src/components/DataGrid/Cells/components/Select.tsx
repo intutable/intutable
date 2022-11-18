@@ -1,16 +1,7 @@
 import AddIcon from "@mui/icons-material/Add"
 import CheckIcon from "@mui/icons-material/Check"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import {
-    Box,
-    Chip,
-    Divider,
-    IconButton,
-    Menu,
-    MenuItem,
-    MenuList,
-    TextField,
-} from "@mui/material"
+import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, TextField } from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
@@ -57,18 +48,10 @@ export class Select extends Cell {
 
     editor = () => null
 
-    getOptions(
-        column: Column.Deserialized,
-        rows: Row[],
-        self?: string | null
-    ): string[] {
-        const options = rows
-            .map(row => row[column.key])
-            .filter(option => Cell.isEmpty(option) === false) // remove empty values
+    getOptions(column: Column.Deserialized, rows: Row[], self?: string | null): string[] {
+        const options = rows.map(row => row[column.key]).filter(option => Cell.isEmpty(option) === false) // remove empty values
 
-        const optionsWithoutSelf = (
-            self == null ? options : options.filter(option => self !== option)
-        ) as string[]
+        const optionsWithoutSelf = (self == null ? options : options.filter(option => self !== option)) as string[]
 
         const uniqueOptions = new Set(optionsWithoutSelf)
 
@@ -76,9 +59,7 @@ export class Select extends Cell {
     }
 
     formatter = (props: FormatterProps<Row>) => {
-        const { content, column, row, key } = this.destruct<
-            string | null | undefined
-        >(props)
+        const { content, column, row, key } = this.destruct<string | null | undefined>(props)
         const isEmpty = content == null || content === ""
 
         const [hovering, setHovering] = useState<boolean>(false)
@@ -101,10 +82,7 @@ export class Select extends Cell {
         }
 
         const { data } = useView()
-        const list = useMemo(
-            () => (data ? this.getOptions(column, data.rows, content) : null),
-            [data, column, content]
-        )
+        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : null), [data, column, content])
 
         return (
             <>
@@ -139,14 +117,7 @@ export class Select extends Cell {
                                     textOverflow: "ellipsis",
                                 }}
                             >
-                                <ChipItem
-                                    label={content}
-                                    onDelete={
-                                        hovering
-                                            ? () => changeOption("")
-                                            : undefined
-                                    }
-                                />
+                                <ChipItem label={content} onDelete={hovering ? () => changeOption("") : undefined} />
                             </Box>
                             {hovering && (
                                 <IconButton size="small" onClick={openModal}>
@@ -181,11 +152,7 @@ export class Select extends Cell {
                                 if (e.key === "Enter") changeOption(input)
                             }}
                         />
-                        <IconButton
-                            size="small"
-                            sx={{ ml: 1 }}
-                            onClick={() => changeOption(input)}
-                        >
+                        <IconButton size="small" sx={{ ml: 1 }} onClick={() => changeOption(input)}>
                             <CheckIcon fontSize="small" color="primary" />
                         </IconButton>
                     </MenuItem>
@@ -200,13 +167,7 @@ export class Select extends Cell {
                             <MenuItem
                                 key={item}
                                 data-value={item}
-                                onClick={e =>
-                                    changeOption(
-                                        e.currentTarget.dataset[
-                                            "value"
-                                        ] as string
-                                    )
-                                }
+                                onClick={e => changeOption(e.currentTarget.dataset["value"] as string)}
                             >
                                 <ChipItem label={item} />
                             </MenuItem>
@@ -223,8 +184,7 @@ export class Select extends Cell {
 
         const [value, setValue] = useState(props.content ?? "")
 
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-            setValue(e.target.value)
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
         const handleBlur = async () => {
             try {
@@ -234,13 +194,6 @@ export class Select extends Cell {
             }
         }
 
-        return (
-            <TextField
-                size="small"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={value}
-            />
-        )
+        return <TextField size="small" onChange={handleChange} onBlur={handleBlur} value={value} />
     }
 }

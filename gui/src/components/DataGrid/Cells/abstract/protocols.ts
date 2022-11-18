@@ -37,10 +37,7 @@ export type SerializableCatchEmpty = {
      *
      * For empty values (null, undefined, "") it returns null
      */
-    catchEmpty: <T extends ValueOf<Serializable>>(
-        fn: T,
-        value: unknown
-    ) => null | ReturnType<T>
+    catchEmpty: <T extends ValueOf<Serializable>>(fn: T, value: unknown) => null | ReturnType<T>
 }
 
 export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {

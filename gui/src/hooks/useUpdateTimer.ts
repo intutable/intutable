@@ -52,10 +52,7 @@ export class TimeoutError extends Error {
  * whatever update.
  * @param {number} timeout the length of the timeout in milliseconds
  */
-export const useUpdateTimer = <Result>(
-    callback: () => Promise<Result>,
-    timeout: number
-) => {
+export const useUpdateTimer = <Result>(callback: () => Promise<Result>, timeout: number) => {
     /**
      * _Idle_: currentTimeout and pendingUpdate are null
      * _Waiting_: currentTimeout not null, pendingUpdate null
@@ -83,18 +80,13 @@ export const useUpdateTimer = <Result>(
      * @return {Promise<Result | null>} the result of `callback`, or `null`
      * if another update was already pending.
      */
-    const update = (
-        altCallback?: () => Promise<Result>
-    ): Promise<Result | null> => {
+    const update = (altCallback?: () => Promise<Result>): Promise<Result | null> => {
         const cb = altCallback ?? callback
         if (currentTimeout.current === null && pendingUpdate.current === null) {
             const promise = cb()
             currentTimeout.current = setTimeout(afterTimeout, timeout)
             return promise
-        } else if (
-            currentTimeout.current !== null &&
-            pendingUpdate.current === null
-        ) {
+        } else if (currentTimeout.current !== null && pendingUpdate.current === null) {
             // we have to assign these functions right away to keep tsc happy
             let resolve: (result: Result) => void = () => {}
             let reject: (result: Result) => void = () => {}
@@ -119,9 +111,7 @@ export const useUpdateTimer = <Result>(
     const cancelUpdate = (cause?: Error | undefined): boolean => {
         if (!pendingUpdate.current) return false
         else {
-            pendingUpdate.current.reject(
-                new TimeoutError("update cancelled", cause)
-            )
+            pendingUpdate.current.reject(new TimeoutError("update cancelled", cause))
             pendingUpdate.current = null
             return true
         }

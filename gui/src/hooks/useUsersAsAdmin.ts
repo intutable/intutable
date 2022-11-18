@@ -9,16 +9,9 @@ import { User } from "@backend/permissions"
  * admin)
  */
 export const useUsersAsAdmin = () => {
-    const {
-        data: users,
-        error,
-        mutate,
-    } = useSWR<User[]>({ url: `/api/permissions/users`, method: "GET" })
+    const { data: users, error, mutate } = useSWR<User[]>({ url: `/api/permissions/users`, method: "GET" })
 
-    const createUser = async (
-        user: Omit<User, "id">,
-        password: string
-    ): Promise<void> => {
+    const createUser = async (user: Omit<User, "id">, password: string): Promise<void> => {
         await fetcher({
             url: `/api/permissions/user`,
             body: { user, password },
@@ -36,10 +29,7 @@ export const useUsersAsAdmin = () => {
         await mutate()
     }
 
-    const changeRole = async (
-        userId: number,
-        roleId: number
-    ): Promise<void> => {
+    const changeRole = async (userId: number, roleId: number): Promise<void> => {
         await fetcher({
             url: `/api/permissions/user/${userId}`,
             body: { roleId },

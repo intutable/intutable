@@ -28,11 +28,7 @@ export class Time extends TempusCell {
     editor = () => null
 
     formatter = (props: FormatterProps<Row>) => {
-        const {
-            row,
-            key,
-            content: _content,
-        } = this.destruct<Date | null>(props)
+        const { row, key, content: _content } = this.destruct<Date | null>(props)
         const [content, setContent] = useState(_content)
 
         const handleChange = (date: Date | null) => {

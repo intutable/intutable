@@ -1,10 +1,4 @@
-import {
-    asView,
-    ColumnInfo,
-    getViewInfo,
-    ViewDescriptor,
-    ViewInfo,
-} from "@intutable/lazy-views"
+import { asView, ColumnInfo, getViewInfo, ViewDescriptor, ViewInfo } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
@@ -24,57 +18,40 @@ import { addColumnToTable } from "@backend/requests"
  * }
  * ```
  */
-const POST = withCatchingAPIRoute(
-    async (req, res, parentColumnId: ColumnInfo["id"]) => {
-        const { tableId, joinId } = req.body as {
-            tableId: ViewDescriptor["id"]
-            joinId: Exclude<ColumnInfo["joinId"], null>
-        }
-        const user = req.session.user!
-
-        const column = await withReadWriteConnection(user, async sessionID => {
-            const tableInfo = await coreRequest<ViewInfo>(
-                getViewInfo(sessionID, tableId),
-                user.authCookie
-            )
-
-            // find the column
-            const join = tableInfo.joins.find(j => j.id === joinId)!
-            const foreignTableInfo = await coreRequest<ViewInfo>(
-                getViewInfo(sessionID, asView(join.foreignSource).id),
-                user.authCookie
-            )
-            const foreignColumn = foreignTableInfo.columns.find(
-                c => c.id === parentColumnId
-            )!
-
-            // determine column meta attributes
-            const displayName =
-                foreignColumn.attributes.displayName || foreignColumn.name
-            const contentType = foreignColumn.attributes.cellType || "string"
-            const columnIndex = tableInfo.columns.length
-            const attributes = lookupColumnAttributes(
-                displayName,
-                contentType,
-                columnIndex
-            )
-
-            // add to table and views
-            const newColumn = await coreRequest<ColumnInfo>(
-                addColumnToTable(
-                    sessionID,
-                    tableId,
-                    { parentColumnId: parentColumnId, attributes },
-                    joinId
-                ),
-                user.authCookie
-            )
-            return newColumn
-        })
-
-        res.status(200).json(column)
+const POST = withCatchingAPIRoute(async (req, res, parentColumnId: ColumnInfo["id"]) => {
+    const { tableId, joinId } = req.body as {
+        tableId: ViewDescriptor["id"]
+        joinId: Exclude<ColumnInfo["joinId"], null>
     }
-)
+    const user = req.session.user!
+
+    const column = await withReadWriteConnection(user, async sessionID => {
+        const tableInfo = await coreRequest<ViewInfo>(getViewInfo(sessionID, tableId), user.authCookie)
+
+        // find the column
+        const join = tableInfo.joins.find(j => j.id === joinId)!
+        const foreignTableInfo = await coreRequest<ViewInfo>(
+            getViewInfo(sessionID, asView(join.foreignSource).id),
+            user.authCookie
+        )
+        const foreignColumn = foreignTableInfo.columns.find(c => c.id === parentColumnId)!
+
+        // determine column meta attributes
+        const displayName = foreignColumn.attributes.displayName || foreignColumn.name
+        const contentType = foreignColumn.attributes.cellType || "string"
+        const columnIndex = tableInfo.columns.length
+        const attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
+
+        // add to table and views
+        const newColumn = await coreRequest<ColumnInfo>(
+            addColumnToTable(sessionID, tableId, { parentColumnId: parentColumnId, attributes }, joinId),
+            user.authCookie
+        )
+        return newColumn
+    })
+
+    res.status(200).json(column)
+})
 
 export default withSessionRoute(
     withUserCheck(async (req, res) => {

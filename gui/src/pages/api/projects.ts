@@ -16,10 +16,7 @@ import { withSessionRoute } from "auth"
 const GET = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
     const projects = await withReadOnlyConnection(user, async sessionID => {
-        return coreRequest<ProjectDescriptor[]>(
-            getProjects(sessionID, user.id),
-            user.authCookie
-        )
+        return coreRequest<ProjectDescriptor[]>(getProjects(sessionID, user.id), user.authCookie)
     })
 
     res.status(200).json(projects)

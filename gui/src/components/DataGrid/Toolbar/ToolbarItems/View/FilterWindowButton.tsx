@@ -10,8 +10,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { FilterWindow } from "./FilterWindow"
 
-const CANNOT_EDIT_DEFAULT_VIEW_MESSAGE =
-    "Standardsicht kann nicht geändert werden."
+const CANNOT_EDIT_DEFAULT_VIEW_MESSAGE = "Standardsicht kann nicht geändert werden."
 /**
  * Button to open the filter editor
  */
@@ -23,12 +22,9 @@ export const FilterWindowButton: React.FC = () => {
 
     const [anchorEl, setAnchorEl] = useState<Element | null>(null)
 
-    const openEditor = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) =>
-        setAnchorEl(e.currentTarget)
+    const openEditor = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => setAnchorEl(e.currentTarget)
     const closeEditor = () => setAnchorEl(null)
-    const toggleEditor = (
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-    ) => {
+    const toggleEditor = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         if (anchorEl) return closeEditor()
 
         openEditor(event)
@@ -39,8 +35,7 @@ export const FilterWindowButton: React.FC = () => {
             await updateFilters(newFilters)
         } catch (error) {
             const err = makeError(error)
-            if (err.message === "changeDefaultView")
-                snackInfo(CANNOT_EDIT_DEFAULT_VIEW_MESSAGE)
+            if (err.message === "changeDefaultView") snackInfo(CANNOT_EDIT_DEFAULT_VIEW_MESSAGE)
             else snackError("Filter erstellen fehlgeschlagen.")
         }
     }
@@ -61,9 +56,7 @@ export const FilterWindowButton: React.FC = () => {
                     <Button
                         startIcon={<FilterListIcon />}
                         onClick={toggleEditor}
-                        disabled={
-                            viewData.descriptor.name === defaultViewName()
-                        }
+                        disabled={viewData.descriptor.name === defaultViewName()}
                     >
                         Filter
                     </Button>
@@ -72,9 +65,7 @@ export const FilterWindowButton: React.FC = () => {
             {anchorEl && (
                 <FilterWindow
                     anchorEl={anchorEl}
-                    columns={tableData.columns.filter(
-                        c => !ColumnUtility.isAppColumn(c)
-                    )}
+                    columns={tableData.columns.filter(c => !ColumnUtility.isAppColumn(c))}
                     activeFilters={viewData.filters}
                     onHandleCloseEditor={closeEditor}
                     onUpdateFilters={handleUpdateFilters}

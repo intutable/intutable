@@ -58,12 +58,7 @@ export type CellEmptyValue = "" | null | undefined | []
  */
 export abstract class Cell
     // TODO. make these static
-    implements
-        Validatable,
-        Exportable,
-        Serializable,
-        SerializableCatchEmpty,
-        ExposableInputComponent
+    implements Validatable, Exportable, Serializable, SerializableCatchEmpty, ExposableInputComponent
 {
     /** do NOT change in production */
     public abstract readonly brand: string
@@ -76,9 +71,7 @@ export abstract class Cell
         // default validation for text based editors
         // it should either be a non object like string, a stringified number or emtpy (null or empty str '')
         return (
-            (isJSONObject(value) === false &&
-                isJSONArray(value) === false &&
-                typeof value === "string") ||
+            (isJSONObject(value) === false && isJSONArray(value) === false && typeof value === "string") ||
             typeof value === "number" ||
             value === "" ||
             value == null
@@ -100,16 +93,8 @@ export abstract class Cell
         }
     }
 
-    public catchEmpty<T extends ValueOf<Serializable>>(
-        fn: T,
-        value: unknown
-    ): null | ReturnType<T> {
-        if (
-            value === null ||
-            typeof value === "undefined" ||
-            (typeof value === "string" && value === "")
-        )
-            return null
+    public catchEmpty<T extends ValueOf<Serializable>>(fn: T, value: unknown): null | ReturnType<T> {
+        if (value === null || typeof value === "undefined" || (typeof value === "string" && value === "")) return null
         return fn(value) as ReturnType<T>
     }
     public serialize(value: unknown): unknown {
@@ -135,8 +120,7 @@ export abstract class Cell
     private _editorOptions: EditorOptions = {
         // Gets exposed to rdg internally. Needed for internal 'tab'/arrow key navigation.
         // Indicates what type of KeyboardEvent should be such a navigation event.
-        onNavigation: ({ key }: React.KeyboardEvent<HTMLDivElement>): boolean =>
-            key === "Tab",
+        onNavigation: ({ key }: React.KeyboardEvent<HTMLDivElement>): boolean => key === "Tab",
         editOnClick: true,
     }
     public get editorOptions() {
@@ -144,16 +128,11 @@ export abstract class Cell
     }
     // merges `_editorOptions` with values set in child classes
     protected setEditorOptions(options: EditorOptions) {
-        this._editorOptions = mergeNonNullish<EditorOptions>(
-            this._editorOptions,
-            options
-        )
+        this._editorOptions = mergeNonNullish<EditorOptions>(this._editorOptions, options)
     }
 
     /** utilty that destructs the `props` argument for `editor` and `formatter` */
-    protected destruct<T = unknown>(
-        props: EditorProps<Row> | FormatterProps<Row>
-    ) {
+    protected destruct<T = unknown>(props: EditorProps<Row> | FormatterProps<Row>) {
         const row = props.row
         const column = props.column
         const key = props.column.key as keyof Row
@@ -176,9 +155,7 @@ export abstract class Cell
             useEffect(() => {
                 if (typeof ref === "function") return
 
-                const realRef: React.Ref<HTMLInputElement> = ref
-                    ? ref
-                    : inputRef
+                const realRef: React.Ref<HTMLInputElement> = ref ? ref : inputRef
 
                 this.autoFocusEditor(realRef.current)
             }, [ref])
@@ -206,9 +183,7 @@ export abstract class Cell
     protected autoFocusEditor(input: HTMLInputElement | null) {
         if (input == null || input.children == null) return
 
-        const domInput = Array.from(input.children).find(
-            c => c.tagName.toLowerCase() === "input"
-        )
+        const domInput = Array.from(input.children).find(c => c.tagName.toLowerCase() === "input")
 
         if (domInput == null || !(domInput instanceof HTMLInputElement)) return
 
@@ -231,13 +206,7 @@ export abstract class Cell
                 [key]: e.target.value,
             })
 
-        return (
-            <this.Input
-                onChange={handleChange}
-                onBlur={() => props.onClose(true)}
-                value={content}
-            />
-        )
+        return <this.Input onChange={handleChange} onBlur={() => props.onClose(true)} value={content} />
     }
 
     public formatter: FormatterComponent = (props: FormatterProps<Row>) => {

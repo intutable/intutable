@@ -7,11 +7,7 @@ import useSWR, { unstable_serialize } from "swr"
  * Returns a list of projects.
  */
 export const useProjects = () => {
-    const {
-        data: projects,
-        error,
-        mutate,
-    } = useSWR<ProjectDescriptor[]>({ url: `/api/projects`, method: "GET" })
+    const { data: projects, error, mutate } = useSWR<ProjectDescriptor[]>({ url: `/api/projects`, method: "GET" })
 
     return { projects, error, mutate }
 }

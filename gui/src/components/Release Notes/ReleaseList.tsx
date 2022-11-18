@@ -1,16 +1,9 @@
-import {
-    Avatar,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-} from "@mui/material"
+import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material"
 import { useRouter } from "next/router"
 import { localeDateString, MONTHS } from "utils/date"
 import { ReleaseProps } from "./Release"
 import { releases } from "public/releases"
-const byDate = (a: ReleaseProps, b: ReleaseProps) =>
-    b.date.getTime() - a.date.getTime()
+const byDate = (a: ReleaseProps, b: ReleaseProps) => b.date.getTime() - a.date.getTime()
 
 export const ReleaseList: React.FC = props => {
     return (
@@ -22,20 +15,13 @@ export const ReleaseList: React.FC = props => {
             }}
         >
             {releases.sort(byDate).map((release, index, array) => (
-                <ReleaseListItem
-                    key={release.date.getTime()}
-                    release={release}
-                    index={array.length - index}
-                />
+                <ReleaseListItem key={release.date.getTime()} release={release} index={array.length - index} />
             ))}
         </List>
     )
 }
 
-const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({
-    release: props,
-    index,
-}) => {
+const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({ release: props, index }) => {
     const router = useRouter()
 
     return (
@@ -51,10 +37,7 @@ const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({
             <ListItemAvatar>
                 <Avatar>{index}</Avatar>
             </ListItemAvatar>
-            <ListItemText
-                primary={props.title}
-                secondary={localeDateString(props.date)}
-            />
+            <ListItemText primary={props.title} secondary={localeDateString(props.date)} />
         </ListItem>
     )
 }

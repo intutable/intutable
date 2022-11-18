@@ -27,11 +27,7 @@ export const isJSONObject = (str: unknown): boolean => {
 
     try {
         const parsed = JSON.parse(str)
-        return (
-            typeof parsed === "object" &&
-            parsed != null &&
-            Array.isArray(parsed) === false
-        )
+        return typeof parsed === "object" && parsed != null && Array.isArray(parsed) === false
     } catch (e) {
         return false
     }

@@ -78,15 +78,10 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
                                         disablePadding
                                         sx={{
                                             bgcolor:
-                                                selection?.id === row.id
-                                                    ? theme.palette.action
-                                                          .selected
-                                                    : undefined,
+                                                selection?.id === row.id ? theme.palette.action.selected : undefined,
                                         }}
                                     >
-                                        <ListItemButton
-                                            onClick={() => setSelection(row)}
-                                        >
+                                        <ListItemButton onClick={() => setSelection(row)}>
                                             <ListItemText primary={row.text} />
                                         </ListItemButton>
                                     </ListItem>

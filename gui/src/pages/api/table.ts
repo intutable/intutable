@@ -30,10 +30,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
 
     const tableView = await withReadWriteConnection(user, async sessionID =>
-        coreRequest<TableDescriptor>(
-            createTable(sessionID, user.id, projectId, name),
-            user.authCookie
-        )
+        coreRequest<TableDescriptor>(createTable(sessionID, user.id, projectId, name), user.authCookie)
     )
 
     res.status(200).json(tableView)

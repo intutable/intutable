@@ -23,11 +23,7 @@ const ColumnAttributesWindowButton: React.FC<{
             <IconButton onClick={openContextMenu} size="small" color="primary">
                 <EditIcon fontSize="small" />
             </IconButton>
-            <ColumnAttributesWindow
-                open={anchorEL != null}
-                onClose={closeContextMenu}
-                column={column}
-            />
+            <ColumnAttributesWindow open={anchorEL != null} onClose={closeContextMenu} column={column} />
         </>
     )
 }
@@ -37,9 +33,7 @@ const getExposedInput = (type: Column.Serialized["cellType"]) => {
     return cellUtil.ExposedInput
 }
 
-export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({
-    column,
-}) => {
+export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ column }) => {
     const theme = useTheme()
     const { rowMaskState, setRowMaskState } = useRowMask()
 
@@ -64,15 +58,11 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({
                 }}
             >
                 <Stack
-                    direction={
-                        column.isUserPrimaryKey === true ? "column" : "row"
-                    }
+                    direction={column.isUserPrimaryKey === true ? "column" : "row"}
                     sx={{
                         flexWrap: "nowrap",
 
-                        alignItems: column.isUserPrimaryKey
-                            ? "flex-start"
-                            : "center",
+                        alignItems: column.isUserPrimaryKey ? "flex-start" : "center",
                     }}
                 >
                     <Typography
@@ -87,9 +77,7 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({
                         }}
                         variant="subtitle1"
                     >
-                        {column.isUserPrimaryKey === true && (
-                            <KeyIcon fontSize="small" />
-                        )}
+                        {column.isUserPrimaryKey === true && <KeyIcon fontSize="small" />}
                         <Icon
                             fontSize="small"
                             sx={{
@@ -101,25 +89,15 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({
 
                     {rowMaskState.mode === "edit" && (
                         // TODO: if `create`, then create an empty row and open it
-                        <Input
-                            content={rowMaskState.row[column.key]}
-                            row={rowMaskState.row}
-                            column={column}
-                        />
+                        <Input content={rowMaskState.row[column.key]} row={rowMaskState.row} column={column} />
                     )}
 
                     <Box sx={{ flexGrow: 1 }} />
-                    {isHovering && (
-                        <ColumnAttributesWindowButton
-                            column={column as Column.Serialized}
-                        />
-                    )}
+                    {isHovering && <ColumnAttributesWindowButton column={column as Column.Serialized} />}
                 </Stack>
             </Box>
 
-            {column.isUserPrimaryKey === true && (
-                <Divider variant="middle" sx={{ mt: 2, mb: 8 }} />
-            )}
+            {column.isUserPrimaryKey === true && <Divider variant="middle" sx={{ mt: 2, mb: 8 }} />}
         </>
     )
 }

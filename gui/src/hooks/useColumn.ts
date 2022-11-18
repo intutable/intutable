@@ -5,10 +5,7 @@ import { useView, ViewHookOptions } from "hooks/useView"
 import { Column } from "types"
 
 import { StandardColumnSpecifier, CustomColumnAttributes } from "@shared/types"
-import {
-    ColumnFactory,
-    SettableColumnProps,
-} from "utils/column utils/ColumnFactory"
+import { ColumnFactory, SettableColumnProps } from "utils/column utils/ColumnFactory"
 
 type Column = Column.Deserialized
 
@@ -21,13 +18,9 @@ type Column = Column.Deserialized
  *
  * @deprecated
  */
-export const getColumnInfo = (
-    columns: ColumnInfo[],
-    forColumn: Column
-): ColumnInfo => {
+export const getColumnInfo = (columns: ColumnInfo[], forColumn: Column): ColumnInfo => {
     const columnInfo = columns.find(c => c.key === forColumn.key)
-    if (!columnInfo)
-        throw Error(`Could not find Column Info for column: ${forColumn}`)
+    if (!columnInfo) throw Error(`Could not find Column Info for column: ${forColumn}`)
     return columnInfo
 }
 
@@ -43,10 +36,7 @@ export const getColumnInfo = (
  *
  * @param {ViewDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
  */
-export const useColumn = (
-    tableOptions?: TableHookOptions,
-    viewOptions?: ViewHookOptions
-) => {
+export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOptions) => {
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
     const mutate = async () => {
@@ -55,13 +45,9 @@ export const useColumn = (
     }
 
     /** Find a column in the base table given a column of a view. */
-    const getTableColumn = (
-        column: Column.Serialized | Column.Deserialized
-    ): ColumnInfo | null => {
+    const getTableColumn = (column: Column.Serialized | Column.Deserialized): ColumnInfo | null => {
         const viewColumn = view?.metaColumns.find(c => c.key === column.key)
-        const tableColumn = table?.metadata.columns.find(
-            c => c.id === viewColumn?.parentColumnId
-        )
+        const tableColumn = table?.metadata.columns.find(c => c.id === viewColumn?.parentColumnId)
         if (!tableColumn) return null
         return tableColumn
     }
@@ -124,9 +110,7 @@ export const useColumn = (
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: get rid of `getColumnByKey`
-    const deleteColumn = async (
-        column: Column.Serialized | Column.Deserialized
-    ): Promise<void> => {
+    const deleteColumn = async (column: Column.Serialized | Column.Deserialized): Promise<void> => {
         const tableId = table!.metadata.descriptor.id
         const tableColumn = getTableColumn(column)
         await fetcher({

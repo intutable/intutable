@@ -36,11 +36,7 @@ export const RowMaskContextMenu: React.FC = () => {
 
     return (
         <>
-            <MoreHorizIcon
-                fontSize="small"
-                sx={{ cursor: "pointer" }}
-                onClick={openContextMenu}
-            />
+            <MoreHorizIcon fontSize="small" sx={{ cursor: "pointer" }} onClick={openContextMenu} />
             <Menu
                 elevation={0}
                 anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -59,10 +55,7 @@ export const RowMaskContextMenu: React.FC = () => {
                         <MenuItem onClick={createRow}>
                             <ListItemText>Neuer Eintrag</ListItemText>
                         </MenuItem>
-                        <MenuItem
-                            sx={{ color: theme.palette.warning.main }}
-                            onClick={deleteRow}
-                        >
+                        <MenuItem sx={{ color: theme.palette.warning.main }} onClick={deleteRow}>
                             <ListItemText>Eintrag Löschen</ListItemText>
                         </MenuItem>
                     </>

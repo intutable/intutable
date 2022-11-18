@@ -6,8 +6,7 @@ import { GUEST_ROLE } from "@backend/permissions"
 
 const userRoute = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        if (req.session == null || req.session.user == null)
-            throw new Error("No session")
+        if (req.session == null || req.session.user == null) throw new Error("No session")
 
         const user = await getCurrentUser(req.session.user.authCookie)
         if (user == null)

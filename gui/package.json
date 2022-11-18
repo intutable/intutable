@@ -10,6 +10,9 @@
         "lint": "cross-env NODE_ENV=development next lint",
         "lint:fix": "npm run lint -- --fix",
         "lint:production": "cross-env NODE_ENV=production next lint",
+        "prettier": "prettier -c",
+        "prettier:fix": "npm run prettier -- --write",
+        "format": "npm run prettier:fix && npm run lint:fix",
         "analyze": "cross-env ANALYZE=true next build",
         "test": "jest"
     },

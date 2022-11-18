@@ -1,12 +1,6 @@
 import LoginIcon from "@mui/icons-material/Login"
 import PersonIcon from "@mui/icons-material/Person"
-import {
-    Avatar as MUIAvatar,
-    Button,
-    Menu,
-    MenuItem,
-    Stack,
-} from "@mui/material"
+import { Avatar as MUIAvatar, Button, Menu, MenuItem, Stack } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { useUser } from "auth/useUser"
@@ -111,13 +105,7 @@ export const Avatar: React.FC = () => {
                     <PersonIcon />
                 </MUIAvatar>
             </Stack>
-            {anchorEL && (
-                <ContextMenu
-                    anchorEL={anchorEL}
-                    open={anchorEL != null}
-                    onClose={handleCloseContextMenu}
-                />
-            )}
+            {anchorEL && <ContextMenu anchorEL={anchorEL} open={anchorEL != null} onClose={handleCloseContextMenu} />}
         </>
     )
 }

@@ -18,13 +18,7 @@ export type ErrorObject<T = unknown> = {
  */
 export const isErrorObject = (value: unknown): value is ErrorObject => {
     // reject everything that is not a plain object
-    if (
-        typeof value !== "object" ||
-        value == null ||
-        typeof value === "function" ||
-        Array.isArray(value)
-    )
-        return false
+    if (typeof value !== "object" || value == null || typeof value === "function" || Array.isArray(value)) return false
 
     const obj = value as Obj
 

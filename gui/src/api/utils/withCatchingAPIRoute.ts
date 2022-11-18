@@ -21,10 +21,7 @@ export const withCatchingAPIRoute =
             if (isErrorLike(error)) {
                 const err = error as ErrorLike
                 console.log(err.toString())
-                const status = Object.prototype.hasOwnProperty.call(
-                    err,
-                    "status"
-                )
+                const status = Object.prototype.hasOwnProperty.call(err, "status")
                     ? (err as unknown as { status: number }).status
                     : 500
                 return res.status(status).json({ error: err.toString() })

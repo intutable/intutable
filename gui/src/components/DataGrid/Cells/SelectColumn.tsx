@@ -58,11 +58,7 @@ const SelectFormatter = (props: { isCellSelected: any; row: any }) => {
                         },
                     })}
                     {isHovering && (
-                        <IconButton
-                            onClick={expandRow}
-                            size="small"
-                            color="primary"
-                        >
+                        <IconButton onClick={expandRow} size="small" color="primary">
                             <OpenInFullIcon fontSize="small" />
                         </IconButton>
                     )}

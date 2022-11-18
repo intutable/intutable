@@ -16,18 +16,11 @@ export class ColumnUtility {
         view: ViewData.Deserialized
     ): true | number[] {
         const targetUtil = cells.getCell(to)
-        const data = view.rows.map(row => [
-            row.index,
-            row[column.key],
-        ]) as Array<[number, unknown]>
+        const data = view.rows.map(row => [row.index, row[column.key]]) as Array<[number, unknown]>
 
-        const invalidCells = data.filter(
-            cell => targetUtil.isValid(cell[1]) === false
-        )
+        const invalidCells = data.filter(cell => targetUtil.isValid(cell[1]) === false)
 
-        return invalidCells.length === 0
-            ? true
-            : invalidCells.map(cell => cell[0])
+        return invalidCells.length === 0 ? true : invalidCells.map(cell => cell[0])
     }
 
     /**
@@ -38,9 +31,7 @@ export class ColumnUtility {
      * @deprecated This is probably deprecated, because the SelectorColumn is not a part of the data anymore.
      * It gets injected before giving the data to the grid component.
      */
-    static isAppColumn(
-        column: Column.Serialized | Column.Deserialized
-    ): boolean {
+    static isAppColumn(column: Column.Serialized | Column.Deserialized): boolean {
         return column.key === SELECT_COLUMN_KEY
     }
 
@@ -50,8 +41,7 @@ export class ColumnUtility {
     static isProxy(column: Column.Serialized | Column.Deserialized): boolean {
         const col = column as unknown
         return (
-            Object.prototype.hasOwnProperty.call(col, "__isProxy") &&
-            (col as { __isProxy: unknown }).__isProxy === true
+            Object.prototype.hasOwnProperty.call(col, "__isProxy") && (col as { __isProxy: unknown }).__isProxy === true
         )
     }
 }

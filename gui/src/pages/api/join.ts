@@ -1,12 +1,5 @@
 import { ColumnType } from "@intutable/database/dist/types"
-import {
-    addJoinToView,
-    getViewInfo,
-    JoinDescriptor,
-    selectable,
-    viewId,
-    ViewInfo,
-} from "@intutable/lazy-views"
+import { addJoinToView, getViewInfo, JoinDescriptor, selectable, viewId, ViewInfo } from "@intutable/lazy-views"
 import { createColumnInTable } from "@intutable/project-management/dist/requests"
 import { ColumnDescriptor as PM_Column } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
@@ -40,10 +33,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
 
     const join = await withReadWriteConnection(user, async sessionID => {
-        const tableInfo = await coreRequest<ViewInfo>(
-            getViewInfo(sessionID, tableId),
-            user.authCookie
-        )
+        const tableInfo = await coreRequest<ViewInfo>(getViewInfo(sessionID, tableId), user.authCookie)
 
         // create a table column with the foreign key
         const fkColumn = await coreRequest<PM_Column>(
@@ -59,18 +49,10 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         // find out the foreign table's ID column (the actual primary key)
         // and its "user primary" column which will be used to represent it
         // to the user
-        const foreignTableInfo = await coreRequest<ViewInfo>(
-            getViewInfo(sessionID, foreignTableId),
-            user.authCookie
-        )
-        const foreignIdColumn = foreignTableInfo.columns.find(
-            c => c.name === "_id"
-        )!
-        const userPrimaryColumn = foreignTableInfo.columns.find(
-            c => c.attributes.isUserPrimaryKey! === 1
-        )!
-        const displayName = (userPrimaryColumn.attributes.displayName ||
-            userPrimaryColumn.name) as string
+        const foreignTableInfo = await coreRequest<ViewInfo>(getViewInfo(sessionID, foreignTableId), user.authCookie)
+        const foreignIdColumn = foreignTableInfo.columns.find(c => c.name === "_id")!
+        const userPrimaryColumn = foreignTableInfo.columns.find(c => c.attributes.isUserPrimaryKey! === 1)!
+        const displayName = (userPrimaryColumn.attributes.displayName || userPrimaryColumn.name) as string
 
         // create the join metadata in the view plugin
         const join = await coreRequest<JoinDescriptor>(
@@ -87,12 +69,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 
         // create representative link column
         await coreRequest(
-            addColumnToTable(
-                sessionID,
-                tableId,
-                { parentColumnId: userPrimaryColumn.id, attributes },
-                join.id
-            ),
+            addColumnToTable(sessionID, tableId, { parentColumnId: userPrimaryColumn.id, attributes }, join.id),
             user.authCookie
         )
         return join

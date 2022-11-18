@@ -20,10 +20,7 @@ export const useBrowserInfo = () => {
     const [info, setInfo] = useState<BrowserInfo>()
 
     useEffect(() => {
-        const isChromium = Object.prototype.hasOwnProperty.call(
-            window,
-            "chrome"
-        )
+        const isChromium = Object.prototype.hasOwnProperty.call(window, "chrome")
 
         const isIOSChrome = window.navigator.userAgent.match("CriOS") == null
 
@@ -31,10 +28,7 @@ export const useBrowserInfo = () => {
         const isIEEdge = window.navigator.userAgent.indexOf("Edg") > -1
 
         const isChrome =
-            isChromium != null &&
-            window.navigator.vendor === "Google Inc." &&
-            isOpera === false &&
-            isIEEdge === false
+            isChromium != null && window.navigator.vendor === "Google Inc." && isOpera === false && isIEEdge === false
 
         setInfo({
             isChromium,

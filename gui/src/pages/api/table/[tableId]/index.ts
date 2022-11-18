@@ -1,20 +1,11 @@
-import {
-    listViews,
-    renameView,
-    TableDescriptor,
-    tableId as makeTableId,
-    ViewDescriptor,
-} from "@intutable/lazy-views"
+import { listViews, renameView, TableDescriptor, tableId as makeTableId, ViewDescriptor } from "@intutable/lazy-views"
 import { getTablesFromProject } from "@intutable/project-management/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { TableData } from "@shared/types"
 import { getTableData, deleteTable } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
-import {
-    withReadWriteConnection,
-    withReadOnlyConnection,
-} from "api/utils/databaseConnection"
+import { withReadWriteConnection, withReadOnlyConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 
@@ -27,21 +18,14 @@ import { withSessionRoute } from "auth"
  * - Body: {}
  * ```
  */
-const GET = withCatchingAPIRoute(
-    async (req, res, tableId: ViewDescriptor["id"]) => {
-        const user = req.session.user!
-        const parsedTableData = await withReadOnlyConnection(
-            user,
-            async sessionID =>
-                coreRequest<TableData>(
-                    getTableData(sessionID, tableId),
-                    user.authCookie
-                )
-        )
+const GET = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"]) => {
+    const user = req.session.user!
+    const parsedTableData = await withReadOnlyConnection(user, async sessionID =>
+        coreRequest<TableData>(getTableData(sessionID, tableId), user.authCookie)
+    )
 
-        res.status(200).json(parsedTableData)
-    }
-)
+    res.status(200).json(parsedTableData)
+})
 
 /**
  * PATCH/update the name of a single table.
@@ -57,49 +41,36 @@ const GET = withCatchingAPIRoute(
  *   }
  * ```
  */
-const PATCH = withCatchingAPIRoute(
-    async (req, res, tableId: ViewDescriptor["id"]) => {
-        const { newName, project } = req.body as {
-            newName: ViewDescriptor["name"]
-            project: ProjectDescriptor
-        }
-        const user = req.session.user!
-
-        const updatedTable = await withReadWriteConnection(
-            user,
-            async sessionID => {
-                // check if name is taken
-                const baseTables = await coreRequest<TableDescriptor[]>(
-                    getTablesFromProject(sessionID, project.id),
-                    user.authCookie
-                )
-                const tables = await Promise.all(
-                    baseTables.map(tbl =>
-                        coreRequest<ViewDescriptor[]>(
-                            listViews(sessionID, makeTableId(tbl.id)),
-                            user.authCookie
-                        )
-                    )
-                ).then(tableLists => tableLists.flat())
-
-                const isTaken = tables
-                    .map(tbl => tbl.name.toLowerCase())
-                    .includes(newName.toLowerCase())
-                if (isTaken) throw new Error("alreadyTaken")
-
-                // rename only view, underlying table's name does not matter.
-                // TODO: uh, does it? oh man...
-                const updatedTable = await coreRequest<ViewDescriptor>(
-                    renameView(sessionID, tableId, newName),
-                    user.authCookie
-                )
-                return updatedTable
-            }
-        )
-
-        res.status(200).json(updatedTable)
+const PATCH = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"]) => {
+    const { newName, project } = req.body as {
+        newName: ViewDescriptor["name"]
+        project: ProjectDescriptor
     }
-)
+    const user = req.session.user!
+
+    const updatedTable = await withReadWriteConnection(user, async sessionID => {
+        // check if name is taken
+        const baseTables = await coreRequest<TableDescriptor[]>(
+            getTablesFromProject(sessionID, project.id),
+            user.authCookie
+        )
+        const tables = await Promise.all(
+            baseTables.map(tbl =>
+                coreRequest<ViewDescriptor[]>(listViews(sessionID, makeTableId(tbl.id)), user.authCookie)
+            )
+        ).then(tableLists => tableLists.flat())
+
+        const isTaken = tables.map(tbl => tbl.name.toLowerCase()).includes(newName.toLowerCase())
+        if (isTaken) throw new Error("alreadyTaken")
+
+        // rename only view, underlying table's name does not matter.
+        // TODO: uh, does it? oh man...
+        const updatedTable = await coreRequest<ViewDescriptor>(renameView(sessionID, tableId, newName), user.authCookie)
+        return updatedTable
+    })
+
+    res.status(200).json(updatedTable)
+})
 
 /**
  * DELETE a table. Returns an empty object.
@@ -110,19 +81,14 @@ const PATCH = withCatchingAPIRoute(
  * - Body: {}
  * ```
  */
-const DELETE = withCatchingAPIRoute(
-    async (req, res, tableId: ViewDescriptor["id"]) => {
-        const user = req.session.user!
+const DELETE = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"]) => {
+    const user = req.session.user!
 
-        await withReadWriteConnection(user, async sessionID =>
-            coreRequest<{ message: string }>(
-                deleteTable(sessionID, tableId),
-                user.authCookie
-            )
-        )
-        res.status(200).json({})
-    }
-)
+    await withReadWriteConnection(user, async sessionID =>
+        coreRequest<{ message: string }>(deleteTable(sessionID, tableId), user.authCookie)
+    )
+    res.status(200).json({})
+})
 
 export default withSessionRoute(
     withUserCheck(async (req, res) => {

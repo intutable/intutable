@@ -1,9 +1,6 @@
 import { randomBytes } from "crypto"
 import { User } from "types/User"
-import {
-    openConnection,
-    closeConnection,
-} from "@intutable/database/dist/requests"
+import { openConnection, closeConnection } from "@intutable/database/dist/requests"
 import { coreRequest } from "./coreRequest"
 
 let nextSessionID = 0
@@ -32,10 +29,7 @@ export const withReadWriteConnection = async <T>(
 
     const sessionID = getNextSessionID()
 
-    await coreRequest<void>(
-        openConnection(sessionID, username, password),
-        user.authCookie
-    )
+    await coreRequest<void>(openConnection(sessionID, username, password), user.authCookie)
     let result: T
     try {
         result = await callback(sessionID)
@@ -57,15 +51,11 @@ export const withReadOnlyConnection = async <T>(
 ): Promise<T> => {
     const username = process.env.DB_RDONLY_USERNAME
     const password = process.env.DB_RDONLY_PASSWORD
-    if (!username || !password)
-        throw Error("username or password not found in env")
+    if (!username || !password) throw Error("username or password not found in env")
 
     const sessionID = getNextSessionID()
 
-    await coreRequest<void>(
-        openConnection(sessionID, username, password),
-        user.authCookie
-    )
+    await coreRequest<void>(openConnection(sessionID, username, password), user.authCookie)
     let result: T
     try {
         result = await callback(sessionID)

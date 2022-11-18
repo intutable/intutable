@@ -19,17 +19,10 @@ export const TableNavigator: React.FC = () => {
             <ToggleButtonGroup
                 value={currentTable!.id}
                 exclusive
-                onChange={(
-                    event: React.MouseEvent<HTMLElement, MouseEvent>,
-                    value: unknown
-                ) => {
+                onChange={(event: React.MouseEvent<HTMLElement, MouseEvent>, value: unknown) => {
                     if (value == null || value === "null") return
 
-                    router.push(
-                        "/project/" + project!.id + "/table/" + value,
-                        undefined,
-                        { shallow: false }
-                    )
+                    router.push("/project/" + project!.id + "/table/" + value, undefined, { shallow: false })
                 }}
                 color="primary"
                 sx={{ display: "block", mb: theme.spacing(5) }}

@@ -30,10 +30,7 @@ const ListIconWithTooltip: React.FC<{
     const [hover, setHover] = useState<boolean>(false)
 
     return (
-        <ListItemIcon
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
-        >
+        <ListItemIcon onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
             {hover ? (
                 <Tooltip title={props.tooltip} arrow>
                     <InfoIcon
@@ -58,17 +55,12 @@ const Settings: NextPage = () => {
     const { getTheme } = useThemeToggler()
     const { user } = useUser()
 
-    const [accountSettings, setAccountSettings] = useState<UserAccountSettings>(
-        {
-            rememberMe: true,
-            sessionDuration: 14,
-        }
-    )
+    const [accountSettings, setAccountSettings] = useState<UserAccountSettings>({
+        rememberMe: true,
+        sessionDuration: 14,
+    })
 
-    const updateAccountSettings = <T extends keyof UserAccountSettings>(
-        key: T,
-        value: UserAccountSettings[T]
-    ) => {
+    const updateAccountSettings = <T extends keyof UserAccountSettings>(key: T, value: UserAccountSettings[T]) => {
         setAccountSettings(prev => ({
             ...prev,
             [key]: value,
@@ -92,17 +84,8 @@ const Settings: NextPage = () => {
                 subheader={<ListSubheader>Theme</ListSubheader>}
             >
                 <ListItem>
-                    <ListItemIcon>
-                        {getTheme() === "dark" ? (
-                            <FlashlightOffIcon />
-                        ) : (
-                            <FlashlightOnIcon />
-                        )}
-                    </ListItemIcon>
-                    <ListItemText
-                        id="setting-theme-mode"
-                        primary="Dunkles Desgin"
-                    />
+                    <ListItemIcon>{getTheme() === "dark" ? <FlashlightOffIcon /> : <FlashlightOnIcon />}</ListItemIcon>
+                    <ListItemText id="setting-theme-mode" primary="Dunkles Desgin" />
                     <ThemeSwitch />
                 </ListItem>
                 {/* <ListItem>
@@ -130,19 +113,11 @@ const Settings: NextPage = () => {
                         <ListIconWithTooltip tooltip="Ihre Anmeldedaten werden gespeichert. Sie werden bei Ihrer nächsten Anmeldung automatisch eingeloggt.">
                             <RememberMeIcon />
                         </ListIconWithTooltip>
-                        <ListItemText
-                            id="setting-placeholder"
-                            primary="Mein Benutzer-Konto merken"
-                        />
+                        <ListItemText id="setting-placeholder" primary="Mein Benutzer-Konto merken" />
                         <Switch
                             checked={accountSettings.rememberMe}
                             disabled
-                            onChange={e =>
-                                updateAccountSettings(
-                                    "rememberMe",
-                                    e.target.checked
-                                )
-                            }
+                            onChange={e => updateAccountSettings("rememberMe", e.target.checked)}
                         />
                     </ListItem>
                     {accountSettings.rememberMe && (
@@ -150,10 +125,7 @@ const Settings: NextPage = () => {
                             <ListIconWithTooltip tooltip="Geben Sie die Zeit an, für wie lange wir Ihre Anmeldedaten speichern sollen.">
                                 <TimelapseIcon />
                             </ListIconWithTooltip>
-                            <ListItemText
-                                id="setting-placeholder"
-                                primary="Session-Dauer"
-                            />
+                            <ListItemText id="setting-placeholder" primary="Session-Dauer" />
                             <TextField
                                 disabled
                                 type="number"

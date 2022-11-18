@@ -18,11 +18,7 @@ const useConnectionStatusColor = (status: ConnectionStatus) => {
     }
 }
 
-export type ConnectionStatus =
-    | "connected"
-    | "disconnected"
-    | "connecting"
-    | "busy"
+export type ConnectionStatus = "connected" | "disconnected" | "connecting" | "busy"
 
 type ConnectionProps = {
     status: ConnectionStatus

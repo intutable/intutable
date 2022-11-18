@@ -50,10 +50,6 @@ export abstract class TempusCell extends Cell {
         const isTime = parse_HH_mm(value)
         const isDate = parse_dd_MM_yyyy(value)
 
-        return isValidTempus(isTime)
-            ? isTime
-            : isValidTempus(isDate)
-            ? isDate
-            : false
+        return isValidTempus(isTime) ? isTime : isValidTempus(isDate) ? isDate : false
     }
 }

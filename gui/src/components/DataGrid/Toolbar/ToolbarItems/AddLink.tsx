@@ -35,9 +35,7 @@ export const AddLink: React.FC = () => {
     const { project } = useAPI()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const handleOpenModal = (
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-    ) => {
+    const handleOpenModal = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
@@ -136,15 +134,10 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                                     key={i}
                                     disablePadding
                                     sx={{
-                                        bgcolor:
-                                            selection?.id === tbl.id
-                                                ? theme.palette.action.selected
-                                                : undefined,
+                                        bgcolor: selection?.id === tbl.id ? theme.palette.action.selected : undefined,
                                     }}
                                 >
-                                    <ListItemButton
-                                        onClick={onClickHandler.bind(null, tbl)}
-                                    >
+                                    <ListItemButton onClick={onClickHandler.bind(null, tbl)}>
                                         <ListItemText primary={tbl.name} />
                                     </ListItemButton>
                                 </ListItem>

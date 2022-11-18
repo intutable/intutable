@@ -19,9 +19,7 @@ export class Currency extends NumericCell {
     unexport(value: string): number {
         const unexported = Number(value.replace("€", "").trim())
         if (NumericCell.isNumeric(unexported) === false)
-            throw new RangeError(
-                "Currency Cell Debug Error: value is not a number"
-            )
+            throw new RangeError("Currency Cell Debug Error: value is not a number")
         return unexported
     }
 
@@ -34,14 +32,7 @@ export class Currency extends NumericCell {
                 [key]: e.target.value,
             })
 
-        return (
-            <this.Input
-                onChange={handleChange}
-                type="number"
-                onBlur={() => props.onClose(true)}
-                value={content}
-            />
-        )
+        return <this.Input onChange={handleChange} type="number" onBlur={() => props.onClose(true)} value={content} />
     }
 
     formatter = (props: FormatterProps<Row>) => {
@@ -73,8 +64,7 @@ export class Currency extends NumericCell {
         const [value, setValue] = useState(props.content)
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            if (this.isValid(e.target.value))
-                setValue(Number.parseInt(e.target.value))
+            if (this.isValid(e.target.value)) setValue(Number.parseInt(e.target.value))
         }
 
         const handleBlur = async () => {
@@ -93,9 +83,7 @@ export class Currency extends NumericCell {
                 onBlur={handleBlur}
                 value={value}
                 InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">€</InputAdornment>
-                    ),
+                    endAdornment: <InputAdornment position="end">€</InputAdornment>,
                 }}
             />
         )

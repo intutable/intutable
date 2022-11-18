@@ -11,16 +11,13 @@ export class Text extends Cell {
     label = "Text"
     icon = AbcIcon
 
-    public ExposedInput: React.FC<
-        ExposedInputProps<string | null, TextFieldProps>
-    > = props => {
+    public ExposedInput: React.FC<ExposedInputProps<string | null, TextFieldProps>> = props => {
         const { getRowId, updateRow } = useRow()
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content ?? "")
 
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-            setValue(e.target.value)
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
         const handleBlur = async () => {
             try {
@@ -31,13 +28,7 @@ export class Text extends Cell {
         }
 
         return (
-            <TextField
-                size="small"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={value}
-                {...props.InputProps}
-            />
+            <TextField size="small" onChange={handleChange} onBlur={handleBlur} value={value} {...props.InputProps} />
         )
     }
 }

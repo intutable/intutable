@@ -20,30 +20,19 @@ import { Filter } from "types/filter"
  *   }
  * ```
  */
-const PATCH = withCatchingAPIRoute(
-    async (
-        req: NextApiRequest,
-        res: NextApiResponse,
-        viewId: ViewDescriptor["id"]
-    ) => {
-        const { filters } = req.body as {
-            filters: Filter[]
-        }
-        const user = req.session.user!
-
-        await withReadWriteConnection(user, async sessionID =>
-            coreRequest<Filter[]>(
-                changeViewFilters(sessionID, viewId, filters),
-                user.authCookie
-            ).catch(e =>
-                e.message.includes("default view")
-                    ? Promise.reject("changeDefaultView")
-                    : Promise.reject(e)
-            )
-        )
-        res.status(200).json({})
+const PATCH = withCatchingAPIRoute(async (req: NextApiRequest, res: NextApiResponse, viewId: ViewDescriptor["id"]) => {
+    const { filters } = req.body as {
+        filters: Filter[]
     }
-)
+    const user = req.session.user!
+
+    await withReadWriteConnection(user, async sessionID =>
+        coreRequest<Filter[]>(changeViewFilters(sessionID, viewId, filters), user.authCookie).catch(e =>
+            e.message.includes("default view") ? Promise.reject("changeDefaultView") : Promise.reject(e)
+        )
+    )
+    res.status(200).json({})
+})
 
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {

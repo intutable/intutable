@@ -1,12 +1,5 @@
 import React from "react"
-import {
-    Paper as MUIPaper,
-    Box,
-    Stack,
-    Typography,
-    Button,
-    CircularProgress,
-} from "@mui/material"
+import { Paper as MUIPaper, Box, Stack, Typography, Button, CircularProgress } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import Image from "next/image"
 import BGImage from "public/login-bg.jpg"
@@ -107,9 +100,7 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                                     fontWeight: theme.typography.fontWeightBold,
                                 }}
                             >
-                                {props.mode === "login"
-                                    ? "Login"
-                                    : "Registrieren"}
+                                {props.mode === "login" ? "Login" : "Registrieren"}
                             </Typography>
                             <Typography
                                 sx={{
@@ -120,10 +111,7 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                                 {props.mode === "register" ? (
                                     <>
                                         Du hast bereits ein Benutzerkonto?{" "}
-                                        <Link
-                                            muiLinkProps={linkStyle}
-                                            href="/login"
-                                        >
+                                        <Link muiLinkProps={linkStyle} href="/login">
                                             Melde dich an
                                         </Link>
                                         !
@@ -131,10 +119,7 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                                 ) : (
                                     <>
                                         Du hast noch kein Benutzerkonto?{" "}
-                                        <Link
-                                            muiLinkProps={linkStyle}
-                                            href="/register"
-                                        >
+                                        <Link muiLinkProps={linkStyle} href="/register">
                                             Erstelle dein Benutzerkonto
                                         </Link>{" "}
                                         in wenigen Schritten!
@@ -148,11 +133,7 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                                     mb: 2,
                                 }}
                             >
-                                {props.loading ? (
-                                    <CircularProgress />
-                                ) : (
-                                    props.children
-                                )}
+                                {props.loading ? <CircularProgress /> : props.children}
                             </Box>
 
                             <Box
@@ -161,14 +142,8 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                                     justifyContent: "right",
                                 }}
                             >
-                                <Button
-                                    variant="contained"
-                                    disabled={props.disabled}
-                                    onClick={props.handleAction}
-                                >
-                                    {props.mode === "login"
-                                        ? "Login"
-                                        : "Registrieren"}
+                                <Button variant="contained" disabled={props.disabled} onClick={props.handleAction}>
+                                    {props.mode === "login" ? "Login" : "Registrieren"}
                                 </Button>
                             </Box>
                         </Box>
@@ -188,16 +163,9 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                                     mb: 2,
                                 }}
                             >
-                                {props.mode === "login"
-                                    ? "Login"
-                                    : "Registrieren"}{" "}
-                                mit Universitäts-Account
+                                {props.mode === "login" ? "Login" : "Registrieren"} mit Universitäts-Account
                             </Typography>
-                            <Button
-                                variant="contained"
-                                onClick={() => {}}
-                                disabled
-                            >
+                            <Button variant="contained" onClick={() => {}} disabled>
                                 Uni-Zugang
                             </Button>
                         </Box>

@@ -15,30 +15,12 @@ import React, { useState, useEffect, useRef, useCallback } from "react"
 import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
-import {
-    Popper,
-    Paper,
-    IconButton,
-    Stack,
-    Box,
-    Typography,
-} from "@mui/material"
+import { Popper, Paper, IconButton, Stack, Box, Typography } from "@mui/material"
 
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { TableColumn } from "types"
-import {
-    ConditionKind,
-    Filter,
-    PartialFilter,
-    PartialSimpleFilter,
-    FILTER_OPERATORS_LIST,
-} from "types/filter"
-import {
-    wherePartial,
-    and,
-    stripPartialFilter,
-    partialFilterEquals,
-} from "@shared/utils/filter"
+import { ConditionKind, Filter, PartialFilter, PartialSimpleFilter, FILTER_OPERATORS_LIST } from "types/filter"
+import { wherePartial, and, stripPartialFilter, partialFilterEquals } from "@shared/utils/filter"
 import { useAPI } from "context/APIContext"
 import { useUpdateTimer } from "hooks/useUpdateTimer"
 import { FilterEditor } from "./Filter"
@@ -73,8 +55,7 @@ const UPDATE_WAIT_TIME = 500
  * A pop-up window with a list of filters to apply to the data being shown.
  */
 export const FilterWindow: React.FC<FilterWindowProps> = props => {
-    const { columns, activeFilters, onHandleCloseEditor, onUpdateFilters } =
-        props
+    const { columns, activeFilters, onHandleCloseEditor, onUpdateFilters } = props
     /**
      * `Popper` does not work with `ClickAwayListener`, so we hacked this to
      * at least close the editor window whenever the user switches views.
@@ -116,9 +97,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
             }))
         else return [newUnsavedFilter()]
     }
-    const [filters, setFilters] = useState<KeyedFilter[]>(() =>
-        setupInitialFilters(activeFilters)
-    )
+    const [filters, setFilters] = useState<KeyedFilter[]>(() => setupInitialFilters(activeFilters))
 
     /**
      * Save filters to the back-end and apply them. Rather than a save button,
@@ -137,34 +116,22 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         const newActiveFilters = extractFilters(filters)
         if (
             activeFilters.length !== newActiveFilters.length ||
-            !(activeFilters as PartialFilter[]).every((f, i) =>
-                partialFilterEquals(f, newActiveFilters[i])
-            )
+            !(activeFilters as PartialFilter[]).every((f, i) => partialFilterEquals(f, newActiveFilters[i]))
         )
             update()
     }, [activeFilters, update, filters])
 
-    const handleAddFilter = () =>
-        setFilters(prev => prev.concat(newUnsavedFilter()))
+    const handleAddFilter = () => setFilters(prev => prev.concat(newUnsavedFilter()))
 
     const handleDeleteFilter = async (key: number | string): Promise<void> => {
         const index = filters.findIndex(f => f.key === key)
         if (index !== -1) setFilters(prev => arrayRemove(prev, index))
     }
 
-    const handlePromoteFilter = async (
-        key: number | string,
-        filter: PartialSimpleFilter
-    ) =>
-        handleChangeFilter(
-            key,
-            and(filter, wherePartial(undefined, "=", undefined))
-        )
+    const handlePromoteFilter = async (key: number | string, filter: PartialSimpleFilter) =>
+        handleChangeFilter(key, and(filter, wherePartial(undefined, "=", undefined)))
 
-    const handleChangeFilter = async (
-        key: number | string,
-        newFilter: PartialFilter
-    ): Promise<void> => {
+    const handleChangeFilter = async (key: number | string, newFilter: PartialFilter): Promise<void> => {
         const index = filters.findIndex(f => f.key === key)
         if (index === -1) return
         const newFilters = [...filters]
@@ -194,24 +161,16 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                                     <SimpleFilterEditor
                                         columns={columns}
                                         filter={f.filter}
-                                        onPromote={async filter =>
-                                            handlePromoteFilter(f.key, filter)
-                                        }
-                                        onChange={async filter =>
-                                            handleChangeFilter(f.key, filter)
-                                        }
+                                        onPromote={async filter => handlePromoteFilter(f.key, filter)}
+                                        onChange={async filter => handleChangeFilter(f.key, filter)}
                                         nestingDepth={0}
                                     />
                                 ) : (
                                     <FilterEditor
                                         columns={columns}
                                         filter={f.filter}
-                                        onDemote={async filter =>
-                                            handleChangeFilter(f.key, filter)
-                                        }
-                                        onChange={async filter =>
-                                            handleChangeFilter(f.key, filter)
-                                        }
+                                        onDemote={async filter => handleChangeFilter(f.key, filter)}
+                                        onChange={async filter => handleChangeFilter(f.key, filter)}
                                         nestingDepth={0}
                                     />
                                 )}
@@ -242,8 +201,7 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
 }
 
 const arrayRemove = <A,>(a: Array<A>, i: number): Array<A> => {
-    if (i < 0 || i >= a.length)
-        throw TypeError(`arrayRemove: index out of bounds`)
+    if (i < 0 || i >= a.length) throw TypeError(`arrayRemove: index out of bounds`)
     else return a.slice(0, i).concat(...a.slice(i + 1))
 }
 

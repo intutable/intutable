@@ -18,8 +18,7 @@ export class Bool extends Cell {
     isValid(value: unknown): boolean {
         if (value == null || value === "") return true
 
-        if (typeof value === "string")
-            return value === "true" || value === "false"
+        if (typeof value === "string") return value === "true" || value === "false"
 
         if (typeof value === "number") return value === 1 || value === 0
 
@@ -42,9 +41,7 @@ export class Bool extends Cell {
     }
     unexport(value: "wahr" | "falsch"): boolean {
         if (value !== "wahr" && value !== "falsch")
-            throw new RangeError(
-                "Boolean Cell Debug Error: value is not a boolean"
-            )
+            throw new RangeError("Boolean Cell Debug Error: value is not a boolean")
 
         return value === "wahr"
     }
@@ -88,11 +85,7 @@ export class Bool extends Cell {
             setValue(e.target.checked)
             if (e.target.checked !== value) {
                 try {
-                    await updateRow(
-                        props.column,
-                        getRowId(props.row),
-                        e.target.checked
-                    )
+                    await updateRow(props.column, getRowId(props.row), e.target.checked)
                 } catch (e) {
                     snackError("Der Wert konnte nicht geändert werden")
                 }

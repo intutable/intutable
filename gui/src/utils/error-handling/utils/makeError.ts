@@ -25,9 +25,5 @@ export const makeError = (value: unknown): Error => {
 
     if (value instanceof Response) return new Error(value.statusText)
 
-    return new Error(
-        `Unparsable Error: tried to handle the following error but could not parse it: ${inspect(
-            value
-        )}`
-    )
+    return new Error(`Unparsable Error: tried to handle the following error but could not parse it: ${inspect(value)}`)
 }

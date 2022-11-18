@@ -8,9 +8,7 @@ import { AddColumnModal } from "./AddColumnModal"
  */
 const AddCol: React.FC = () => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const handleOpenModal = (
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-    ) => {
+    const handleOpenModal = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         setAnchorEL(event.currentTarget)
     }
     const handleCloseModal = () => setAnchorEL(null)
@@ -20,10 +18,7 @@ const AddCol: React.FC = () => {
             <Button startIcon={<AddIcon />} onClick={handleOpenModal}>
                 Add Col
             </Button>
-            <AddColumnModal
-                open={anchorEL != null}
-                onClose={handleCloseModal}
-            />
+            <AddColumnModal open={anchorEL != null} onClose={handleCloseModal} />
         </>
     )
 }

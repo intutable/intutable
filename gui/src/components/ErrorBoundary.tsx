@@ -14,10 +14,7 @@ type ErrorBoundaryState = {
 }
 
 // Note: Error boundaries currently have to be classes.
-export class ErrorBoundary extends React.Component<
-    ErrorBoundaryProps,
-    ErrorBoundaryState
-> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
     constructor(props: ErrorBoundaryProps) {
         super(props)
         this.state = { hasError: false, error: null }

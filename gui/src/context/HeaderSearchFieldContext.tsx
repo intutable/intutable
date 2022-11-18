@@ -14,23 +14,17 @@ const initialState: HeaderSearchFieldContextProps = {
     closeSearchField: undefined!,
 }
 
-const HeaderSearchFieldContext =
-    React.createContext<HeaderSearchFieldContextProps>(initialState)
+const HeaderSearchFieldContext = React.createContext<HeaderSearchFieldContextProps>(initialState)
 
-export const useHeaderSearchField = () =>
-    React.useContext(HeaderSearchFieldContext)
+export const useHeaderSearchField = () => React.useContext(HeaderSearchFieldContext)
 
 type HeaderSearchFieldProviderProps = {
     children: React.ReactNode
 }
 
-export const HeaderSearchFieldProvider: React.FC<
-    HeaderSearchFieldProviderProps
-> = props => {
+export const HeaderSearchFieldProvider: React.FC<HeaderSearchFieldProviderProps> = props => {
     const [open, setOpen] = useState<boolean>(initialState.open)
-    const [headerHeight, setHeaderHeight] = useState<number>(
-        initialState.headerHeight
-    )
+    const [headerHeight, setHeaderHeight] = useState<number>(initialState.headerHeight)
 
     const openSearchField = () => {
         setHeaderHeight(70)

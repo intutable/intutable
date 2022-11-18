@@ -17,16 +17,12 @@ export const useLink = (options: TableHookOptions) => {
 
     const getPrimaryColumn = useCallback((): ColumnInfo | null => {
         if (linkTableData == null) return null
-        return linkTableData.metadata.columns.find(
-            c => c.attributes.isUserPrimaryKey! === 1
-        )!
+        return linkTableData.metadata.columns.find(c => c.attributes.isUserPrimaryKey! === 1)!
     }, [linkTableData])
 
     const getRowId = useCallback(
         (row: TableRow): number => {
-            const uidColumn = linkTableData!.metadata.columns.find(
-                c => c.name === "_id"
-            )!
+            const uidColumn = linkTableData!.metadata.columns.find(c => c.name === "_id")!
             return row[uidColumn.key] as number
         },
         [linkTableData]
@@ -58,9 +54,7 @@ export const useLink = (options: TableHookOptions) => {
      * column it corresponds to.
      */
     const getColumn = (column: TableColumn): ColumnInfo => {
-        const tableColumn = linkTableData?.metadata.columns.find(
-            c => c.key === column.key
-        )
+        const tableColumn = linkTableData?.metadata.columns.find(c => c.key === column.key)
         if (!tableColumn) throw Error("no column with key ${column.key} found")
         return tableColumn
     }

@@ -14,13 +14,9 @@ import { RoleKind, deleteUser, changeRole } from "@backend/permissions"
 const DELETE = withCatchingAPIRoute(async (req, res, userId: number) => {
     const currentUser = req.session.user!
 
-    if (currentUser.role.roleKind !== RoleKind.Admin)
-        throw Error("accessDenied")
+    if (currentUser.role.roleKind !== RoleKind.Admin) throw Error("accessDenied")
 
-    const response = await coreRequest<{ message: string }>(
-        deleteUser(userId),
-        currentUser.authCookie
-    )
+    const response = await coreRequest<{ message: string }>(deleteUser(userId), currentUser.authCookie)
 
     res.status(200).json(response)
 })
@@ -39,13 +35,9 @@ const PATCH = withCatchingAPIRoute(async (req, res, userId: number) => {
     }
     const currentUser = req.session.user!
 
-    if (currentUser.role.roleKind !== RoleKind.Admin)
-        throw Error("accessDenied")
+    if (currentUser.role.roleKind !== RoleKind.Admin) throw Error("accessDenied")
 
-    const response = await coreRequest<{ message: string }>(
-        changeRole(userId, roleId),
-        currentUser.authCookie
-    )
+    const response = await coreRequest<{ message: string }>(changeRole(userId, roleId), currentUser.authCookie)
 
     res.status(200).json(response)
 })

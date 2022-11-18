@@ -25,25 +25,18 @@ import { createStandardColumn } from "@backend/requests"
  * }
  * ```
  */
-const POST = withCatchingAPIRoute(
-    async (req, res, tableId: ViewDescriptor["id"]) => {
-        const { column } = req.body as {
-            column: StandardColumnSpecifier
-        }
-        const user = req.session.user!
-
-        const newColumn: Column.Serialized = await withReadWriteConnection(
-            user,
-            async sessionID =>
-                coreRequest<Column.Serialized>(
-                    createStandardColumn(sessionID, tableId, column),
-                    user.authCookie
-                )
-        )
-
-        res.status(200).json(newColumn)
+const POST = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"]) => {
+    const { column } = req.body as {
+        column: StandardColumnSpecifier
     }
-)
+    const user = req.session.user!
+
+    const newColumn: Column.Serialized = await withReadWriteConnection(user, async sessionID =>
+        coreRequest<Column.Serialized>(createStandardColumn(sessionID, tableId, column), user.authCookie)
+    )
+
+    res.status(200).json(newColumn)
+})
 
 export default withSessionRoute(
     withUserCheck(async (req, res) => {

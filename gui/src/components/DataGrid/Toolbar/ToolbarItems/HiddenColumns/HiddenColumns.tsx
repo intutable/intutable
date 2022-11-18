@@ -19,10 +19,7 @@ export const HiddenColumns: React.FC = () => {
             <Button startIcon={<HideSourceIcon />} onClick={openModal}>
                 Versteckte Spalten
             </Button>
-            <HiddenColumnsDialog
-                open={anchorEL !== null}
-                onClose={closeModal}
-            />
+            <HiddenColumnsDialog open={anchorEL !== null} onClose={closeModal} />
         </>
     )
 }
@@ -40,10 +37,7 @@ export const HiddenColumnsMenuItem: React.FC = () => {
             <MenuItem onClick={openModal}>
                 <ListItemText>Versteckte Spalten</ListItemText>
             </MenuItem>
-            <HiddenColumnsDialog
-                open={anchorEL !== null}
-                onClose={closeModal}
-            />
+            <HiddenColumnsDialog open={anchorEL !== null} onClose={closeModal} />
         </>
     )
 }

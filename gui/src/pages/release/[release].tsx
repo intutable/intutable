@@ -1,10 +1,5 @@
 import { ReleaseProps } from "components/Release Notes/Release"
-import type {
-    GetStaticPaths,
-    GetStaticProps,
-    InferGetStaticPropsType,
-    NextPage,
-} from "next"
+import type { GetStaticPaths, GetStaticProps, InferGetStaticPropsType, NextPage } from "next"
 import { releases } from "public/releases"
 import { ParsedUrlQuery } from "querystring"
 import { VersionTag } from "types/VersionTag"
@@ -32,9 +27,7 @@ type ReleasePageSlug = {
     release: VersionTag
 }
 
-const ReleasePage: NextPage<
-    InferGetStaticPropsType<typeof getStaticProps>
-> = props => {
+const ReleasePage: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = props => {
     const release = deserialize(props.release as SerializedReleaseProps)
 
     return <Release {...release} />

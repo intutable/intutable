@@ -38,13 +38,10 @@ export class SerializableError extends Error {
 
     static fromJSON<T>(this: Ctor<T>, value: string): T {
         const parsed = JSON.parse(value) as Obj
-        if (isErrorLike(parsed) === false)
-            throw new RangeError(`Could not instantiate from argument 'value'!`)
+        if (isErrorLike(parsed) === false) throw new RangeError(`Could not instantiate from argument 'value'!`)
         const err = parsed as ErrorLike
         if (this.name !== err.name)
-            throw new RangeError(
-                `Could not instantiate from serialized error of type '${err.name}' to '${this.name}'`
-            )
+            throw new RangeError(`Could not instantiate from serialized error of type '${err.name}' to '${this.name}'`)
         // const instance = Object.create(
         //     this.prototype,
         //     Object.getOwnPropertyDescriptors(parsed)
@@ -122,9 +119,7 @@ export class DeserializationMiddleware {
         return this
     }
 
-    public removeClass<T extends SerializableErrorCtor>(
-        ctor: ErrorCtor<T>
-    ): this {
+    public removeClass<T extends SerializableErrorCtor>(ctor: ErrorCtor<T>): this {
         this.knownConstructors.delete(ctor.name)
         return this
     }

@@ -1,16 +1,7 @@
 import AddIcon from "@mui/icons-material/Add"
 import CheckIcon from "@mui/icons-material/Check"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import {
-    Box,
-    Chip,
-    Divider,
-    IconButton,
-    Menu,
-    MenuItem,
-    MenuList,
-    TextField,
-} from "@mui/material"
+import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, TextField } from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
@@ -87,22 +78,14 @@ export class MultiSelect extends Cell {
 
     editor = () => null
 
-    getOptions(
-        column: Column.Deserialized,
-        rows: Row[],
-        self?: string[] | null
-    ): string[] {
+    getOptions(column: Column.Deserialized, rows: Row[], self?: string[] | null): string[] {
         const options = rows
             .map(row => row[column.key])
             .flat()
             .filter(option => Cell.isEmpty(option) === false) // remove empty values
 
         const optionsWithoutSelf = (
-            self == null
-                ? options
-                : options.filter(
-                      option => self.includes(option as string) === false
-                  )
+            self == null ? options : options.filter(option => self.includes(option as string) === false)
         ) as string[]
 
         const uniqueOptions = new Set(optionsWithoutSelf)
@@ -111,17 +94,13 @@ export class MultiSelect extends Cell {
     }
 
     formatter = (props: FormatterProps<Row>) => {
-        const { content, column, row, key } = this.destruct<string[] | null>(
-            props
-        )
+        const { content, column, row, key } = this.destruct<string[] | null>(props)
         const isEmpty = content == null || content.length === 0
 
         const [hovering, setHovering] = useState<boolean>(false)
         const modalRef = useRef(null)
         const [open, setOpen] = useState<boolean>(false)
-        const openModal = (
-            e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-        ) => {
+        const openModal = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
             setOpen(true)
@@ -146,10 +125,7 @@ export class MultiSelect extends Cell {
         }
 
         const { data } = useView()
-        const list = useMemo(
-            () => (data ? this.getOptions(column, data.rows, content) : null),
-            [data, column, content]
-        )
+        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : null), [data, column, content])
 
         return (
             <>
@@ -188,11 +164,7 @@ export class MultiSelect extends Cell {
                                     <ChipItem
                                         label={chip}
                                         key={chip}
-                                        onDelete={
-                                            hovering
-                                                ? () => removeChip(chip)
-                                                : undefined
-                                        }
+                                        onDelete={hovering ? () => removeChip(chip) : undefined}
                                     />
                                 ))}
                             </Box>
@@ -229,11 +201,7 @@ export class MultiSelect extends Cell {
                                 if (e.key === "Enter") addChip(input)
                             }}
                         />
-                        <IconButton
-                            size="small"
-                            sx={{ ml: 1 }}
-                            onClick={() => addChip(input)}
-                        >
+                        <IconButton size="small" sx={{ ml: 1 }} onClick={() => addChip(input)}>
                             <CheckIcon fontSize="small" color="primary" />
                         </IconButton>
                     </MenuItem>
@@ -248,13 +216,7 @@ export class MultiSelect extends Cell {
                             <MenuItem
                                 key={index}
                                 data-value={item}
-                                onClick={e =>
-                                    addChip(
-                                        e.currentTarget.dataset[
-                                            "value"
-                                        ] as string
-                                    )
-                                }
+                                onClick={e => addChip(e.currentTarget.dataset["value"] as string)}
                             >
                                 <ChipItem label={item} />
                             </MenuItem>
@@ -271,8 +233,7 @@ export class MultiSelect extends Cell {
 
         const [value, setValue] = useState(props.content ?? "")
 
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-            setValue(e.target.value)
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
         const handleBlur = async () => {
             try {
@@ -282,13 +243,6 @@ export class MultiSelect extends Cell {
             }
         }
 
-        return (
-            <TextField
-                size="small"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={value}
-            />
-        )
+        return <TextField size="small" onChange={handleChange} onBlur={handleBlur} value={value} />
     }
 }

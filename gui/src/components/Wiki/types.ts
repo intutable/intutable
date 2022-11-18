@@ -19,9 +19,6 @@ export type WikiNode = {
     children: (WikiNode | WikiDoc)[]
 }
 export const isWikiNode = (value: unknown): value is WikiNode =>
-    value != null &&
-    typeof value === "object" &&
-    "title" in value &&
-    "children" in value
+    value != null && typeof value === "object" && "title" in value && "children" in value
 
 export type WikiTree = (WikiNode | WikiDoc)[]
