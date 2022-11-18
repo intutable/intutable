@@ -136,7 +136,7 @@ export class Percentage extends NumericCell {
 
         const handleBlur = async () => {
             try {
-                await updateRow(props.column, getRowId(props.row), percentage)
+                await updateRow(props.column, props.row, percentage)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
             }

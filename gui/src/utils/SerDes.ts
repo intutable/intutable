@@ -1,6 +1,4 @@
 import cells from "@datagrid/Cells"
-import { headerRenderer } from "@datagrid/renderers"
-import { SelectColumn } from "react-data-grid"
 import { Column, Row, ViewData } from "types"
 import { mountColumnProxy } from "./column utils/ColumnProxy"
 
@@ -14,8 +12,8 @@ export default class SerDes {
         return serializedRow
     }
 
-    static serializeRowValue<T = unknown>(row: Row, column: Column.Deserialized): T {
-        const changedValue = row[column.key]
+    static serializeRowValue<T = unknown>(value: unknown, column: Column.Deserialized): T {
+        const changedValue = value
         const cellUtil = cells.getCell(column.cellType)
         const serializedValue = cellUtil.catchEmpty(cellUtil.serialize.bind(cellUtil), changedValue)
 

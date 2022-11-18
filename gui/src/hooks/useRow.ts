@@ -3,6 +3,7 @@ import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column, Row } from "types"
+import SerDes from "utils/SerDes"
 
 import { useColumn } from "./useColumn"
 import { useSnacki } from "./useSnacki"
@@ -101,12 +102,14 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     // TODO: do not use the col key, use its id
     // TODO: `value` needs a (better) type
     // TODO: put `asTable` into the corresponding api route
-    const updateRow = async (column: Column, rowId: Row["_id"], value: unknown): Promise<void> => {
+    const updateRow = async (column: Column, row: Row, updatedValue: unknown): Promise<void> => {
         // it's a view on top of a view, but the property `column.name`
         // reflects the actual name in the DB regardless of how deep the
         // tree is.
         const metaColumn = getTableColumn(column)!
         const baseColumnKey = metaColumn.name
+
+        const serializedValue = SerDes.serializeRowValue(updatedValue, column)
 
         // TODO: put this in the api route
         if (metaColumn.joinId !== null) {
@@ -119,9 +122,9 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: ["_id", rowId],
+                condition: ["_id", getRowId(row)],
                 update: {
-                    [baseColumnKey]: value,
+                    [baseColumnKey]: serializedValue,
                 },
             },
             method: "PATCH",

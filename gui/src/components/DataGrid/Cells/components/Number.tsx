@@ -37,7 +37,7 @@ export class Num extends NumericCell {
 
         const handleBlur = async () => {
             try {
-                await updateRow(props.column, getRowId(props.row), value)
+                await updateRow(props.column, props.row, value)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
             }

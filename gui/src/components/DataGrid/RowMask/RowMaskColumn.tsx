@@ -20,7 +20,7 @@ const ColumnAttributesWindowButton: React.FC<{
 
     return (
         <>
-            <IconButton onClick={openContextMenu} size="small" color="primary">
+            <IconButton onClick={openContextMenu} size="small" color="primary" edge="end">
                 <EditIcon fontSize="small" />
             </IconButton>
             <ColumnAttributesWindow open={anchorEL != null} onClose={closeContextMenu} column={column} />

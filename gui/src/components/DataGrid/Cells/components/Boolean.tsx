@@ -85,7 +85,7 @@ export class Bool extends Cell {
             setValue(e.target.checked)
             if (e.target.checked !== value) {
                 try {
-                    await updateRow(props.column, getRowId(props.row), e.target.checked)
+                    await updateRow(props.column, props.row, e.target.checked)
                 } catch (e) {
                     snackError("Der Wert konnte nicht geändert werden")
                 }

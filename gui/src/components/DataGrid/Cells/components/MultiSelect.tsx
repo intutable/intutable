@@ -1,10 +1,10 @@
 import AddIcon from "@mui/icons-material/Add"
 import CheckIcon from "@mui/icons-material/Check"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, TextField } from "@mui/material"
+import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, Stack, TextField } from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
-import { useMemo, useRef, useState } from "react"
+import { MutableRefObject, Ref, useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
@@ -13,6 +13,7 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
+import column from "pages/api/table/[tableId]/column"
 
 const ChipItem: React.FC<{
     label: string
@@ -20,11 +21,15 @@ const ChipItem: React.FC<{
 }> = ({ label, onDelete }) => {
     const color = stringToColor(label)
     const theme = useTheme()
+    const [hovering, setHovering] = useState<boolean>(false)
+
     return (
         <Chip
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
             label={label}
             size="small"
-            onDelete={onDelete}
+            onDelete={hovering ? onDelete : undefined}
             sx={{
                 color: theme.palette.getContrastText(color),
                 bgcolor: color,
@@ -32,6 +37,66 @@ const ChipItem: React.FC<{
                 mr: 0.5,
             }}
         />
+    )
+}
+type MultiSelectMenuProps = {
+    open: boolean
+    anchor: HTMLElement
+    options: string[]
+    addOption: (option: string) => void
+    onClose: () => void
+}
+const MultiSelectMenu: React.FC<MultiSelectMenuProps> = props => {
+    const [input, setInput] = useState<string>("")
+
+    return (
+        <Menu
+            // elevation={0}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+            }}
+            open={props.open}
+            anchorEl={props.anchor}
+            onClose={props.onClose}
+            PaperProps={{
+                sx: {
+                    boxShadow: "10px 10px 20px 0px rgba(0,0,0,0.2)",
+                },
+            }}
+        >
+            <MenuItem>
+                <TextField
+                    label="Option hinzufügen"
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === "Enter") props.addOption(input)
+                    }}
+                />
+                <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
+                    <CheckIcon fontSize="small" color="primary" />
+                </IconButton>
+            </MenuItem>
+            <Divider />
+            <MenuList
+                sx={{
+                    maxHeight: "200px",
+                    overflowY: "scroll",
+                }}
+            >
+                {props.options.map((item, index) => (
+                    <MenuItem
+                        key={index}
+                        data-value={item}
+                        onClick={e => props.addOption(e.currentTarget.dataset["value"] as string)}
+                    >
+                        <ChipItem label={item} />
+                    </MenuItem>
+                ))}
+            </MenuList>
+        </Menu>
     )
 }
 
@@ -58,6 +123,7 @@ export class MultiSelect extends Cell {
         return JSON.stringify(value)
     }
     deserialize(value: unknown): string[] {
+        console.log("deserialize value:", value) // BUG: values get saved as a stringified array, but arrive as an object ???
         if (Array.isArray(value)) return value
         if (typeof value === "string") {
             try {
@@ -98,7 +164,7 @@ export class MultiSelect extends Cell {
         const isEmpty = content == null || content.length === 0
 
         const [hovering, setHovering] = useState<boolean>(false)
-        const modalRef = useRef(null)
+        const modalRef = useRef<HTMLElement | null>(null)
         const [open, setOpen] = useState<boolean>(false)
         const openModal = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             e.preventDefault()
@@ -107,7 +173,6 @@ export class MultiSelect extends Cell {
         }
         const closeModal = () => setOpen(false)
 
-        const [input, setInput] = useState<string>("")
         const addChip = (value: string) => {
             props.onRowChange({
                 ...row,
@@ -125,7 +190,7 @@ export class MultiSelect extends Cell {
         }
 
         const { data } = useView()
-        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : null), [data, column, content])
+        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : []), [data, column, content])
 
         return (
             <>
@@ -160,13 +225,10 @@ export class MultiSelect extends Cell {
                                     textOverflow: "ellipsis",
                                 }}
                             >
-                                {content.map(chip => (
-                                    <ChipItem
-                                        label={chip}
-                                        key={chip}
-                                        onDelete={hovering ? () => removeChip(chip) : undefined}
-                                    />
-                                ))}
+                                {isEmpty === false &&
+                                    content.map(chip => (
+                                        <ChipItem label={chip} key={chip} onDelete={() => removeChip(chip)} />
+                                    ))}
                             </Box>
                             {hovering && (
                                 <IconButton size="small" onClick={openModal}>
@@ -176,73 +238,102 @@ export class MultiSelect extends Cell {
                         </>
                     )}
                 </Box>
-                <Menu
-                    elevation={0}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                    transformOrigin={{
-                        vertical: "top",
-                        horizontal: "right",
-                    }}
-                    open={open}
-                    anchorEl={modalRef.current}
-                    onClose={closeModal}
-                    PaperProps={{
-                        sx: {
-                            boxShadow: "10px 10px 20px 0px rgba(0,0,0,0.2)",
-                        },
-                    }}
-                >
-                    <MenuItem>
-                        <TextField
-                            label="Option hinzufügen"
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                            onKeyDown={e => {
-                                if (e.key === "Enter") addChip(input)
-                            }}
-                        />
-                        <IconButton size="small" sx={{ ml: 1 }} onClick={() => addChip(input)}>
-                            <CheckIcon fontSize="small" color="primary" />
-                        </IconButton>
-                    </MenuItem>
-                    <Divider />
-                    <MenuList
-                        sx={{
-                            maxHeight: "200px",
-                            overflowY: "scroll",
-                        }}
-                    >
-                        {list?.map((item, index) => (
-                            <MenuItem
-                                key={index}
-                                data-value={item}
-                                onClick={e => addChip(e.currentTarget.dataset["value"] as string)}
-                            >
-                                <ChipItem label={item} />
-                            </MenuItem>
-                        ))}
-                    </MenuList>
-                </Menu>
+
+                {modalRef.current !== null && (
+                    <MultiSelectMenu
+                        open={open}
+                        anchor={modalRef.current}
+                        options={list}
+                        addOption={addChip}
+                        onClose={closeModal}
+                    />
+                )}
             </>
         )
     }
 
-    public ExposedInput: React.FC<ExposedInputProps<string | null>> = props => {
+    public ExposedInput: React.FC<ExposedInputProps<string[] | null>> = props => {
         const { getRowId, updateRow } = useRow()
         const { snackError } = useSnacki()
+        const [hovering, setHovering] = useState<boolean>(false)
+        const modalRef = useRef<HTMLElement | null>(null)
 
-        const [value, setValue] = useState(props.content ?? "")
+        const [open, setOpen] = useState<boolean>(false)
+        const openModal = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setOpen(true)
+        }
+        const closeModal = () => setOpen(false)
 
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
-
-        const handleBlur = async () => {
+        const addChip = async (value: string) => {
             try {
-                await updateRow(props.column, getRowId(props.row), value)
+                const update = props.content ? [...props.content, value] : [value]
+                await updateRow(props.column, props.row, update)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
+            } finally {
+                closeModal()
+            }
+        }
+        const removeChip = async (value: string) => {
+            if (props.content == null) return
+            try {
+                const update = props.content.filter(option => option !== value)
+                await updateRow(props.column, props.row, update)
+            } catch (e) {
+                snackError("Der Wert konnte nicht geändert werden")
+            } finally {
+                closeModal()
             }
         }
 
-        return <TextField size="small" onChange={handleChange} onBlur={handleBlur} value={value} />
+        const { data } = useView()
+        const list = useMemo(
+            () => (data ? this.getOptions(props.column, data.rows, props.content) : []),
+            [data, props.column, props.content]
+        )
+
+        return (
+            <>
+                <Box
+                    onMouseEnter={() => setHovering(true)}
+                    onMouseLeave={() => setHovering(false)}
+                    ref={modalRef}
+                    sx={{
+                        minWidth: "100px",
+                    }}
+                >
+                    <Stack
+                        direction="row"
+                        sx={{
+                            flexWrap: "wrap",
+                            w: 1,
+                            h: 1,
+                        }}
+                    >
+                        {props.content &&
+                            props.content.map(option => (
+                                <ChipItem label={option} key={option} onDelete={() => removeChip(option)} />
+                            ))}
+
+                        {hovering && (
+                            <IconButton size="small" onClick={openModal}>
+                                <AddIcon fontSize="small" />
+                            </IconButton>
+                        )}
+                    </Stack>
+                </Box>
+                {modalRef.current !== null && (
+                    <MultiSelectMenu
+                        open={open}
+                        anchor={modalRef.current}
+                        options={list}
+                        addOption={addChip}
+                        onClose={closeModal}
+                    />
+                )}
+            </>
+        )
     }
 }

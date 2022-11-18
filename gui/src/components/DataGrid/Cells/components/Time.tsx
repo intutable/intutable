@@ -116,7 +116,7 @@ export class Time extends TempusCell {
         const handleChange = async (value: number | null) => {
             if (this.isValid(value)) setContent(value)
             try {
-                await updateRow(props.column, getRowId(props.row), value)
+                await updateRow(props.column, props.row, value)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
             }
