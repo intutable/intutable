@@ -2,5 +2,6 @@
     "databaseAdminUsername": "admin",
     "databaseAdminPassword": "admin",
     "appAdminUsername": "admin@dekanat.de",
-    "appAdminPassword": "password"
+    "appAdminPassword": "password",
+    "projectManagementRoleId": 1
 }

@@ -24,7 +24,7 @@ export const CHANNEL = "dekanat-app-plugin"
  */
 export function createTable(
     sessionID: string,
-    userId: number,
+    roleId: number,
     projectId: number,
     name: string
 ) {
@@ -32,7 +32,7 @@ export function createTable(
         channel: CHANNEL,
         method: createTable.name,
         sessionID,
-        userId,
+        roleId,
         projectId,
         name,
     }
@@ -164,17 +164,11 @@ export function getTableData(sessionID: string, tableId: TableId) {
  * Filters can be added with {@link changeViewFilters}, while
  * hiding columns, sorting, and grouping are not yet implemented at all.
  */
-export function createView(
-    sessionID: string,
-    userId: number,
-    tableId: TableId,
-    name: string
-) {
+export function createView(sessionID: string, tableId: TableId, name: string) {
     return {
         channel: CHANNEL,
         method: createView.name,
         sessionID,
-        userId,
         tableId,
         name,
     }

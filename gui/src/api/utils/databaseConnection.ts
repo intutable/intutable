@@ -1,17 +1,9 @@
-import { randomBytes } from "crypto"
 import { User } from "types/User"
 import {
     openConnection,
     closeConnection,
 } from "@intutable/database/dist/requests"
 import { coreRequest } from "./coreRequest"
-
-let nextSessionID = 0
-const getNextSessionID = () => {
-    const id = "dekanat-app_" + nextSessionID + randomBytes(20).toString("hex")
-    nextSessionID++
-    return id
-}
 
 /**
  * Acquire a connection with read/write privileges to the database, run
@@ -21,7 +13,7 @@ const getNextSessionID = () => {
  */
 export const withReadWriteConnection = async <T>(
     user: User,
-    callback: (sessionID: string) => Promise<T>
+    callback: (connId: string) => Promise<T>
 ): Promise<T> => {
     const username = process.env.DB_RW_USERNAME
     const password = process.env.DB_RW_PASSWORD
@@ -30,17 +22,15 @@ export const withReadWriteConnection = async <T>(
             error: "username or password not found in env",
         })
 
-    const sessionID = getNextSessionID()
-
-    await coreRequest<void>(
-        openConnection(sessionID, username, password),
+    const connId = await coreRequest<string>(
+        openConnection(username, password),
         user.authCookie
-    )
+    ).then(({ connectionId }) => connectionId)
     let result: T
     try {
-        result = await callback(sessionID)
+        result = await callback(connId)
     } finally {
-        await coreRequest<void>(closeConnection(sessionID), user.authCookie)
+        await coreRequest<void>(closeConnection(connId), user.authCookie)
     }
     return result
 }
@@ -53,24 +43,22 @@ export const withReadWriteConnection = async <T>(
  */
 export const withReadOnlyConnection = async <T>(
     user: User,
-    callback: (sessionID: string) => Promise<T>
+    callback: (connId: string) => Promise<T>
 ): Promise<T> => {
     const username = process.env.DB_RDONLY_USERNAME
     const password = process.env.DB_RDONLY_PASSWORD
     if (!username || !password)
         throw Error("username or password not found in env")
 
-    const sessionID = getNextSessionID()
-
-    await coreRequest<void>(
-        openConnection(sessionID, username, password),
+    const connId = await coreRequest<string>(
+        openConnection(username, password),
         user.authCookie
-    )
+    ).then(({ connectionId }) => connectionId)
     let result: T
     try {
-        result = await callback(sessionID)
+        result = await callback(connId)
     } finally {
-        await coreRequest<void>(closeConnection(sessionID), user.authCookie)
+        await coreRequest<void>(closeConnection(connId), user.authCookie)
     }
     return result
 }

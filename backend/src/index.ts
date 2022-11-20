@@ -1,4 +1,3 @@
-import { randomBytes } from "crypto"
 import net from "net"
 import path from "path"
 import process from "process"
@@ -18,12 +17,16 @@ const PLUGIN_PATHS = [
     path.join(__dirname, "../../dekanat-app-plugin"),
 ]
 const PG_PORT = 5432
-const RETRIES = Math.pow(2, 30)
+const RETRIES = 10
 
 // default credentials, if none are specified in the config:
 let ADMIN_USERNAME: string
 let ADMIN_PASSWORD: string
-let adminId: number
+let ADMIN_ID: number
+
+// Relic of PM's user management. We just have one role that owns everything,
+// restricting access is then up to a dedicated permission plugin.
+let PM_ROLE_ID: number
 
 let core: Core
 
@@ -41,38 +44,34 @@ async function main() {
     const config = getConfig()
     ADMIN_USERNAME = config.appAdminUsername
     ADMIN_PASSWORD = config.appAdminPassword
+    PM_ROLE_ID = config.projectManagementRoleId
 
     core = await Core.create(PLUGIN_PATHS, events).catch(e => crash<Core>(e))
 
-    const sessionID = "dekanat-app-backend_" + randomBytes(20).toString("hex")
-
-    await core.events.request(
-        openConnection(
-            sessionID,
-            config.databaseAdminUsername,
-            config.databaseAdminPassword
+    const connId = await core.events
+        .request(
+            openConnection(
+                config.databaseAdminUsername,
+                config.databaseAdminPassword
+            )
         )
-    )
+        .then(({ connectionId }) => connectionId)
 
     try {
-        // create some custom data
-        const maybeAdminId = await getAdminId(sessionID)
-        if (maybeAdminId === null) {
-            adminId = await createAdmin(sessionID)
+        // create some example data for testing, if none are present
+        ADMIN_ID = await getAdminId(connId)
+        if (ADMIN_ID === null) {
+            ADMIN_ID = await createAdmin(connId)
             console.log("set up admin user")
+            await createExampleSchema(core, connId, PM_ROLE_ID)
+            await insertExampleData(core, connId)
+            console.log("set up example schema")
         } else {
-            adminId = maybeAdminId
             console.log("admin user already present")
+            console.log("skipped creating example schema")
         }
-
-        // testing data
-        if (maybeAdminId === null) {
-            console.log("creating and populating example schema")
-            await createExampleSchema(core, sessionID, adminId)
-            await insertExampleData(core, sessionID)
-        } else console.log("skipped creating example schema")
     } finally {
-        await core.events.request(closeConnection(sessionID))
+        await core.events.request(closeConnection(connId))
     }
 }
 
@@ -122,16 +121,16 @@ async function testPort(port: number, host?: string) {
 }
 
 function crash<A>(e: Error): A {
-    console.log(e)
+    console.error(e)
     return process.exit(1)
 }
 
 /** Get the ID of the admin user (if they exist) */
-async function getAdminId(sessionID: string): Promise<number | null> {
+async function getAdminId(connectionId: string): Promise<number | null> {
     const userRows = await core.events.request(
-        select(sessionID, "users", {
+        select(connectionId, "users", {
             columns: ["_id"],
-            condition: ["email", ADMIN_USERNAME],
+            condition: ["username", ADMIN_USERNAME],
         })
     )
     if (userRows.length > 1)
@@ -141,7 +140,7 @@ async function getAdminId(sessionID: string): Promise<number | null> {
 }
 
 /** Create an example admin user for dev mode */
-async function createAdmin(sessionID: string): Promise<number> {
+async function createAdmin(connectionId: string): Promise<number> {
     const passwordHash: string = await core.events
         .request({
             channel: "user-authentication",
@@ -150,10 +149,10 @@ async function createAdmin(sessionID: string): Promise<number> {
         })
         .then(response => response.hash)
     await core.events.request(
-        insert(sessionID, "users", {
-            email: ADMIN_USERNAME,
+        insert(connectionId, "users", {
+            username: ADMIN_USERNAME,
             password: passwordHash,
         })
     )
-    return getAdminId(sessionID).then(definitelyNumber => definitelyNumber!)
+    return getAdminId(connectionId).then(definitelyNumber => definitelyNumber!)
 }

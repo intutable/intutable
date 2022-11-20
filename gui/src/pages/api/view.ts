@@ -28,7 +28,7 @@ const POST = withCatchingAPIRoute(
             user,
             async sessionID =>
                 coreRequest<ViewDescriptor>(
-                    createView(sessionID, user.id, tableId, name),
+                    createView(sessionID, tableId, name),
                     user.authCookie
                 )
         )

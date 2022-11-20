@@ -25,9 +25,10 @@ const GET = withCatchingAPIRoute(
     async (req, res, projectId: ProjectDescriptor["id"]) => {
         const user = req.session.user!
 
+        const roleId = parseInt(process.env.PROJECT_MANAGEMENT_ROLE!)
         const project = await withReadOnlyConnection(user, async sessionID => {
             const allProjects = await coreRequest<ProjectDescriptor[]>(
-                getProjects(sessionID, user.id),
+                getProjects(sessionID, roleId),
                 user.authCookie
             )
 
@@ -61,13 +62,14 @@ const PATCH = withCatchingAPIRoute(
             newName: ProjectDescriptor["name"]
         }
         const user = req.session.user!
+        const roleId = parseInt(process.env.PROJECT_MANAGEMENT_ROLE!)
 
         const updatedProject = await withReadWriteConnection(
             user,
             async sessionID => {
                 // check if name is taken
                 const projects = await coreRequest<ProjectDescriptor[]>(
-                    getProjects(sessionID, user.id),
+                    getProjects(sessionID, roleId),
                     user.authCookie
                 )
 
@@ -99,6 +101,7 @@ const PATCH = withCatchingAPIRoute(
 const DELETE = withCatchingAPIRoute(
     async (req, res, projectId: ProjectDescriptor["id"]) => {
         const user = req.session.user!
+
         // delete project in project-management
         await withReadWriteConnection(user, async sessionID => {
             return coreRequest(

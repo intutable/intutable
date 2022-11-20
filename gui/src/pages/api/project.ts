@@ -23,6 +23,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         name: ProjectDescriptor["name"]
     }
     const user = req.session.user!
+    const roleId = parseInt(process.env.PROJECT_MANAGEMENT_ROLE!)
 
     // check validity: alphanum + underscore
     if (!name.match(new RegExp(/^[\p{L}\p{N}_]*$/u))) throw Error("invalidName")
@@ -30,7 +31,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const project = await withReadWriteConnection(user, async sessionID => {
         // check if already exists
         const projects = await coreRequest<ProjectDescriptor[]>(
-            getProjects(sessionID, user.id),
+            getProjects(sessionID, roleId),
             user.authCookie
         )
         if (projects.some(p => p.name === name)) {
@@ -39,7 +40,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 
         // create project in project-management
         return coreRequest<ProjectDescriptor>(
-            createProject(sessionID, user.id, name),
+            createProject(sessionID, roleId, name),
             user.authCookie
         )
     })
