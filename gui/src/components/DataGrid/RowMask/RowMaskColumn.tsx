@@ -5,7 +5,7 @@ import KeyIcon from "@mui/icons-material/Key"
 import { Box, Divider, IconButton, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 import { Column } from "types"
 
 const ColumnAttributesWindowButton: React.FC<{
@@ -39,7 +39,7 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
 
     const util = cells.getCell(column.cellType!)
     const Icon = util.icon
-    const Input = getExposedInput(column.cellType)
+    const Input = React.memo(getExposedInput(column.cellType))
 
     const [isHovering, setIsHovering] = useState<boolean>(false)
 
@@ -61,7 +61,6 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                     direction={column.isUserPrimaryKey === true ? "column" : "row"}
                     sx={{
                         flexWrap: "nowrap",
-
                         alignItems: column.isUserPrimaryKey ? "flex-start" : "center",
                     }}
                 >
@@ -89,7 +88,12 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
 
                     {rowMaskState.mode === "edit" && (
                         // TODO: if `create`, then create an empty row and open it
-                        <Input content={rowMaskState.row[column.key]} row={rowMaskState.row} column={column} />
+                        <Input
+                            content={rowMaskState.row[column.key]}
+                            row={rowMaskState.row}
+                            column={column}
+                            hoveringOnParent={isHovering}
+                        />
                     )}
 
                     <Box sx={{ flexGrow: 1 }} />

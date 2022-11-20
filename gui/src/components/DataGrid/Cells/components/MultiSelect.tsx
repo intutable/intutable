@@ -123,7 +123,6 @@ export class MultiSelect extends Cell {
         return JSON.stringify(value)
     }
     deserialize(value: unknown): string[] {
-        console.log("deserialize value:", value) // BUG: values get saved as a stringified array, but arrive as an object ???
         if (Array.isArray(value)) return value
         if (typeof value === "string") {
             try {
@@ -253,9 +252,9 @@ export class MultiSelect extends Cell {
     }
 
     public ExposedInput: React.FC<ExposedInputProps<string[] | null>> = props => {
-        const { getRowId, updateRow } = useRow()
+        const { updateRow } = useRow()
         const { snackError } = useSnacki()
-        const [hovering, setHovering] = useState<boolean>(false)
+
         const modalRef = useRef<HTMLElement | null>(null)
 
         const [open, setOpen] = useState<boolean>(false)
@@ -296,34 +295,29 @@ export class MultiSelect extends Cell {
 
         return (
             <>
-                <Box
-                    onMouseEnter={() => setHovering(true)}
-                    onMouseLeave={() => setHovering(false)}
+                <Stack
                     ref={modalRef}
+                    direction="row"
                     sx={{
-                        minWidth: "100px",
+                        gap: "5px",
+                        maxWidth: "200px",
+                        flexWrap: "wrap",
+                        w: 1,
+                        h: 1,
                     }}
                 >
-                    <Stack
-                        direction="row"
-                        sx={{
-                            flexWrap: "wrap",
-                            w: 1,
-                            h: 1,
-                        }}
-                    >
-                        {props.content &&
-                            props.content.map(option => (
-                                <ChipItem label={option} key={option} onDelete={() => removeChip(option)} />
-                            ))}
+                    {props.content &&
+                        props.content.map(option => (
+                            <ChipItem label={option} key={option} onDelete={() => removeChip(option)} />
+                        ))}
 
-                        {hovering && (
-                            <IconButton size="small" onClick={openModal}>
-                                <AddIcon fontSize="small" />
-                            </IconButton>
-                        )}
-                    </Stack>
-                </Box>
+                    {props.hoveringOnParent && (
+                        <IconButton size="small" onClick={openModal}>
+                            <AddIcon fontSize="small" />
+                        </IconButton>
+                    )}
+                </Stack>
+
                 {modalRef.current !== null && (
                     <MultiSelectMenu
                         open={open}

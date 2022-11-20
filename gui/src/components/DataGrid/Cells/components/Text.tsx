@@ -15,7 +15,7 @@ export class Text extends Cell {
         const { getRowId, updateRow } = useRow()
         const { snackError } = useSnacki()
 
-        const [value, setValue] = useState(props.content ?? "")
+        const [value, setValue] = useState(props.content)
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 

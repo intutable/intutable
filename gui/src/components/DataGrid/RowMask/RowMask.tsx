@@ -30,7 +30,7 @@ export const RowMask: React.FC = () => {
     if (data == null) return null
 
     return (
-        <Dialog open={rowMaskState.mode !== "closed"} fullWidth onClose={abort}>
+        <Dialog open={rowMaskState.mode !== "closed"} fullWidth onClose={abort} keepMounted>
             <DialogTitle>
                 <Stack
                     direction="row"
@@ -61,6 +61,8 @@ export const RowMask: React.FC = () => {
                 sx={{
                     overflowY: "scroll",
                     maxHeight: "70vh",
+                    minHeight: "70vh",
+                    height: "70vh",
                     width: 1,
                 }}
             >
@@ -73,15 +75,17 @@ export const RowMask: React.FC = () => {
                     .map(column => (
                         <RowMaskColumn column={column} key={column.id} />
                     ))}
-                <AddColumnButton />
             </DialogContent>
-            {rowMaskState.mode === "create" && (
-                <DialogActions sx={{ flexWrap: "wrap" }}>
-                    <Divider />
-                    <Button onClick={abort}>Abbrechen</Button>
-                    <Button onClick={createRow}>Erstellen</Button>
-                </DialogActions>
-            )}
+
+            <Divider />
+
+            <DialogActions
+                sx={{
+                    justifyContent: "center",
+                }}
+            >
+                <AddColumnButton />
+            </DialogActions>
         </Dialog>
     )
 }

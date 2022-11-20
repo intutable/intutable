@@ -85,7 +85,7 @@ const Settings: NextPage = () => {
             >
                 <ListItem>
                     <ListItemIcon>{getTheme() === "dark" ? <FlashlightOffIcon /> : <FlashlightOnIcon />}</ListItemIcon>
-                    <ListItemText id="setting-theme-mode" primary="Dunkles Desgin" />
+                    <ListItemText id="setting-theme-mode" primary="Dunkles Design" />
                     <ThemeSwitch />
                 </ListItem>
                 {/* <ListItem>
@@ -110,7 +110,7 @@ const Settings: NextPage = () => {
                     subheader={<ListSubheader>Benutzerkonto</ListSubheader>}
                 >
                     <ListItem>
-                        <ListIconWithTooltip tooltip="Ihre Anmeldedaten werden gespeichert. Sie werden bei Ihrer nächsten Anmeldung automatisch eingeloggt.">
+                        <ListIconWithTooltip tooltip="Ihre Anmeldedaten werden gespeichert, um bei Ihrer nächsten Anmeldung automatisch eingeloggt zu werden.">
                             <RememberMeIcon />
                         </ListIconWithTooltip>
                         <ListItemText id="setting-placeholder" primary="Mein Benutzer-Konto merken" />
