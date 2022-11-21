@@ -31,6 +31,23 @@ system of permissions in accordance with tight data protection regulations.
       `npm run start`
     - `npm run reset -w database` resets the database
 
+### Updating
+Changes occasionally warrant changes to the database schema. If you are
+updating an existing instance to a new version, search the changelog for
+all instances of database schema changes between the version you have
+and the version you want. Initially, we preserve the original
+schema-creating statements in `init.sql` and, on a new release,
+append a sequence of statements to the end of the file that will update
+the database to the new version. That way, you can directly run these
+on your existing instance of the database to update it, but the script
+as a whole also produces a fully-functioning database from scratch
+for development.
+On each new release, we will compact these updates (i.e. remove them and
+rewrite the original statements at the top of the file) in order to
+avoid `init.sql` becoming too much spaghetti. So, if you have to jump
+several versions, then look at the `init.sql` of each version throughout
+the Git history to get all the necessary updating code.
+
 ### Usage
 After starting the app, navigate to its location at
 `http://localhost:3000` in the browser. In dev mode, a default user with

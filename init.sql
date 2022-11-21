@@ -106,3 +106,56 @@ CREATE TABLE view_columns(
     "sortDescendingFirst" INTEGER NULL
 );
 -- end lazy-views schema
+
+-- the following statements should be run once when updating from version
+-- 1.1.1-alpha.1 to <version>.
+
+-- begin changes of project-management version 2.0.0 (think "role" instead
+-- of "user"; extract authentication)
+ALTER TABLE userprojects RENAME COLUMN "userId" TO role_id;
+ALTER TABLE users RENAME TO roles;
+ALTER TABLE userprojects RENAME TO roles_projects;
+ALTER TABLE projecttables RENAME TO projects_tables;
+ALTER TABLE roles RENAME email to name;
+-- also get rid of all camel case for good
+ALTER TABLE roles_projects RENAME COLUMN "projectId" to project_id;
+ALTER TABLE projects_tables RENAME COLUMN "projectId" to project_id;
+ALTER TABLE projects RENAME COLUMN "projectName" to project_name;
+ALTER TABLE projects RENAME COLUMN "ownerId" to owner_id;
+ALTER TABLE tables RENAME COLUMN "ownerId" to owner_id;
+ALTER TABLE projects_tables RENAME COLUMN "tableId" to table_id;
+ALTER TABLE columns RENAME COLUMN "tableId" to table_id;
+ALTER TABLE columns RENAME COLUMN "columnName" to column_name;
+-- end project-management 2.0.0 changes
+
+-- begin changes of user-authentication version 3.0.0: users table
+-- managed by plugin itself (previously in project-management)
+CREATE TABLE users(
+  _id SERIAL PRIMARY KEY,
+  username TEXT NOT NULL,
+  password TEXT NOT NULL
+);
+
+-- converting any existing data to new schemata of PM 2.0.0 and user-auth 3.0.0.
+-- On updating an existing instance. These should be no-ops when running this
+-- script on a fresh container, they are only needed when updating a running
+-- instance.
+UPDATE projects SET owner_id=1;
+UPDATE tables SET owner_id=1;
+UPDATE views SET user_id=1;
+
+INSERT INTO users (username, password)
+  SELECT name as username, password
+  FROM roles;
+
+DELETE FROM roles;
+
+-- There was an idea to have n:m or 1:n or whatever relationship between
+-- users (with passwords) roles (with access to projects/tables/...)
+-- We are still going to do this, however it will all be managed by a
+-- dedicated user permission plugin. To avoid restricting it from the
+-- get-go, we just create a single role that has access to everything,
+-- and the perm plugin can take away privileges later.
+INSERT INTO roles(_id, name, password)
+  VALUES (1, 'all_users', '');
+-- end dekanat-app<version> changes
