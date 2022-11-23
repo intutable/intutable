@@ -3,12 +3,7 @@ import net from "net"
 import path from "path"
 import process from "process"
 import { Core, EventSystem } from "@intutable/core"
-import {
-    openConnection,
-    closeConnection,
-    select,
-    insert,
-} from "@intutable/database/dist/requests"
+import { openConnection, closeConnection, select, insert } from "@intutable/database/dist/requests"
 import { getConfig } from "shared/dist/config"
 
 import { createExampleSchema, insertExampleData } from "./example/load"
@@ -46,13 +41,7 @@ async function main() {
 
     const sessionID = "dekanat-app-backend_" + randomBytes(20).toString("hex")
 
-    await core.events.request(
-        openConnection(
-            sessionID,
-            config.databaseAdminUsername,
-            config.databaseAdminPassword
-        )
-    )
+    await core.events.request(openConnection(sessionID, config.databaseAdminUsername, config.databaseAdminPassword))
 
     try {
         // create some custom data
@@ -134,8 +123,7 @@ async function getAdminId(sessionID: string): Promise<number | null> {
             condition: ["email", ADMIN_USERNAME],
         })
     )
-    if (userRows.length > 1)
-        return Promise.reject("fatal: multiple users with same name exist")
+    if (userRows.length > 1) return Promise.reject("fatal: multiple users with same name exist")
     else if (userRows.length === 1) return userRows[0]["_id"]
     else return null
 }
