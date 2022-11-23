@@ -174,13 +174,13 @@ describe("create view", () => {
     test("cannot rename or delete default view", async () => {
         const views = (await core.events.request(req.listViews(connId, TABLE.id))) as ViewDescriptor[]
         const defaultView = views.find(v => v.name === defaultViewName())
-        const deletePromise = core.events.request(req.deleteView(connId, defaultView.id))
+        const deletePromise = core.events.request(req.deleteView(connId, defaultView!.id))
         expect(deletePromise).rejects.toEqual(
             expect.objectContaining({
                 code: ErrorCode.changeDefaultView,
             })
         )
-        const renamePromise = core.events.request(req.renameView(connId, defaultView.id, NEW_NAME))
+        const renamePromise = core.events.request(req.renameView(connId, defaultView!.id, NEW_NAME))
     })
 })
 
