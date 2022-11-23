@@ -1,12 +1,5 @@
-import type {
-    InfixCondition,
-    Condition,
-} from "@intutable/lazy-views/dist/condition"
-import {
-    ConditionKind,
-    OperandKind,
-    mapCondition,
-} from "@intutable/lazy-views/dist/condition"
+import type { InfixCondition, Condition } from "@intutable/lazy-views/dist/condition"
+import { ConditionKind, OperandKind, mapCondition } from "@intutable/lazy-views/dist/condition"
 import type { Filter, SimpleFilter } from "shared/dist/types/filter"
 import { isFilterOperator, not, and, or } from "shared/dist/utils/filter"
 
@@ -28,22 +21,14 @@ export const parse = (c: Condition): Filter => {
         case ConditionKind.Infix:
             return parseSimpleFilter(c)
         case ConditionKind.Boolean:
-            throw TypeError(
-                `{$parse.name}: Filter type may not contain any` +
-                    ` trivial boolean conditions`
-            )
+            throw TypeError(`{$parse.name}: Filter type may not contain any` + ` trivial boolean conditions`)
     }
 }
 
 const parseSimpleFilter = (c: InfixCondition): SimpleFilter => {
-    if (
-        c.left.kind !== OperandKind.Column ||
-        c.right.kind !== OperandKind.Literal ||
-        !isFilterOperator(c.operator)
-    )
+    if (c.left.kind !== OperandKind.Column || c.right.kind !== OperandKind.Literal || !isFilterOperator(c.operator))
         throw TypeError(
-            `expected condition of type <column> - <filterOperator>` +
-                ` - <string>, got: ${JSON.stringify(c)}`
+            `expected condition of type <column> - <filterOperator>` + ` - <string>, got: ${JSON.stringify(c)}`
         )
     else
         return {
@@ -64,8 +49,7 @@ const parseSimpleFilter = (c: InfixCondition): SimpleFilter => {
  * Turn a frontend-side filter into the LV plugin's Condition type for
  * storing in the database.
  */
-export const deparse = (f: Filter): Condition =>
-    mapCondition(deparseSimpleFilter, f)
+export const deparse = (f: Filter): Condition => mapCondition(deparseSimpleFilter, f)
 
 const deparseSimpleFilter = (f: SimpleFilter): InfixCondition => ({
     ...f,
@@ -101,23 +85,16 @@ export const unpackContainsValue = (value: string): string => {
         if (!lastWasBackslash && char === "\\") {
             // saw a first backslash
             lastWasBackslash = true
-        } else if (
-            lastWasBackslash &&
-            LIKE_PATTERN_ESCAPE_CHARS.includes(char)
-        ) {
+        } else if (lastWasBackslash && LIKE_PATTERN_ESCAPE_CHARS.includes(char)) {
             // saw a backslash, now seeing \ % _
             lastWasBackslash = false
             acc = acc.concat(char)
         } else if (lastWasBackslash)
             // saw backslash, but not seeing an escapeable character after
-            throw Error(
-                `unpackContainsValue: unescaped \\ at ` + `position ${pos}`
-            )
+            throw Error(`unpackContainsValue: unescaped \\ at ` + `position ${pos}`)
         else if (LIKE_PATTERN_ESCAPE_CHARS.includes(char))
             // seeing escapeable character without a backslash before it
-            throw Error(
-                `unpackContainsValue: unescaped ${char} at ` + `position ${pos}`
-            )
+            throw Error(`unpackContainsValue: unescaped ${char} at ` + `position ${pos}`)
         else acc = acc.concat(char)
     }
     return acc

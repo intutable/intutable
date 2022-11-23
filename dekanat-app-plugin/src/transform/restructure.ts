@@ -9,8 +9,7 @@ import { DB, MetaColumnProps } from "shared/dist/types"
 export class Restructure {
     /** Restructures (e.g. renaming) the column. Information will be lost. This will be lost in the future */
     public column(column: ColumnInfo): DB.Restructured.Column {
-        const { displayName, kind, ...properties } =
-            column.attributes as DB.Column
+        const { displayName, kind, ...properties } = column.attributes as DB.Column
 
         return {
             id: column.id,
