@@ -28,7 +28,14 @@ export class Text extends Cell {
         }
 
         return (
-            <TextField size="small" onChange={handleChange} onBlur={handleBlur} value={value} {...props.InputProps} />
+            <TextField
+                size="small"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={value}
+                {...props.InputProps}
+                sx={props.InputStyle}
+            />
         )
     }
 }

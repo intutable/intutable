@@ -1,3 +1,4 @@
+import { SxProps, Theme } from "@mui/system"
 import { CalculatedColumn } from "react-data-grid"
 import { Column, Row } from "types"
 import { ValueOf } from "utils/ValueOf"
@@ -44,8 +45,9 @@ export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {
     content: T
     row: Row
     column: Column.Deserialized | CalculatedColumn<Row>
-    InputProps?: R
     hoveringOnParent: boolean
+    InputProps?: R
+    InputStyle?: SxProps<Theme>
 }
 
 export type ExposableInputComponent = {

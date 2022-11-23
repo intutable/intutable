@@ -64,28 +64,57 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                         alignItems: column.isUserPrimaryKey ? "flex-start" : "center",
                     }}
                 >
-                    <Typography
+                    {/* label */}
+                    <Box
                         sx={{
-                            width: "150px",
-                            maxWidth: "150px",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                            textOverflow: "ellipsis",
-                            mr: 6,
-                            textAlign: "right",
+                            ...(column.isUserPrimaryKey && {
+                                width: 1,
+                            }),
                         }}
-                        variant="subtitle1"
                     >
-                        {column.isUserPrimaryKey === true && <KeyIcon fontSize="small" />}
-                        <Icon
-                            fontSize="small"
+                        <Stack
+                            direction="row"
                             sx={{
-                                mr: 1,
+                                mb: column.isUserPrimaryKey ? 1 : 0,
+                                mr: column.isUserPrimaryKey ? 0 : 6,
+                                bosSizing: "border-box",
                             }}
-                        />
-                        {column.name}
-                    </Typography>
+                        >
+                            {/* label */}
+                            <Typography
+                                sx={{
+                                    width: "150px",
+                                    maxWidth: "150px",
+                                    overflow: "hidden",
+                                    whiteSpace: "nowrap",
+                                    textOverflow: "ellipsis",
+                                    textAlign: column.isUserPrimaryKey ? "left" : "right",
+                                }}
+                                variant="subtitle1"
+                            >
+                                {column.isUserPrimaryKey === true && <KeyIcon fontSize="small" />}
+                                <Icon
+                                    fontSize="small"
+                                    sx={{
+                                        mr: 1,
+                                    }}
+                                />
+                                {column.name}
+                            </Typography>
 
+                            {/* edit icon */}
+                            {column.isUserPrimaryKey === true && (
+                                <>
+                                    <Box sx={{ flexGrow: 1 }} />
+                                    {isHovering && (
+                                        <ColumnAttributesWindowButton column={column as Column.Serialized} />
+                                    )}
+                                </>
+                            )}
+                        </Stack>
+                    </Box>
+
+                    {/* input */}
                     {rowMaskState.mode === "edit" && (
                         // TODO: if `create`, then create an empty row and open it
                         <Input
@@ -93,11 +122,22 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                             row={rowMaskState.row}
                             column={column}
                             hoveringOnParent={isHovering}
+                            InputProps={{
+                                fullWidth: column.isUserPrimaryKey ? true : false,
+                            }}
+                            InputStyle={{
+                                w: 1,
+                            }}
                         />
                     )}
 
-                    <Box sx={{ flexGrow: 1 }} />
-                    {isHovering && <ColumnAttributesWindowButton column={column as Column.Serialized} />}
+                    {/* edit icon */}
+                    {column.isUserPrimaryKey === false && (
+                        <>
+                            <Box sx={{ flexGrow: 1 }} />
+                            {isHovering && <ColumnAttributesWindowButton column={column as Column.Serialized} />}
+                        </>
+                    )}
                 </Stack>
             </Box>
 
