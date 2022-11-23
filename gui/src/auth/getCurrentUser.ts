@@ -8,10 +8,7 @@ import { User } from "types/User"
  */
 export const getCurrentUser = async (authCookie: string): Promise<Omit<User, "isLoggedIn"> | null> => {
     try {
-        const user = (await coreRequest(
-            getCurrentUserRequest(),
-            authCookie
-        )) as Omit<User, "authCookie" | "isLoggedIn">
+        const user = (await coreRequest(getCurrentUserRequest(), authCookie)) as Omit<User, "authCookie" | "isLoggedIn">
         return Promise.resolve({
             ...user,
             authCookie,
