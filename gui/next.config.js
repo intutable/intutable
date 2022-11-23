@@ -17,7 +17,7 @@ module.exports = withBundleAnalyzer({
         dirs: ["src"],
         ignoreDuringBuilds: true,
     },
-    compiler: { removeConsole: false }
+    compiler: { removeConsole: false },
     // experimental: {
     // should improve the mui imports but does not work yet
     // modularizeImports: {
