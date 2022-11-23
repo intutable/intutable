@@ -28,9 +28,13 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         name: string
     }
     const user = req.session.user!
+    // project-management forces us to assign a role as "owner". This is
+    // kinda obsolete since we decided to outsource permissions and
+    // ownership to another plugin, but the API requires this.
+    const roleId = parseInt(process.env.PROJECT_MANAGEMENT_ROLE!)
 
     const tableView = await withReadWriteConnection(user, async sessionID =>
-        coreRequest<TableDescriptor>(createTable(sessionID, user.id, projectId, name), user.authCookie)
+        coreRequest<TableDescriptor>(createTable(sessionID, roleId, projectId, name), user.authCookie)
     )
 
     res.status(200).json(tableView)

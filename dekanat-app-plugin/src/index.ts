@@ -76,12 +76,12 @@ function coreRequest<T = unknown>(req: CoreRequest): Promise<T> {
     return core.events.request(req)
 }
 //==================== core methods ==========================
-async function createTable_({ sessionID, userId, projectId, name }: CoreRequest): Promise<CoreResponse> {
-    return createTable(sessionID, userId, projectId, name)
+async function createTable_({ sessionID, roleId, projectId, name }: CoreRequest): Promise<CoreResponse> {
+    return createTable(sessionID, roleId, projectId, name)
 }
 async function createTable(
     sessionID: string,
-    userId: number,
+    roleId: number,
     projectId: number,
     name: string
 ): Promise<types.TableDescriptor> {
@@ -92,7 +92,7 @@ async function createTable(
     if (existingTables.some(t => t.name === internalName))
         return error(createTable.name, "table name already taken", ErrorCode.alreadyTaken)
     const pmTable = (await core.events.request(
-        pm.createTableInProject(sessionID, userId, projectId, internalName, APP_TABLE_COLUMNS)
+        pm.createTableInProject(sessionID, roleId, projectId, internalName, APP_TABLE_COLUMNS)
     )) as lvt.TableDescriptor
     const pmColumns = (await core.events.request(pm.getColumnsFromTable(sessionID, pmTable.id))) as PmColumn[]
     const idColumn = pmColumns.find(c => c.name === "_id")!
@@ -114,7 +114,7 @@ async function createTable(
             name,
             { columns: columnSpecs, joins: [] },
             emptyRowOptions(),
-            userId
+            roleId
         )
     )) as lvt.ViewDescriptor
 
@@ -129,7 +129,7 @@ async function createTable(
             defaultViewName(),
             { columns: [], /* [] means all columns */ joins: [] },
             defaultRowOptions(tableViewColumns),
-            userId
+            roleId
         )
     )
     return tableView
@@ -177,9 +177,8 @@ async function createStandardColumn(
         addToViews
     )
 
-    //    const parsedColumn = parser.parseColumn(tableViewColumn)
-    //    return parsedColumn
-    return {}
+    const parsedColumn = parser.parseColumn(tableViewColumn)
+    return parsedColumn
 }
 
 async function addColumnToTable_({
@@ -402,18 +401,13 @@ async function getTableData(sessionID: string, tableId: types.TableId) {
     return core.events.request(lvr.getViewData(sessionID, tableId)).then(table => parser.parseTable(table))
 }
 
-async function createView_({ sessionID, tableId, userId, name }: CoreRequest): Promise<CoreResponse> {
+async function createView_({ sessionID, tableId, name }: CoreRequest): Promise<CoreResponse> {
     const existingViews = await listViews(sessionID, tableId)
     if (existingViews.some(v => v.name === name))
         return error(req.createView.name, `view named ${name} already exists`, ErrorCode.alreadyTaken)
-    return createView(sessionID, userId, tableId, name)
+    return createView(sessionID, tableId, name)
 }
-async function createView(
-    sessionID: string,
-    userId: number,
-    tableId: types.TableId,
-    name: string
-): Promise<types.ViewDescriptor> {
+async function createView(sessionID: string, tableId: types.TableId, name: string): Promise<types.ViewDescriptor> {
     const tableInfo = (await core.events.request(lvr.getViewInfo(sessionID, tableId))) as lvt.ViewInfo
     return core.events.request(
         lvr.createView(
@@ -421,8 +415,7 @@ async function createView(
             selectable.viewId(tableId),
             name,
             { columns: [], joins: [] },
-            defaultRowOptions(tableInfo.columns),
-            userId
+            defaultRowOptions(tableInfo.columns)
         )
     )
 }

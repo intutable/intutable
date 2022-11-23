@@ -24,7 +24,7 @@ const POST = withCatchingAPIRoute(async (req: NextApiRequest, res: NextApiRespon
     const user = req.session.user!
 
     const filterView = await withReadWriteConnection(user, async sessionID =>
-        coreRequest<ViewDescriptor>(createView(sessionID, user.id, tableId, name), user.authCookie)
+        coreRequest<ViewDescriptor>(createView(sessionID, tableId, name), user.authCookie)
     )
 
     res.status(200).json(filterView)

@@ -1,6 +1,7 @@
+import { getCurrentUser as getCurrentUserRequest } from "@intutable/user-authentication/dist/requests"
+import { ADMIN_ROLE } from "@backend/permissions"
 import { coreRequest } from "../api/utils/coreRequest"
 import { User } from "types/User"
-import { ADMIN_ROLE } from "@backend/permissions"
 
 /**
  * Check if logged into core by using the session cookie.
@@ -8,10 +9,7 @@ import { ADMIN_ROLE } from "@backend/permissions"
 export const getCurrentUser = async (authCookie: string): Promise<Omit<User, "isLoggedIn"> | null> => {
     try {
         const user = (await coreRequest(
-            {
-                channel: "user-authentication",
-                method: getCurrentUser.name,
-            },
+            getCurrentUserRequest(),
             authCookie
         )) as Omit<User, "authCookie" | "isLoggedIn">
         return Promise.resolve({

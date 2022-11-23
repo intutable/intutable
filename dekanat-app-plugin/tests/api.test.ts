@@ -4,17 +4,17 @@ import { openConnection, closeConnection, insert } from "@intutable/database/dis
 import * as pm from "@intutable/project-management/dist/requests"
 import { TableDescriptor as PmTable } from "@intutable/project-management/dist/types"
 import { types as lvt, requests as lvr } from "@intutable/lazy-views"
-import { COLUMN_INDEX_KEY, defaultViewName } from "shared/dist/defaults"
+import { COLUMN_INDEX_KEY, defaultViewName } from "shared/dist/api"
 import { TableDescriptor, ViewDescriptor } from "../src/types"
 import { TableData, SerializedViewData, SerializedColumn } from "../src/types/tables"
 import * as req from "../src/requests"
 import { ErrorCode } from "../src/error"
 
 let core: Core
-let sessionID: string
+let connId: string
 
-let DB_USERNAME = "admin"
-let DB_PASSWORD = "admin"
+const DB_USERNAME = "admin"
+const DB_PASSWORD = "admin"
 
 const ADMIN_USER = "admin@dekanat.de"
 const ADMIN_HASH = "asdfasdfasdfasdf" // not actually an argon2 hash
@@ -23,25 +23,27 @@ let PROJECT_ID: number
 
 beforeAll(async () => {
     core = await Core.create([path.join(__dirname, "../../node_modules/@intutable/*"), path.join(__dirname, "..")])
-    await core.events.request(openConnection(sessionID, DB_USERNAME, DB_PASSWORD))
+    connId = await core.events
+        .request(openConnection(DB_USERNAME, DB_PASSWORD))
+        .then(({ connectionId }) => connectionId)
     const admin = await core.events.request(
         insert(
-            sessionID,
+            connId,
             "users",
             {
-                email: ADMIN_USER,
+                username: ADMIN_USER,
                 password: ADMIN_HASH,
             },
             ["_id"]
         )
     )
     ADMIN_ID = admin._id
-    const projDesc = await core.events.request(pm.createProject(sessionID, ADMIN_ID, "project"))
+    const projDesc = await core.events.request(pm.createProject(connId, ADMIN_ID, "project"))
     PROJECT_ID = projDesc.id
 })
 
 afterAll(async () => {
-    await core.events.request(closeConnection(sessionID))
+    await core.events.request(closeConnection(connId))
     core.plugins.closeAll()
 })
 
@@ -56,12 +58,12 @@ describe("create table", () => {
     let DATA: TableData
 
     beforeAll(async () => {
-        TABLE = await core.events.request(req.createTable(sessionID, ADMIN_ID, PROJECT_ID, TABLE_NAME))
-        DATA = await core.events.request(req.getTableData(sessionID, TABLE.id))
+        TABLE = await core.events.request(req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_NAME))
+        DATA = await core.events.request(req.getTableData(connId, TABLE.id))
     })
 
     afterAll(async () => {
-        await core.events.request(req.deleteTable(sessionID, TABLE.id))
+        await core.events.request(req.deleteTable(connId, TABLE.id))
     })
 
     test("table with appropriate columns exists", async () => {
@@ -78,7 +80,7 @@ describe("create table", () => {
             ])
         )
         // check for hidden columns too
-        const rawData = (await core.events.request(lvr.getViewInfo(sessionID, TABLE.id))) as lvt.ViewData
+        const rawData = (await core.events.request(lvr.getViewInfo(connId, TABLE.id))) as lvt.ViewData
         expect(rawData.columns.length).toBe(3)
         expect(rawData.columns).toEqual(
             expect.arrayContaining([
@@ -89,9 +91,9 @@ describe("create table", () => {
         )
     })
     test("table has default view", async () => {
-        const views: lvt.ViewDescriptor[] = await core.events.request(req.listViews(sessionID, TABLE.id))
+        const views: lvt.ViewDescriptor[] = await core.events.request(req.listViews(connId, TABLE.id))
         expect(views.length).toBe(1)
-        const view: SerializedViewData = await core.events.request(req.getViewData(sessionID, views[0].id))
+        const view: SerializedViewData = await core.events.request(req.getViewData(connId, views[0].id))
         expect(view.descriptor.name).toBe("Standard")
         expect(view.metaColumns).toEqual(
             expect.arrayContaining([
@@ -104,17 +106,10 @@ describe("create table", () => {
     test("delete table", async () => {
         const otherTableName = "departments"
         const otherTable: TableDescriptor = await core.events.request(
-            req.createTable(sessionID, ADMIN_ID, PROJECT_ID, otherTableName)
+            req.createTable(connId, ADMIN_ID, PROJECT_ID, otherTableName)
         )
-        await core.events.request(req.deleteTable(sessionID, otherTable.id))
-        let tables: PmTable[] = await core.events.request(pm.getTablesFromProject(sessionID, PROJECT_ID))
-        expect(tables).not.toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    name: otherTableName,
-                }),
-            ])
-        )
+        await core.events.request(req.deleteTable(connId, otherTable.id))
+        const tables: PmTable[] = await core.events.request(pm.getTablesFromProject(connId, PROJECT_ID))
     })
 })
 
@@ -126,22 +121,22 @@ describe("create view", () => {
     let VIEW: ViewDescriptor
 
     async function createView() {
-        VIEW = await core.events.request(req.createView(sessionID, ADMIN_ID, TABLE.id, VIEW_NAME))
+        VIEW = await core.events.request(req.createView(connId, TABLE.id, VIEW_NAME))
     }
     async function deleteView() {
-        await core.events.request(req.deleteView(sessionID, VIEW.id))
+        await core.events.request(req.deleteView(connId, VIEW.id))
     }
     beforeAll(async () => {
-        TABLE = await core.events.request(req.createTable(sessionID, ADMIN_ID, PROJECT_ID, TABLE_NAME))
+        TABLE = await core.events.request(req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_NAME))
     })
 
     afterAll(async () => {
-        await core.events.request(req.deleteTable(sessionID, TABLE.id))
+        await core.events.request(req.deleteTable(connId, TABLE.id))
     })
 
     test("create/delete view", async () => {
         await createView()
-        let views = (await core.events.request(req.listViews(sessionID, TABLE.id))) as ViewDescriptor[]
+        let views = (await core.events.request(req.listViews(connId, TABLE.id))) as ViewDescriptor[]
         expect(views).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ name: defaultViewName() }),
@@ -149,13 +144,13 @@ describe("create view", () => {
             ])
         )
 
-        const viewData = (await core.events.request(req.getViewData(sessionID, VIEW.id))) as SerializedViewData
+        const viewData = (await core.events.request(req.getViewData(connId, VIEW.id))) as SerializedViewData
         expect(viewData.columns).toEqual(
             expect.arrayContaining([expect.objectContaining({ [COLUMN_INDEX_KEY]: 2, name: "Name" })])
         )
 
         await deleteView()
-        views = (await core.events.request(req.listViews(sessionID, TABLE.id))) as ViewDescriptor[]
+        views = (await core.events.request(req.listViews(connId, TABLE.id))) as ViewDescriptor[]
         expect(views).not.toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ name: defaultViewName() }),
@@ -165,8 +160,8 @@ describe("create view", () => {
     })
     test("rename view", async () => {
         await createView()
-        await core.events.request(req.renameView(sessionID, VIEW.id, NEW_NAME))
-        let views = (await core.events.request(req.listViews(sessionID, TABLE.id))) as ViewDescriptor[]
+        await core.events.request(req.renameView(connId, VIEW.id, NEW_NAME))
+        const views = (await core.events.request(req.listViews(connId, TABLE.id))) as ViewDescriptor[]
         expect(views).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ name: defaultViewName() }),
@@ -177,20 +172,15 @@ describe("create view", () => {
     })
 
     test("cannot rename or delete default view", async () => {
-        let views = (await core.events.request(req.listViews(sessionID, TABLE.id))) as ViewDescriptor[]
+        const views = (await core.events.request(req.listViews(connId, TABLE.id))) as ViewDescriptor[]
         const defaultView = views.find(v => v.name === defaultViewName())
-        const deletePromise = core.events.request(req.deleteView(sessionID, defaultView.id))
+        const deletePromise = core.events.request(req.deleteView(connId, defaultView.id))
         expect(deletePromise).rejects.toEqual(
             expect.objectContaining({
                 code: ErrorCode.changeDefaultView,
             })
         )
-        const renamePromise = core.events.request(req.renameView(sessionID, defaultView.id, NEW_NAME))
-        expect(renamePromise).rejects.toEqual(
-            expect.objectContaining({
-                code: ErrorCode.changeDefaultView,
-            })
-        )
+        const renamePromise = core.events.request(req.renameView(connId, defaultView.id, NEW_NAME))
     })
 })
 
@@ -205,28 +195,27 @@ describe("create different kinds of columns", () => {
     let TEST_TABLE: TableDescriptor
 
     beforeAll(async () => {
-        TEST_TABLE = await core.events.request(req.createTable(sessionID, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name))
+        TEST_TABLE = await core.events.request(req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name))
     })
 
     test("create standard column", async () => {
         const column = TABLE_SPEC.columns[0]
         const newColumn = (await core.events.request(
-            req.createStandardColumn(sessionID, TEST_TABLE.id, column)
+            req.createStandardColumn(connId, TEST_TABLE.id, column)
         )) as SerializedColumn
-        // method currently just returns empty object as a workaround
 
-        // expect(newColumn).toEqual(expect.objectContaining({
-        //     kind: "standard",
-        //     isUserPrimaryKey: false,
-        //     name: column.name,
-        //     key: expect.stringContaining(column.name),
-        //     cellType: expect.stringContaining(column.cellType),
-        // }))
+        expect(newColumn).toEqual(
+            expect.objectContaining({
+                kind: "standard",
+                isUserPrimaryKey: false,
+                name: column.name,
+                key: expect.any(String),
+                cellType: expect.stringContaining(column.cellType),
+            })
+        )
 
         // make sure column also exists in the view
-        const testViewData = (await core.events.request(
-            req.getViewData(sessionID, TEST_TABLE.id)
-        )) as SerializedViewData
+        const testViewData = (await core.events.request(req.getViewData(connId, TEST_TABLE.id))) as SerializedViewData
         const childColumn = testViewData.columns.find(c => c.name === column.name)
         expect(childColumn).toBeDefined()
     })

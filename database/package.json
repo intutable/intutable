@@ -5,6 +5,6 @@
     "scripts": {
         "build": "docker-compose build --pull",
         "start": "docker-compose up",
-        "reset": "docker-compose down && docker volume rm database_db-data"
+        "reset": "docker-compose down && docker volume rm database_dekanat-data && docker rmi database_dekanat-database"
     }
 }

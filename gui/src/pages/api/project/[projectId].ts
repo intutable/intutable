@@ -17,8 +17,9 @@ import { withSessionRoute } from "auth"
 const GET = withCatchingAPIRoute(async (req, res, projectId: ProjectDescriptor["id"]) => {
     const user = req.session.user!
 
+    const roleId = parseInt(process.env.PROJECT_MANAGEMENT_ROLE!)
     const project = await withReadOnlyConnection(user, async sessionID => {
-        const allProjects = await coreRequest<ProjectDescriptor[]>(getProjects(sessionID, user.id), user.authCookie)
+        const allProjects = await coreRequest<ProjectDescriptor[]>(getProjects(sessionID, roleId), user.authCookie)
 
         const project = allProjects.find(proj => proj.id === projectId)
         if (project == null) throw new Error(`could not find project #${projectId}`)
@@ -47,10 +48,11 @@ const PATCH = withCatchingAPIRoute(async (req, res, projectId: ProjectDescriptor
         newName: ProjectDescriptor["name"]
     }
     const user = req.session.user!
+    const roleId = parseInt(process.env.PROJECT_MANAGEMENT_ROLE!)
 
     const updatedProject = await withReadWriteConnection(user, async sessionID => {
         // check if name is taken
-        const projects = await coreRequest<ProjectDescriptor[]>(getProjects(sessionID, user.id), user.authCookie)
+        const projects = await coreRequest<ProjectDescriptor[]>(getProjects(sessionID, roleId), user.authCookie)
 
         const isTaken = projects.map(proj => proj.name.toLowerCase()).includes(newName.toLowerCase())
         if (isTaken) throw new Error("alreadyTaken")
@@ -72,6 +74,7 @@ const PATCH = withCatchingAPIRoute(async (req, res, projectId: ProjectDescriptor
  */
 const DELETE = withCatchingAPIRoute(async (req, res, projectId: ProjectDescriptor["id"]) => {
     const user = req.session.user!
+
     // delete project in project-management
     await withReadWriteConnection(user, async sessionID => {
         return coreRequest(removeProject(sessionID, projectId), user.authCookie)
