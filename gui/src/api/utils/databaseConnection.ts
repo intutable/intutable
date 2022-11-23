@@ -16,9 +16,10 @@ export const withReadWriteConnection = async <T>(user: User, callback: (connId: 
             error: "username or password not found in env",
         })
 
-    const connId = await coreRequest<string>(openConnection(username, password), user.authCookie).then(
-        connectionId => connectionId
-    )
+    const connId = await coreRequest<{ connectionId: string }>(
+        openConnection(username, password),
+        user.authCookie
+    ).then(({ connectionId }) => connectionId)
     let result: T
     try {
         result = await callback(connId)
@@ -39,9 +40,10 @@ export const withReadOnlyConnection = async <T>(user: User, callback: (connId: s
     const password = process.env.DB_RDONLY_PASSWORD
     if (!username || !password) throw Error("username or password not found in env")
 
-    const connId = await coreRequest<string>(openConnection(username, password), user.authCookie).then(
-        connectionId => connectionId
-    )
+    const connId = await coreRequest<{ connectionId: string }>(
+        openConnection(username, password),
+        user.authCookie
+    ).then(({ connectionId }) => connectionId)
     let result: T
     try {
         result = await callback(connId)
