@@ -2,14 +2,7 @@
  * An editor component for a nested (i.e. boolean combination) filter.
  */
 import React from "react"
-import {
-    Select,
-    SelectChangeEvent,
-    MenuItem,
-    IconButton,
-    Box,
-    Stack,
-} from "@mui/material"
+import { Select, SelectChangeEvent, MenuItem, IconButton, Box, Stack } from "@mui/material"
 import FormatIndentDecreaseIcon from "@mui/icons-material/FormatIndentDecrease"
 import * as c from "@intutable/lazy-views/dist/condition"
 import { PartialFilter, PartialSimpleFilter } from "types/filter"
@@ -69,13 +62,11 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
 
     /** For AND and OR filters: change the left branch */
     const handleChangeLeft = async (f: PartialFilter) => {
-        if (filter.kind === And || filter.kind === Or)
-            return onChange({ ...filter, left: f })
+        if (filter.kind === And || filter.kind === Or) return onChange({ ...filter, left: f })
     }
     /** For AND and OR filters: change the right branch */
     const handleChangeRight = async (f: PartialFilter) => {
-        if (filter.kind === And || filter.kind === Or)
-            return onChange({ ...filter, right: f })
+        if (filter.kind === And || filter.kind === Or) return onChange({ ...filter, right: f })
     }
 
     /**
@@ -95,8 +86,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
      * Promote the inner filter of a NOT condition to a complex filter.
      * The default kind is AND.
      */
-    const handlePromoteNot = async (f: PartialSimpleFilter) =>
-        onChange(not(and(f, newFilter())))
+    const handlePromoteNot = async (f: PartialSimpleFilter) => onChange(not(and(f, newFilter())))
     /**
      * Promote the left branch of an AND or OR condition to a complex filter.
      * The default kind is AND.
@@ -229,10 +219,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                 </Stack>
             )}
             {hasOnlyLeafChildren(filter) && (
-                <IconButton
-                    sx={{ verticalAlign: "revert" }}
-                    onClick={handleDemote}
-                >
+                <IconButton sx={{ verticalAlign: "revert" }} onClick={handleDemote}>
                     <FormatIndentDecreaseIcon
                         sx={{
                             fontSize: "80%",
@@ -250,13 +237,9 @@ type HasOnlyLeafChildren =
     | c.MkAndCondition<PartialSimpleFilter>
     | c.MkOrCondition<PartialSimpleFilter>
 
-const hasOnlyLeafChildren = (
-    filter: Exclude<PartialFilter, PartialSimpleFilter>
-): filter is HasOnlyLeafChildren =>
+const hasOnlyLeafChildren = (filter: Exclude<PartialFilter, PartialSimpleFilter>): filter is HasOnlyLeafChildren =>
     (filter.kind === Not && filter.condition.kind === Infix) ||
-    (filter.kind !== Not &&
-        filter.left.kind === Infix &&
-        filter.right.kind === Infix)
+    (filter.kind !== Not && filter.left.kind === Infix && filter.right.kind === Infix)
 
 /**
  * On demotion, return the "more important" branch of the filter to use
@@ -264,7 +247,6 @@ const hasOnlyLeafChildren = (
  */
 const salvageBranch = (filter: HasOnlyLeafChildren): PartialSimpleFilter => {
     if (filter.kind === Not) return filter.condition
-    else if (isValidFilter(filter.right) && !isValidFilter(filter.left))
-        return filter.right
+    else if (isValidFilter(filter.right) && !isValidFilter(filter.left)) return filter.right
     else return filter.left
 }

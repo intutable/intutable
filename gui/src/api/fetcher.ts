@@ -46,18 +46,13 @@ export const fetcher = async <T>(args: FetcherOptions): Promise<T> => {
         },
         credentials: "include",
         redirect: "manual",
-        body: args.body
-            ? typeof args.body === "string"
-                ? args.body
-                : JSON.stringify(args.body)
-            : undefined,
+        body: args.body ? (typeof args.body === "string" ? args.body : JSON.stringify(args.body)) : undefined,
     })
 
     if (args.isReadstream) {
         // TODO: use error handling
         const reader = res.body?.getReader()
-        if (reader == null)
-            throw new Error("Could not get reader from response body")
+        if (reader == null) throw new Error("Could not get reader from response body")
 
         const stream = new ReadableStream({
             start(controller) {
@@ -96,10 +91,7 @@ export const fetcher = async <T>(args: FetcherOptions): Promise<T> => {
  * Catches Exceptions (http status codes in range of 4xx to 5xx)
  * and throws them to allow the handlers to catch them in a catch-block
  */
-export const catchException = async (
-    res: Response,
-    body: unknown
-): Promise<Response> => {
+export const catchException = async (res: Response, body: unknown): Promise<Response> => {
     if (res.status >= 400 && res.status < 600) {
         if (isErrorObject(body) || isErrorLike(body)) throw body
         throw res
@@ -110,20 +102,13 @@ export const catchException = async (
 /**
  * Catches Authentication Errors (http status code 302 or type === "opaqueredirect")
  */
-export const catchAuthError = async (
-    res: Response,
-    body: unknown
-): Promise<Response> => {
+export const catchAuthError = async (res: Response, body: unknown): Promise<Response> => {
     if (
         res.type === "opaqueredirect" ||
         [301, 302].includes(res.status) ||
         (isErrorLike(body) && body.name === "AuthenticationError")
     )
-        throw new AuthenticationError(
-            "core call blocked by authentication middleware",
-            302,
-            res
-        )
+        throw new AuthenticationError("core call blocked by authentication middleware", 302, res)
 
     return res
 }

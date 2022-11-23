@@ -16,9 +16,7 @@ type ThemeTogglerContextProps = {
     toggleColorMode: () => void
     getTheme: () => PaletteMode
 }
-const ThemeTogglerContext = React.createContext<ThemeTogglerContextProps>(
-    undefined!
-)
+const ThemeTogglerContext = React.createContext<ThemeTogglerContextProps>(undefined!)
 export const useThemeToggler = () => React.useContext(ThemeTogglerContext)
 export const THEME_MODE_STORAGE_KEY = "__USER_THEME_PREFERENCE__"
 
@@ -62,26 +60,16 @@ const MyApp = (props: AppProps) => {
         getTheme: (): PaletteMode => "light",
     }
 
-    const theme = useMemo(
-        () => createTheme((() => getDesignToken(themeMode))()),
-        [themeMode]
-    )
+    const theme = useMemo(() => createTheme((() => getDesignToken(themeMode))()), [themeMode])
 
     return (
         <>
             <Head>
                 {/* Responsive */}
-                <meta
-                    name="viewport"
-                    content="width=device-width, initial-scale=1.0"
-                />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <meta charSet="utf-8" />
                 {/* Favicons */}
-                <link
-                    rel="shortcut icon"
-                    type="image/x-icon"
-                    href="/favicon.ico"
-                />
+                <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
                 {/* Safari Tab Bar Style */}
                 <meta name="theme-color" content={theme.palette.primary.main} />
             </Head>
@@ -103,12 +91,7 @@ const MyApp = (props: AppProps) => {
                             dense
                             preventDuplicate
                             iconVariant={{
-                                error: (
-                                    <ErrorIcon
-                                        fontSize="small"
-                                        sx={{ mr: 1 }}
-                                    />
-                                ),
+                                error: <ErrorIcon fontSize="small" sx={{ mr: 1 }} />,
                             }}
                         >
                             <CssBaseline />

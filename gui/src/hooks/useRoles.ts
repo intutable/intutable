@@ -7,11 +7,7 @@ import { Role } from "@backend/permissions"
  * Returns a list of projects.
  */
 export const useRoles = () => {
-    const {
-        data: roles,
-        error,
-        mutate,
-    } = useSWR<Role[]>({ url: `/api/permissions/roles`, method: "GET" })
+    const { data: roles, error, mutate } = useSWR<Role[]>({ url: `/api/permissions/roles`, method: "GET" })
 
     return { roles, error, mutate }
 }

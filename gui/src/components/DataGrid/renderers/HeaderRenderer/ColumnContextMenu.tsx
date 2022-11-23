@@ -2,13 +2,7 @@ import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import Check from "@mui/icons-material/Check"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import SearchIcon from "@mui/icons-material/Search"
-import {
-    IconButton,
-    ListItemIcon,
-    ListItemText,
-    Menu,
-    MenuItem,
-} from "@mui/material"
+import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useHeaderSearchField } from "context"
 import { useColumn } from "hooks/useColumn"
@@ -33,11 +27,7 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const {
-        open: headerOpen,
-        openSearchField,
-        closeSearchField,
-    } = useHeaderSearchField()
+    const { open: headerOpen, openSearchField, closeSearchField } = useHeaderSearchField()
     const { deleteColumn } = useColumn()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -54,9 +44,7 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
 
     const handleDeleteColumn = async () => {
         try {
-            const confirmed = confirm(
-                "Möchtest du diese Spalte wirklich löschen?"
-            )
+            const confirmed = confirm("Möchtest du diese Spalte wirklich löschen?")
             if (!confirmed) return
             await deleteColumn(headerRendererProps.column)
             closeContextMenu()
@@ -98,20 +86,12 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
                     headerRendererProps={headerRendererProps}
                 />
 
-                <CreateMailList
-                    colInfo={col}
-                    headerRendererProps={headerRendererProps}
-                />
+                <CreateMailList colInfo={col} headerRendererProps={headerRendererProps} />
 
-                <ColumnToClipboard
-                    colInfo={col}
-                    headerRendererProps={headerRendererProps}
-                />
+                <ColumnToClipboard colInfo={col} headerRendererProps={headerRendererProps} />
 
                 <MenuItem onClick={toggleHeaderSearchbar}>
-                    <ListItemIcon>
-                        {headerOpen ? <Check /> : <SearchIcon />}
-                    </ListItemIcon>
+                    <ListItemIcon>{headerOpen ? <Check /> : <SearchIcon />}</ListItemIcon>
                     <ListItemText>Suchleiste</ListItemText>
                 </MenuItem>
 
@@ -120,10 +100,7 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
                     onCloseContextMenu={closeContextMenu}
                 />
 
-                <MenuItem
-                    onClick={handleDeleteColumn}
-                    sx={{ color: theme.palette.warning.main }}
-                >
+                <MenuItem onClick={handleDeleteColumn} sx={{ color: theme.palette.warning.main }}>
                     <ListItemText>Löschen</ListItemText>
                 </MenuItem>
             </Menu>

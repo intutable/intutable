@@ -26,10 +26,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { project } = useAPI()
     const { tables } = useTables()
 
-    const col = useMemo(
-        () => (data ? getTableColumn(props.column) : null),
-        [data, getTableColumn, props.column]
-    )
+    const col = useMemo(() => (data ? getTableColumn(props.column) : null), [data, getTableColumn, props.column])
     // column that represents a link to another table
     const isLinkCol = column.kind! === "link"
     const isLookupCol = column.kind! === "lookup"
@@ -43,8 +40,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         return tables.find(t => t.id === asView(join.foreignSource).id)
     }, [col, tables, data])
 
-    const navigateToView = () =>
-        router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
+    const navigateToView = () => router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
 
     const util = cells.getCell(props.column.cellType)
     const Icon = util.icon
@@ -139,11 +135,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         </IconButton>
                     </Tooltip>
 
-                    <ColumnContextMenu
-                        colInfo={col}
-                        foreignTable={foreignTable}
-                        headerRendererProps={props}
-                    />
+                    <ColumnContextMenu colInfo={col} foreignTable={foreignTable} headerRendererProps={props} />
                 </Box>
             </Box>
 
@@ -152,6 +144,4 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     )
 }
 
-export const headerRenderer = (props: HeaderRendererProps<Row>) => (
-    <HeaderRenderer {...props} />
-)
+export const headerRenderer = (props: HeaderRendererProps<Row>) => <HeaderRenderer {...props} />

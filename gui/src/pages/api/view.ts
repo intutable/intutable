@@ -16,26 +16,19 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * }
  * ```
  */
-const POST = withCatchingAPIRoute(
-    async (req: NextApiRequest, res: NextApiResponse) => {
-        const { tableId, name } = req.body as {
-            tableId: ViewDescriptor["id"]
-            name: string
-        }
-        const user = req.session.user!
-
-        const filterView = await withReadWriteConnection(
-            user,
-            async sessionID =>
-                coreRequest<ViewDescriptor>(
-                    createView(sessionID, tableId, name),
-                    user.authCookie
-                )
-        )
-
-        res.status(200).json(filterView)
+const POST = withCatchingAPIRoute(async (req: NextApiRequest, res: NextApiResponse) => {
+    const { tableId, name } = req.body as {
+        tableId: ViewDescriptor["id"]
+        name: string
     }
-)
+    const user = req.session.user!
+
+    const filterView = await withReadWriteConnection(user, async sessionID =>
+        coreRequest<ViewDescriptor>(createView(sessionID, tableId, name), user.authCookie)
+    )
+
+    res.status(200).json(filterView)
+})
 
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {

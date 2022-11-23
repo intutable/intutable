@@ -3,8 +3,7 @@ import { useTheme } from "@mui/material/styles"
 import Link from "components/Link"
 import { releases } from "public/releases"
 import { ReleaseProps } from "./Release"
-const byDate = (a: ReleaseProps, b: ReleaseProps) =>
-    b.date.getTime() - a.date.getTime()
+const byDate = (a: ReleaseProps, b: ReleaseProps) => b.date.getTime() - a.date.getTime()
 const getLatestRelease = (releases: ReleaseProps[]) => releases.sort(byDate)[0]
 
 export const ReleaseNotification: React.FC = () => {
@@ -30,13 +29,11 @@ export const ReleaseNotification: React.FC = () => {
                 Eine neue Version ist verfügbar!
             </Typography>
             <Typography>
-                Schau dir die Release-Notes{" "}
-                <Link href={`/release/${latestRelease.version}`}>hier</Link> an.
+                Schau dir die Release-Notes <Link href={`/release/${latestRelease.version}`}>hier</Link> an.
             </Typography>
 
             <Typography>
-                {latestRelease.title} wurde am{" "}
-                {latestRelease.date.toLocaleDateString()} veröffentlicht
+                {latestRelease.title} wurde am {latestRelease.date.toLocaleDateString()} veröffentlicht
             </Typography>
         </Box>
     )

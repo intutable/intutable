@@ -9,6 +9,9 @@ import { FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { TempusCell } from "../abstract/TempusCell"
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled"
+import { ExposedInputProps } from "../abstract/protocols"
+import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
 
 export class Time extends TempusCell {
     readonly brand = "time"
@@ -25,11 +28,7 @@ export class Time extends TempusCell {
     editor = () => null
 
     formatter = (props: FormatterProps<Row>) => {
-        const {
-            row,
-            key,
-            content: _content,
-        } = this.destruct<Date | null>(props)
+        const { row, key, content: _content } = this.destruct<Date | null>(props)
         const [content, setContent] = useState(_content)
 
         const handleChange = (date: Date | null) => {
@@ -105,6 +104,51 @@ export class Time extends TempusCell {
                     />
                 </LocalizationProvider>
             </Box>
+        )
+    }
+
+    public ExposedInput: React.FC<ExposedInputProps<number | null>> = props => {
+        const { getRowId, updateRow } = useRow()
+        const { snackError } = useSnacki()
+
+        const [content, setContent] = useState(props.content)
+
+        const handleChange = async (value: number | null) => {
+            if (this.isValid(value)) setContent(value)
+            try {
+                await updateRow(props.column, props.row, value)
+            } catch (e) {
+                snackError("Der Wert konnte nicht geändert werden")
+            }
+        }
+
+        return (
+            <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={deLocale}
+                localeText={{
+                    openPreviousView: "Stunde setzen",
+                    openNextView: "Minuten setzen",
+                    clearButtonLabel: "Löschen",
+                    cancelButtonLabel: "Abbrechen",
+                    okButtonLabel: "OK",
+                    todayButtonLabel: "Jetzt",
+                    // start: "Start",
+                    // end: "Ende",
+                }}
+            >
+                <TimePicker
+                    showToolbar
+                    value={content}
+                    onChange={handleChange}
+                    renderInput={props => <TextField {...props} />}
+                    componentsProps={{
+                        actionBar: {
+                            actions: ["clear", "today", "accept"],
+                        },
+                    }}
+                />
+            </LocalizationProvider>
         )
     }
 }

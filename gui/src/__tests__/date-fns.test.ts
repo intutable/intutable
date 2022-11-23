@@ -1,11 +1,9 @@
 import { parse, isValid } from "date-fns"
 import deLocale from "date-fns/locale/de"
 
-const parse_HH_mm = (str: string) =>
-    parse(str, "HH:mm", new Date(), { locale: deLocale })
+const parse_HH_mm = (str: string) => parse(str, "HH:mm", new Date(), { locale: deLocale })
 
-const parse_DD_MM_YYYY = (str: string) =>
-    parse(str, "dd.MM.yyyy", new Date(), { locale: deLocale })
+const parse_DD_MM_YYYY = (str: string) => parse(str, "dd.MM.yyyy", new Date(), { locale: deLocale })
 
 const HH_MM = "00:01"
 const HH_MM_parsed = parse_HH_mm(HH_MM)

@@ -1,3 +1,6 @@
+import { SxProps, Theme } from "@mui/system"
+import { CalculatedColumn } from "react-data-grid"
+import { Column, Row } from "types"
 import { ValueOf } from "utils/ValueOf"
 
 export type Validatable = {
@@ -35,8 +38,25 @@ export type SerializableCatchEmpty = {
      *
      * For empty values (null, undefined, "") it returns null
      */
-    catchEmpty: <T extends ValueOf<Serializable>>(
-        fn: T,
-        value: unknown
-    ) => null | ReturnType<T>
+    catchEmpty: <T extends ValueOf<Serializable>>(fn: T, value: unknown) => null | ReturnType<T>
+}
+
+export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {
+    content: T
+    row: Row
+    column: Column.Deserialized | CalculatedColumn<Row>
+    hoveringOnParent: boolean
+    InputProps?: R
+    InputStyle?: SxProps<Theme>
+}
+
+export type ExposableInputComponent = {
+    /**
+     * Reference to the input component of the cell class.
+     * Can be used outside the cell for other components.
+     *
+     * __Note__: This adapts the behaviour of native rdg cells and is NOT fully developed.
+     * Bugs may occur.
+     */
+    ExposedInput: React.FC<ExposedInputProps>
 }

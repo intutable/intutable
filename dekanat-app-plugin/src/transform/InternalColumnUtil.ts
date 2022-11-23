@@ -25,10 +25,10 @@ export class InternalColumnUtil {
      * • which key to choose
      *
      */
-    public processInternalColumns(options: {
+    public processInternalColumns(options: { columns: DB.Restructured.Column[]; rows: DB.Row[] }): {
         columns: DB.Restructured.Column[]
-        rows: DB.Row[]
-    }): { columns: DB.Restructured.Column[]; rows: DB.Restructured.Row[] } {
+        rows: DB.Restructured.Row[]
+    } {
         const { columns, rows } = options
         let processedRows = rows
         const nonInternalColumns: DB.Restructured.Column[] = []
@@ -50,19 +50,16 @@ export class InternalColumnUtil {
                     })))
 
                 throw new Error(
-                    `SystemError: Not Implemented (This mechanism is not supported yet). Column ${inspect(
-                        column,
-                        { depth: null }
-                    )}`
+                    `SystemError: Not Implemented (This mechanism is not supported yet). Column ${inspect(column, {
+                        depth: null,
+                    })}`
                 )
             } else nonInternalColumns.push(column) // only keep non internal columns
         })
 
         if (rows.length !== rows.length) {
             throw new Error(
-                `InternalColumn: lost ${
-                    rows.length - rows.length
-                } rows when processing internal columns (rows: ${
+                `InternalColumn: lost ${rows.length - rows.length} rows when processing internal columns (rows: ${
                     rows.length
                 }, processed: ${rows.length}).`
             )

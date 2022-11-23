@@ -12,13 +12,9 @@ import { User } from "types/User"
 import { makeError } from "utils/error-handling/utils/makeError"
 
 const validateUsername = (username: string): true | Error =>
-    username.length > 7
-        ? true
-        : new Error("Der Benutzername muss mindestens 8 Zeichen lang sein!")
+    username.length > 7 ? true : new Error("Der Benutzername muss mindestens 8 Zeichen lang sein!")
 const validatePassword = (password: string): true | Error =>
-    password.length > 7
-        ? true
-        : new Error("Das Passwort muss mindestens 8 Zeichen lang sein!")
+    password.length > 7 ? true : new Error("Das Passwort muss mindestens 8 Zeichen lang sein!")
 
 type FormData = {
     username: string
@@ -33,22 +29,15 @@ const textFieldStyle: SxProps<Theme> = {
 const Login: NextPage = () => {
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
-    const error = useMemo(
-        () => (router.query.error ? makeError(router.query.error) : null),
-        [router.query.error]
-    )
+    const error = useMemo(() => (router.query.error ? makeError(router.query.error) : null), [router.query.error])
 
     const { mutateUser } = useUser({
         redirectTo: "/projects",
         redirectIfFound: true,
     })
 
-    const [usernameValid, setUsernameValid] = useState<Error | true | null>(
-        null
-    )
-    const [passwordValid, setPasswordValid] = useState<Error | true | null>(
-        null
-    )
+    const [usernameValid, setUsernameValid] = useState<Error | true | null>(null)
+    const [passwordValid, setPasswordValid] = useState<Error | true | null>(null)
     const [form, setForm] = useState<FormData>({
         username: "",
         password: "",
@@ -77,8 +66,7 @@ const Login: NextPage = () => {
     }
 
     const handleLogin = useCallback(async () => {
-        if (usernameValid !== true || passwordValid !== true || error != null)
-            return
+        if (usernameValid !== true || passwordValid !== true || error != null) return
 
         const body = {
             username: form.username,
@@ -86,21 +74,12 @@ const Login: NextPage = () => {
         }
 
         try {
-            await mutateUser(
-                await fetcher<User>({ url: "/api/auth/login", body })
-            )
+            await mutateUser(await fetcher<User>({ url: "/api/auth/login", body }))
         } catch (error) {
             enqueueSnackbar(makeError(error).message, { variant: "error" })
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        error,
-        form.password,
-        form.username,
-        mutateUser,
-        passwordValid,
-        usernameValid,
-    ])
+    }, [error, form.password, form.username, mutateUser, passwordValid, usernameValid])
 
     return (
         <>
@@ -135,11 +114,7 @@ const Login: NextPage = () => {
                         type="email"
                         required
                         error={usernameValid instanceof Error}
-                        helperText={
-                            usernameValid instanceof Error
-                                ? usernameValid.message
-                                : undefined
-                        }
+                        helperText={usernameValid instanceof Error ? usernameValid.message : undefined}
                         fullWidth
                         sx={textFieldStyle}
                         variant="standard"
@@ -152,20 +127,12 @@ const Login: NextPage = () => {
                         type="password"
                         required
                         error={passwordValid instanceof Error}
-                        helperText={
-                            passwordValid instanceof Error
-                                ? passwordValid.message
-                                : undefined
-                        }
+                        helperText={passwordValid instanceof Error ? passwordValid.message : undefined}
                         fullWidth
                         sx={textFieldStyle}
                         variant="standard"
                     />
-                    {error && (
-                        <Typography sx={{ color: "red" }}>
-                            {error.message}
-                        </Typography>
-                    )}
+                    {error && <Typography sx={{ color: "red" }}>{error.message}</Typography>}
                 </LoginRegisterPaper>
             </Box>
         </>

@@ -18,17 +18,7 @@ import { tableId, viewId } from "@intutable/lazy-views"
 
 import { emptyRowOptions, defaultRowOptions } from "shared/dist/api"
 
-import {
-    TableSpec,
-    JoinSpec,
-    Table,
-    PERSONEN,
-    PERSONEN_DATA,
-    ORGANE,
-    ORGANE_DATA,
-    ROLLEN,
-    ROLLEN_DATA,
-} from "./schema"
+import { TableSpec, JoinSpec, Table, PERSONEN, PERSONEN_DATA, ORGANE, ORGANE_DATA, ROLLEN, ROLLEN_DATA } from "./schema"
 
 let personen: Table
 let organe: Table
@@ -64,13 +54,9 @@ async function createTable(
             table.columns.map(c => c.baseColumn)
         )
     )) as TableDescriptor
-    const tableInfo = (await core.events.request(
-        getTableInfo(sessionID, baseTable.id)
-    )) as TableInfo
+    const tableInfo = (await core.events.request(getTableInfo(sessionID, baseTable.id))) as TableInfo
     const viewColumns: v_types.ColumnSpecifier[] = table.columns.map(c => {
-        const baseColumn = tableInfo.columns.find(
-            parent => parent.name === c.baseColumn.name
-        )!
+        const baseColumn = tableInfo.columns.find(parent => parent.name === c.baseColumn.name)!
         return {
             parentColumnId: baseColumn.id,
             attributes: c.attributes,
@@ -87,13 +73,9 @@ async function createTable(
         )
     )) as v_types.ViewDescriptor
     // add joins
-    await Promise.all(
-        table.joins.map(j => addJoin(core, sessionID, baseTable, tableView, j))
-    )
+    await Promise.all(table.joins.map(j => addJoin(core, sessionID, baseTable, tableView, j)))
 
-    const tableViewInfo = (await core.events.request(
-        v_req.getViewInfo(sessionID, tableView.id)
-    )) as v_types.ViewInfo
+    const tableViewInfo = (await core.events.request(v_req.getViewInfo(sessionID, tableView.id))) as v_types.ViewInfo
     const filterView = await core.events.request(
         v_req.createView(
             sessionID,
@@ -116,19 +98,10 @@ async function addJoin(
     join: JoinSpec
 ): Promise<void> {
     const fk = (await core.events.request(
-        createColumnInTable(
-            sessionID,
-            baseTable.id,
-            join.fkColumn.name,
-            join.fkColumn.type
-        )
+        createColumnInTable(sessionID, baseTable.id, join.fkColumn.name, join.fkColumn.type)
     )) as ColumnDescriptor
-    const foreignTable = simpleTables.find(
-        t => t.tableView.name === join.table
-    )!
-    const info = (await core.events.request(
-        v_req.getViewInfo(sessionID, foreignTable.tableView.id)
-    )) as TableInfo
+    const foreignTable = simpleTables.find(t => t.tableView.name === join.table)!
+    const info = (await core.events.request(v_req.getViewInfo(sessionID, foreignTable.tableView.id))) as TableInfo
     const pk = info.columns.find(c => c.name === join.pkColumn)!
     const foreignColumns = join.linkColumns.map(l => {
         const parentColumn = info.columns.find(c => c.name === l.name)!
@@ -146,23 +119,8 @@ async function addJoin(
     )
 }
 
-export async function insertExampleData(
-    core: Core | PluginLoader,
-    sessionID: string
-): Promise<void> {
-    await Promise.all(
-        PERSONEN_DATA.map(r =>
-            core.events.request(insert(sessionID, personen.baseTable.key, r))
-        )
-    )
-    await Promise.all(
-        ORGANE_DATA.map(r =>
-            core.events.request(insert(sessionID, organe.baseTable.key, r))
-        )
-    )
-    await Promise.all(
-        ROLLEN_DATA.map(r =>
-            core.events.request(insert(sessionID, rollen.baseTable.key, r))
-        )
-    )
+export async function insertExampleData(core: Core | PluginLoader, sessionID: string): Promise<void> {
+    await Promise.all(PERSONEN_DATA.map(r => core.events.request(insert(sessionID, personen.baseTable.key, r))))
+    await Promise.all(ORGANE_DATA.map(r => core.events.request(insert(sessionID, organe.baseTable.key, r))))
+    await Promise.all(ROLLEN_DATA.map(r => core.events.request(insert(sessionID, rollen.baseTable.key, r))))
 }

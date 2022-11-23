@@ -1,5 +1,5 @@
+import { SelectColumn } from "@datagrid/Cells/SelectColumn"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton"
-import NoRowsFallback from "@datagrid/NoRowsFallback/NoRowsFallback"
 import { RowRenderer } from "@datagrid/renderers"
 import RowMask from "@datagrid/RowMask/RowMask"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
@@ -14,17 +14,9 @@ import Link from "components/Link"
 import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
-import {
-    APIContextProvider,
-    HeaderSearchFieldProvider,
-    useAPI,
-    useHeaderSearchField,
-} from "context"
-import { RowMaskProvider, useRowMask } from "context/RowMaskContext"
-import {
-    SelectedRowsContextProvider,
-    useSelectedRows,
-} from "context/SelectedRowsContext"
+import { APIContextProvider, HeaderSearchFieldProvider, useAPI, useHeaderSearchField } from "context"
+import { RowMaskProvider } from "context/RowMaskContext"
+import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { useRow } from "hooks/useRow"
@@ -34,14 +26,13 @@ import { useView } from "hooks/useView"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import { useThemeToggler } from "pages/_app"
 import React, { useEffect, useState } from "react"
-import DataGrid, { RowsChangeData, SelectColumn } from "react-data-grid"
+import DataGrid, { RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import { rowKeyGetter } from "utils/rowKeyGetter"
-import SerDes from "utils/SerDes"
 import { withSSRCatch } from "utils/withSSRCatch"
 
 const TablePage: React.FC = () => {
@@ -55,21 +46,15 @@ const TablePage: React.FC = () => {
     // warn if browser is not chrome
     useEffect(() => {
         if (isChrome === false)
-            snackWarning(
-                "Zzt. wird für Tabellen nur Google Chrome (für Browser) unterstützt!",
-                {
-                    persist: true,
-                    action: key => (
-                        <Button
-                            onClick={() => closeSnackbar(key)}
-                            sx={{ color: "white" }}
-                        >
-                            Ich verstehe
-                        </Button>
-                    ),
-                    preventDuplicate: true,
-                }
-            )
+            snackWarning("Zzt. wird für Tabellen nur Google Chrome (für Browser) unterstützt!", {
+                persist: true,
+                action: key => (
+                    <Button onClick={() => closeSnackbar(key)} sx={{ color: "white" }}>
+                        Ich verstehe
+                    </Button>
+                ),
+                preventDuplicate: true,
+            })
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isChrome])
@@ -80,22 +65,17 @@ const TablePage: React.FC = () => {
     const { project } = useAPI()
     const { data, error } = useView()
     const { tables: tableList } = useTables()
-    const { getRowId, updateRow } = useRow()
-    const { setRowMaskState } = useRowMask()
+    const { updateRow } = useRow()
 
     // views side panel
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
 
     // TODO: this should not be here and does not work as intended in this way
-    const partialRowUpdate = async (
-        rows: Row[],
-        changeData: RowsChangeData<Row>
-    ): Promise<void> => {
+    const partialRowUpdate = async (rows: Row[], changeData: RowsChangeData<Row>): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
-        const serializedValue = SerDes.serializeRowValue(changedRow, col)
-
-        await updateRow(col, getRowId(changedRow), serializedValue)
+        const update = changedRow[col.key]
+        await updateRow(col, changedRow, update)
     }
 
     const tableSize = {
@@ -143,9 +123,7 @@ const TablePage: React.FC = () => {
                         <Box>
                             <Toolbar position="top">
                                 <ToolbarItem.Views
-                                    handleClick={() =>
-                                        setViewNavOpen(prev => !prev)
-                                    }
+                                    handleClick={() => setViewNavOpen(prev => !prev)}
                                     open={viewNavOpen}
                                 />
                                 <ToolbarItem.AddCol />
@@ -158,16 +136,9 @@ const TablePage: React.FC = () => {
 
                             <DndProvider backend={HTML5Backend}>
                                 <DataGrid
-                                    className={
-                                        "rdg-" + getTheme() + " fill-grid"
-                                    }
+                                    className={"rdg-" + getTheme() + " fill-grid"}
                                     rows={data.rows}
-                                    columns={[
-                                        SelectColumn,
-                                        ...data.columns.filter(
-                                            column => column.hidden !== true
-                                        ),
-                                    ]}
+                                    columns={[SelectColumn, ...data.columns.filter(column => column.hidden !== true)]}
                                     components={{
                                         // noRowsFallback: <NoRowsFallback />, // BUG: does not work with columns but no rows bc css
                                         rowRenderer: RowRenderer,
@@ -176,27 +147,17 @@ const TablePage: React.FC = () => {
                                     }}
                                     rowKeyGetter={rowKeyGetter}
                                     onCopy={event =>
-                                        clipboardUtil.handleOnCopy(
-                                            event,
-                                            error => {
-                                                error
-                                                    ? snackError(error)
-                                                    : snack("1 Zelle kopiert")
-                                            }
-                                        )
+                                        clipboardUtil.handleOnCopy(event, error => {
+                                            error ? snackError(error) : snack("1 Zelle kopiert")
+                                        })
                                     }
                                     // onFill={e =>
                                     //     clipboardUtil.handleOnFill(e)
                                     // }
                                     onPaste={e =>
-                                        clipboardUtil.handleOnPaste(
-                                            e,
-                                            error => {
-                                                error
-                                                    ? snackError(error)
-                                                    : snack("1 Zelle eingefügt")
-                                            }
-                                        )
+                                        clipboardUtil.handleOnPaste(e, error => {
+                                            error ? snackError(error) : snack("1 Zelle eingefügt")
+                                        })
                                     }
                                     selectedRows={selectedRows}
                                     onSelectedRowsChange={setSelectedRows}
@@ -246,9 +207,7 @@ type PageProps = {
     // }
 }
 
-const Page: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ project, table, view }) => {
+const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ project, table, view }) => {
     return (
         <APIContextProvider project={project} table={table} view={view}>
             <SelectedRowsContextProvider>
@@ -264,10 +223,7 @@ const Page: NextPage<
 
 export const getServerSideProps = withSSRCatch(
     withSessionSsr<PageProps>(async context => {
-        const query = context.query as DynamicRouteQuery<
-            typeof context.query,
-            "tableId" | "projectId"
-        >
+        const query = context.query as DynamicRouteQuery<typeof context.query, "tableId" | "projectId">
 
         const user = context.req.session.user
 
@@ -276,9 +232,7 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
-        const projectId: ProjectDescriptor["id"] = Number.parseInt(
-            query.projectId
-        )
+        const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
         const tableId: ViewDescriptor["id"] = Number.parseInt(query.tableId)
 
         if (isNaN(projectId) || isNaN(tableId))

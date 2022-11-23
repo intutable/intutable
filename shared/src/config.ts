@@ -33,18 +33,12 @@ export function getConfig(): Config {
     const appAdminUsername: string = configJson.appAdminUsername
     const appAdminPassword: string = configJson.appAdminPassword
     const projectManagementRoleId: string = configJson.projectManagementRoleId
-    if (
-        typeof databaseAdminUsername !== "string" ||
-        typeof databaseAdminPassword !== "string"
-    ) {
+    if (typeof databaseAdminUsername !== "string" || typeof databaseAdminPassword !== "string") {
         // the error sometimes just causes silent failure
         console.error(`error: no database credentials found in ${confName}`)
         throw TypeError(`no database credentials found in ${confName}`)
     }
-    if (
-        typeof appAdminUsername !== "string" ||
-        typeof appAdminPassword !== "string"
-    ) {
+    if (typeof appAdminUsername !== "string" || typeof appAdminPassword !== "string") {
         // the error sometimes just causes silent failure
         console.error(`error: no admin user credentials found in ${confName}`)
         throw TypeError(`no admin user credentials found in ${confName}`)

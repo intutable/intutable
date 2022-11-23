@@ -1,12 +1,9 @@
-import AddIcon from "@mui/icons-material/ViewColumn"
+import { AddColumnModal } from "@datagrid/Toolbar/ToolbarItems/AddCol/AddColumnModal"
+import AddBoxIcon from "@mui/icons-material/AddBox"
 import { Button } from "@mui/material"
 import React, { useState } from "react"
-import { AddColumnModal } from "./AddColumnModal"
 
-/**
- * Toolbar Item for adding cols to the data grid.
- */
-const AddCol: React.FC = () => {
+export const AddColumnButton: React.FC = () => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         setAnchorEL(event.currentTarget)
@@ -15,11 +12,16 @@ const AddCol: React.FC = () => {
 
     return (
         <>
-            <Button startIcon={<AddIcon />} onClick={handleOpenModal}>
-                Add Col
+            <Button
+                onClick={handleOpenModal}
+                startIcon={<AddBoxIcon fontSize="small" />}
+                sx={{
+                    alignSelf: "flex-start",
+                }}
+            >
+                Neue Spalte
             </Button>
             <AddColumnModal open={anchorEL != null} onClose={handleCloseModal} />
         </>
     )
 }
-export default AddCol

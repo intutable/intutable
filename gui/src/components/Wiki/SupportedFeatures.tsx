@@ -74,33 +74,22 @@ export const SupportedFeatures: React.FC<SupportedFeaturesProps> = props => {
                                     }}
                                 >
                                     <Typography>{feature.name}</Typography>
-                                    {feature.infoText &&
-                                        feature.infoText.length > 0 && (
-                                            <Tooltip
-                                                arrow
-                                                placement="right"
-                                                title={feature.infoText}
-                                            >
-                                                <IconButton size="small">
-                                                    <InfoIcon fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                        )}
+                                    {feature.infoText && feature.infoText.length > 0 && (
+                                        <Tooltip arrow placement="right" title={feature.infoText}>
+                                            <IconButton size="small">
+                                                <InfoIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
                                 </Stack>
                             </TableCell>
                             <TableCell>
-                                <Tooltip
-                                    arrow
-                                    placement="right"
-                                    title={getIconTooltip(feature.support)}
-                                >
+                                <Tooltip arrow placement="right" title={getIconTooltip(feature.support)}>
                                     {getIcon(feature.support)}
                                 </Tooltip>
                             </TableCell>
                             <TableCell>
-                                <Link href={`/release/${feature.release}`}>
-                                    {feature.release}
-                                </Link>
+                                <Link href={`/release/${feature.release}`}>{feature.release}</Link>
                             </TableCell>
                         </TableRow>
                     ))}

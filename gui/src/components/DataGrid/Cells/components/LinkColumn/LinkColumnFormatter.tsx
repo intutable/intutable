@@ -27,9 +27,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const { snackError } = useSnacki()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const handleOpenModal = (
-        event: React.MouseEvent<HTMLDivElement, MouseEvent>
-    ) => {
+    const handleOpenModal = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
@@ -41,10 +39,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const { mutate: mutateView } = useView()
     const { getRowId } = useRow()
 
-    const metaColumn = useMemo(
-        () => (data ? getTableColumn(column) : null),
-        [column, data, getTableColumn]
-    )
+    const metaColumn = useMemo(() => (data ? getTableColumn(column) : null), [column, data, getTableColumn])
 
     const join = useMemo(() => {
         if (metaColumn == null) return null
@@ -88,11 +83,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
 
     return (
         <>
-            <Tooltip
-                enterDelay={1000}
-                arrow
-                title={`Link ${hasContent ? "ändern" : "hinzufügen"}`}
-            >
+            <Tooltip enterDelay={1000} arrow title={`Link ${hasContent ? "ändern" : "hinzufügen"}`}>
                 <Box
                     onMouseOver={() => setDeleteIconVisible(true)}
                     onMouseOut={() => setDeleteIconVisible(false)}
@@ -105,9 +96,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                 >
                     <Stack direction="row">
                         <Box flexGrow="1">{content}</Box>
-                        {deleteIconVisible && hasContent && (
-                            <DeleteButton onDelete={handleDeleteContent} />
-                        )}
+                        {deleteIconVisible && hasContent && <DeleteButton onDelete={handleDeleteContent} />}
                     </Stack>
                 </Box>
             </Tooltip>

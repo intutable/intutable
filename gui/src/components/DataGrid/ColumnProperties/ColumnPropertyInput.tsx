@@ -1,17 +1,7 @@
 import InfoIcon from "@mui/icons-material/Info"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import {
-    FormControlLabel,
-    MenuItem,
-    Select,
-    Stack,
-    Switch,
-    TextField,
-    Tooltip,
-    Box,
-    Typography,
-} from "@mui/material"
+import { FormControlLabel, MenuItem, Select, Stack, Switch, TextField, Tooltip, Box, Typography } from "@mui/material"
 import IconButton from "@mui/material/IconButton"
 import InputAdornment from "@mui/material/InputAdornment"
 import { useTheme } from "@mui/material/styles"
@@ -45,14 +35,10 @@ export type ColumnPropertyInputProps<TYPE extends ColumnPropertyInputType> = {
     /** value */
     value: ColumnPropertyInputTypeMap[TYPE]
     /** controlled input update method */
-    onChange: (
-        value: ColumnPropertyInputValue_onChangeReturnMap[TYPE]
-    ) => unknown
+    onChange: (value: ColumnPropertyInputValue_onChangeReturnMap[TYPE]) => unknown
 }
 
-export const ColumnPropertyInput = <T extends ColumnPropertyInputType>(
-    props: ColumnPropertyInputProps<T>
-) => {
+export const ColumnPropertyInput = <T extends ColumnPropertyInputType>(props: ColumnPropertyInputProps<T>) => {
     const theme = useTheme()
 
     return (
@@ -76,11 +62,7 @@ export const ColumnPropertyInput = <T extends ColumnPropertyInputType>(
                 >
                     {props.label}
                     {props.helperText && (
-                        <Tooltip
-                            arrow
-                            title={props.helperText}
-                            placement="right"
-                        >
+                        <Tooltip arrow title={props.helperText} placement="right">
                             <InfoIcon
                                 sx={{
                                     ml: 0.4,
@@ -95,28 +77,14 @@ export const ColumnPropertyInput = <T extends ColumnPropertyInputType>(
     )
 }
 
-const chooseInput = <T extends ColumnPropertyInputType>(
-    props: ColumnPropertyInputProps<T>
-) => {
+const chooseInput = <T extends ColumnPropertyInputType>(props: ColumnPropertyInputProps<T>) => {
     switch (props.type) {
         case "text":
-            return (
-                <TextInput
-                    {...(props as unknown as ColumnPropertyInputProps<"text">)}
-                />
-            )
+            return <TextInput {...(props as unknown as ColumnPropertyInputProps<"text">)} />
         case "switch":
-            return (
-                <SwitchInput
-                    {...(props as unknown as ColumnPropertyInputProps<"switch">)}
-                />
-            )
+            return <SwitchInput {...(props as unknown as ColumnPropertyInputProps<"switch">)} />
         case "select":
-            return (
-                <SelectInput
-                    {...(props as unknown as ColumnPropertyInputProps<"select">)}
-                />
-            )
+            return <SelectInput {...(props as unknown as ColumnPropertyInputProps<"select">)} />
         default:
             return null
     }
@@ -169,11 +137,7 @@ const SwitchInput: React.FC<ColumnPropertyInputProps<"switch">> = props => {
 }
 
 const SelectInput: React.FC<ColumnPropertyInputProps<"select">> = props => (
-    <Select
-        variant="standard"
-        value={props.value.value}
-        onChange={e => props.onChange(e.target.value)}
-    >
+    <Select variant="standard" value={props.value.value} onChange={e => props.onChange(e.target.value)}>
         {props.value.options.map(([brand, label]) => (
             <MenuItem value={brand} key={brand}>
                 {label}

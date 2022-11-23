@@ -1,11 +1,5 @@
 import { update } from "@intutable/database/dist/requests"
-import {
-    asTable,
-    getViewInfo,
-    JoinDescriptor,
-    ViewDescriptor,
-    ViewInfo,
-} from "@intutable/lazy-views"
+import { asTable, getViewInfo, JoinDescriptor, ViewDescriptor, ViewInfo } from "@intutable/lazy-views"
 import { getTableInfo } from "@intutable/project-management/dist/requests"
 import { TableInfo } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
@@ -27,43 +21,36 @@ import { withReadWriteConnection } from "api/utils/databaseConnection"
  * }
  * ```
  */
-const POST = withCatchingAPIRoute(
-    async (req, res, joinId: JoinDescriptor["id"]) => {
-        const { tableId, rowId, value } = req.body as {
-            tableId: ViewDescriptor["id"]
-            rowId: number
-            value: number | null
-        }
-        const user = req.session.user!
-
-        await withReadWriteConnection(user, async sessionID => {
-            const tableInfo = await coreRequest<ViewInfo>(
-                getViewInfo(sessionID, tableId),
-                user.authCookie
-            )
-
-            const baseTableInfo = await coreRequest<TableInfo>(
-                getTableInfo(sessionID, asTable(tableInfo.source).table.id),
-                user.authCookie
-            )
-
-            const join = tableInfo.joins.find(j => j.id === joinId)!
-            const fkColumn = baseTableInfo.columns.find(
-                c => c.id === join.on[0]
-            )!
-
-            await coreRequest(
-                update(sessionID, asTable(tableInfo.source).table.key, {
-                    condition: ["_id", rowId],
-                    update: { [fkColumn.name]: value },
-                }),
-                user.authCookie
-            )
-        })
-
-        res.status(200).json({})
+const POST = withCatchingAPIRoute(async (req, res, joinId: JoinDescriptor["id"]) => {
+    const { tableId, rowId, value } = req.body as {
+        tableId: ViewDescriptor["id"]
+        rowId: number
+        value: number | null
     }
-)
+    const user = req.session.user!
+
+    await withReadWriteConnection(user, async sessionID => {
+        const tableInfo = await coreRequest<ViewInfo>(getViewInfo(sessionID, tableId), user.authCookie)
+
+        const baseTableInfo = await coreRequest<TableInfo>(
+            getTableInfo(sessionID, asTable(tableInfo.source).table.id),
+            user.authCookie
+        )
+
+        const join = tableInfo.joins.find(j => j.id === joinId)!
+        const fkColumn = baseTableInfo.columns.find(c => c.id === join.on[0])!
+
+        await coreRequest(
+            update(sessionID, asTable(tableInfo.source).table.key, {
+                condition: ["_id", rowId],
+                update: { [fkColumn.name]: value },
+            }),
+            user.authCookie
+        )
+    })
+
+    res.status(200).json({})
+})
 
 export default withSessionRoute(
     withUserCheck(async (req, res) => {

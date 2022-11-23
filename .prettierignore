@@ -1,0 +1,16 @@
+# Ignore artifacts:
+**/dist/
+**/build/
+**/node_modules
+**/coverage
+**/coverage/
+**/test/fixtures
+**/docs/
+**/protos/
+**/.DS_Store
+**/.log/
+/**/tsconfig.tsbuildinfo
+gui/.next/
+gui/.swc/
+**/tsconfig.json
+**/docker-compose.yml

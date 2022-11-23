@@ -21,8 +21,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
             },
             "& + .MuiSwitch-track": {
                 opacity: 1,
-                backgroundColor:
-                    theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
+                backgroundColor: theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
             },
         },
     },
@@ -56,20 +55,11 @@ const ThemeSwitch: React.FC = () => {
 
     const handleSwitch = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (typeof window !== "undefined")
-            localStorage.setItem(
-                THEME_MODE_STORAGE_KEY,
-                e.target.checked ? "dark" : "light"
-            )
+            localStorage.setItem(THEME_MODE_STORAGE_KEY, e.target.checked ? "dark" : "light")
         toggleColorMode()
     }
 
-    return (
-        <MaterialUISwitch
-            disabled
-            checked={getTheme() === "dark"}
-            onChange={handleSwitch}
-        />
-    )
+    return <MaterialUISwitch disabled checked={getTheme() === "dark"} onChange={handleSwitch} />
 }
 
 export default ThemeSwitch

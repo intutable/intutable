@@ -4,28 +4,16 @@ import { useEffect, useState } from "react"
 import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 
-export type CreateColumnFactoryProps = Pick<
-    Column.Serialized,
-    "name" | "cellType"
->
+export type CreateColumnFactoryProps = Pick<Column.Serialized, "name" | "cellType">
 
 // properties that can be set programmatically from the frontend
-export type SettableColumnProps = keyof Omit<
-    Column.Serialized,
-    "key" | "id" | "isUserPrimaryKey" | "index"
->
+export type SettableColumnProps = keyof Omit<Column.Serialized, "key" | "id" | "isUserPrimaryKey" | "index">
 
 // properties that the user can set directly & arbitrarily
-export type UserSettableColumnProps = Exclude<
-    SettableColumnProps,
-    "kind" | "minWidth" | "maxWidth"
->
+export type UserSettableColumnProps = Exclude<SettableColumnProps, "kind" | "minWidth" | "maxWidth">
 
 export class ColumnFactory {
-    static readonly DEFAULT_COLUMN: Pick<
-        Column.Serialized,
-        SettableColumnProps
-    > = {
+    static readonly DEFAULT_COLUMN: Pick<Column.Serialized, SettableColumnProps> = {
         name: "",
         kind: "standard",
         hidden: false,
@@ -45,10 +33,7 @@ export class ColumnFactory {
         sortable: true,
         sortDescendingFirst: false,
     }
-    static readonly USER_DEFAULT_COLUMN: Pick<
-        Column.Serialized,
-        UserSettableColumnProps
-    > = {
+    static readonly USER_DEFAULT_COLUMN: Pick<Column.Serialized, UserSettableColumnProps> = {
         name: "",
         hidden: false,
         cellType: new Text().brand,
@@ -93,11 +78,10 @@ export const useColumnFactory = () => {
     const { snackError } = useSnacki()
     const { createColumn: _createColumn } = useColumn()
 
-    const [initialColumnProps, setInitialColumnProps] =
-        useState<CreateColumnFactoryProps>({
-            name: ColumnFactory.USER_DEFAULT_COLUMN.name,
-            cellType: ColumnFactory.USER_DEFAULT_COLUMN.cellType,
-        })
+    const [initialColumnProps, setInitialColumnProps] = useState<CreateColumnFactoryProps>({
+        name: ColumnFactory.USER_DEFAULT_COLUMN.name,
+        cellType: ColumnFactory.USER_DEFAULT_COLUMN.cellType,
+    })
 
     const [valid, setValid] = useState(false)
     useEffect(() => {
@@ -113,10 +97,7 @@ export const useColumnFactory = () => {
         }
     }
 
-    const setProperty = <T extends keyof CreateColumnFactoryProps>(
-        option: T,
-        value: CreateColumnFactoryProps[T]
-    ) => {
+    const setProperty = <T extends keyof CreateColumnFactoryProps>(option: T, value: CreateColumnFactoryProps[T]) => {
         setInitialColumnProps(prev => ({
             ...prev,
             [option]: value,

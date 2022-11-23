@@ -35,13 +35,9 @@ export const APIContextProvider: React.FC<APIContextProviderProps> = props => {
     // TODO: instead of providing the set methods from the useState hook (setTable and setProject) provide a reducer
     // this helps preventing conflicts.
     // If a projects gets set to null, the table must be set to null equally
-    const [project, setProject] = useState<ProjectDescriptor | null>(
-        props.project || null
-    )
+    const [project, setProject] = useState<ProjectDescriptor | null>(props.project || null)
 
-    const [table, setTable] = useState<ViewDescriptor | null>(
-        props.table || null
-    )
+    const [table, setTable] = useState<ViewDescriptor | null>(props.table || null)
 
     const [view, setView] = useState<ViewDescriptor | null>(props.view || null)
 

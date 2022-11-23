@@ -37,11 +37,7 @@ const Modal: React.FC<ModalProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const {
-        linkTableData: data,
-        error,
-        getColumn,
-    } = useLink({ table: props.foreignTable })
+    const { linkTableData: data, error, getColumn } = useLink({ table: props.foreignTable })
 
     const [selection, setSelection] = useState<TableColumn | null>(null)
     const selectedColDescriptor = useMemo(
@@ -63,8 +59,7 @@ const Modal: React.FC<ModalProps> = props => {
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>
-                Spalte aus verlinkter Tabelle <i>{props.foreignTable.name}</i>{" "}
-                als Lookup hinzufügen
+                Spalte aus verlinkter Tabelle <i>{props.foreignTable.name}</i> als Lookup hinzufügen
             </DialogTitle>
             <DialogContent>
                 {data == null && error == null ? (
@@ -82,18 +77,10 @@ const Modal: React.FC<ModalProps> = props => {
                                         disablePadding
                                         sx={{
                                             bgcolor:
-                                                selection?.key === col.key
-                                                    ? theme.palette.action
-                                                          .selected
-                                                    : undefined,
+                                                selection?.key === col.key ? theme.palette.action.selected : undefined,
                                         }}
                                     >
-                                        <ListItemButton
-                                            onClick={onClickHandler.bind(
-                                                null,
-                                                col
-                                            )}
-                                        >
+                                        <ListItemButton onClick={onClickHandler.bind(null, col)}>
                                             <ListItemText primary={col.name} />
                                         </ListItemButton>
                                     </ListItem>

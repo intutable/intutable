@@ -1,12 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControlLabel,
-    Switch,
-} from "@mui/material"
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Switch } from "@mui/material"
 import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
@@ -21,9 +13,7 @@ export const HiddenColumnSwitch: React.FC<{
     <FormControlLabel
         label={column.name}
         labelPlacement="end"
-        control={
-            <Switch checked={column.hidden} onChange={() => action(column)} />
-        }
+        control={<Switch checked={column.hidden} onChange={() => action(column)} />}
         sx={{
             display: "block",
         }}
@@ -35,9 +25,7 @@ type HiddenColumnsDialogProps = {
     onClose: () => void
 }
 
-export const HiddenColumnsDialog: React.FC<
-    HiddenColumnsDialogProps
-> = props => {
+export const HiddenColumnsDialog: React.FC<HiddenColumnsDialogProps> = props => {
     const { snackError } = useSnacki()
     const { data } = useView()
     const { changeAttributes } = useColumn()
@@ -48,9 +36,7 @@ export const HiddenColumnsDialog: React.FC<
                 hidden: !column.hidden,
             })
         } catch (error) {
-            snackError(
-                "Die Sichtbarkeit der Spalte konnte nicht geändert werden!"
-            )
+            snackError("Die Sichtbarkeit der Spalte konnte nicht geändert werden!")
         }
     }
 
@@ -61,11 +47,7 @@ export const HiddenColumnsDialog: React.FC<
             <DialogTitle>Verstecke Spalten</DialogTitle>
             <DialogContent>
                 {data.columns.map(column => (
-                    <HiddenColumnSwitch
-                        key={column.id}
-                        column={column}
-                        action={changeVisibility}
-                    />
+                    <HiddenColumnSwitch key={column.id} column={column} action={changeVisibility} />
                 ))}
             </DialogContent>
             <DialogActions>

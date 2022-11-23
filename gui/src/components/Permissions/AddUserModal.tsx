@@ -19,10 +19,7 @@ import { useRoles } from "hooks/useRoles"
 type AddUserModalProps = {
     open: boolean
     onClose: () => void
-    onHandleCreateUser: (
-        user: Omit<User, "id">,
-        password: string
-    ) => Promise<void>
+    onHandleCreateUser: (user: Omit<User, "id">, password: string) => Promise<void>
 }
 
 const AddUserModal: React.FC<AddUserModalProps> = props => {
@@ -33,8 +30,7 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
     const [valid, setValid] = useState<boolean>(false)
 
     useEffect(() => {
-        if (isValidEMailAddress(email) && password.length >= 8 && role != null)
-            setValid(true)
+        if (isValidEMailAddress(email) && password.length >= 8 && role != null) setValid(true)
         else setValid(false)
     }, [email, password, role])
 
@@ -79,12 +75,7 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
                 </FormControl>
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     <InputLabel id="adduser-select-role">Rolle</InputLabel>
-                    <Select
-                        labelId="adduser-select-role"
-                        label="Rolle"
-                        value={role ?? ""}
-                        onChange={handleChangeRole}
-                    >
+                    <Select labelId="adduser-select-role" label="Rolle" value={role ?? ""} onChange={handleChangeRole}>
                         {roles.map(r => (
                             <MenuItem key={r.id} value={r.id}>
                                 {r.name}

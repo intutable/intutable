@@ -1,13 +1,6 @@
 import MenuIcon from "@mui/icons-material/Menu"
 import SearchIcon from "@mui/icons-material/Search"
-import {
-    AppBar,
-    Box,
-    IconButton,
-    Stack,
-    Toolbar,
-    Typography,
-} from "@mui/material"
+import { AppBar, Box, IconButton, Stack, Toolbar, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useUser } from "auth"
 import Link from "components/Link"
@@ -40,14 +33,10 @@ const Header = () => {
                     ...(drawerOpen && {
                         marginLeft: drawerWidth,
                         width: `calc(100% - ${drawerWidth}px)`,
-                        transition: theme.transitions.create(
-                            ["width", "margin"],
-                            {
-                                easing: theme.transitions.easing.sharp,
-                                duration:
-                                    theme.transitions.duration.enteringScreen,
-                            }
-                        ),
+                        transition: theme.transitions.create(["width", "margin"], {
+                            easing: theme.transitions.easing.sharp,
+                            duration: theme.transitions.duration.enteringScreen,
+                        }),
                     }),
                 }}
             >
@@ -79,8 +68,7 @@ const Header = () => {
                                     color="inherit"
                                     noWrap
                                     sx={{
-                                        fontWeight:
-                                            theme.typography.fontWeightBold,
+                                        fontWeight: theme.typography.fontWeightBold,
                                     }}
                                 >
                                     Dekanatsverwaltung
@@ -104,11 +92,7 @@ const Header = () => {
             </AppBar>
 
             {/* Drawer Menu */}
-            <Drawer
-                width={drawerWidth}
-                open={drawerOpen}
-                toggle={toggleDrawer}
-            />
+            <Drawer width={drawerWidth} open={drawerOpen} toggle={toggleDrawer} />
         </>
     )
 }

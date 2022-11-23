@@ -1,13 +1,4 @@
-import {
-    Box,
-    Button,
-    Chip,
-    Stack,
-    Typography,
-    Paper,
-    Container,
-    useTheme,
-} from "@mui/material"
+import { Box, Button, Chip, Stack, Typography, Paper, Container, useTheme } from "@mui/material"
 import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
 import { VersionTag } from "types/VersionTag"
@@ -116,11 +107,7 @@ export const Release: React.FC<ReleaseProps> = props => {
                             },
                         }}
                     >
-                        <Button
-                            variant="contained"
-                            color="warning"
-                            size="small"
-                        >
+                        <Button variant="contained" color="warning" size="small">
                             Report A Bug
                         </Button>
                     </Link>

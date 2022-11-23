@@ -11,9 +11,7 @@ import { User } from "@backend/permissions/types"
 import { useUsersAsAdmin, useUsersAsAdminConfig } from "hooks/useUsersAsAdmin"
 import { UserList, AddUserModal, EditUserModal } from "components/Permissions"
 
-const Users: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ fallback }) => (
+const Users: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ fallback }) => (
     <SWRConfig value={{ fallback }}>
         <UserPage />
     </SWRConfig>
@@ -24,9 +22,7 @@ const UserPage: React.FC = () => {
     const router = useRouter()
 
     const [addUserAnchorEl, setAddUserAnchorEl] = useState<Element | null>(null)
-    const [editUserAnchorEl, setEditUserAnchorEl] = useState<Element | null>(
-        null
-    )
+    const [editUserAnchorEl, setEditUserAnchorEl] = useState<Element | null>(null)
     const [userBeingEdited, setUserBeingEdited] = useState<User | null>(null)
 
     if (!users) {
@@ -34,16 +30,11 @@ const UserPage: React.FC = () => {
         return null
     }
 
-    const handleOpenAddUserModal = (
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-    ) => {
+    const handleOpenAddUserModal = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         setAddUserAnchorEl(event.currentTarget)
     }
 
-    const handleOpenEditUserModal = async (
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-        user: User
-    ) => {
+    const handleOpenEditUserModal = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, user: User) => {
         setEditUserAnchorEl(event.currentTarget)
         setUserBeingEdited(user)
     }

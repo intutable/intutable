@@ -11,12 +11,7 @@ export enum ErrorCode {
     changeDefaultView,
 }
 
-export function error<A>(
-    method: string,
-    message: string,
-    code?: ErrorCode,
-    reason?: unknown
-): Promise<A> {
+export function error<A>(method: string, message: string, code?: ErrorCode, reason?: unknown): Promise<A> {
     let reason_: unknown
     if (reason instanceof Error) reason_ = reason.toString()
     else reason_ = reason

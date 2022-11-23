@@ -32,10 +32,7 @@ export const useTable = (options?: TableHookOptions) => {
     const { table: api_table } = useAPI()
 
     // if the table param is specified, use that over the api context
-    const tableToFetch = useMemo(
-        () => (options?.table ? options.table : api_table),
-        [api_table, options?.table]
-    )
+    const tableToFetch = useMemo(() => (options?.table ? options.table : api_table), [api_table, options?.table])
 
     const { data, error, mutate, isValidating } = useSWR<TableData>(
         tableToFetch

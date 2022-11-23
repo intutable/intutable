@@ -1,13 +1,5 @@
 import * as Property from "@datagrid/ColumnProperties"
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    ListItemText,
-    MenuItem,
-} from "@mui/material"
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, ListItemText, MenuItem } from "@mui/material"
 import React, { useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
@@ -18,9 +10,7 @@ type ColumnAttributesWindowProps = {
     column: Column.Serialized
 }
 
-export const ColumnAttributesWindow: React.FC<
-    ColumnAttributesWindowProps
-> = props => {
+export const ColumnAttributesWindow: React.FC<ColumnAttributesWindowProps> = props => {
     const { open, onClose, column } = props
 
     return (
@@ -47,9 +37,7 @@ export type ColumnAttributesWindowButtonProps = {
     onCloseContextMenu: () => void
 }
 
-export const ColumnAttributesWindowButton: React.FC<
-    ColumnAttributesWindowButtonProps
-> = props => {
+export const ColumnAttributesWindowButton: React.FC<ColumnAttributesWindowButtonProps> = props => {
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openModal = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
         e.preventDefault()

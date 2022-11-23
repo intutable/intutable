@@ -24,11 +24,7 @@ export const ChangeCellType: React.FC<{
             const currentCell = cells.getCell(props.column.cellType)
             const wantedCell = cells.getCell(value)
 
-            const invalidCells = ColumnUtility.canInterchangeColumnType(
-                wantedCell.brand,
-                props.column,
-                view!
-            )
+            const invalidCells = ColumnUtility.canInterchangeColumnType(wantedCell.brand, props.column, view!)
 
             if (invalidCells !== true) {
                 const allInvalid = invalidCells.length === view!.rows.length
@@ -37,16 +33,11 @@ export const ChangeCellType: React.FC<{
                         `Der Spaltentyp '${currentCell.label}' kann nicht zu '${wantedCell.label}' konvertiert werden.`
                     )
                 return snackError(
-                    `Die Zeilen ${invalidCells.join(",")} können nicht zu '${
-                        wantedCell.label
-                    }' konvertiert werden.`,
+                    `Die Zeilen ${invalidCells.join(",")} können nicht zu '${wantedCell.label}' konvertiert werden.`,
                     {
                         persist: true,
                         action: key => (
-                            <Button
-                                onClick={() => closeSnackbar(key)}
-                                sx={{ color: "white" }}
-                            >
+                            <Button onClick={() => closeSnackbar(key)} sx={{ color: "white" }}>
                                 Verstanden
                             </Button>
                         ),
@@ -58,9 +49,7 @@ export const ChangeCellType: React.FC<{
                 cellType: wantedCell.brand,
             })
 
-            snackSuccess(
-                `Der Spaltentype wurde von '${currentCell.label}' zu '${wantedCell.label}' konvertiert.`
-            )
+            snackSuccess(`Der Spaltentype wurde von '${currentCell.label}' zu '${wantedCell.label}' konvertiert.`)
         } catch (error) {
             snackError("Es ist ein Fehler aufgetreten.")
         }

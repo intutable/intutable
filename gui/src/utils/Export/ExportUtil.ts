@@ -95,10 +95,7 @@ export class ExportUtil {
     /** Get the view data */
     private async fetchData(): Promise<ViewData.Serialized> {
         return withReadOnlyConnection(this.user, async sessionID =>
-            coreRequest<ViewData.Serialized>(
-                getViewData(sessionID, this.viewId),
-                this.user.authCookie
-            )
+            coreRequest<ViewData.Serialized>(getViewData(sessionID, this.viewId), this.user.authCookie)
         )
     }
 
@@ -112,10 +109,7 @@ export class ExportUtil {
         let rows: ViewData.Serialized["rows"] = data.rows
 
         // only use the selected rows, if specified
-        if (
-            this.job.options.rowSelection != null &&
-            this.job.options.rowSelection.length > 0
-        ) {
+        if (this.job.options.rowSelection != null && this.job.options.rowSelection.length > 0) {
             // find the index column where the information about the indices are stored,
             // because the indices of each row are not accessible in the viewData
             // due to prefixes of the keys
@@ -127,9 +121,7 @@ export class ExportUtil {
             }))
 
             // filter out the rows that are not selected
-            rows = rows.filter(row =>
-                this.job.options.rowSelection!.includes(row.index)
-            )
+            rows = rows.filter(row => this.job.options.rowSelection!.includes(row.index))
         }
 
         return {
@@ -148,8 +140,7 @@ export class ExportUtil {
                 const util = new ColumnUtility(col)
 
                 const value = row[col.key]
-                const exported =
-                    value == null || value === "" ? "" : util.cell.export(value)
+                const exported = value == null || value === "" ? "" : util.cell.export(value)
                 const key = capitalizeFirstLetter(col.name)
 
                 intersection[key] = exported
@@ -163,17 +154,13 @@ export class ExportUtil {
     private async toCSV() {
         if (this.exportedData == null) throw new Error("No data was exported")
 
-        const _excludeEmptyRows = (
-            data: typeof this.exportedData
-        ): typeof this.exportedData =>
+        const _excludeEmptyRows = (data: typeof this.exportedData): typeof this.exportedData =>
             data.filter(row => ExportUtil.isEmptyRow(row) === false)
 
         // `includeEmptyRows` does not work
         // it probably depends on what `empty` means
         const data =
-            this.job.options.includeEmptyRows ?? false
-                ? this.exportedData
-                : _excludeEmptyRows(this.exportedData)
+            this.job.options.includeEmptyRows ?? false ? this.exportedData : _excludeEmptyRows(this.exportedData)
 
         return await parseAsync(data, {
             header: this.job.options.includeHeader ?? false, // default 'false' if not specified
@@ -187,15 +174,11 @@ export class ExportUtil {
     }
 
     // TODO: frontend just overrides the filename
-    static makeFilename(
-        file: ExportRequest["file"] & Pick<ExportRequest, "date">
-    ): string {
+    static makeFilename(file: ExportRequest["file"] & Pick<ExportRequest, "date">): string {
         // default 'true' if not specified
         if (file.excludeDateString == null || file.excludeDateString === false)
             // TODO: make filename OS friendly, exclude some special characters
-            return `${file.name} ${file.date.toLocaleString("de-DE")}.${
-                file.format
-            }`
+            return `${file.name} ${file.date.toLocaleString("de-DE")}.${file.format}`
 
         return `${file.name}.${file.format}`
     }

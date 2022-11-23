@@ -21,12 +21,8 @@ const NoRowsFallback = () => {
                     mb: theme.spacing(2),
                 }}
             />
-            <Typography sx={{ color: theme.palette.text.secondary }}>
-                Diese Tabelle hat noch keinen Inhalt.
-            </Typography>
-            <Typography sx={{ color: theme.palette.text.secondary }}>
-                Füge Spalten und Zeilen hinzu!
-            </Typography>
+            <Typography sx={{ color: theme.palette.text.secondary }}>Diese Tabelle hat noch keinen Inhalt.</Typography>
+            <Typography sx={{ color: theme.palette.text.secondary }}>Füge Spalten und Zeilen hinzu!</Typography>
         </Box>
     )
 }

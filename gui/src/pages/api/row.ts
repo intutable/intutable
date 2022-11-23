@@ -1,9 +1,6 @@
 import { deleteRow, insert, update } from "@intutable/database/dist/requests"
 import { getTableData } from "@intutable/project-management/dist/requests"
-import {
-    TableDescriptor,
-    TableData,
-} from "@intutable/project-management/dist/types"
+import { TableDescriptor, TableData } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
@@ -20,8 +17,7 @@ type IndexChange = {
 }
 
 // compare two rows by index
-const byIndex = (a: Obj, b: Obj) =>
-    (a.index as number) > (b.index as number) ? 1 : -1
+const byIndex = (a: Obj, b: Obj) => ((a.index as number) > (b.index as number) ? 1 : -1)
 
 /**
  * Create a new row with some starting values. Ensuring that the types of
@@ -47,15 +43,11 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
 
     const rowId = await withReadWriteConnection(user, async sessionID => {
-        const oldData = await coreRequest<TableData<unknown>>(
-            getTableData(sessionID, table.id),
-            user.authCookie
-        )
+        const oldData = await coreRequest<TableData<unknown>>(getTableData(sessionID, table.id), user.authCookie)
 
         // mind-bending "insert at certain index" logic... good lord!
         let newRow: Obj
-        if (atIndex == null || atIndex === oldData.rows.length)
-            newRow = { ...rowToInsert, index: oldData.rows.length }
+        if (atIndex == null || atIndex === oldData.rows.length) newRow = { ...rowToInsert, index: oldData.rows.length }
         else {
             newRow = { ...rowToInsert, index: atIndex }
             const shiftedRows = (oldData.rows as Row[])
@@ -82,10 +74,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         }
 
         // create row in database
-        return coreRequest<number>(
-            insert(sessionID, table.key, newRow, ["_id"]),
-            user.authCookie
-        )
+        return coreRequest<number>(insert(sessionID, table.key, newRow, ["_id"]), user.authCookie)
     })
 
     res.status(200).send(rowId)
@@ -146,15 +135,9 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
 
     await withReadWriteConnection(user, async sessionID => {
-        await coreRequest(
-            deleteRow(sessionID, table.key, condition),
-            user.authCookie
-        )
+        await coreRequest(deleteRow(sessionID, table.key, condition), user.authCookie)
         // shift indices
-        const newData = await coreRequest<TableData<unknown>>(
-            getTableData(sessionID, table.id),
-            user.authCookie
-        )
+        const newData = await coreRequest<TableData<unknown>>(getTableData(sessionID, table.id), user.authCookie)
 
         const rows = newData.rows as Row[]
         const newIndices: IndexChange[] = rows
@@ -195,9 +178,7 @@ export default withSessionRoute(
                 await DELETE(req, res)
                 break
             default:
-                res.status(
-                    ["HEAD", "GET"].includes(req.method!) ? 500 : 501
-                ).send("This method is not supported!")
+                res.status(["HEAD", "GET"].includes(req.method!) ? 500 : 501).send("This method is not supported!")
         }
     })
 )

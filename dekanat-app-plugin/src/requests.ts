@@ -1,9 +1,5 @@
 import { types as lv } from "@intutable/lazy-views"
-import {
-    StandardColumnSpecifier,
-    CustomColumnAttributes,
-    Filter,
-} from "shared/dist/types"
+import { StandardColumnSpecifier, CustomColumnAttributes, Filter } from "shared/dist/types"
 import { TableId, ViewId } from "./types"
 
 export const CHANNEL = "dekanat-app-plugin"
@@ -22,12 +18,7 @@ export const CHANNEL = "dekanat-app-plugin"
  * Response: {@link types.TableDescriptor} name and ID of the newly
  * created table.
  */
-export function createTable(
-    sessionID: string,
-    roleId: number,
-    projectId: number,
-    name: string
-) {
+export function createTable(sessionID: string, roleId: number, projectId: number, name: string) {
     return {
         channel: CHANNEL,
         method: createTable.name,
@@ -217,11 +208,7 @@ export function getViewData(sessionID: string, viewId: ViewId) {
  * Response: Filter[] the newly updated filters; they may be simplified or
  * re-ordered, but are semantically the same.
  */
-export function changeViewFilters(
-    sessionID: string,
-    viewId: ViewId,
-    newFilters: Filter[]
-) {
+export function changeViewFilters(sessionID: string, viewId: ViewId, newFilters: Filter[]) {
     return {
         channel: CHANNEL,
         method: changeViewFilters.name,

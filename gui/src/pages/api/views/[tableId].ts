@@ -14,18 +14,11 @@ import { withReadOnlyConnection } from "api/utils/databaseConnection"
  * URL: `/api/views/[tableId]`
  * ```
  */
-const GET = async (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    tableId: ViewDescriptor["id"]
-) => {
+const GET = async (req: NextApiRequest, res: NextApiResponse, tableId: ViewDescriptor["id"]) => {
     try {
         const user = req.session.user!
         const views = await withReadOnlyConnection(user, async sessionID =>
-            coreRequest<ViewDescriptor[]>(
-                listViews(sessionID, tableId),
-                user.authCookie
-            )
+            coreRequest<ViewDescriptor[]>(listViews(sessionID, tableId), user.authCookie)
         )
 
         res.status(200).json(views)

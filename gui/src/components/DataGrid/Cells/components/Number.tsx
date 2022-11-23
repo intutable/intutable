@@ -1,11 +1,12 @@
-import { TextField } from "@mui/material"
+import LooksOneIcon from "@mui/icons-material/LooksOne"
+import { TextField, TextFieldProps } from "@mui/material"
 import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
 import React, { useState } from "react"
 import { EditorProps } from "react-data-grid"
 import { Row } from "types"
-import { ExposedInputProps } from "../abstract/Cell"
 import { NumericCell } from "../abstract/NumericCell"
-import LooksOneIcon from "@mui/icons-material/LooksOne"
+import { ExposedInputProps } from "../abstract/protocols"
 
 export class Num extends NumericCell {
     readonly brand = "number"
@@ -21,31 +22,24 @@ export class Num extends NumericCell {
                 [key]: e.target.value,
             })
 
-        return (
-            <this.Input
-                onChange={handleChange}
-                type="number"
-                onBlur={() => props.onClose(true)}
-                value={content}
-            />
-        )
+        return <this.Input onChange={handleChange} type="number" onBlur={() => props.onClose(true)} value={content} />
     }
 
-    public ExposedInput = (props: ExposedInputProps) => {
+    public ExposedInput: React.FC<ExposedInputProps<number | null, TextFieldProps>> = props => {
         const { getRowId, updateRow } = useRow()
+        const { snackError } = useSnacki()
 
-        const [content, setContent] = useState(props.content ?? "")
+        const [value, setValue] = useState(props.content ?? "")
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            setContent(e.target.value)
-            if (props.update.mode === "alien")
-                props.update.onChange(e.target.value)
+            if (this.isValid(e.target.value)) setValue(e.target.value)
         }
 
         const handleBlur = async () => {
-            if (props.update.mode === "self") {
-                const { row, column } = props.update
-                await updateRow(column, getRowId(row), content)
+            try {
+                await updateRow(props.column, props.row, value)
+            } catch (e) {
+                snackError("Der Wert konnte nicht geändert werden")
             }
         }
 
@@ -55,7 +49,8 @@ export class Num extends NumericCell {
                 type="number"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={content}
+                value={value}
+                {...props.InputProps}
             />
         )
     }

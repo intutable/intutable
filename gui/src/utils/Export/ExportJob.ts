@@ -8,10 +8,7 @@ import { ExportRequest } from "./ExportRequest"
  * This class can be used in the frontend.
  */
 export class ExportJob {
-    constructor(
-        readonly view: ViewDescriptor,
-        public requestObject: ExportRequest
-    ) {}
+    constructor(readonly view: ViewDescriptor, public requestObject: ExportRequest) {}
 
     /**
      * Sends a request to the API route that handles exports.

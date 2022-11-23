@@ -1,5 +1,5 @@
 import HideSourceIcon from "@mui/icons-material/HideSource"
-import { Button } from "@mui/material"
+import { Button, ListItemText, MenuItem } from "@mui/material"
 import React, { useState } from "react"
 import { HiddenColumnsDialog } from "./HiddenColumnsDialog"
 
@@ -19,10 +19,25 @@ export const HiddenColumns: React.FC = () => {
             <Button startIcon={<HideSourceIcon />} onClick={openModal}>
                 Versteckte Spalten
             </Button>
-            <HiddenColumnsDialog
-                open={anchorEL !== null}
-                onClose={closeModal}
-            />
+            <HiddenColumnsDialog open={anchorEL !== null} onClose={closeModal} />
+        </>
+    )
+}
+
+export const HiddenColumnsMenuItem: React.FC = () => {
+    const [anchorEL, setAnchorEL] = useState<Element | null>(null)
+    const openModal = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+        e.preventDefault()
+        setAnchorEL(e.currentTarget)
+    }
+    const closeModal = () => setAnchorEL(null)
+
+    return (
+        <>
+            <MenuItem onClick={openModal}>
+                <ListItemText>Versteckte Spalten</ListItemText>
+            </MenuItem>
+            <HiddenColumnsDialog open={anchorEL !== null} onClose={closeModal} />
         </>
     )
 }

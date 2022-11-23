@@ -1,15 +1,8 @@
 /**
  * Specifications of example data.
  */
-import {
-    Column,
-    ColumnType,
-    SimpleColumnOption,
-} from "@intutable/database/dist/types"
-import {
-    TableDescriptor,
-    ViewDescriptor,
-} from "@intutable/lazy-views/dist/types"
+import { Column, ColumnType, SimpleColumnOption } from "@intutable/database/dist/types"
+import { TableDescriptor, ViewDescriptor } from "@intutable/lazy-views/dist/types"
 
 import { DB } from "shared/dist/types"
 import {

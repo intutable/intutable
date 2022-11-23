@@ -27,10 +27,7 @@ export type CastOperationEmpty = {
      * this wrapper ensures that null/undefined is returned
      * in case.
      */
-    orEmpty: <T extends ValueOf<CastOperation>>(
-        castFn: T,
-        value: unknown
-    ) => null | undefined | ReturnType<T>
+    orEmpty: <T extends ValueOf<CastOperation>>(castFn: T, value: unknown) => null | undefined | ReturnType<T>
 }
 
 export class Cast implements CastOperation, CastOperationEmpty {
@@ -38,10 +35,7 @@ export class Cast implements CastOperation, CastOperationEmpty {
         return value === null || typeof value === "undefined"
     }
 
-    orEmpty<T extends ValueOf<CastOperation>>(
-        castFn: T,
-        value: unknown
-    ): null | undefined | ReturnType<T> {
+    orEmpty<T extends ValueOf<CastOperation>>(castFn: T, value: unknown): null | undefined | ReturnType<T> {
         return this.isEmpty(value) ? value : (castFn(value) as ReturnType<T>)
     }
 
@@ -74,9 +68,7 @@ export class Cast implements CastOperation, CastOperationEmpty {
             const bool = this.toBoolean(value) // passes
             return bool ? 1 : 0
         } catch (_) {
-            throw new RangeError(
-                `Could not cast value to (database) boolean: ${value}`
-            )
+            throw new RangeError(`Could not cast value to (database) boolean: ${value}`)
         }
     }
 
@@ -117,9 +109,7 @@ export class Cast implements CastOperation, CastOperationEmpty {
             const arr = this.toArray(value) // passes
             return JSON.stringify(arr)
         } catch (_) {
-            throw new RangeError(
-                `Could not cast value to (database) Array: ${value}`
-            )
+            throw new RangeError(`Could not cast value to (database) Array: ${value}`)
         }
     }
 
@@ -143,9 +133,7 @@ export class Cast implements CastOperation, CastOperationEmpty {
             const date = this.toDate(value) // passes
             return date.toString()
         } catch (_) {
-            throw new RangeError(
-                `Could not cast value to (database) Date: ${value}`
-            )
+            throw new RangeError(`Could not cast value to (database) Date: ${value}`)
         }
     }
 

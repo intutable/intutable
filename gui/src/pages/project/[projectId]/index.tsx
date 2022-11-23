@@ -1,16 +1,7 @@
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
-import {
-    Box,
-    Card,
-    CardContent,
-    CircularProgress,
-    Grid,
-    Menu,
-    MenuItem,
-    Typography,
-} from "@mui/material"
+import { Box, Card, CardContent, CircularProgress, Grid, Menu, MenuItem, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
@@ -50,9 +41,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = props => {
             }}
         >
             {Array.isArray(props.children) ? (
-                props.children.map((item, i) => (
-                    <MenuItem key={i}>{item}</MenuItem>
-                ))
+                props.children.map((item, i) => <MenuItem key={i}>{item}</MenuItem>)
             ) : (
                 <MenuItem>{props.children}</MenuItem>
             )}
@@ -100,9 +89,7 @@ const TableCard: React.FC<TableCardProps> = props => {
     const theme = useTheme()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
-    const handleOpenContextMenu = (
-        event: React.MouseEvent<HTMLDivElement, MouseEvent>
-    ) => {
+    const handleOpenContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault()
         setAnchorEL(event.currentTarget)
     }
@@ -133,11 +120,7 @@ const TableCard: React.FC<TableCardProps> = props => {
             </Card>
 
             {anchorEL && (
-                <TableContextMenu
-                    anchorEL={anchorEL}
-                    open={anchorEL != null}
-                    onClose={handleCloseContextMenu}
-                >
+                <TableContextMenu anchorEL={anchorEL} open={anchorEL != null} onClose={handleCloseContextMenu}>
                     <Box
                         onClick={async () => {
                             handleCloseContextMenu()
@@ -213,18 +196,14 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
         } catch (error) {
             const err = makeError(error)
             if (err.message === "alreadyTaken")
-                snackError(
-                    "Dieser Name wird bereits für eine deiner Tabellen verwendet!"
-                )
+                snackError("Dieser Name wird bereits für eine deiner Tabellen verwendet!")
             else snackError("Die Tabelle konnte nicht umbenannt werden!")
         }
     }
 
     const handleDeleteTable = async (joinTable: ViewDescriptor) => {
         try {
-            const confirmed = confirm(
-                "Möchtest du deine Tabelle wirklich löschen?"
-            )
+            const confirmed = confirm("Möchtest du deine Tabelle wirklich löschen?")
             if (!confirmed) return
             await fetcher({
                 url: `/api/table/${joinTable.id}`,
@@ -287,9 +266,7 @@ type PageProps = {
     project: ProjectDescriptor
     fallback: { [cackeKey: string]: ViewDescriptor[] }
 }
-const Page: NextPage<
-    InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ fallback, project }) => (
+const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ fallback, project }) => (
     <SWRConfig value={{ fallback }}>
         <TableList project={project} />
     </SWRConfig>
@@ -297,10 +274,7 @@ const Page: NextPage<
 
 export const getServerSideProps = withSSRCatch(
     withSessionSsr<PageProps>(async context => {
-        const query = context.query as DynamicRouteQuery<
-            typeof context.query,
-            "projectId"
-        >
+        const query = context.query as DynamicRouteQuery<typeof context.query, "projectId">
         const user = context.req.session.user
 
         if (user == null || user.isLoggedIn === false)
@@ -308,9 +282,7 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
-        const projectId: ProjectDescriptor["id"] = Number.parseInt(
-            query.projectId
-        )
+        const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
         if (isNaN(projectId))
             return {
                 notFound: true,
@@ -335,8 +307,7 @@ export const getServerSideProps = withSSRCatch(
             props: {
                 project,
                 fallback: {
-                    [unstable_serialize(useTablesConfig.cacheKey(projectId))]:
-                        tables,
+                    [unstable_serialize(useTablesConfig.cacheKey(projectId))]: tables,
                 },
             },
         }

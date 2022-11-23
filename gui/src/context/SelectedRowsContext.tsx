@@ -11,17 +11,14 @@ const initialState: SelectedRowsContextProps = {
     setSelectedRows: undefined!,
 }
 
-const SelectedRowsContext =
-    React.createContext<SelectedRowsContextProps>(initialState)
+const SelectedRowsContext = React.createContext<SelectedRowsContextProps>(initialState)
 
 export const useSelectedRows = () => React.useContext(SelectedRowsContext)
 
 export const SelectedRowsContextProvider: React.FC<{
     children: React.ReactNode
 }> = props => {
-    const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(
-        () => new Set()
-    )
+    const [selectedRows, setSelectedRows] = useState<ReadonlySet<number>>(() => new Set())
 
     const resetSelectedRows = () => setSelectedRows(() => new Set())
 

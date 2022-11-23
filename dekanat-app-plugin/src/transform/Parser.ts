@@ -1,14 +1,5 @@
-import type {
-    ColumnInfo,
-    Condition,
-    ViewData as RawViewData,
-} from "@intutable/lazy-views"
-import {
-    DB,
-    SerializedColumn,
-    SerializedViewData,
-    TableData,
-} from "shared/dist/types"
+import type { ColumnInfo, Condition, ViewData as RawViewData } from "@intutable/lazy-views"
+import { DB, SerializedColumn, SerializedViewData, TableData } from "shared/dist/types"
 import { Filter } from "../types/filter"
 import { cast } from "./cast"
 import { internalColumnUtil } from "./InternalColumnUtil"
@@ -50,26 +41,14 @@ export class ParserClass {
             ...serializedProps,
             isUserPrimaryKey: cast.toBoolean(column.isUserPrimaryKey),
             hidden: cast.toBoolean(column.hidden),
-            width: cast.orEmpty(
-                cast.or.bind(
-                    cast.toNumber.bind(cast),
-                    cast.toString.bind(cast)
-                ),
-                column.width
-            ),
+            width: cast.orEmpty(cast.or.bind(cast.toNumber.bind(cast), cast.toString.bind(cast)), column.width),
             minWidth: cast.orEmpty(cast.toNumber.bind(cast), column.minWidth),
             maxWidth: cast.orEmpty(cast.toNumber.bind(cast), column.maxWidth),
             editable: cast.orEmpty(cast.toBoolean.bind(cast), column.editable),
             frozen: cast.orEmpty(cast.toBoolean.bind(cast), column.frozen),
-            resizable: cast.orEmpty(
-                cast.toBoolean.bind(cast),
-                column.resizable
-            ),
+            resizable: cast.orEmpty(cast.toBoolean.bind(cast), column.resizable),
             sortable: cast.orEmpty(cast.toBoolean.bind(cast), column.sortable),
-            sortDescendingFirst: cast.orEmpty(
-                cast.toBoolean.bind(cast),
-                column.sortDescendingFirst
-            ),
+            sortDescendingFirst: cast.orEmpty(cast.toBoolean.bind(cast), column.sortDescendingFirst),
         }
         return casted
     }
@@ -78,9 +57,7 @@ export class ParserClass {
         const restructured = restructure.column(column)
         return this.castColumn(restructured)
     }
-    public deparseColumn(
-        column: Partial<SerializedColumn>
-    ): Partial<DB.Column> {
+    public deparseColumn(column: Partial<SerializedColumn>): Partial<DB.Column> {
         /* This method included restructuring and casting */
         const keys = Object.keys(column) as (keyof SerializedColumn)[]
         const dbcolumn: Partial<DB.Column> = {}
@@ -114,20 +91,14 @@ export class ParserClass {
                 case "width":
                 case "minWidth":
                 case "maxWidth":
-                    dbcolumn[key] = cast.orEmpty(
-                        cast.toString.bind(cast),
-                        value
-                    )
+                    dbcolumn[key] = cast.orEmpty(cast.toString.bind(cast), value)
                     break
                 case "editable":
                 case "frozen":
                 case "resizable":
                 case "sortable":
                 case "sortDescendingFirst":
-                    dbcolumn[key] = cast.orEmpty(
-                        cast.toDatabaseBoolean.bind(cast),
-                        value
-                    )
+                    dbcolumn[key] = cast.orEmpty(cast.toDatabaseBoolean.bind(cast), value)
                     break
 
                 // ignore keys of SerializedColumn that are not in DB.Column
@@ -181,10 +152,7 @@ export class ParserClass {
     }
 
     /** sort algorithm for columns based on its index */
-    static sortByIndex<T extends DB.Restructured.Column | SerializedColumn>(
-        a: T,
-        b: T
-    ) {
+    static sortByIndex<T extends DB.Restructured.Column | SerializedColumn>(a: T, b: T) {
         return a.index > b.index ? 1 : -1
     }
 }

@@ -1,15 +1,7 @@
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import ClearIcon from "@mui/icons-material/Clear"
-import {
-    IconButton,
-    ListItem,
-    ListItemButton,
-    ListItemText,
-    Menu,
-    MenuItem,
-    Typography,
-} from "@mui/material"
+import { IconButton, ListItem, ListItemButton, ListItemText, Menu, MenuItem, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useAPI } from "context/APIContext"
 import React, { useState } from "react"
@@ -53,9 +45,7 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
         return props.onHandleRenameView(view, newName)
     }
 
-    const handleDeleteViewButton = (
-        event: React.MouseEvent<HTMLButtonElement>
-    ) => {
+    const handleDeleteViewButton = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation()
         const confirmed = confirm("Sicht wirklich löschen?")
         if (confirmed) return props.onHandleDeleteView(view)
@@ -67,10 +57,7 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                 sx={{
                     p: 0,
                     mb: 0.5,
-                    bgcolor:
-                        view.id === currentView?.id
-                            ? theme.palette.grey[100]
-                            : undefined,
+                    bgcolor: view.id === currentView?.id ? theme.palette.grey[100] : undefined,
                 }}
                 dense
                 disablePadding
@@ -89,16 +76,11 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                         textOverflow: "ellipsis",
                     }}
                 >
-                    <ListItemButton
-                        onClick={() => props.onHandleSelectView(view)}
-                    >
+                    <ListItemButton onClick={() => props.onHandleSelectView(view)}>
                         {props.icon || <ChevronRightIcon />}
                         <ListItemText sx={{ ml: 1 }} primary={view.name} />
                         {hovering && (
-                            <IconButton
-                                size="small"
-                                onClick={handleDeleteViewButton}
-                            >
+                            <IconButton size="small" onClick={handleDeleteViewButton}>
                                 <ClearIcon
                                     sx={{
                                         fontSize: "80%",

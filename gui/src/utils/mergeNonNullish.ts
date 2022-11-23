@@ -20,13 +20,11 @@ export const mergeNonNullish = <R>(obj1: Obj, obj2: Obj): R => {
     const merged: Obj = {}
 
     for (const key in obj1) {
-        if (merged[key] === undefined || merged[key] === null)
-            merged[key] = obj1[key]
+        if (merged[key] === undefined || merged[key] === null) merged[key] = obj1[key]
     }
 
     for (const key in obj2) {
-        if (merged[key] === undefined || merged[key] === null)
-            merged[key] = obj2[key]
+        if (merged[key] === undefined || merged[key] === null) merged[key] = obj2[key]
     }
 
     return merged as R

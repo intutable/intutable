@@ -114,24 +114,14 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
                     },
                 }}
             >
-                <MenuItem onClick={handleCreateRow.bind(null, props.rowIdx)}>
-                    Zeile oberhalb einfügen
-                </MenuItem>
+                <MenuItem onClick={handleCreateRow.bind(null, props.rowIdx)}>Zeile oberhalb einfügen</MenuItem>
                 <MenuItem
-                    onClick={handleDeleteRow.bind(
-                        null,
-                        props.rowIdx,
-                        props.row
-                    )}
+                    onClick={handleDeleteRow.bind(null, props.rowIdx, props.row)}
                     sx={{ color: theme.palette.warning.main }}
                 >
                     Zeile löschen
                 </MenuItem>
-                <MenuItem
-                    onClick={handleCreateRow.bind(null, props.rowIdx + 1)}
-                >
-                    Zeile unterhalb einfügen
-                </MenuItem>
+                <MenuItem onClick={handleCreateRow.bind(null, props.rowIdx + 1)}>Zeile unterhalb einfügen</MenuItem>
             </Menu>
         </>
     )

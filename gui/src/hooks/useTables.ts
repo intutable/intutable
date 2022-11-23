@@ -43,9 +43,7 @@ export const useTables = (options?: UseTablesOptions) => {
         mutate,
         isValidating,
     } = useSWR<ViewDescriptor[]>(
-        projectToUse
-            ? { url: `/api/tables/${projectToUse.id}`, method: "GET" }
-            : null,
+        projectToUse ? { url: `/api/tables/${projectToUse.id}`, method: "GET" } : null,
         options?.swrOptions
     )
 

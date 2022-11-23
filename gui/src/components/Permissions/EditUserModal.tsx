@@ -42,8 +42,7 @@ const EditUserModal: React.FC<EditUserModalProps> = props => {
     }
 
     const handleSaveUser = async () => {
-        if (role !== null && role !== user.role.id)
-            await onHandleChangeRole(user.id, role)
+        if (role !== null && role !== user.role.id) await onHandleChangeRole(user.id, role)
         props.onClose()
     }
 
@@ -53,21 +52,11 @@ const EditUserModal: React.FC<EditUserModalProps> = props => {
             <DialogContent>
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     {/* Name */}
-                    <TextField
-                        disabled
-                        label="E-Mail"
-                        value={user.email}
-                        variant="outlined"
-                    />
+                    <TextField disabled label="E-Mail" value={user.email} variant="outlined" />
                 </FormControl>
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     <InputLabel id="edituser-select-role">Rolle</InputLabel>
-                    <Select
-                        labelId="edituser-select-role"
-                        label="Rolle"
-                        value={role ?? ""}
-                        onChange={handleChangeRole}
-                    >
+                    <Select labelId="edituser-select-role" label="Rolle" value={role ?? ""} onChange={handleChangeRole}>
                         {roles.map(r => (
                             <MenuItem key={r.id} value={r.id}>
                                 {r.name}

@@ -22,8 +22,7 @@ type AddColumnModalProps = {
 }
 
 export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
-    const { request, setProperty, valid, initialColumnProps } =
-        useColumnFactory()
+    const { request, setProperty, valid, initialColumnProps } = useColumnFactory()
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
@@ -58,10 +57,7 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                 {Cells.map(cell => {
                                     const Icon = cell.icon
                                     return (
-                                        <MenuItem
-                                            key={cell.brand}
-                                            value={cell.brand}
-                                        >
+                                        <MenuItem key={cell.brand} value={cell.brand}>
                                             <Icon />
                                             {cell.label}
                                         </MenuItem>

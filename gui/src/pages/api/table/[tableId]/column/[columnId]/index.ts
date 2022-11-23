@@ -1,19 +1,11 @@
-import {
-    ColumnInfo,
-    getViewInfo,
-    ViewDescriptor,
-    ViewInfo,
-} from "@intutable/lazy-views"
+import { ColumnInfo, getViewInfo, ViewDescriptor, ViewInfo } from "@intutable/lazy-views"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 
-import {
-    removeColumnFromTable,
-    changeTableColumnAttributes,
-} from "@backend/requests"
+import { removeColumnFromTable, changeTableColumnAttributes } from "@backend/requests"
 import { Column } from "types"
 
 /**
@@ -31,40 +23,26 @@ import { Column } from "types"
  * }
  * ```
  */
-const PATCH = withCatchingAPIRoute(
-    async (
-        req,
-        res,
-        tableId: ViewDescriptor["id"],
-        columnId: ColumnInfo["id"]
-    ) => {
-        const { update, changeInViews } = req.body as {
-            update: Partial<Column.Serialized>
-            changeInViews?: boolean
-        }
-        const changeInViews_ =
-            typeof changeInViews === "boolean" ? changeInViews : true
-
-        const user = req.session.user!
-        // only use the dedicated rename endpoint for changing the name
-        if (update["name"] !== undefined) throw Error("useRenameEndpoint")
-
-        await withReadWriteConnection(user, async sessionID => {
-            await coreRequest<void>(
-                changeTableColumnAttributes(
-                    sessionID,
-                    tableId,
-                    columnId,
-                    update,
-                    changeInViews_
-                ),
-                user.authCookie
-            )
-        })
-
-        res.status(200).json({})
+const PATCH = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"], columnId: ColumnInfo["id"]) => {
+    const { update, changeInViews } = req.body as {
+        update: Partial<Column.Serialized>
+        changeInViews?: boolean
     }
-)
+    const changeInViews_ = typeof changeInViews === "boolean" ? changeInViews : true
+
+    const user = req.session.user!
+    // only use the dedicated rename endpoint for changing the name
+    if (update["name"] !== undefined) throw Error("useRenameEndpoint")
+
+    await withReadWriteConnection(user, async sessionID => {
+        await coreRequest<void>(
+            changeTableColumnAttributes(sessionID, tableId, columnId, update, changeInViews_),
+            user.authCookie
+        )
+    })
+
+    res.status(200).json({})
+})
 
 /**
  * Delete a column.
@@ -76,36 +54,23 @@ const PATCH = withCatchingAPIRoute(
  * }
  * ```
  */
-const DELETE = withCatchingAPIRoute(
-    async (
-        req,
-        res,
-        tableId: ViewDescriptor["id"],
-        columnId: ColumnInfo["id"]
-    ) => {
-        const user = req.session.user!
+const DELETE = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"], columnId: ColumnInfo["id"]) => {
+    const user = req.session.user!
 
-        await withReadWriteConnection(user, async sessionID => {
-            const tableInfo = await coreRequest<ViewInfo>(
-                getViewInfo(sessionID, tableId),
-                user.authCookie
-            )
-            const column = tableInfo.columns.find(c => c.id === columnId)
+    await withReadWriteConnection(user, async sessionID => {
+        const tableInfo = await coreRequest<ViewInfo>(getViewInfo(sessionID, tableId), user.authCookie)
+        const column = tableInfo.columns.find(c => c.id === columnId)
 
-            if (!column) throw Error("columnNotFound")
-            if (column.attributes.isUserPrimaryKey)
-                // cannot delete the primary column
-                throw Error("deleteUserPrimary")
+        if (!column) throw Error("columnNotFound")
+        if (column.attributes.isUserPrimaryKey)
+            // cannot delete the primary column
+            throw Error("deleteUserPrimary")
 
-            await coreRequest(
-                removeColumnFromTable(sessionID, tableId, columnId),
-                user.authCookie
-            )
-        })
+        await coreRequest(removeColumnFromTable(sessionID, tableId, columnId), user.authCookie)
+    })
 
-        res.status(200).json({})
-    }
-)
+    res.status(200).json({})
+})
 
 export default withSessionRoute(
     withUserCheck(async (req, res) => {

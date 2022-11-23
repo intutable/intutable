@@ -12,23 +12,17 @@ import { ExportUtil } from "utils/Export/ExportUtil"
  * URL: `/util/generate/mail-list`
  * ```
  */
-const POST = withCatchingAPIRoute(
-    async (req, res, viewId: ViewDescriptor["id"]) => {
-        const user = req.session.user!
-        const { exportRequest } = JSON.parse(req.body) as {
-            exportRequest: ExportRequest
-        }
-
-        const util = new ExportUtil(
-            exportRequest,
-            { response: res, viewId },
-            user
-        )
-
-        await util.export()
-        await util.send()
+const POST = withCatchingAPIRoute(async (req, res, viewId: ViewDescriptor["id"]) => {
+    const user = req.session.user!
+    const { exportRequest } = JSON.parse(req.body) as {
+        exportRequest: ExportRequest
     }
-)
+
+    const util = new ExportUtil(exportRequest, { response: res, viewId }, user)
+
+    await util.export()
+    await util.send()
+})
 
 export default withSessionRoute(
     withUserCheck(async (req, res) => {

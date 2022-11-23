@@ -2,12 +2,7 @@ import net from "net"
 import path from "path"
 import process from "process"
 import { Core, EventSystem } from "@intutable/core"
-import {
-    openConnection,
-    closeConnection,
-    select,
-    insert,
-} from "@intutable/database/dist/requests"
+import { openConnection, closeConnection, select, insert } from "@intutable/database/dist/requests"
 import { getConfig } from "shared/dist/config"
 
 import { createExampleSchema, insertExampleData } from "./example/load"
@@ -49,12 +44,7 @@ async function main() {
     core = await Core.create(PLUGIN_PATHS, events).catch(e => crash<Core>(e))
 
     const connId = await core.events
-        .request(
-            openConnection(
-                config.databaseAdminUsername,
-                config.databaseAdminPassword
-            )
-        )
+        .request(openConnection(config.databaseAdminUsername, config.databaseAdminPassword))
         .then(({ connectionId }) => connectionId)
 
     try {
@@ -133,8 +123,7 @@ async function getAdminId(connectionId: string): Promise<number | null> {
             condition: ["username", ADMIN_USERNAME],
         })
     )
-    if (userRows.length > 1)
-        return Promise.reject("fatal: multiple users with same name exist")
+    if (userRows.length > 1) return Promise.reject("fatal: multiple users with same name exist")
     else if (userRows.length === 1) return userRows[0]["_id"]
     else return null
 }

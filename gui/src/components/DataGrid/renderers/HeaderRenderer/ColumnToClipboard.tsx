@@ -23,21 +23,14 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
     const { snackInfo } = useSnacki()
 
     const handleCopyToClipboard = useCallback(() => {
-        const viewColInfo = viewData?.metaColumns.find(
-            c => c.parentColumnId === col.id
-        )
+        const viewColInfo = viewData?.metaColumns.find(c => c.parentColumnId === col.id)
         if (viewColInfo == null) return
 
         // get values
-        let values = viewData!.rows
-            .map(row => row[viewColInfo!.key])
-            .filter(e => e != null)
+        let values = viewData!.rows.map(row => row[viewColInfo!.key]).filter(e => e != null)
 
         // consider row selection
-        if (
-            headerRendererProps.allRowsSelected === false &&
-            selectedRows.size > 0
-        ) {
+        if (headerRendererProps.allRowsSelected === false && selectedRows.size > 0) {
             values = viewData!.rows
                 .map(row => {
                     const value = row[viewColInfo!.key]
@@ -46,13 +39,9 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
                 .filter(e => e != null)
         }
 
-        const util = new ColumnUtility(
-            props.headerRendererProps.column as Column.Serialized
-        )
+        const util = new ColumnUtility(props.headerRendererProps.column as Column.Serialized)
 
-        values = values
-            .filter(val => val != null && val !== "")
-            .map(val => util.cell.export(val))
+        values = values.filter(val => val != null && val !== "").map(val => util.cell.export(val))
 
         navigator.clipboard.writeText(values.join(", "))
 

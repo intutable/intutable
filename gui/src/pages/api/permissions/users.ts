@@ -14,8 +14,7 @@ import { User, RoleKind, getUsers } from "@backend/permissions"
 const GET = withCatchingAPIRoute(async (req, res) => {
     const currentUser = req.session.user!
 
-    if (currentUser.role.roleKind !== RoleKind.Admin)
-        throw Error("accessDenied")
+    if (currentUser.role.roleKind !== RoleKind.Admin) throw Error("accessDenied")
 
     const users = await coreRequest<User[]>(getUsers(), currentUser.authCookie)
 
