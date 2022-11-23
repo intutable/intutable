@@ -51,25 +51,17 @@ export const wherePartial = (
 })
 
 /** Utility function for negating a condition */
-export function not<I extends c.IsInfixCondition>(
-    condition: MkFilter<I>
-): MkFilter<I> {
+export function not<I extends c.IsInfixCondition>(condition: MkFilter<I>): MkFilter<I> {
     return { kind: Not, condition }
 }
 
 /** Utility function for making AND conditions. */
-export function and<I extends c.IsInfixCondition>(
-    left: MkFilter<I>,
-    right: MkFilter<I>
-): MkFilter<I> {
+export function and<I extends c.IsInfixCondition>(left: MkFilter<I>, right: MkFilter<I>): MkFilter<I> {
     return { kind: And, left, right }
 }
 
 /** Utility function for making OR conditions. */
-export function or<I extends c.IsInfixCondition>(
-    left: MkFilter<I>,
-    right: MkFilter<I>
-): MkFilter<I> {
+export function or<I extends c.IsInfixCondition>(left: MkFilter<I>, right: MkFilter<I>): MkFilter<I> {
     return { kind: Or, left, right }
 }
 
@@ -77,10 +69,7 @@ export function or<I extends c.IsInfixCondition>(
  * Compare two {@link PartialFilter}s for equality. Also works with
  * {@link Filter}, since `PartialFilter` is a supertype of `Filter`.
  */
-export const partialFilterEquals = (
-    f1: PartialFilter,
-    f2: PartialFilter
-): boolean => {
+export const partialFilterEquals = (f1: PartialFilter, f2: PartialFilter): boolean => {
     switch (f1.kind) {
         case And:
             return (
@@ -95,24 +84,15 @@ export const partialFilterEquals = (
                 partialFilterEquals(f1.right, f2.right)
             )
         case Not:
-            return (
-                f2.kind === c.ConditionKind.Not &&
-                partialFilterEquals(f1.condition, f2.condition)
-            )
+            return f2.kind === c.ConditionKind.Not && partialFilterEquals(f1.condition, f2.condition)
         case Infix:
-            return (
-                f2.kind === c.ConditionKind.Infix &&
-                partialSimpleFilterEquals(f1, f2)
-            )
+            return f2.kind === c.ConditionKind.Infix && partialSimpleFilterEquals(f1, f2)
     }
 }
 /**
  * Check if two {@link PartialSimpleFilter}s are equal.
  */
-export const partialSimpleFilterEquals = (
-    f1: PartialSimpleFilter,
-    f2: PartialSimpleFilter
-) =>
+export const partialSimpleFilterEquals = (f1: PartialSimpleFilter, f2: PartialSimpleFilter) =>
     f1.left?.column.parentColumnId === f2.left?.column.parentColumnId &&
     f1.left?.column.joinId === f2.left?.column.joinId &&
     f1.operator === f2.operator &&
@@ -122,9 +102,7 @@ export const partialSimpleFilterEquals = (
  * Check if a {@link PartialSimpleFilter} is also a {@link SimpleFilter}
  * (and can be applied to restrict data)
  */
-export const isValidFilter = (
-    filter: PartialSimpleFilter
-): filter is SimpleFilter =>
+export const isValidFilter = (filter: PartialSimpleFilter): filter is SimpleFilter =>
     filter.left !== undefined &&
     filter.operator !== undefined &&
     filter.right !== undefined &&

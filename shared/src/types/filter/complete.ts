@@ -5,14 +5,8 @@
  */
 import * as c from "@intutable/lazy-views/dist/condition"
 
-export {
-    ConditionKind,
-    OperandKind,
-} from "@intutable/lazy-views/dist/condition"
-export type {
-    Column as ColumnOperand,
-    Literal as LiteralOperand,
-} from "@intutable/lazy-views/dist/condition"
+export { ConditionKind, OperandKind } from "@intutable/lazy-views/dist/condition"
+export type { Column as ColumnOperand, Literal as LiteralOperand } from "@intutable/lazy-views/dist/condition"
 
 /**
  * A filter  - may be any boolean combination of {@link SimpleFilter}s.
@@ -28,11 +22,7 @@ export type Filter = MkFilter<SimpleFilter>
 /**
  * A primitive infix-type (column = value, column < value, etc.) filter.
  */
-export type SimpleFilter = c.MkInfixCondition<
-    LeftOperand,
-    FilterOperator,
-    RightOperand
->
+export type SimpleFilter = c.MkInfixCondition<LeftOperand, FilterOperator, RightOperand>
 /**
  * The left operand to a filter may only be a column (for now).
  */
