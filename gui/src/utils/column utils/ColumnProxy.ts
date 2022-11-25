@@ -1,12 +1,10 @@
 import cells from "@datagrid/Cells"
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
-import { headerRenderer, HeaderRenderer } from "@datagrid/renderers"
+import { headerRenderer } from "@datagrid/renderers"
 import { Column } from "types"
 
 export const mountColumnProxy = (column: Column.Serialized): ProxyColumn =>
     new Proxy(column as ProxyColumn, ColumnProxyHandler)
-
-// TODO: this could replace most of the ColumnUtility
 
 // must be backwards compatible with `Column`
 export type ProxyColumn = Column.Deserialized & {
