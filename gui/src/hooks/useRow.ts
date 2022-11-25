@@ -27,12 +27,14 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
-    const { getTableColumn } = useColumn(tableOptions, viewOptions)
+    const { getColumnInfo: getTableColumn } = useColumn(tableOptions, viewOptions)
 
     /**
      * Get the (backend, primary key) ID of a row from its RDG counterpart.
      * Uses the view supplied given by {@link useView} to determine the
      * correct key. The table can be overridden with {@link viewOptions}.
+     *
+     * @deprecated Now you can just do `row._id` instead.
      */
     const getRowId = (row: Row): number => {
         const uidColumn = view!.metaColumns.find(c => c.name === "_id")!
