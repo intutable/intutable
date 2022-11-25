@@ -47,7 +47,7 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
 
     const { data: baseTableData, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
-    const { error, rowPreviews } = useLink({ table: props.foreignTable })
+    const { error, rowPreviews } = useLink(props.column)
 
     const content = props.row[props.column.key]
     const hasSelection = Cell.isEmpty(content) ? false : rowPreviews?.find(row => row.content === content)

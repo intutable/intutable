@@ -41,7 +41,7 @@ const Modal: React.FC<ModalProps> = props => {
     const { snackError } = useSnacki()
 
     const { foreignTable, columnInfo } = useForeignTable(props.column)
-    const { linkTableData: foreignTableData, error, getColumn } = useLink({ table: foreignTable })
+    const { linkTableData: foreignTableData, error, getColumn } = useLink(props.column)
 
     const { mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()

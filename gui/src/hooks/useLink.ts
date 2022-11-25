@@ -1,41 +1,38 @@
 import { useMemo, useCallback } from "react"
 import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { TableRow, TableColumn } from "types"
+import { TableRow, TableColumn, Row, Column } from "types"
+import { useForeignTable } from "./useForeignTable"
 
-export type RowPreview = {
-    id: number
-    text: string
+export type RowPreview = Pick<Row, "_id" | "index"> & {
+    content: unknown
 }
 
 /**
  * When manipulating tables that have links to other tables, those other tables
  * are loaded with this hook.
  */
-export const useLink = (options: TableHookOptions) => {
-    const { data: linkTableData, error, mutate } = useTable(options)
+export const useLink = (forColumn: Column.Deserialized) => {
+    const { foreignTable } = useForeignTable(forColumn)
+    const { data: linkTableData, error, mutate } = useTable({ table: foreignTable })
 
+    /** @deprecated */
     const getPrimaryColumn = useCallback((): ColumnInfo | null => {
         if (linkTableData == null) return null
         return linkTableData.metadata.columns.find(c => c.attributes.isUserPrimaryKey! === 1)!
     }, [linkTableData])
 
-    const getRowId = useCallback(
-        (row: TableRow): number => {
-            const uidColumn = linkTableData!.metadata.columns.find(c => c.name === "_id")!
-            return row[uidColumn.key] as number
-        },
-        [linkTableData]
-    )
+    const userPrimaryKeyColumn = linkTableData?.columns.find(column => column.isUserPrimaryKey) ?? null
 
     const getRowPreviews = useCallback((): RowPreview[] | null => {
         const primaryColumn = getPrimaryColumn()
         if (primaryColumn == null) return null
-        return linkTableData!.rows.map(r => ({
-            id: getRowId(r),
-            text: r[primaryColumn.key] as string,
+        return linkTableData!.rows.map(row => ({
+            _id: row._id,
+            index: row.index,
+            content: row[primaryColumn.key],
         }))
-    }, [linkTableData, getPrimaryColumn, getRowId])
+    }, [linkTableData, getPrimaryColumn])
 
     /**
      * The user-primary column of the linked table. Used for giving a preview

@@ -1,6 +1,6 @@
 import cells, { Cell } from "@datagrid/Cells"
 import { SELECT_COLUMN_KEY } from "react-data-grid"
-import { Column, ViewData } from "types"
+import { Column, Row, ViewData } from "types"
 
 export class ColumnUtility {
     public cell: Cell
@@ -46,7 +46,7 @@ export class ColumnUtility {
     }
 
     /** sort algorithm for columns based on its index */
-    static sortByIndex<T extends Column.Deserialized | Column.Serialized>(a: T, b: T) {
+    static sortByIndex<T extends Column.Deserialized | Column.Serialized | Row>(a: T, b: T) {
         return a.index > b.index ? 1 : -1
     }
 }
