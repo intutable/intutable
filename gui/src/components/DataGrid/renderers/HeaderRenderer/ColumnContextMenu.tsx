@@ -1,4 +1,3 @@
-import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import Check from "@mui/icons-material/Check"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import SearchIcon from "@mui/icons-material/Search"
@@ -16,13 +15,11 @@ import { ColumnToClipboard } from "./ColumnToClipboard"
 import { CreateMailList } from "./CreateMailList"
 
 export type ColumnContextMenuProps = {
-    colInfo: ColumnInfo
-    foreignTable: ViewDescriptor | null | undefined
     headerRendererProps: HeaderRendererProps<Row>
 }
 
 export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
-    const { colInfo: col, foreignTable, headerRendererProps } = props
+    const { headerRendererProps } = props
 
     const theme = useTheme()
     const { snackError } = useSnacki()
@@ -79,16 +76,11 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
                     },
                 }}
             >
-                <AddLookup
-                    colInfo={col}
-                    foreignTable={foreignTable}
-                    onCloseContextMenu={closeContextMenu}
-                    headerRendererProps={headerRendererProps}
-                />
+                {headerRendererProps.column.kind === "link" && <AddLookup headerRendererProps={headerRendererProps} />}
 
-                <CreateMailList colInfo={col} headerRendererProps={headerRendererProps} />
+                <CreateMailList headerRendererProps={headerRendererProps} />
 
-                <ColumnToClipboard colInfo={col} headerRendererProps={headerRendererProps} />
+                <ColumnToClipboard headerRendererProps={headerRendererProps} />
 
                 <MenuItem onClick={toggleHeaderSearchbar}>
                     <ListItemIcon>{headerOpen ? <Check /> : <SearchIcon />}</ListItemIcon>

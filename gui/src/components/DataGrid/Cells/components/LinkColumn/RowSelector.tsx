@@ -1,3 +1,4 @@
+import { Cell } from "@datagrid/Cells/abstract/Cell"
 import { JoinDescriptor, ViewDescriptor } from "@intutable/lazy-views"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -11,32 +12,46 @@ import {
     ListItem,
     ListItemButton,
     ListItemText,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { RowPreview, useLink } from "hooks/useLink"
+import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
+import { Row } from "types"
+import { Column } from "types/tables/rdg"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 export type RowSelectorProps = {
-    rowId: number
+    row: Row
     join: JoinDescriptor
     foreignTable: ViewDescriptor
     open: boolean
     onClose: () => void
+    column: Column
 }
 
 export const RowSelector: React.FC<RowSelectorProps> = props => {
     const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
+    const { snackError } = useSnacki()
 
     const { data: baseTableData, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
     const { error, rowPreviews } = useLink({ table: props.foreignTable })
 
-    const [selection, setSelection] = useState<RowPreview | null>(null)
+    const content = props.row[props.column.key]
+    const hasSelection = Cell.isEmpty(content) ? false : rowPreviews?.find(row => row.content === content)
+    const [selection, setSelection] = useState<RowPreview | null>(hasSelection || null)
 
     const handlePickRow = async () => {
         try {
@@ -44,51 +59,60 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
                 url: `/api/join/${props.join.id}`,
                 body: {
                     tableId: baseTableData!.metadata.descriptor.id,
-                    rowId: props.rowId,
-                    value: selection?.id,
+                    rowId: props.row._id,
+                    value: selection?._id,
                 },
             })
             await mutateTable()
             await mutateView()
         } catch (err) {
-            enqueueSnackbar("Die Zeile konnte nicht hinzugefügt werden!", {
-                variant: "error",
-            })
+            snackError("Die Zeile konnte nicht hinzugefügt werden!")
         } finally {
             props.onClose()
         }
     }
 
+    if (rowPreviews == null) return null
+
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
-            <DialogTitle>Wähle eine Zeile</DialogTitle>
+            <DialogTitle>
+                Verlinke eine Zeile aus <i>{props.column.name}</i> ({props.foreignTable.name}) mit der Zeile{" "}
+                {props.row.index} ({baseTableData?.metadata.descriptor.name}).
+            </DialogTitle>
             <DialogContent>
-                {rowPreviews == null && error == null ? (
-                    <CircularProgress />
-                ) : error ? (
-                    <>Error: {error}</>
-                ) : (
-                    <>
-                        <List>
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Index</TableCell>
+                                <TableCell>Inhalt</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
                             {rowPreviews!
-                                .filter(row => row.text != null)
+                                .filter(row => Cell.isEmpty(row.content) === false)
+                                .sort(ColumnUtility.sortByIndex)
                                 .map(row => (
-                                    <ListItem
-                                        key={row.id}
-                                        disablePadding
+                                    <TableRow
+                                        key={row._id}
+                                        onClick={() => setSelection(row)}
                                         sx={{
+                                            cursor: "pointer",
+                                            "&:hover": {
+                                                bgcolor: theme.palette.action.hover,
+                                            },
                                             bgcolor:
-                                                selection?.id === row.id ? theme.palette.action.selected : undefined,
+                                                selection?._id === row._id ? theme.palette.action.selected : undefined,
                                         }}
                                     >
-                                        <ListItemButton onClick={() => setSelection(row)}>
-                                            <ListItemText primary={row.text} />
-                                        </ListItemButton>
-                                    </ListItem>
+                                        <TableCell>{row.index}</TableCell>
+                                        <TableCell>{row.content as string}</TableCell>
+                                    </TableRow>
                                 ))}
-                        </List>
-                    </>
-                )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </DialogContent>
 
             <DialogActions>
@@ -99,7 +123,7 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
                     onClick={handlePickRow}
                     disabled={selection == null || error}
                 >
-                    Hinzufügen
+                    Verlinken
                 </LoadingButton>
             </DialogActions>
         </Dialog>
