@@ -41,15 +41,15 @@ const Modal: React.FC<ModalProps> = props => {
     const { snackError } = useSnacki()
 
     const { foreignTable, columnInfo } = useForeignTable(props.column)
-    const { linkTableData: foreignTableData, error, getColumn } = useLink(props.column)
+    const { linkTableData: foreignTableData, error, getColumnInfo } = useLink(props.column)
 
     const { mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 
     const [selection, setSelection] = useState<TableColumn | null>(null)
     const selectedColDescriptor = useMemo(
-        () => (selection && foreignTableData ? getColumn(selection) : null),
-        [foreignTableData, selection, getColumn]
+        () => (selection && foreignTableData ? getColumnInfo(selection) : null),
+        [foreignTableData, selection, getColumnInfo]
     )
 
     const handleAddLookup = async (column: ColumnInfo) => {
