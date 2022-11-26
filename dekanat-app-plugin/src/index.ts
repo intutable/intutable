@@ -155,7 +155,6 @@ async function createStandardColumn(
     column: StandardColumnSpecifier,
     addToViews?: types.ViewId[]
 ) {
-    console.log("column: " + JSON.stringify(column))
     const options = (await core.events.request(lvr.getViewOptions(sessionID, tableId))) as lvt.ViewOptions
     const key = sanitizeName(column.name)
     const tableColumn = await core.events.request(pm.createColumnInTable(sessionID, asTable(options.source).id, key))
@@ -267,7 +266,6 @@ async function removeColumnFromTable(
         tableInfo.columns
             .filter(c => c.attributes[idxKey] > column.attributes[idxKey])
             .map(async c => {
-                console.log("updating index of column " + c.id)
                 changeTableColumnAttributes(sessionID, tableId, c.id, {
                     [idxKey]: c.attributes[idxKey] - 1,
                 })

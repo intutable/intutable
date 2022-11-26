@@ -43,7 +43,7 @@ const Modal: React.FC<ModalProps> = props => {
     const { foreignTable, columnInfo } = useForeignTable(props.column)
     const { linkTableData: foreignTableData, error, getColumnInfo } = useLink(props.column)
 
-    const { mutate: mutateTable } = useTable()
+    const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 
     const [selection, setSelection] = useState<TableColumn | null>(null)
@@ -58,7 +58,7 @@ const Modal: React.FC<ModalProps> = props => {
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
-                    tableId: foreignTableData!.metadata.descriptor.id,
+                    tableId: data!.metadata.descriptor.id,
                     joinId,
                 },
             })
