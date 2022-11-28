@@ -1,21 +1,15 @@
-import cells, { Cell } from "@datagrid/Cells"
+import { cellMap } from "@datagrid/Cells"
 import { Column, ViewData } from "types"
 import { SELECT_COLUMN_KEY } from "react-data-grid"
 
 export class ColumnUtility {
-    public cell: Cell
-
-    constructor(public readonly column: Column.Serialized) {
-        this.cell = cells.getCell(this.column.cellType)
-    }
-
     /** 'true' if yes, if no an array with indices of rows whose cells do not suit the new type */
     static canInterchangeColumnType(
         to: string,
         column: Column.Deserialized | Column.Serialized,
         view: ViewData.Deserialized
     ): true | number[] {
-        const targetUtil = cells.getCell(to)
+        const targetUtil = cellMap.getCellCtor(to)
         const data = view.rows.map(row => [row.index, row[column.key]]) as Array<[number, unknown]>
 
         const invalidCells = data.filter(cell => targetUtil.isValid(cell[1]) === false)

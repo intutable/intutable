@@ -1,6 +1,7 @@
-import cells from "@datagrid/Cells"
+import { cellMap } from "@datagrid/Cells"
 import { CopyEvent, FillEvent, PasteEvent } from "react-data-grid"
 import { Column, Row } from "types"
+import { ProxyColumn } from "./column utils/ColumnProxy"
 
 type Column = Column.Deserialized
 
@@ -33,7 +34,7 @@ export class ClipboardUtil implements ClipboardEvents {
     }
 
     private util(column: Column) {
-        return cells.getCell(column.cellType!)
+        return cellMap.getCellCtor(column.cellType)
     }
 
     /** Copy Event – fires when a user copies a cell, e.g. cmd+c on a cell */
