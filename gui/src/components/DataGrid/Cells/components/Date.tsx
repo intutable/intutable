@@ -6,7 +6,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 import deLocale from "date-fns/locale/de"
 import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
 import { TempusCell } from "../abstract/TempusCell"
 import DateRangeIcon from "@mui/icons-material/DateRange"
 import { useRow } from "hooks/useRow"
@@ -14,11 +14,18 @@ import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputProps } from "../abstract/protocols"
 
 export class DateCell extends TempusCell {
-    readonly brand = "date"
-    label = "Date"
-    icon = DateRangeIcon
+    static brand = "date"
+    public label = "Date"
+    public icon = DateRangeIcon
 
-    export(value: Date): string {
+    constructor(column: Column.Serialized) {
+        super(column)
+        this.setEditorOptions({
+            renderFormatter: true,
+        })
+    }
+
+    static export(value: Date): string {
         return value.toLocaleDateString("de-DE", {
             month: "2-digit",
             day: "2-digit",
@@ -26,15 +33,15 @@ export class DateCell extends TempusCell {
         })
     }
 
-    editor = () => null
+    public editor = () => null
 
-    formatter = (props: FormatterProps<Row>) => {
+    public formatter = (props: FormatterProps<Row>) => {
         const { row, key, content: _content } = this.destruct<Date | null>(props)
         const [content, setContent] = useState(_content)
 
         const handleChange = (date: Date | null) => {
             if (date === null) return erase()
-            if (this.isValid(date) === false) return
+            if (DateCell.isValid(date) === false) return
 
             props.onRowChange({
                 ...row,
@@ -76,6 +83,7 @@ export class DateCell extends TempusCell {
                         value={content}
                         onChange={date => setContent(date)} // only update the state, but do not update the actual db (only on blur – see below)
                         onAccept={handleChange} // update the db
+                        disabled={this.column.editable === false}
                         renderInput={params => (
                             <TextField
                                 {...params}
@@ -83,6 +91,7 @@ export class DateCell extends TempusCell {
                                 size="small"
                                 variant="standard"
                                 fullWidth
+                                disabled={this.column.editable === false}
                                 sx={{
                                     m: 0,
                                     mt: 0.5,
@@ -108,13 +117,13 @@ export class DateCell extends TempusCell {
     }
 
     public ExposedInput: React.FC<ExposedInputProps<number | null>> = props => {
-        const { getRowId, updateRow } = useRow()
+        const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
         const [content, setContent] = useState(props.content)
 
         const handleChange = async (value: number | null) => {
-            if (this.isValid(value)) setContent(value)
+            if (DateCell.isValid(value)) setContent(value)
             try {
                 await updateRow(props.column, props.row, value)
             } catch (e) {
@@ -140,6 +149,7 @@ export class DateCell extends TempusCell {
                 <DatePicker
                     showToolbar
                     value={content}
+                    disabled={this.column.editable === false}
                     onChange={handleChange}
                     renderInput={props => <TextField {...props} />}
                     componentsProps={{

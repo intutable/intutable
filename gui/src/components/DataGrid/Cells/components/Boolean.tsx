@@ -1,7 +1,7 @@
 import { Box, Checkbox } from "@mui/material"
 import React from "react"
 import { FormatterProps } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
 import ToggleOnIcon from "@mui/icons-material/ToggleOn"
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
@@ -9,13 +9,20 @@ import { useSnacki } from "hooks/useSnacki"
 import { useRow } from "hooks/useRow"
 
 export class Bool extends Cell {
-    readonly brand = "boolean"
-    label = "Boolean"
-    icon = ToggleOnIcon
+    static brand = "boolean"
+    public label = "Boolean"
+    public icon = ToggleOnIcon
 
-    editor = () => null
+    constructor(column: Column.Serialized) {
+        super(column)
+        this.setEditorOptions({
+            renderFormatter: true,
+        })
+    }
 
-    isValid(value: unknown): boolean {
+    public editor = () => null
+
+    static isValid(value: unknown): boolean {
         if (value == null || value === "") return true
 
         if (typeof value === "string") return value === "true" || value === "false"
@@ -25,10 +32,10 @@ export class Bool extends Cell {
         return typeof value === "boolean"
     }
 
-    serialize(value: boolean): string {
+    static serialize(value: boolean): string {
         return value.toString()
     }
-    deserialize(value: unknown): boolean {
+    static deserialize(value: unknown): boolean {
         if (typeof value === "boolean") return value
         if (value === 1 || value === 0) return value === 1
         if (value === "1" || value === "0") return value === "1"
@@ -36,17 +43,17 @@ export class Bool extends Cell {
         throw new Error(`Could not deserialize value: ${value}`)
     }
 
-    export(value: boolean): string {
+    static export(value: boolean): string {
         return value ? "wahr" : "falsch"
     }
-    unexport(value: "wahr" | "falsch"): boolean {
+    static unexport(value: "wahr" | "falsch"): boolean {
         if (value !== "wahr" && value !== "falsch")
             throw new RangeError("Boolean Cell Debug Error: value is not a boolean")
 
         return value === "wahr"
     }
 
-    formatter = (props: FormatterProps<Row>) => {
+    public formatter = (props: FormatterProps<Row>) => {
         const { row, key, content } = this.destruct<boolean>(props)
 
         const [value, setValue] = React.useState(content)
@@ -70,13 +77,13 @@ export class Bool extends Cell {
                     alignItems: "center",
                 }}
             >
-                <Checkbox checked={value} onChange={handleChange} />
+                <Checkbox checked={value} onChange={handleChange} disabled={this.column.editable === false} />
             </Box>
         )
     }
 
     public ExposedInput: React.FC<ExposedInputProps<boolean>> = props => {
-        const { getRowId, updateRow } = useRow()
+        const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
         const [value, setValue] = React.useState(props.content)
@@ -92,6 +99,6 @@ export class Bool extends Cell {
             }
         }
 
-        return <Checkbox checked={value} onChange={handleChange} />
+        return <Checkbox checked={value} onChange={handleChange} disabled={this.column.editable === false} />
     }
 }

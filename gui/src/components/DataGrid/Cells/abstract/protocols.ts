@@ -3,11 +3,12 @@ import { CalculatedColumn } from "react-data-grid"
 import { Column, Row } from "types"
 import { ValueOf } from "utils/ValueOf"
 
+export type CellEmptyValue = "" | null | undefined | []
 export type Validatable = {
     /** Tells if the cell can interpret the value */
     isValid: <T = unknown>(value: T) => boolean
-    /** Tells if the cell is empty. Must be implemented at the abstract class, because it should work for every type. */
-    // isEmpty: (value: unknown) => boolean
+    /** Tells if the cell is empty. Must be implemented at the abstract class, because it should work for every type in the same way. */
+    isEmpty: (value: unknown) => value is CellEmptyValue
 }
 
 export type Exportable = {
@@ -54,9 +55,7 @@ export type ExposableInputComponent = {
     /**
      * Reference to the input component of the cell class.
      * Can be used outside the cell for other components.
-     *
-     * __Note__: This adapts the behaviour of native rdg cells and is NOT fully developed.
-     * Bugs may occur.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ExposedInput: React.FC<ExposedInputProps>
 }

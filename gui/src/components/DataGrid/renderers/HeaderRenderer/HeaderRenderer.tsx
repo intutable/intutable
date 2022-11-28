@@ -1,4 +1,5 @@
-import cells from "@datagrid/Cells"
+import { cellMap } from "@datagrid/Cells"
+import { Column } from "types"
 import { asView } from "@intutable/lazy-views/dist/selectable"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import KeyIcon from "@mui/icons-material/Key"
@@ -13,6 +14,7 @@ import { useRouter } from "next/router"
 import React, { useMemo } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
+import { ProxyColumn } from "utils/column utils/ColumnProxy"
 import { ColumnContextMenu } from "./ColumnContextMenu"
 import { PrefixIcon } from "./PrefixIcon"
 import { SearchBar } from "./SearchBar"
@@ -42,8 +44,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
 
     const navigateToView = () => router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
 
-    const util = cells.getCell(props.column.cellType)
-    const Icon = util.icon
+    const ctor = cellMap.getCellCtor(column.cellType)
+    const instance = new ctor((column as unknown as ProxyColumn).serialized)
+    const Icon = instance.icon
 
     if (col == null) return null
 
@@ -143,5 +146,3 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
         </Stack>
     )
 }
-
-export const headerRenderer = (props: HeaderRendererProps<Row>) => <HeaderRenderer {...props} />

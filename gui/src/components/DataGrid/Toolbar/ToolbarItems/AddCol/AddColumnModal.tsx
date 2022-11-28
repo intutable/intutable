@@ -1,4 +1,4 @@
-import Cells from "@datagrid/Cells"
+import { cellMap } from "@datagrid/Cells"
 import {
     Button,
     Dialog,
@@ -54,12 +54,13 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                     setProperty("cellType", e.target.value)
                                 }}
                             >
-                                {Cells.map(cell => {
-                                    const Icon = cell.icon
+                                {cellMap.getCtors().map(ctor => {
+                                    const instance = cellMap.unsafe_instantiateDummyCell(ctor.brand)
+                                    const Icon = instance.icon
                                     return (
-                                        <MenuItem key={cell.brand} value={cell.brand}>
+                                        <MenuItem key={ctor.brand} value={ctor.brand}>
                                             <Icon />
-                                            {cell.label}
+                                            {instance.label}
                                         </MenuItem>
                                     )
                                 })}

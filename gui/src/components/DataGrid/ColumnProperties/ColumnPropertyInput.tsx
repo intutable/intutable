@@ -1,13 +1,10 @@
+import CheckIcon from "@mui/icons-material/Check"
 import InfoIcon from "@mui/icons-material/Info"
-import Visibility from "@mui/icons-material/Visibility"
-import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import { FormControlLabel, MenuItem, Select, Stack, Switch, TextField, Tooltip, Box, Typography } from "@mui/material"
+import { FormControlLabel, MenuItem, Select, Stack, Switch, TextField, Tooltip, Typography } from "@mui/material"
 import IconButton from "@mui/material/IconButton"
 import InputAdornment from "@mui/material/InputAdornment"
 import { useTheme } from "@mui/material/styles"
 import React from "react"
-import CheckIcon from "@mui/icons-material/Check"
-import { TooltipIcon } from "components/TooltipIcon"
 
 export type ColumnPropertyInputType = "text" | "switch" | "select"
 export type ColumnPropertyInputTypeMap = {
@@ -15,8 +12,7 @@ export type ColumnPropertyInputTypeMap = {
     switch: boolean
     select: {
         value: string
-        /** [brand, label] */
-        options: [string, string][]
+        options: { brand: string; label: string }[]
     }
 }
 export type ColumnPropertyInputValue_onChangeReturnMap = {
@@ -138,7 +134,7 @@ const SwitchInput: React.FC<ColumnPropertyInputProps<"switch">> = props => {
 
 const SelectInput: React.FC<ColumnPropertyInputProps<"select">> = props => (
     <Select variant="standard" value={props.value.value} onChange={e => props.onChange(e.target.value)}>
-        {props.value.options.map(([brand, label]) => (
+        {props.value.options.map(({ brand, label }) => (
             <MenuItem value={brand} key={brand}>
                 {label}
             </MenuItem>

@@ -35,20 +35,20 @@ const ChipItem: React.FC<{
 }
 
 export class Select extends Cell {
-    readonly brand = "select"
-    label = "Auswahlliste"
-    icon = BookmarkIcon
+    static brand = "select"
+    public label = "Auswahlliste"
+    public icon = BookmarkIcon
 
-    constructor() {
-        super()
+    constructor(column: Column.Serialized) {
+        super(column)
         this.setEditorOptions({
             renderFormatter: true,
         })
     }
 
-    editor = () => null
+    public editor = () => null
 
-    getOptions(column: Column.Deserialized, rows: Row[], self?: string | null): string[] {
+    private getOptions(column: Column.Deserialized, rows: Row[], self?: string | null): string[] {
         const options = rows.map(row => row[column.key]).filter(option => Cell.isEmpty(option) === false) // remove empty values
 
         const optionsWithoutSelf = (self == null ? options : options.filter(option => self !== option)) as string[]
@@ -58,7 +58,7 @@ export class Select extends Cell {
         return [...uniqueOptions]
     }
 
-    formatter = (props: FormatterProps<Row>) => {
+    public formatter = (props: FormatterProps<Row>) => {
         const { content, column, row, key } = this.destruct<string | null | undefined>(props)
         const isEmpty = content == null || content === ""
 
@@ -179,7 +179,7 @@ export class Select extends Cell {
     }
 
     public ExposedInput: React.FC<ExposedInputProps<string | null>> = props => {
-        const { getRowId, updateRow } = useRow()
+        const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content ?? "")
@@ -194,6 +194,14 @@ export class Select extends Cell {
             }
         }
 
-        return <TextField size="small" onChange={handleChange} onBlur={handleBlur} value={value} />
+        return (
+            <TextField
+                size="small"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={value}
+                disabled={this.column.editable === false}
+            />
+        )
     }
 }

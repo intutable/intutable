@@ -1,12 +1,13 @@
-import cells from "@datagrid/Cells"
+import { cellMap } from "@datagrid/Cells"
 import { ColumnAttributesWindow } from "@datagrid/renderers/HeaderRenderer/ColumnAttributesWindow"
 import EditIcon from "@mui/icons-material/Edit"
 import KeyIcon from "@mui/icons-material/Key"
 import { Box, Divider, IconButton, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
-import React, { useMemo, useState } from "react"
+import React, { useState } from "react"
 import { Column } from "types"
+import { ProxyColumn } from "utils/column utils/ColumnProxy"
 
 const ColumnAttributesWindowButton: React.FC<{
     column: Column.Serialized
@@ -28,18 +29,13 @@ const ColumnAttributesWindowButton: React.FC<{
     )
 }
 
-const getExposedInput = (type: Column.Serialized["cellType"]) => {
-    const cellUtil = cells.getCell(type)
-    return cellUtil.ExposedInput
-}
-
 export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ column }) => {
     const theme = useTheme()
-    const { rowMaskState, setRowMaskState } = useRowMask()
+    const { rowMaskState } = useRowMask()
 
-    const util = cells.getCell(column.cellType!)
-    const Icon = util.icon
-    const Input = React.memo(getExposedInput(column.cellType))
+    const cell = cellMap.instantiate(column)
+    const Icon = cell.icon
+    const Input = React.memo(cell.ExposedInput)
 
     const [isHovering, setIsHovering] = useState<boolean>(false)
 

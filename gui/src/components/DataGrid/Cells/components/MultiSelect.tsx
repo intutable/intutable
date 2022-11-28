@@ -4,7 +4,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, Stack, TextField } from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
-import { MutableRefObject, Ref, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
@@ -13,7 +13,6 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import column from "pages/api/table/[tableId]/column"
 
 const ChipItem: React.FC<{
     label: string
@@ -101,28 +100,25 @@ const MultiSelectMenu: React.FC<MultiSelectMenuProps> = props => {
 }
 
 export class MultiSelect extends Cell {
-    readonly brand = "multiselect"
-    label = "Mehrfach-Auswahlliste"
-    icon = BookmarksIcon
+    static brand = "multiselect"
+    public label = "Mehrfach-Auswahlliste"
+    public icon = BookmarksIcon
 
-    constructor() {
-        super()
+    constructor(column: Column.Serialized) {
+        super(column)
         this.setEditorOptions({
             renderFormatter: true,
-            // onCellKeyDown: e => {
-            //     console.log(e)
-            // },
         })
     }
 
-    isValid(value: unknown): boolean {
+    static isValid(value: unknown): boolean {
         return Array.isArray(value) && value.every(v => typeof v === "string")
     }
 
-    serialize(value: string[]): string {
+    static serialize(value: string[]): string {
         return JSON.stringify(value)
     }
-    deserialize(value: unknown): string[] {
+    static deserialize(value: unknown): string[] {
         if (Array.isArray(value)) return value
         if (typeof value === "string") {
             try {
@@ -134,16 +130,16 @@ export class MultiSelect extends Cell {
         throw new Error(`Could not deserialize value: ${value}`)
     }
 
-    export(value: string[]): string {
+    static export(value: string[]): string {
         return value.join(";")
     }
-    unexport(value: string): string[] {
+    static unexport(value: string): string[] {
         return value.split(";")
     }
 
-    editor = () => null
+    public editor = () => null
 
-    getOptions(column: Column.Deserialized, rows: Row[], self?: string[] | null): string[] {
+    private getOptions(column: Column.Deserialized, rows: Row[], self?: string[] | null): string[] {
         const options = rows
             .map(row => row[column.key])
             .flat()
@@ -158,7 +154,7 @@ export class MultiSelect extends Cell {
         return [...uniqueOptions]
     }
 
-    formatter = (props: FormatterProps<Row>) => {
+    public formatter = (props: FormatterProps<Row>) => {
         const { content, column, row, key } = this.destruct<string[] | null>(props)
         const isEmpty = content == null || content.length === 0
 
