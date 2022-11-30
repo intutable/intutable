@@ -15,6 +15,7 @@ import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { TmpDir } from "../TmpDir"
 import { ExportRequest } from "./ExportRequest"
 import { Cell } from "@datagrid/Cells/abstract/Cell"
+import { cellMap } from "@datagrid/Cells"
 
 /**
  * Helps to export the data of views.
@@ -137,10 +138,10 @@ export class ExportUtil {
             const intersection: Obj = {}
 
             columns.forEach(col => {
-                const util = new ColumnUtility(col)
+                const ctor = cellMap.getCellCtor(col.cellType)
 
                 const value = row[col.key]
-                const exported = value == null || value === "" ? "" : util.cell.export(value)
+                const exported = value == null || value === "" ? "" : ctor.export(value)
                 const key = capitalizeFirstLetter(col.name)
 
                 intersection[key] = exported

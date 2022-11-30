@@ -15,14 +15,14 @@ const parse_dd_MM_yyyy = (str: string) =>
 
 export abstract class TempusCell extends Cell {
     // https://date-fns.org/v2.29.3/docs/isValid
-    isValid(value: unknown): boolean {
+    static isValid(value: unknown): boolean {
         return value == null || value === "" || isValidTempus(value)
     }
 
-    serialize(value: Date): string {
+    static serialize(value: Date): string {
         return value.getTime().toString()
     }
-    deserialize(value: unknown): Date {
+    static deserialize(value: unknown): Date {
         // case instance
         if (value instanceof Date && isValidTempus(value)) return value // catch invalid dates
 
@@ -35,10 +35,11 @@ export abstract class TempusCell extends Cell {
         throw new Error(`Could not deserialize value: ${value}`)
     }
 
-    unexport(value: string): Date {
+    static unexport(value: string): Date {
         // TODO: implement
         throw new Error("Not Implemented")
     }
+
     /** Whether the value is a formatted time or date string,
      * if 'true', the parsed string is returned as Date object */
     static isFormattedString(value: unknown): Date | false {

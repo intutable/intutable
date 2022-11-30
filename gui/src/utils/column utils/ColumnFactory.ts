@@ -17,7 +17,7 @@ export class ColumnFactory {
         name: "",
         kind: "standard",
         hidden: false,
-        cellType: new Text().brand,
+        cellType: Text.brand,
         width: undefined,
         minWidth: undefined,
         maxWidth: undefined,
@@ -36,7 +36,7 @@ export class ColumnFactory {
     static readonly USER_DEFAULT_COLUMN: Pick<Column.Serialized, UserSettableColumnProps> = {
         name: "",
         hidden: false,
-        cellType: new Text().brand,
+        cellType: Text.brand,
         width: undefined,
         cellClass: undefined,
         headerCellClass: undefined,
@@ -57,6 +57,17 @@ export class ColumnFactory {
         return {
             ...ColumnFactory.DEFAULT_COLUMN,
             ...this.initialColumnProps,
+        }
+    }
+
+    /** Creates a Column Dummy */
+    static createDummy(): Column.Serialized {
+        return {
+            ...ColumnFactory.DEFAULT_COLUMN,
+            key: "dummy",
+            id: -1,
+            isUserPrimaryKey: false,
+            index: -1,
         }
     }
 

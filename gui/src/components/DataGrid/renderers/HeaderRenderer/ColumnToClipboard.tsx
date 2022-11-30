@@ -1,3 +1,5 @@
+import { cellMap } from "@datagrid/Cells"
+import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import ContentPasteIcon from "@mui/icons-material/ContentPaste"
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
 import { useSelectedRows } from "context/SelectedRowsContext"
@@ -41,9 +43,9 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
                 .filter(e => e != null)
         }
 
-        const util = new ColumnUtility(props.headerRendererProps.column as Column.Serialized)
+        const cellCtor = cellMap.getCellCtor(props.headerRendererProps.column.cellType)
 
-        values = values.filter(val => val != null && val !== "").map(val => util.cell.export(val))
+        values = values.filter(val => val != null && val !== "").map(val => cellCtor.export(val))
 
         navigator.clipboard.writeText(values.join(", "))
 

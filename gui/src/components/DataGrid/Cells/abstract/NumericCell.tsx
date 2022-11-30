@@ -1,13 +1,13 @@
 import { Cell } from "@datagrid/Cells/abstract/Cell"
 
 export abstract class NumericCell extends Cell {
-    isValid(value: unknown): boolean {
+    static isValid(value: unknown): boolean {
         return value == null || value === "" || typeof value === "number" || NumericCell.isNumeric(value)
     }
-    serialize(value: number): number {
+    static serialize(value: number): number {
         return value
     }
-    deserialize(value: unknown): number {
+    static deserialize(value: unknown): number {
         if (typeof value === "number") return value
         if (NumericCell.isNumeric(value)) {
             const int = Number.parseInt(value as string)
@@ -18,7 +18,7 @@ export abstract class NumericCell extends Cell {
         throw new Error(`Could not deserialize value: ${value}`)
     }
 
-    unexport(value: number | string): number | null {
+    static unexport(value: number | string): number | null {
         // TODO: implement
         throw new Error("Not Implemented")
     }
