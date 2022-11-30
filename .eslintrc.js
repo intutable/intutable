@@ -23,6 +23,7 @@ module.exports = {
                 patterns: ["@mui/*/*/*", "!@mui/material/test-utils/*"],
             },
         ],
+        "import/no-cycle": "warn",
     },
     extends: [
         "eslint:recommended",

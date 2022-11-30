@@ -1,13 +1,5 @@
-/**
- * @module components.DataGrid.Cells
- * Cell types - utility classes for the different types of data that users
- * can edit in the table. Each type has a class (Boolean, Number, ...) that
- * represents the type as a whole - as such, you would expect all involved
- * methods to be static, but then we could not do the "get correct cell type
- * at runtime" thing (see {@link Cells})
- * Builds on the functionality of {@link @shared.api.cells}
- */
-import { Cells } from "./Cells"
+import { CellMap } from "./Cells"
+
 import { Text } from "./components/Text"
 import { Num } from "./components/Number"
 import { Time } from "./components/Time"
@@ -20,20 +12,19 @@ import { EMail } from "./components/EMail"
 import { Select } from "./components/Select"
 import { MultiSelect } from "./components/MultiSelect"
 
-const cells = new Cells(
-    new Text(),
-    new Num(),
-    new Time(),
-    new DateCell(),
-    new Bool(),
-    new Percentage(),
-    new Currency(),
-    new Hyperlink(),
-    new EMail(),
-    new Select(),
-    new MultiSelect()
+export const cellMap = new CellMap(
+    Text,
+    Num,
+    Time,
+    DateCell,
+    Bool,
+    Percentage,
+    Currency,
+    Hyperlink,
+    EMail,
+    Select,
+    MultiSelect
 )
 
-export default cells
-
 export { Cell } from "./abstract/Cell"
+export type { CellCtor } from "./Cells"

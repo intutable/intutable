@@ -1,12 +1,11 @@
-import cells from "@datagrid/Cells"
+import { Cell, cellMap } from "@datagrid/Cells"
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
-import { headerRenderer, HeaderRenderer } from "@datagrid/renderers"
+import { HeaderRenderer } from "@datagrid/renderers"
 import { Column } from "types"
 
+/** @deprecated */
 export const mountColumnProxy = (column: Column.Serialized): ProxyColumn =>
     new Proxy(column as ProxyColumn, ColumnProxyHandler)
-
-// TODO: this could replace most of the ColumnUtility
 
 // must be backwards compatible with `Column`
 export type ProxyColumn = Column.Deserialized & {
@@ -15,15 +14,17 @@ export type ProxyColumn = Column.Deserialized & {
      * But you can by-pass the get-traps with this property.
      * */
     serialized: Column.Serialized
-    /**
-     *
-     */
     __isProxy: true
+    /** by pass to the instantiated cell component */ // TODO: maybe expose it to Column.Deserialized
+    cell: Cell
 }
 
-const ColumnProxyHandler: ProxyHandler<ProxyColumn> = {
+// BUG (27.11.22): the proxy does not work as intended
+
+export const ColumnProxyHandler: ProxyHandler<ProxyColumn> = {
     get(target, prop, receiver) {
-        const cell = cells.getCell(target.cellType)
+        const cellCtor = cellMap.getCellCtor(target.cellType)
+        const cell = new cellCtor(target as Column.Serialized)
 
         switch (prop as keyof ProxyColumn) {
             case "editable":
@@ -44,7 +45,7 @@ const ColumnProxyHandler: ProxyHandler<ProxyColumn> = {
                 return cell.editor
 
             case "headerRenderer":
-                return headerRenderer
+                return HeaderRenderer // BUG: bind this-context to the instance
 
             case "editorOptions":
                 return cell.editorOptions
@@ -55,6 +56,9 @@ const ColumnProxyHandler: ProxyHandler<ProxyColumn> = {
 
             case "__isProxy":
                 return true
+
+            case "cell":
+                return cell // BUG: bind this-context to the instance
 
             default:
                 return Reflect.get(target, prop, receiver)

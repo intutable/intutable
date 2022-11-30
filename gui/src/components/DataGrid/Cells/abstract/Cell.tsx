@@ -3,16 +3,18 @@ import EditorComponent from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
 import { InputUnstyled, InputUnstyledProps } from "@mui/base"
 import { SvgIconComponent } from "@mui/icons-material"
-import { Box, TextField } from "@mui/material"
+import AbcIcon from "@mui/icons-material/Abc"
+import { Box } from "@mui/material"
 import { styled } from "@mui/material/styles"
-import { useRow } from "hooks/useRow"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
+import { static_implements } from "utils/static_implements"
 import { ValueOf } from "utils/ValueOf"
 import {
+    CellEmptyValue,
     Exportable,
     ExposableInputComponent,
     ExposedInputProps,
@@ -20,17 +22,6 @@ import {
     SerializableCatchEmpty,
     Validatable,
 } from "./protocols"
-
-class CellError extends Error {
-    constructor(message: string) {
-        super(message)
-
-        this.name = CellError.name
-        // this.cause =
-
-        Error.captureStackTrace(this)
-    }
-}
 
 const StyledInputElement = styled("input")`
     width: 100%;
@@ -49,74 +40,42 @@ const StyledInputElement = styled("input")`
 
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
-export type CellEmptyValue = "" | null | undefined | []
+export type CellInstanceImplements = {
+    /** display name, visible to the user; can be changed during runtime (e.g. for i18n) */
+    label: string
+    /** corresponding icon */
+    icon: SvgIconComponent
+    /** get static brand value in instance */
+    get brand(): string
+} & ExposableInputComponent
+export type CellStatic = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    new (column: Column.Serialized, ...args: any[]): CellInstanceImplements
+    /** unique identifier; do NOT change in production */
+    brand: string
+} & Validatable &
+    Exportable &
+    Serializable &
+    SerializableCatchEmpty
 
 /**
- * Base class for all cell components.
- * Extends the functionality of {@link SerializedCell} with React-specific
- * functionality that governs how to show the cell in the GUI.
+ * Abstract base class for all cell components.wd
  */
-export abstract class Cell
-    // TODO. make these static
-    implements Validatable, Exportable, Serializable, SerializableCatchEmpty, ExposableInputComponent
-{
-    /** do NOT change in production */
-    public abstract readonly brand: string
-    // but this can be changed
-    public abstract label: string
-    /** icon displayed with the type */
-    public abstract icon: SvgIconComponent
+@static_implements<CellStatic>()
+export class Cell {
+    constructor(public readonly column: Column.Serialized) {}
 
-    public isValid(value: unknown): boolean {
-        // default validation for text based editors
-        // it should either be a non object like string, a stringified number or emtpy (null or empty str '')
-        return (
-            (isJSONObject(value) === false && isJSONArray(value) === false && typeof value === "string") ||
-            typeof value === "number" ||
-            value === "" ||
-            value == null
-        )
-    }
-    static isEmpty(value: unknown): value is CellEmptyValue {
-        // empty values are: empty strings (""), null, undefined and empty arrays
-        try {
-            return (
-                value === "" ||
-                value == null ||
-                typeof value === "undefined" ||
-                (Array.isArray(value) && value.length === 0) ||
-                (isJSONArray(value) && JSON.parse(value as string).length === 0)
-            )
-        } catch (error) {
-            console.error(error)
-            return false
-        }
+    static brand = "abstract-cell"
+    public label = "Abstract Cell"
+    public icon: SvgIconComponent = AbcIcon
+
+    get brand(): string {
+        return (Object.getPrototypeOf(this).constructor as typeof Cell).brand
     }
 
-    public catchEmpty<T extends ValueOf<Serializable>>(fn: T, value: unknown): null | ReturnType<T> {
-        if (value === null || typeof value === "undefined" || (typeof value === "string" && value === "")) return null
-        return fn(value) as ReturnType<T>
-    }
-    public serialize(value: unknown): unknown {
-        return value
-    }
-    public deserialize(value: unknown): unknown {
-        return value
-    }
-
-    public export(value: unknown): string | void {
-        // default export method
-        // if (typeof value !== "string" || typeof value !== "number")
-        //     throw new Error(`Could not export value: ${value}`)
-        return value as string
-    }
-    // used in clipboard
-    public unexport(value: string): unknown {
-        return value
-    }
+    /***** - UTILS - *****/
 
     /** override rdg's default properties for `editorOptions`. */
-    // Note: before overring these, look up what the default values look like
     private _editorOptions: EditorOptions = {
         // Gets exposed to rdg internally. Needed for internal 'tab'/arrow key navigation.
         // Indicates what type of KeyboardEvent should be such a navigation event.
@@ -130,7 +89,6 @@ export abstract class Cell
     protected setEditorOptions(options: EditorOptions) {
         this._editorOptions = mergeNonNullish<EditorOptions>(this._editorOptions, options)
     }
-
     /** utilty that destructs the `props` argument for `editor` and `formatter` */
     protected destruct<T = unknown>(props: EditorProps<Row> | FormatterProps<Row>) {
         const row = props.row
@@ -139,7 +97,6 @@ export abstract class Cell
         const content = row[key] as T
         return { row, column, key, content }
     }
-
     /** default input component */
     protected readonly Input = React.forwardRef(
         (
@@ -151,6 +108,7 @@ export abstract class Cell
             // if no ref is forwarded, we still need a ref for autofocus
             const inputRef = useRef<HTMLInputElement | null>(null)
 
+            // TODO: use the autofocus mechanism in other cell components as well
             // autofocus effect
             useEffect(() => {
                 if (typeof ref === "function") return
@@ -166,12 +124,12 @@ export abstract class Cell
                     components={{ Input: StyledInputElement }}
                     ref={ref || inputRef}
                     onKeyDown={props.onKeyDown}
+                    disabled={this.column.editable === false}
                     {...props}
                 />
             )
         }
     )
-
     /**
      * Automatically focus the editor's input component when the editor
      * renders (i.e. cell's content is selected or edited). Since each editor
@@ -191,11 +149,63 @@ export abstract class Cell
         domInput.select()
     }
 
-    /**
-     *
-     * If set to `null`, no editor will be rendered and the {@link ColumnUtility}
-     * will set `editable` to `false` for the column.
-     */
+    /***** {@link Validatable} *****/
+    static isValid(value: unknown): boolean {
+        // default validation for text based editors
+        // it should either be a non object like string, a stringified number or emtpy (null or empty str '')
+        return (
+            (isJSONObject(value) === false && isJSONArray(value) === false && typeof value === "string") ||
+            typeof value === "number" ||
+            value === "" ||
+            value == null
+        )
+    }
+    static isEmpty(value: unknown): value is CellEmptyValue {
+        try {
+            return (
+                value === "" ||
+                value == null ||
+                typeof value === "undefined" ||
+                (Array.isArray(value) && value.length === 0) ||
+                (isJSONArray(value) && JSON.parse(value as string).length === 0)
+            )
+        } catch (error) {
+            return false
+        }
+    }
+
+    /***** {@link Serializable} *****/
+
+    static serialize(value: unknown): unknown {
+        return value
+    }
+    static deserialize(value: unknown): unknown {
+        return value
+    }
+
+    /***** {@link SerializableCatchEmpty} *****/
+    static catchEmpty<T extends ValueOf<Serializable>>(fn: T, value: unknown): null | ReturnType<T> {
+        if (value === null || typeof value === "undefined" || (typeof value === "string" && value === "")) return null
+        return fn(value) as ReturnType<T> // TODO: bind the this-context, so it does not need to be bound elsewhere
+    }
+
+    /***** {@link Exportable} *****/
+    static export(value: unknown): string | void {
+        // default export method
+        // if (typeof value !== "string" || typeof value !== "number")
+        //     throw new Error(`Could not export value: ${value}`)
+        return value as string
+    }
+    static unexport(value: string): unknown {
+        return value
+    }
+
+    /***** {@link ExposableInputComponent} *****/
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public ExposedInput: React.FC<ExposedInputProps<any, any>> = () => null
+
+    /***** - rdg's components - *****/
+
     public editor?: EditorComponent = (props: EditorProps<Row>) => {
         // default editor component
         const { row, key, content } = this.destruct(props)
@@ -208,7 +218,6 @@ export abstract class Cell
 
         return <this.Input onChange={handleChange} onBlur={() => props.onClose(true)} value={content} />
     }
-
     public formatter: FormatterComponent = (props: FormatterProps<Row>) => {
         // default formatter component
         const { row, column } = props
@@ -218,9 +227,4 @@ export abstract class Cell
 
         return <Box>{content}</Box>
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public abstract ExposedInput: React.FC<ExposedInputProps<any, any>>
-
-    static Error = CellError
 }

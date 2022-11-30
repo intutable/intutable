@@ -9,11 +9,11 @@ import { NumericCell } from "../abstract/NumericCell"
 import { ExposedInputProps } from "../abstract/protocols"
 
 export class Num extends NumericCell {
-    readonly brand = "number"
-    label = "Number"
-    icon = LooksOneIcon
+    static brand = "number"
+    public label = "Number"
+    public icon = LooksOneIcon
 
-    editor = (props: EditorProps<Row>) => {
+    public editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -26,13 +26,13 @@ export class Num extends NumericCell {
     }
 
     public ExposedInput: React.FC<ExposedInputProps<number | null, TextFieldProps>> = props => {
-        const { getRowId, updateRow } = useRow()
+        const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content ?? "")
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            if (this.isValid(e.target.value)) setValue(e.target.value)
+            if (Num.isValid(e.target.value)) setValue(e.target.value)
         }
 
         const handleBlur = async () => {
@@ -50,6 +50,7 @@ export class Num extends NumericCell {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={value}
+                disabled={this.column.editable === false}
                 {...props.InputProps}
             />
         )

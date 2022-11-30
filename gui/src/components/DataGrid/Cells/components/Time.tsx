@@ -6,7 +6,7 @@ import { TimePicker } from "@mui/x-date-pickers"
 import deLocale from "date-fns/locale/de"
 import { useState } from "react"
 import { FormatterProps } from "react-data-grid"
-import { Row } from "types"
+import { Column, Row } from "types"
 import { TempusCell } from "../abstract/TempusCell"
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled"
 import { ExposedInputProps } from "../abstract/protocols"
@@ -14,26 +14,33 @@ import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 
 export class Time extends TempusCell {
-    readonly brand = "time"
-    label = "Time"
-    icon = AccessTimeFilledIcon
+    static brand = "time"
+    public label = "Time"
+    public icon = AccessTimeFilledIcon
 
-    export(value: Date): string {
+    constructor(column: Column.Serialized) {
+        super(column)
+        this.setEditorOptions({
+            renderFormatter: true,
+        })
+    }
+
+    static export(value: Date): string {
         return value.toLocaleTimeString("de-DE", {
             hour: "2-digit",
             minute: "2-digit",
         })
     }
 
-    editor = () => null
+    public editor = () => null
 
-    formatter = (props: FormatterProps<Row>) => {
+    public formatter = (props: FormatterProps<Row>) => {
         const { row, key, content: _content } = this.destruct<Date | null>(props)
         const [content, setContent] = useState(_content)
 
         const handleChange = (date: Date | null) => {
             if (date === null) return erase()
-            if (this.isValid(date) === false) return
+            if (Time.isValid(date) === false) return
 
             props.onRowChange({
                 ...row,
@@ -76,6 +83,7 @@ export class Time extends TempusCell {
                         onChange={date => setContent(date)} // only update the state, but do not update the actual db (only on blur – see below)
                         onAccept={handleChange} // update the db
                         ampm={false}
+                        disabled={this.column.editable === false}
                         renderInput={params => (
                             <TextField
                                 {...params}
@@ -83,6 +91,7 @@ export class Time extends TempusCell {
                                 size="small"
                                 variant="standard"
                                 fullWidth
+                                disabled={this.column.editable === false}
                                 sx={{
                                     m: 0,
                                     mt: 0.5,
@@ -108,13 +117,13 @@ export class Time extends TempusCell {
     }
 
     public ExposedInput: React.FC<ExposedInputProps<number | null>> = props => {
-        const { getRowId, updateRow } = useRow()
+        const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
         const [content, setContent] = useState(props.content)
 
         const handleChange = async (value: number | null) => {
-            if (this.isValid(value)) setContent(value)
+            if (Time.isValid(value)) setContent(value)
             try {
                 await updateRow(props.column, props.row, value)
             } catch (e) {
@@ -142,6 +151,7 @@ export class Time extends TempusCell {
                     value={content}
                     onChange={handleChange}
                     renderInput={props => <TextField {...props} />}
+                    disabled={this.column.editable === false}
                     componentsProps={{
                         actionBar: {
                             actions: ["clear", "today", "accept"],

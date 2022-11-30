@@ -36,7 +36,7 @@ export class Cast implements CastOperation, CastOperationEmpty {
     }
 
     orEmpty<T extends ValueOf<CastOperation>>(castFn: T, value: unknown): null | undefined | ReturnType<T> {
-        return this.isEmpty(value) ? value : (castFn(value) as ReturnType<T>)
+        return this.isEmpty(value) ? value : (castFn(value) as ReturnType<T>) // TODO: bind the this-context, so it does not need to be bound elsewhere
     }
 
     or<F1 extends ValueOf<CastOperation>, F2 extends ValueOf<CastOperation>>(

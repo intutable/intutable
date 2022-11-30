@@ -30,25 +30,25 @@ const LinearProgressWithLabel = (props: LinearProgressProps & { value: number })
 )
 
 export class Percentage extends NumericCell {
-    readonly brand = "percentage"
-    label = "Percentage"
-    icon = PercentIcon
+    static brand = "percentage"
+    public label = "Percentage"
+    public icon = PercentIcon
 
-    isValid(value: unknown): boolean {
+    static isValid(value: unknown): boolean {
         return typeof value === "number" && value >= 0 && value <= 100
     }
 
-    export(value: number): string {
+    static export(value: number): string {
         return value + "%"
     }
-    unexport(value: string): number {
+    static unexport(value: string): number {
         const unexported = Number(value.replace("%", "").trim())
         if (NumericCell.isNumeric(unexported) === false)
             throw new RangeError("Percentage Cell Debug Error: value is not a number")
         return unexported
     }
 
-    editor = (props: EditorProps<Row>) => {
+    public editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct<number | null>(props)
 
         const [percentage, setPercentage] = React.useState<number | null>(content)
@@ -67,7 +67,7 @@ export class Percentage extends NumericCell {
             }
 
             // validate AND update
-            if (parsedValue === null || this.isValid(parsedValue)) {
+            if (parsedValue === null || Percentage.isValid(parsedValue)) {
                 setPercentage(parsedValue)
                 props.onRowChange({
                     ...row,
@@ -92,7 +92,7 @@ export class Percentage extends NumericCell {
         )
     }
 
-    formatter = (props: FormatterProps<Row>) => {
+    public formatter = (props: FormatterProps<Row>) => {
         const { content } = this.destruct<number | null>(props)
 
         return (
@@ -106,13 +106,13 @@ export class Percentage extends NumericCell {
                     whiteSpace: "nowrap",
                 }}
             >
-                {this.isValid(content) && <LinearProgressWithLabel value={content!} />}
+                {Percentage.isValid(content) && <LinearProgressWithLabel value={content!} />}
             </Box>
         )
     }
 
     public ExposedInput: React.FC<ExposedInputProps<number | null>> = props => {
-        const { getRowId, updateRow } = useRow()
+        const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
         const [percentage, setValue] = useState(props.content)
@@ -131,7 +131,7 @@ export class Percentage extends NumericCell {
             }
 
             // validate
-            if (parsedValue === null || this.isValid(parsedValue)) setValue(parsedValue)
+            if (parsedValue === null || Percentage.isValid(parsedValue)) setValue(parsedValue)
         }
 
         const handleBlur = async () => {
@@ -149,6 +149,7 @@ export class Percentage extends NumericCell {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={percentage}
+                disabled={this.column.editable === false}
                 InputProps={{
                     endAdornment: <InputAdornment position="end">%</InputAdornment>,
                 }}

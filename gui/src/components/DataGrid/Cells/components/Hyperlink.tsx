@@ -9,11 +9,11 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 
 export class Hyperlink extends Cell {
-    readonly brand = "hyperlink"
-    label = "Hyperlink"
-    icon = LinkIcon
+    static brand = "hyperlink"
+    public label = "Hyperlink"
+    public icon = LinkIcon
 
-    isValid(value: unknown): boolean {
+    static isValid(value: unknown): boolean {
         if (value == null || value === "") return true
         if (typeof value !== "string") return false
 
@@ -25,13 +25,13 @@ export class Hyperlink extends Cell {
         }
     }
 
-    editor = (props: EditorProps<Row>) => {
+    public editor = (props: EditorProps<Row>) => {
         const { row, key, content } = this.destruct(props)
 
         const [input, setInput] = useState(content ?? "")
 
         useEffect(() => {
-            if (this.isValid(input)) {
+            if (Hyperlink.isValid(input)) {
                 props.onRowChange({
                     ...row,
                     [key]: input,
@@ -42,10 +42,10 @@ export class Hyperlink extends Cell {
         return <this.Input onChange={e => setInput(e.target.value)} onBlur={() => props.onClose(true)} value={input} />
     }
 
-    formatter = (props: FormatterProps<Row>) => {
+    public formatter = (props: FormatterProps<Row>) => {
         const { content } = this.destruct<string | null | undefined>(props)
 
-        if (this.isValid(content) === false || content == null || content.length < 1) return null
+        if (Hyperlink.isValid(content) === false || content == null || content.length < 1) return null
 
         return (
             <Box
@@ -72,7 +72,7 @@ export class Hyperlink extends Cell {
     }
 
     public ExposedInput: React.FC<ExposedInputProps<string | null>> = props => {
-        const { getRowId, updateRow } = useRow()
+        const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content ?? "")
@@ -80,7 +80,7 @@ export class Hyperlink extends Cell {
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
         const handleBlur = async () => {
-            if (this.isValid(value) === false) return
+            if (Hyperlink.isValid(value) === false) return
             try {
                 await updateRow(props.column, props.row, value)
             } catch (e) {
@@ -90,11 +90,12 @@ export class Hyperlink extends Cell {
 
         return (
             <TextField
-                error={this.isValid(value) === false}
+                error={Hyperlink.isValid(value) === false}
                 size="small"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={value}
+                disabled={this.column.editable === false}
                 InputProps={{
                     endAdornment: (
                         <InputAdornment position="end">

@@ -1,4 +1,4 @@
-import cells from "@datagrid/Cells"
+import { cellMap } from "@datagrid/Cells"
 import { Button } from "@mui/material"
 import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
@@ -21,8 +21,8 @@ export const ChangeCellType: React.FC<{
         setCellType(value)
 
         try {
-            const currentCell = cells.getCell(props.column.cellType)
-            const wantedCell = cells.getCell(value)
+            const currentCell = cellMap.instantiate(props.column)
+            const wantedCell = cellMap.unsafe_instantiateDummyCell(value)
 
             const invalidCells = ColumnUtility.canInterchangeColumnType(wantedCell.brand, props.column, view!)
 
@@ -61,7 +61,7 @@ export const ChangeCellType: React.FC<{
             type="select"
             value={{
                 value: cellType,
-                options: Array.from(cells.getMap()),
+                options: cellMap.getBrandLabelMap(),
             }}
             onChange={handleChange}
         />
