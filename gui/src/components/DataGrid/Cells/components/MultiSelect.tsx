@@ -103,6 +103,7 @@ export class MultiSelect extends Cell {
     static brand = "multiselect"
     public label = "Mehrfach-Auswahlliste"
     public icon = BookmarksIcon
+    public canBeUserPrimaryKey = false
 
     constructor(column: Column.Serialized) {
         super(column)

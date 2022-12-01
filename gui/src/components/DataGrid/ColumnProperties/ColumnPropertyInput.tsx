@@ -12,7 +12,7 @@ export type ColumnPropertyInputTypeMap = {
     switch: boolean
     select: {
         value: string
-        options: { brand: string; label: string }[]
+        options: { brand: string; label: string; disabled?: boolean }[]
     }
 }
 export type ColumnPropertyInputValue_onChangeReturnMap = {
@@ -134,8 +134,8 @@ const SwitchInput: React.FC<ColumnPropertyInputProps<"switch">> = props => {
 
 const SelectInput: React.FC<ColumnPropertyInputProps<"select">> = props => (
     <Select variant="standard" value={props.value.value} onChange={e => props.onChange(e.target.value)}>
-        {props.value.options.map(({ brand, label }) => (
-            <MenuItem value={brand} key={brand}>
+        {props.value.options.map(({ brand, label, disabled }) => (
+            <MenuItem value={brand} key={brand} disabled={disabled}>
                 {label}
             </MenuItem>
         ))}

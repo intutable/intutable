@@ -12,6 +12,7 @@ export class Currency extends NumericCell {
     static brand = "currency"
     public label = "Currency"
     public icon = PaidIcon
+    public canBeUserPrimaryKey = false
 
     static export(value: number): string {
         return value + "€"

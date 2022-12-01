@@ -33,6 +33,7 @@ export class Percentage extends NumericCell {
     static brand = "percentage"
     public label = "Percentage"
     public icon = PercentIcon
+    public canBeUserPrimaryKey = false
 
     static isValid(value: unknown): boolean {
         return typeof value === "number" && value >= 0 && value <= 100

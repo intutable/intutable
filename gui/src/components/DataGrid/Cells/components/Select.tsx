@@ -38,6 +38,7 @@ export class Select extends Cell {
     static brand = "select"
     public label = "Auswahlliste"
     public icon = BookmarkIcon
+    public canBeUserPrimaryKey = false
 
     constructor(column: Column.Serialized) {
         super(column)

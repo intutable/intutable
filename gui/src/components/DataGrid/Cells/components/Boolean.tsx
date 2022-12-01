@@ -12,6 +12,7 @@ export class Bool extends Cell {
     static brand = "boolean"
     public label = "Boolean"
     public icon = ToggleOnIcon
+    public canBeUserPrimaryKey = false
 
     constructor(column: Column.Serialized) {
         super(column)

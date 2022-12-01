@@ -47,12 +47,14 @@ export type CellInstanceImplements = {
     icon: SvgIconComponent
     /** get static brand value in instance */
     get brand(): string
+    /** Wether the cell type is appropriate for the `isUserPrimiaryKey` column, @default true */
+    canBeUserPrimaryKey: boolean
 } & ExposableInputComponent
 export type CellStatic = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     new (column: Column.Serialized, ...args: any[]): CellInstanceImplements
     /** unique identifier; do NOT change in production */
-    brand: string
+    brand: string // TODO: this can be made non-static, if we would use dummy classes for the Cells class
 } & Validatable &
     Exportable &
     Serializable &
@@ -68,10 +70,10 @@ export class Cell {
     static brand = "abstract-cell"
     public label = "Abstract Cell"
     public icon: SvgIconComponent = AbcIcon
-
     get brand(): string {
         return (Object.getPrototypeOf(this).constructor as typeof Cell).brand
     }
+    public canBeUserPrimaryKey = true
 
     /***** - UTILS - *****/
 
