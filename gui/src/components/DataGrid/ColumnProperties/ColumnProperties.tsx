@@ -59,6 +59,7 @@ const _makeBooleanInput = (label: string, columnKey: keyof Column.Serialized) =>
                 type="switch"
                 value={props.column[columnKey] as boolean}
                 onChange={changeProp}
+                disabled={columnKey === "editable" && props.column.kind === "lookup"}
             />
         )
     }
