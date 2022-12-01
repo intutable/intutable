@@ -25,7 +25,15 @@ export const Name: React.FC<{ column: Column.Serialized }> = props => {
         }
     }
 
-    return <ColumnPropertyInput label="Name" type="text" value={props.column.name} onChange={changeName} />
+    return (
+        <ColumnPropertyInput
+            label="Name"
+            type="text"
+            value={props.column.name}
+            onChange={changeName}
+            disabled={props.column.kind !== "standard"}
+        />
+    )
 }
 
 // boolean based

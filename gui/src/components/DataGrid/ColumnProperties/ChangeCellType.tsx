@@ -3,7 +3,6 @@ import { Button } from "@mui/material"
 import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
-import column from "pages/api/table/[tableId]/column"
 import React from "react"
 import { Column } from "types"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
@@ -71,6 +70,7 @@ export const ChangeCellType: React.FC<{
                           }))
                         : cellMap.getBrandLabelMap(),
             }}
+            disabled={props.column.kind !== "standard"}
             onChange={handleChange}
         />
     )

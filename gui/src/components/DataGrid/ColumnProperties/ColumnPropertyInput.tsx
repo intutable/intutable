@@ -32,6 +32,8 @@ export type ColumnPropertyInputProps<TYPE extends ColumnPropertyInputType> = {
     value: ColumnPropertyInputTypeMap[TYPE]
     /** controlled input update method */
     onChange: (value: ColumnPropertyInputValue_onChangeReturnMap[TYPE]) => unknown
+    /** If the prop can be changed */
+    disabled?: boolean
 }
 
 export const ColumnPropertyInput = <T extends ColumnPropertyInputType>(props: ColumnPropertyInputProps<T>) => {
@@ -97,6 +99,7 @@ const TextInput: React.FC<ColumnPropertyInputProps<"text">> = props => {
             onKeyDown={e => {
                 if (e.key === "Enter") props.onChange(value)
             }}
+            disabled={props.disabled}
             InputProps={{
                 endAdornment: (
                     <InputAdornment position="end">
@@ -105,6 +108,7 @@ const TextInput: React.FC<ColumnPropertyInputProps<"text">> = props => {
                             onMouseDown={e => e.preventDefault()}
                             edge="end"
                             size="small"
+                            disabled={props.disabled}
                         >
                             <CheckIcon fontSize="small" />
                         </IconButton>
@@ -127,13 +131,18 @@ const SwitchInput: React.FC<ColumnPropertyInputProps<"switch">> = props => {
         <FormControlLabel
             label={props.label}
             labelPlacement="start"
-            control={<Switch checked={checked} onChange={handleChange} />}
+            control={<Switch checked={checked} onChange={handleChange} disabled={props.disabled} />}
         />
     )
 }
 
 const SelectInput: React.FC<ColumnPropertyInputProps<"select">> = props => (
-    <Select variant="standard" value={props.value.value} onChange={e => props.onChange(e.target.value)}>
+    <Select
+        variant="standard"
+        value={props.value.value}
+        onChange={e => props.onChange(e.target.value)}
+        disabled={props.disabled}
+    >
         {props.value.options.map(({ brand, label, disabled }) => (
             <MenuItem value={brand} key={brand} disabled={disabled}>
                 {label}
