@@ -1,5 +1,6 @@
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import LinkIcon from "@mui/icons-material/Attachment"
-import { Box, IconButton, InputAdornment, TextField, Tooltip } from "@mui/material"
+import { Box, IconButton, InputAdornment, TextField, TextFieldProps, Tooltip } from "@mui/material"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useEffect, useState } from "react"
@@ -9,7 +10,7 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 
 export class Hyperlink extends Cell {
-    static brand = "hyperlink"
+    public brand = "hyperlink"
     public label = "Hyperlink"
     public icon = LinkIcon
 
@@ -30,6 +31,7 @@ export class Hyperlink extends Cell {
 
         const [input, setInput] = useState(content ?? "")
 
+        // BUG: this causes a loop (useEffect + updating state = bad), replace
         useEffect(() => {
             if (Hyperlink.isValid(input)) {
                 props.onRowChange({
@@ -58,7 +60,7 @@ export class Hyperlink extends Cell {
                     whiteSpace: "nowrap",
                 }}
             >
-                <Tooltip title={content!} arrow placement="top">
+                <Tooltip title={content} arrow placement="top">
                     <IconButton size="small" onClick={() => open(content)} color="success">
                         <LinkIcon
                             sx={{
@@ -71,7 +73,7 @@ export class Hyperlink extends Cell {
         )
     }
 
-    public ExposedInput: React.FC<ExposedInputProps<string | null>> = props => {
+    public ExposedInput: React.FC<ExposedInputProps<string | null, TextFieldProps>> = props => {
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
@@ -98,11 +100,21 @@ export class Hyperlink extends Cell {
                 disabled={this.column.editable === false}
                 InputProps={{
                     endAdornment: (
-                        <InputAdornment position="end">
-                            <this.icon fontSize="small" />
+                        <InputAdornment
+                            position="end"
+                            onClick={() => props.content && open(props.content)}
+                            sx={{
+                                cursor: "pointer",
+                            }}
+                        >
+                            <this.icon fontSize="small" color="success" />
                         </InputAdornment>
                     ),
+                    readOnly: this.isReadonlyComponent,
+                    startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
+                {...props.forwardProps}
+                sx={props.forwardSX}
             />
         )
     }

@@ -6,7 +6,12 @@ export type CellCtor = typeof Cell
 
 export class CellMap extends Map<string, CellCtor> {
     constructor(...cells: CellCtor[]) {
-        super(cells.map(cell => [cell.brand, cell]))
+        super(
+            cells.map(cell => {
+                const instance = new cell(ColumnFactory.createDummy())
+                return [instance.brand, cell]
+            })
+        )
         // debug
         CellMap._checkForDuplicateBrands(...cells)
     }
@@ -17,12 +22,16 @@ export class CellMap extends Map<string, CellCtor> {
         return ctor
     }
 
+    // key getter
     public getBrands(): string[] {
         return Array.from(this.keys())
     }
-
+    // value getter
     public getCtors(): CellCtor[] {
         return Array.from(this.values())
+    }
+    public unsafe_getDummyCells(): Cell[] {
+        return this.getBrands().map(brand => this.unsafe_instantiateDummyCell(brand))
     }
 
     public getLabels(column: Column.Serialized | "suppress" = "suppress"): string[] {
@@ -42,7 +51,6 @@ export class CellMap extends Map<string, CellCtor> {
         return new ctor(ColumnFactory.createDummy()) as T
     }
 
-    // TODO: maybe mount the instance to the deserialized column instead
     public instantiate(column: Column.Serialized | Column.Deserialized): Cell {
         const serialized = "__serialized" in column ? column.__serialized : column
         const ctor = this.getCellCtor(serialized.cellType)
@@ -55,7 +63,10 @@ export class CellMap extends Map<string, CellCtor> {
      * you can easily forget to set a new value.
      */
     private static _checkForDuplicateBrands(...cells: CellCtor[]): void {
-        const brands = cells.map(cell => cell.brand)
+        const brands = cells.map(cell => {
+            const instance = new cell(ColumnFactory.createDummy())
+            return instance.brand
+        })
         const uniqueBrands = new Set(brands)
         if (brands.length !== uniqueBrands.size)
             throw new Error(`Duplicate brands found: ${brands.filter(brand => !uniqueBrands.has(brand))}`)

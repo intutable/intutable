@@ -28,14 +28,13 @@ const ChipItem: React.FC<{
             sx={{
                 color: theme.palette.getContrastText(color),
                 bgcolor: color,
-                cursor: "pointer",
             }}
         />
     )
 }
 
 export class Select extends Cell {
-    static brand = "select"
+    public brand = "select"
     public label = "Auswahlliste"
     public icon = BookmarkIcon
     public canBeUserPrimaryKey = false

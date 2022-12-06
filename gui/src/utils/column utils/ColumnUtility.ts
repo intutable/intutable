@@ -1,5 +1,4 @@
 import { cellMap } from "@datagrid/Cells"
-import { Column, ViewData } from "types"
 import { SELECT_COLUMN_KEY } from "react-data-grid"
 import { Column, Row, ViewData } from "types"
 
@@ -28,16 +27,6 @@ export class ColumnUtility {
      */
     static isAppColumn(column: Column.Serialized | Column.Deserialized): boolean {
         return column.key === SELECT_COLUMN_KEY
-    }
-
-    /**
-     *
-     */
-    static isProxy(column: Column.Serialized | Column.Deserialized): boolean {
-        const col = column as unknown
-        return (
-            Object.prototype.hasOwnProperty.call(col, "__isProxy") && (col as { __isProxy: unknown }).__isProxy === true
-        )
     }
 
     /** sort algorithm for columns based on its index */

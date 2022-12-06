@@ -1,3 +1,4 @@
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import LooksOneIcon from "@mui/icons-material/LooksOne"
 import { TextField, TextFieldProps } from "@mui/material"
 import { useRow } from "hooks/useRow"
@@ -9,7 +10,7 @@ import { NumericCell } from "../abstract/NumericCell"
 import { ExposedInputProps } from "../abstract/protocols"
 
 export class Num extends NumericCell {
-    static brand = "number"
+    public brand = "number"
     public label = "Number"
     public icon = LooksOneIcon
 
@@ -51,7 +52,12 @@ export class Num extends NumericCell {
                 onBlur={handleBlur}
                 value={value}
                 disabled={this.column.editable === false}
-                {...props.InputProps}
+                InputProps={{
+                    readOnly: this.isReadonlyComponent,
+                    startAdornment: <ExposedInputAdornment column={this.column} />,
+                }}
+                sx={props.forwardSX}
+                {...props.forwardProps}
             />
         )
     }

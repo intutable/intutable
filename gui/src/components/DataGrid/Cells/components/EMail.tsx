@@ -9,9 +9,10 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 
 export class EMail extends Cell {
-    static brand = "email"
+    public brand = "email"
     public label = "E-Mail"
     public icon = AlternateEmailIcon
 
@@ -24,6 +25,7 @@ export class EMail extends Cell {
 
         const [input, setInput] = useState(content ?? "")
 
+        // BUG: this causes a loop (useEffect + updating state = bad), replace
         useEffect(() => {
             if (EMail.isValid(input)) {
                 props.onRowChange({
@@ -92,11 +94,21 @@ export class EMail extends Cell {
                 disabled={this.column.editable === false}
                 InputProps={{
                     endAdornment: (
-                        <InputAdornment position="end">
-                            <this.icon fontSize="small" />
+                        <InputAdornment
+                            position="end"
+                            onClick={() => props.content && open(`mailto:${props.content}`)}
+                            sx={{
+                                cursor: "pointer",
+                            }}
+                        >
+                            <this.icon fontSize="small" color="success" />
                         </InputAdornment>
                     ),
+                    readOnly: this.isReadonlyComponent,
+                    startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
+                {...props.forwardProps}
+                sx={props.forwardSX}
             />
         )
     }

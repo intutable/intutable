@@ -54,13 +54,11 @@ export const AddColumnModal: React.FC<AddColumnModalProps> = props => {
                                     setProperty("cellType", e.target.value)
                                 }}
                             >
-                                {cellMap.getCtors().map(ctor => {
-                                    const instance = cellMap.unsafe_instantiateDummyCell(ctor.brand)
-                                    const Icon = instance.icon
+                                {cellMap.unsafe_getDummyCells().map(cell => {
                                     return (
-                                        <MenuItem key={ctor.brand} value={ctor.brand}>
-                                            <Icon />
-                                            {instance.label}
+                                        <MenuItem key={cell.brand} value={cell.brand}>
+                                            <cell.icon />
+                                            {cell.label}
                                         </MenuItem>
                                     )
                                 })}

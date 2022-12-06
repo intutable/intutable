@@ -1,12 +1,12 @@
 import { cellMap } from "@datagrid/Cells"
 import { ColumnAttributesWindow } from "@datagrid/renderers/HeaderRenderer/ColumnAttributesWindow"
 import EditIcon from "@mui/icons-material/Edit"
-import KeyIcon from "@mui/icons-material/Key"
 import { Box, Divider, IconButton, InputAdornment, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
 import React, { useState } from "react"
 import { Column } from "types"
+import KeyIcon from "@mui/icons-material/Key"
 import LinkIcon from "@mui/icons-material/Link"
 import LookupIcon from "@mui/icons-material/ManageSearch"
 
@@ -120,26 +120,10 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                             row={rowMaskState.row}
                             column={column}
                             hoveringOnParent={isHovering}
-                            InputProps={{
+                            forwardProps={{
                                 fullWidth: column.isUserPrimaryKey ? true : false,
-                                InputProps: {
-                                    startAdornment:
-                                        column.isUserPrimaryKey === true ? (
-                                            <InputAdornment position="start">
-                                                <KeyIcon fontSize="small" />
-                                            </InputAdornment>
-                                        ) : column.kind === "lookup" ? (
-                                            <InputAdornment position="start">
-                                                <LookupIcon fontSize="small" />
-                                            </InputAdornment>
-                                        ) : column.kind === "link" ? (
-                                            <InputAdornment position="start">
-                                                <LinkIcon fontSize="small" />
-                                            </InputAdornment>
-                                        ) : null,
-                                },
                             }}
-                            InputStyle={{
+                            forwardSX={{
                                 w: 1,
                             }}
                         />

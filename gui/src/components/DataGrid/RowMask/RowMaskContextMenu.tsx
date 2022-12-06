@@ -1,5 +1,5 @@
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
-import { ListItemText, Menu, MenuItem } from "@mui/material"
+import { ListItemText, Menu, MenuItem, MenuList } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
 import { useRow } from "hooks/useRow"
@@ -49,21 +49,23 @@ export const RowMaskContextMenu: React.FC = () => {
                     },
                 }}
             >
-                <HiddenColumnsMenuItem />
-                {rowMaskState.mode === "edit" ? (
-                    <>
-                        <MenuItem onClick={createRow}>
-                            <ListItemText>Neuer Eintrag</ListItemText>
+                <MenuList>
+                    <HiddenColumnsMenuItem />
+                    {rowMaskState.mode === "edit" ? (
+                        <>
+                            <MenuItem onClick={createRow}>
+                                <ListItemText>Neuer Eintrag</ListItemText>
+                            </MenuItem>
+                            <MenuItem sx={{ color: theme.palette.warning.main }} onClick={deleteRow}>
+                                <ListItemText>Eintrag Löschen</ListItemText>
+                            </MenuItem>
+                        </>
+                    ) : (
+                        <MenuItem>
+                            <ListItemText>Platzhalter für Erstellen</ListItemText>
                         </MenuItem>
-                        <MenuItem sx={{ color: theme.palette.warning.main }} onClick={deleteRow}>
-                            <ListItemText>Eintrag Löschen</ListItemText>
-                        </MenuItem>
-                    </>
-                ) : (
-                    <MenuItem>
-                        <ListItemText>Platzhalter für Erstellen</ListItemText>
-                    </MenuItem>
-                )}
+                    )}
+                </MenuList>
             </Menu>
         </>
     )
