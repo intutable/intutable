@@ -165,8 +165,8 @@ export class DateCell extends TempusCell {
                     InputProps={{
                         startAdornment: <ExposedInputAdornment column={this.column} />,
                     }}
-                    sx={props.forwardSX}
-                    {...props.forwardProps}
+                    // sx={props.forwardSX}
+                    // {...props.forwardProps}
                 />
             </LocalizationProvider>
         )
