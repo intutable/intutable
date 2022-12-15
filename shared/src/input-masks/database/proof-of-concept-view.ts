@@ -1,10 +1,9 @@
 import { InputMask } from "../types"
 
-const mask: InputMask<"view"> = {
+const mask: InputMask = {
     id: "804112D2-215A-4E52-8A54-AE1BCBE117F1",
     origin: {
-        __type: "view",
-        viewId: 1,
+        view: 1,
     },
     name: "PoC-Eingabemaske",
     description: "Dateneingabe via Eingabemaske als PoC",

@@ -6,18 +6,13 @@ export type ColumnGroup = Array<{
     size: FlexboxSizing
 }>
 
-type OriginTypeMap = {
-    view: { __type: "view"; viewId: number }
-    table: { __type: "table"; tableId: number }
-}
-
 export type OverridenColumn = Record<string, unknown>
 export type Rule = unknown
 
 /** ORIGIN type narrowing */
-export type InputMask<ORIGIN extends "view" | "table"> = {
+export type InputMask = {
     id: string
-    origin: OriginTypeMap[ORIGIN]
+    origin: { view: number | "*" }
     name: string
     description: string
     created: Date
