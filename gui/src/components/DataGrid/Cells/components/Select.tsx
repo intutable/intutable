@@ -1,7 +1,7 @@
 import AddIcon from "@mui/icons-material/Add"
 import CheckIcon from "@mui/icons-material/Check"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, TextField } from "@mui/material"
+import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, Stack, TextField } from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
@@ -14,22 +14,88 @@ import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 
-const ChipItem: React.FC<{
+export const ChipItem: React.FC<{
     label: string
     onDelete?: () => void
 }> = ({ label, onDelete }) => {
     const color = stringToColor(label)
     const theme = useTheme()
+    const [hovering, setHovering] = useState<boolean>(false)
+
     return (
         <Chip
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
             label={label}
             size="small"
-            onDelete={onDelete}
+            onDelete={hovering ? onDelete : undefined}
             sx={{
                 color: theme.palette.getContrastText(color),
                 bgcolor: color,
+                mr: 0.5,
             }}
         />
+    )
+}
+
+export type SelectMenuProps = {
+    open: boolean
+    anchor: HTMLElement
+    options: string[]
+    addOption: (option: string) => void
+    onClose: () => void
+}
+export const SelectMenu: React.FC<SelectMenuProps> = props => {
+    const [input, setInput] = useState<string>("")
+
+    return (
+        <Menu
+            // elevation={0}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+            }}
+            open={props.open}
+            anchorEl={props.anchor}
+            onClose={props.onClose}
+            PaperProps={{
+                sx: {
+                    boxShadow: "10px 10px 20px 0px rgba(0,0,0,0.2)",
+                },
+            }}
+        >
+            <MenuItem>
+                <TextField
+                    label="Option hinzufügen"
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === "Enter") props.addOption(input)
+                    }}
+                />
+                <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
+                    <CheckIcon fontSize="small" color="primary" />
+                </IconButton>
+            </MenuItem>
+            <Divider />
+            <MenuList
+                sx={{
+                    maxHeight: "200px",
+                    overflowY: "scroll",
+                }}
+            >
+                {props.options.map((item, index) => (
+                    <MenuItem
+                        key={index}
+                        data-value={item}
+                        onClick={e => props.addOption(e.currentTarget.dataset["value"] as string)}
+                    >
+                        <ChipItem label={item} />
+                    </MenuItem>
+                ))}
+            </MenuList>
+        </Menu>
     )
 }
 
@@ -72,17 +138,17 @@ export class Select extends Cell {
         }
         const closeModal = () => setOpen(false)
 
-        const [input, setInput] = useState<string>("")
         const changeOption = (value: string) => {
-            props.onRowChange({
-                ...row,
-                [key]: value,
-            })
+            if (value)
+                props.onRowChange({
+                    ...row,
+                    [key]: value,
+                })
             closeModal()
         }
 
         const { data } = useView()
-        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : null), [data, column, content])
+        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : []), [data, column, content])
 
         return (
             <>
@@ -102,7 +168,7 @@ export class Select extends Cell {
                 >
                     {isEmpty ? (
                         <>
-                            {hovering && (
+                            {hovering && this.column.editable && this.isReadonlyComponent == false && (
                                 <IconButton size="small" onClick={openModal}>
                                     <AddIcon fontSize="small" />
                                 </IconButton>
@@ -117,9 +183,12 @@ export class Select extends Cell {
                                     textOverflow: "ellipsis",
                                 }}
                             >
-                                <ChipItem label={content} onDelete={hovering ? () => changeOption("") : undefined} />
+                                <ChipItem
+                                    label={content}
+                                    onDelete={this.column.editable ? () => changeOption("") : undefined}
+                                />
                             </Box>
-                            {hovering && (
+                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
                                 <IconButton size="small" onClick={openModal}>
                                     <KeyboardArrowDownIcon fontSize="small" />
                                 </IconButton>
@@ -127,53 +196,16 @@ export class Select extends Cell {
                         </>
                     )}
                 </Box>
-                <Menu
-                    elevation={0}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                    transformOrigin={{
-                        vertical: "top",
-                        horizontal: "right",
-                    }}
-                    open={open}
-                    anchorEl={modalRef.current}
-                    onClose={closeModal}
-                    PaperProps={{
-                        sx: {
-                            boxShadow: "10px 10px 20px 0px rgba(0,0,0,0.2)",
-                        },
-                    }}
-                >
-                    <MenuItem>
-                        <TextField
-                            label="Option hinzufügen"
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                            onKeyDown={e => {
-                                if (e.key === "Enter") changeOption(input)
-                            }}
-                        />
-                        <IconButton size="small" sx={{ ml: 1 }} onClick={() => changeOption(input)}>
-                            <CheckIcon fontSize="small" color="primary" />
-                        </IconButton>
-                    </MenuItem>
-                    <Divider />
-                    <MenuList
-                        sx={{
-                            maxHeight: "200px",
-                            overflowY: "scroll",
-                        }}
-                    >
-                        {list?.map(item => (
-                            <MenuItem
-                                key={item}
-                                data-value={item}
-                                onClick={e => changeOption(e.currentTarget.dataset["value"] as string)}
-                            >
-                                <ChipItem label={item} />
-                            </MenuItem>
-                        ))}
-                    </MenuList>
-                </Menu>
+
+                {modalRef.current !== null && (
+                    <SelectMenu
+                        open={open}
+                        anchor={modalRef.current}
+                        options={list}
+                        addOption={changeOption}
+                        onClose={closeModal}
+                    />
+                )}
             </>
         )
     }
@@ -182,26 +214,69 @@ export class Select extends Cell {
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
-        const [value, setValue] = useState(props.content ?? "")
+        const modalRef = useRef<HTMLElement | null>(null)
 
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
+        const [open, setOpen] = useState<boolean>(false)
+        const openModal = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setOpen(true)
+        }
+        const closeModal = () => setOpen(false)
 
-        const handleBlur = async () => {
+        const changeOption = async (value: string) => {
             try {
                 await updateRow(props.column, props.row, value)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
+            } finally {
+                closeModal()
             }
         }
 
+        const { data } = useView()
+        const list = useMemo(
+            () => (data ? this.getOptions(props.column, data.rows, props.content) : []),
+            [data, props.column, props.content]
+        )
+
         return (
-            <TextField
-                size="small"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={value}
-                disabled={this.column.editable === false}
-            />
+            <>
+                <Stack
+                    ref={modalRef}
+                    direction="row"
+                    sx={{
+                        gap: "5px",
+                        maxWidth: "200px",
+                        flexWrap: "wrap",
+                        w: 1,
+                        h: 1,
+                    }}
+                >
+                    {props.content && (
+                        <ChipItem
+                            label={props.content}
+                            onDelete={this.column.editable ? () => changeOption("") : undefined}
+                        />
+                    )}
+
+                    {props.hoveringOnParent && props.column.editable && this.isReadonlyComponent === false && (
+                        <IconButton size="small" onClick={openModal}>
+                            <AddIcon fontSize="small" />
+                        </IconButton>
+                    )}
+                </Stack>
+
+                {modalRef.current !== null && (
+                    <SelectMenu
+                        open={open}
+                        anchor={modalRef.current}
+                        options={list}
+                        addOption={changeOption}
+                        onClose={closeModal}
+                    />
+                )}
+            </>
         )
     }
 }
