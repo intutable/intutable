@@ -5,6 +5,8 @@ export type RowMaskMode = "edit" | "create" | "closed"
 export type RowMaskState<MODE extends RowMaskMode> = MODE extends "edit"
     ? {
           mode: "edit"
+          /** if not traceable or not specified, it will use no one and display the default row mask  */
+          inputMaskId?: string
           row: Row
       }
     : MODE extends "create"

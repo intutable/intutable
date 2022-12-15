@@ -15,6 +15,7 @@ import { useView } from "hooks/useView"
 import React from "react"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { AddColumnButton } from "./AddColumnButton"
+import { InputMaskSelect } from "./InputMaskSelect"
 import { RowMaskColumn } from "./RowMaskColumn"
 import { RowMaskContextMenu } from "./RowMaskContextMenu"
 import { RowNavigator } from "./RowNavigator"
@@ -49,6 +50,7 @@ export const RowMask: React.FC = () => {
 
                     <Box flexGrow={1} />
 
+                    <InputMaskSelect />
                     <RowMaskContextMenu />
                     <Divider orientation="vertical" flexItem sx={{ mx: 2 }} variant="middle" />
                     <CloseIcon onClick={abort} fontSize="small" sx={{ cursor: "pointer" }} />
