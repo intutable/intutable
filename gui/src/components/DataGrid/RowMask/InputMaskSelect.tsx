@@ -1,24 +1,29 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material"
-import { useRowMask } from "context/RowMaskContext"
+import { useRowMask, ROW_MASK_FALLBACK_VALUE } from "context/RowMaskContext"
 import { useInputMask } from "hooks/useInputMask"
 
-export const InputMaskSelect: React.FC = props => {
-    const { rowMaskState } = useRowMask()
-    const {} = useInputMask()
+export const InputMaskSelect: React.FC = () => {
+    const { selectedInputMask, setInputMask } = useRowMask()
+    const { inputMasks } = useInputMask()
+
+    const handleChange = (inputMaskId: string) => setInputMask(inputMaskId)
 
     return (
-        <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Eingabemaske</InputLabel>
+        <FormControl size="small" sx={{ mr: 2 }} color="warning">
+            <InputLabel id="demo-simple-select-label">Maske</InputLabel>
             <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                value={age}
-                label="Eingabemaske"
-                onChange={handleChange}
+                value={selectedInputMask || ROW_MASK_FALLBACK_VALUE}
+                label="Maske"
+                onChange={e => handleChange(e.target.value)}
             >
-                <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem>
+                <MenuItem value={ROW_MASK_FALLBACK_VALUE}>Default</MenuItem>
+                {inputMasks.map(inputMask => (
+                    <MenuItem key={inputMask.id} value={inputMask.id}>
+                        {inputMask.name} ({inputMask.origin.view === "*" ? "Tabelle" : `View ${inputMask.origin.view}`})
+                    </MenuItem>
+                ))}
             </Select>
         </FormControl>
     )

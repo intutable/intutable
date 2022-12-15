@@ -44,7 +44,7 @@ export const RowMask: React.FC = () => {
                         {rowMaskState.mode === "create"
                             ? "Neue Zeile erstellen"
                             : rowMaskState.mode === "edit"
-                            ? `Zeile ${rowMaskState.row.index} (View ${data.descriptor.name})`
+                            ? `Zeile ${rowMaskState.row.index}`
                             : ""}
                     </Typography>
 
