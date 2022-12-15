@@ -3,6 +3,7 @@ import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import ContentPasteIcon from "@mui/icons-material/ContentPaste"
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
 import { useSelectedRows } from "context/SelectedRowsContext"
+import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useCallback } from "react"
@@ -12,19 +13,21 @@ import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 export type ColumnToClipboardProps = {
     headerRendererProps: HeaderRendererProps<Row>
-    colInfo: ColumnInfo
 }
 
 export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
-    const { headerRendererProps, colInfo: col } = props
+    const { headerRendererProps } = props
 
     const { selectedRows } = useSelectedRows()
 
     const { data: viewData } = useView()
     const { snackInfo } = useSnacki()
+    const { getColumnInfo } = useColumn()
+    const columnInfo = getColumnInfo(props.headerRendererProps.column)
 
     const handleCopyToClipboard = useCallback(() => {
-        const viewColInfo = viewData?.metaColumns.find(c => c.parentColumnId === col.id)
+        if (columnInfo == null) return null
+        const viewColInfo = viewData?.metaColumns.find(c => c.parentColumnId === columnInfo.id)
         if (viewColInfo == null) return
 
         // get values
@@ -48,12 +51,12 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
 
         snackInfo("In die Zwischenablage kopiert!")
     }, [
+        columnInfo,
         viewData,
         headerRendererProps.allRowsSelected,
         selectedRows,
         props.headerRendererProps.column,
         snackInfo,
-        col.id,
     ])
 
     return (

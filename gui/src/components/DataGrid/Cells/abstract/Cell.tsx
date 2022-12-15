@@ -9,6 +9,7 @@ import { styled } from "@mui/material/styles"
 import React, { useEffect, useRef } from "react"
 import { EditorProps, FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
+import { ColumnFactory } from "utils/column utils/ColumnFactory"
 import { isJSONArray, isJSONObject } from "utils/isJSON"
 import { mergeNonNullish } from "utils/mergeNonNullish"
 import { static_implements } from "utils/static_implements"
@@ -40,19 +41,29 @@ const StyledInputElement = styled("input")`
 
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Ctor<T> = new (column: Column.Serialized, ...args: any[]) => T
 export type CellInstanceImplements = {
     /** display name, visible to the user; can be changed during runtime (e.g. for i18n) */
     label: string
     /** corresponding icon */
     icon: SvgIconComponent
-    /** get static brand value in instance */
-    get brand(): string
+    /** unique identifier; do NOT change in production */
+    brand: string
+    /** Wether the cell type is appropriate for the `isUserPrimiaryKey` column, @default true */
+    canBeUserPrimaryKey: boolean
+    /**
+     * Readonly Components (e.g. Lookups are editable indirectly ~ 'readonly' – as well as Links)
+     * The difference between `editable` and `isReadonlyComponent` is that both inputs are readonly,
+     * but only `editable === false` is disabled. ReadOnly Inputs can be focused, but the value can not be changed.
+     */
+    isReadonlyComponent: boolean
+    /** Use the Link Formatter Component (for Links Columns, but not Lookups), does not matter wether it is readonly */
+    useLinkFormatter: boolean
 } & ExposableInputComponent
 export type CellStatic = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     new (column: Column.Serialized, ...args: any[]): CellInstanceImplements
-    /** unique identifier; do NOT change in production */
-    brand: string
 } & Validatable &
     Exportable &
     Serializable &
@@ -63,15 +74,20 @@ export type CellStatic = {
  */
 @static_implements<CellStatic>()
 export class Cell {
-    constructor(public readonly column: Column.Serialized) {}
+    constructor(public readonly column: Column.Serialized) {
+        this.isReadonlyComponent = column.kind === "lookup" || column.kind === "link"
+        this.useLinkFormatter = column.kind === "link"
 
-    static brand = "abstract-cell"
+        if (this.useLinkFormatter && this.canBeUserPrimaryKey === false)
+            throw new Error("Component cannot be used as a link")
+    }
+
+    public isReadonlyComponent = true
+    public useLinkFormatter = false
+    public brand = "abstract-cell"
     public label = "Abstract Cell"
     public icon: SvgIconComponent = AbcIcon
-
-    get brand(): string {
-        return (Object.getPrototypeOf(this).constructor as typeof Cell).brand
-    }
+    public canBeUserPrimaryKey = true
 
     /***** - UTILS - *****/
 
@@ -80,7 +96,7 @@ export class Cell {
         // Gets exposed to rdg internally. Needed for internal 'tab'/arrow key navigation.
         // Indicates what type of KeyboardEvent should be such a navigation event.
         onNavigation: ({ key }: React.KeyboardEvent<HTMLDivElement>): boolean => key === "Tab",
-        editOnClick: true,
+        editOnClick: this.isReadonlyComponent === false,
     }
     public get editorOptions() {
         return this._editorOptions
@@ -125,6 +141,7 @@ export class Cell {
                     ref={ref || inputRef}
                     onKeyDown={props.onKeyDown}
                     disabled={this.column.editable === false}
+                    readOnly={this.isReadonlyComponent}
                     {...props}
                 />
             )
@@ -226,5 +243,9 @@ export class Cell {
         const content = row[key] as string | null | undefined
 
         return <Box>{content}</Box>
+    }
+
+    static unsafe_instantiateDummyCelll<T>(this: Ctor<T>): T {
+        return new this(ColumnFactory.createDummy())
     }
 }

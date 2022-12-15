@@ -33,7 +33,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     }
     const handleCloseModal = () => setAnchorEL(null)
 
-    const { getTableColumn } = useColumn()
+    const { getColumnInfo: getTableColumn } = useColumn()
     const { tables } = useTables()
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
@@ -101,11 +101,12 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                 </Box>
             </Tooltip>
             <RowSelector
-                rowId={getRowId(row)}
+                row={row}
                 join={join}
                 foreignTable={foreignTable}
                 open={anchorEL != null}
                 onClose={handleCloseModal}
+                column={props.column} // TODO: instead use the foreign column
             />
         </>
     )

@@ -1,14 +1,5 @@
-import { ColumnInfo, ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import LookupIcon from "@mui/icons-material/ManageSearch"
-import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
-import { useTheme } from "@mui/material/styles"
-import { fetcher } from "api/fetcher"
-import { useSnacki } from "hooks/useSnacki"
-import { useTable } from "hooks/useTable"
-import { useView } from "hooks/useView"
-import React, { useEffect, useMemo, useState } from "react"
-import { HeaderRendererProps } from "react-data-grid"
-import { Row } from "types"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Button,
@@ -17,33 +8,67 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    IconButton,
     List,
     ListItem,
     ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    MenuItem,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import { fetcher } from "api/fetcher"
+import { useSnacki } from "hooks/useSnacki"
+import { useTable } from "hooks/useTable"
+import { useView } from "hooks/useView"
+import React, { useEffect, useMemo, useState } from "react"
+import { HeaderRendererProps } from "react-data-grid"
+import { Column, Row } from "types"
 
+import { useForeignTable } from "hooks/useForeignTable"
 import { useLink } from "hooks/useLink"
 import { TableColumn } from "types"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 type ModalProps = {
+    column: Column.Deserialized
     open: boolean
     onClose: () => void
-    onAddLookupModal: (column: ColumnInfo) => unknown
-    foreignTable: ViewDescriptor
 }
 
 const Modal: React.FC<ModalProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { linkTableData: data, error, getColumn } = useLink({ table: props.foreignTable })
+    const { foreignTable, columnInfo } = useForeignTable(props.column)
+    const { linkTableData: foreignTableData, error, getColumnInfo } = useLink(props.column)
+
+    const { data, mutate: mutateTable } = useTable()
+    const { mutate: mutateView } = useView()
 
     const [selection, setSelection] = useState<TableColumn | null>(null)
     const selectedColDescriptor = useMemo(
-        () => (selection && data ? getColumn(selection) : null),
-        [data, selection, getColumn]
+        () => (selection && foreignTableData ? getColumnInfo(selection) : null),
+        [foreignTableData, selection, getColumnInfo]
     )
+
+    const handleAddLookup = async (column: ColumnInfo) => {
+        try {
+            const joinId = columnInfo!.joinId!
+            await fetcher({
+                url: `/api/lookupField/${column.id}`,
+                body: {
+                    tableId: data!.metadata.descriptor.id,
+                    joinId,
+                },
+            })
+            await mutateTable()
+            await mutateView()
+            props.onClose()
+        } catch (error) {
+            snackError("Der Lookup konnte nicht hinzugefügt werden!")
+        }
+    }
 
     useEffect(() => {
         if (error) {
@@ -52,24 +77,24 @@ const Modal: React.FC<ModalProps> = props => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    const onClickHandler = (column: TableColumn) => {
-        setSelection(column)
-    }
+    const onClickHandler = (column: TableColumn) => setSelection(column)
+
+    if (foreignTable == null) return null
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>
-                Spalte aus verlinkter Tabelle <i>{props.foreignTable.name}</i> als Lookup hinzufügen
+                Spalte aus verlinkter Tabelle <i>{foreignTable.name}</i> als Lookup hinzufügen
             </DialogTitle>
             <DialogContent>
-                {data == null && error == null ? (
+                {foreignTableData == null && error == null ? (
                     <CircularProgress />
                 ) : error ? (
                     <>Error: {error}</>
                 ) : (
                     <>
                         <List>
-                            {data!.columns
+                            {foreignTableData!.columns
                                 .filter(c => !ColumnUtility.isAppColumn(c))
                                 .map((col, i) => (
                                     <ListItem
@@ -92,10 +117,10 @@ const Modal: React.FC<ModalProps> = props => {
             <DialogActions>
                 <Button onClick={() => props.onClose()}>Abbrechen</Button>
                 <LoadingButton
-                    loading={data == null && error == null}
+                    loading={foreignTableData == null && error == null}
                     loadingIndicator="Lädt..."
                     onClick={async () => {
-                        await props.onAddLookupModal(selectedColDescriptor!)
+                        await handleAddLookup(selectedColDescriptor!)
                         props.onClose()
                     }}
                     disabled={selectedColDescriptor == null || error}
@@ -109,18 +134,10 @@ const Modal: React.FC<ModalProps> = props => {
 
 export type AddLookupProps = {
     headerRendererProps: HeaderRendererProps<Row>
-    colInfo: ColumnInfo
-    foreignTable: ViewDescriptor | null | undefined
-    onCloseContextMenu: () => void
 }
 
 export const AddLookup: React.FC<AddLookupProps> = props => {
-    const { headerRendererProps, colInfo: col, foreignTable } = props
-    const { snackError } = useSnacki()
-
-    const kind = headerRendererProps.column.kind!
-    const { data, mutate: mutateTable } = useTable()
-    const { mutate: mutateView } = useView()
+    const { headerRendererProps } = props
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
 
@@ -129,28 +146,6 @@ export const AddLookup: React.FC<AddLookupProps> = props => {
         setAnchorEL(e.currentTarget)
     }
     const closeModal = () => setAnchorEL(null)
-
-    const handleAddLookup = async (column: ColumnInfo) => {
-        if (kind !== "link") return
-        try {
-            const joinId = col!.joinId!
-            await fetcher({
-                url: `/api/lookupField/${column.id}`,
-                body: {
-                    tableId: data!.metadata.descriptor.id,
-                    joinId,
-                },
-            })
-            await mutateTable()
-            await mutateView()
-            props.onCloseContextMenu()
-        } catch (error) {
-            snackError("Der Lookup konnte nicht hinzugefügt werden!")
-        }
-    }
-
-    if (kind !== "link") return null
-    if (foreignTable == null) return null
 
     return (
         <>
@@ -161,12 +156,26 @@ export const AddLookup: React.FC<AddLookupProps> = props => {
                 <ListItemText>Lookup hinzufügen</ListItemText>
             </MenuItem>
 
-            <Modal
-                open={anchorEL != null}
-                onClose={closeModal}
-                onAddLookupModal={handleAddLookup}
-                foreignTable={foreignTable}
-            />
+            <Modal open={anchorEL != null} onClose={closeModal} column={headerRendererProps.column} />
+        </>
+    )
+}
+
+export const AddLookupButton: React.FC<{ column: Column.Deserialized }> = ({ column }) => {
+    const [anchorEL, setAnchorEL] = useState<Element | null>(null)
+    const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        setAnchorEL(e.currentTarget)
+    }
+    const closeContextMenu = () => setAnchorEL(null)
+
+    return (
+        <>
+            <IconButton onClick={openContextMenu} size="small" color="primary" edge="end">
+                <LookupIcon fontSize="small" />
+            </IconButton>
+
+            <Modal open={anchorEL != null} onClose={closeContextMenu} column={column} />
         </>
     )
 }

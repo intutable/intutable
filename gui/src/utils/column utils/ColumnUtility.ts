@@ -1,6 +1,6 @@
 import { cellMap } from "@datagrid/Cells"
-import { Column, ViewData } from "types"
 import { SELECT_COLUMN_KEY } from "react-data-grid"
+import { Column, Row, ViewData } from "types"
 
 export class ColumnUtility {
     /** 'true' if yes, if no an array with indices of rows whose cells do not suit the new type */
@@ -29,13 +29,8 @@ export class ColumnUtility {
         return column.key === SELECT_COLUMN_KEY
     }
 
-    /**
-     *
-     */
-    static isProxy(column: Column.Serialized | Column.Deserialized): boolean {
-        const col = column as unknown
-        return (
-            Object.prototype.hasOwnProperty.call(col, "__isProxy") && (col as { __isProxy: unknown }).__isProxy === true
-        )
+    /** sort algorithm for columns based on its index */
+    static sortByIndex<T extends Column.Deserialized | Column.Serialized | Row>(a: T, b: T) {
+        return a.index > b.index ? 1 : -1
     }
 }

@@ -73,7 +73,7 @@ const SelectFormatter = (props: { isCellSelected: any; row: any }) => {
 /**
  * Derived from {@link OriginalSelectColumm}
  */
-const _SelectColumn: Omit<Column, keyof MetaColumnProps> = {
+const _SelectColumn: Omit<Column, keyof MetaColumnProps | "__serialized"> = {
     key: SELECT_COLUMN_KEY,
     name: "",
     width: 70,

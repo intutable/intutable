@@ -7,11 +7,13 @@ import PaidIcon from "@mui/icons-material/Paid"
 import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 
 export class Currency extends NumericCell {
-    static brand = "currency"
+    public brand = "currency"
     public label = "Currency"
     public icon = PaidIcon
+    public canBeUserPrimaryKey = false
 
     static export(value: number): string {
         return value + "€"
@@ -85,7 +87,11 @@ export class Currency extends NumericCell {
                 disabled={this.column.editable === false}
                 InputProps={{
                     endAdornment: <InputAdornment position="end">€</InputAdornment>,
+                    readOnly: this.isReadonlyComponent,
+                    startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
+                sx={props.forwardSX}
+                {...props.forwardProps}
             />
         )
     }

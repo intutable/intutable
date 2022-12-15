@@ -14,7 +14,7 @@ import { useRowMask } from "context/RowMaskContext"
 import { useView } from "hooks/useView"
 import React from "react"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
-import { AddColumnButton } from "./AddColumnButton"
+import { AddColumnButton, AddLinkButton } from "./DialogActions"
 import { RowMaskColumn } from "./RowMaskColumn"
 import { RowMaskContextMenu } from "./RowMaskContextMenu"
 import { RowNavigator } from "./RowNavigator"
@@ -81,10 +81,12 @@ export const RowMask: React.FC = () => {
 
             <DialogActions
                 sx={{
-                    justifyContent: "center",
+                    justifyContent: "space-evenly",
                 }}
             >
                 <AddColumnButton />
+                <Divider flexItem variant="middle" orientation="vertical" />
+                <AddLinkButton />
             </DialogActions>
         </Dialog>
     )

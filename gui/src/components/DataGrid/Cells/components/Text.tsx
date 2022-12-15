@@ -1,3 +1,4 @@
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import AbcIcon from "@mui/icons-material/Abc"
 import { TextField, TextFieldProps } from "@mui/material"
 import { useRow } from "hooks/useRow"
@@ -12,7 +13,7 @@ export class Text extends Cell {
         super(column)
     }
 
-    static brand = "string"
+    public brand = "string"
     public label = "Text"
     public icon = AbcIcon
 
@@ -39,8 +40,12 @@ export class Text extends Cell {
                 onBlur={handleBlur}
                 value={value}
                 disabled={this.column.editable === false}
-                {...props.InputProps}
-                sx={props.InputStyle}
+                InputProps={{
+                    readOnly: this.isReadonlyComponent,
+                    startAdornment: <ExposedInputAdornment column={this.column} />,
+                }}
+                sx={props.forwardSX}
+                {...props.forwardProps}
             />
         )
     }

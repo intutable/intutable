@@ -32,7 +32,6 @@ const ChipItem: React.FC<{
             sx={{
                 color: theme.palette.getContrastText(color),
                 bgcolor: color,
-                cursor: "pointer",
                 mr: 0.5,
             }}
         />
@@ -100,9 +99,10 @@ const MultiSelectMenu: React.FC<MultiSelectMenuProps> = props => {
 }
 
 export class MultiSelect extends Cell {
-    static brand = "multiselect"
+    public brand = "multiselect"
     public label = "Mehrfach-Auswahlliste"
     public icon = BookmarksIcon
+    public canBeUserPrimaryKey = false
 
     constructor(column: Column.Serialized) {
         super(column)
@@ -169,6 +169,8 @@ export class MultiSelect extends Cell {
         const closeModal = () => setOpen(false)
 
         const addChip = (value: string) => {
+            if (Cell.isEmpty(value)) return
+            if (content?.includes(value)) return
             props.onRowChange({
                 ...row,
                 [key]: content ? [...content, value] : [value],
@@ -186,6 +188,8 @@ export class MultiSelect extends Cell {
 
         const { data } = useView()
         const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : []), [data, column, content])
+
+        if (this.column.kind === "lookup" && this.column.name === "LOST2") console.log(content)
 
         return (
             <>
@@ -205,7 +209,7 @@ export class MultiSelect extends Cell {
                 >
                     {isEmpty ? (
                         <>
-                            {hovering && (
+                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
                                 <IconButton size="small" onClick={openModal}>
                                     <AddIcon fontSize="small" />
                                 </IconButton>
@@ -222,10 +226,14 @@ export class MultiSelect extends Cell {
                             >
                                 {isEmpty === false &&
                                     content.map(chip => (
-                                        <ChipItem label={chip} key={chip} onDelete={() => removeChip(chip)} />
+                                        <ChipItem
+                                            label={chip}
+                                            key={chip}
+                                            onDelete={this.column.editable ? () => removeChip(chip) : undefined}
+                                        />
                                     ))}
                             </Box>
-                            {hovering && (
+                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
                                 <IconButton size="small" onClick={openModal}>
                                     <KeyboardArrowDownIcon fontSize="small" />
                                 </IconButton>
@@ -263,6 +271,8 @@ export class MultiSelect extends Cell {
 
         const addChip = async (value: string) => {
             try {
+                if (Cell.isEmpty(value)) return
+                if (props.content?.includes(value)) return
                 const update = props.content ? [...props.content, value] : [value]
                 await updateRow(props.column, props.row, update)
             } catch (e) {
@@ -304,10 +314,14 @@ export class MultiSelect extends Cell {
                 >
                     {props.content &&
                         props.content.map(option => (
-                            <ChipItem label={option} key={option} onDelete={() => removeChip(option)} />
+                            <ChipItem
+                                label={option}
+                                key={option}
+                                onDelete={this.column.editable ? () => removeChip(option) : undefined}
+                            />
                         ))}
 
-                    {props.hoveringOnParent && (
+                    {props.hoveringOnParent && props.column.editable && this.isReadonlyComponent === false && (
                         <IconButton size="small" onClick={openModal}>
                             <AddIcon fontSize="small" />
                         </IconButton>
