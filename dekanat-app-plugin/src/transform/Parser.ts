@@ -135,6 +135,8 @@ export class ParserClass {
             })
         const castedColumns = internalProcessedColumns.map(this.castColumn)
 
+        const masks = InputMask.getInputMasksFor(view)
+
         const viewData = {
             descriptor: view.descriptor,
             metaColumns: view.columns,
@@ -143,11 +145,8 @@ export class ParserClass {
             groupColumns: view.rowOptions.groupColumns,
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
+            inputMasks: masks, // TODO: IN DEVELOPMENT – just a quick hack to get it working
         }
-
-        // TODO: IN DEVELOPMENT – just a quick hack to get it working
-        const masks = InputMask.getInputMasksFor(view)
-        if (masks.length > 0) InputMask.mountInputMasks(viewData, masks)
 
         return viewData
     }

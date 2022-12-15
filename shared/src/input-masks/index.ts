@@ -4,10 +4,10 @@ import * as DB from "./database"
 import { InputMask } from "./types"
 
 export const getInputMasksFor = (view: ViewInfo): InputMask[] =>
-    DB.getAll().filter(mask => mask.origin.view === view.descriptor.id || mask.origin.view === "*")
+    DB.getAll().filter(mask => mask.origin.view === "*" || mask.origin.view === view.descriptor.id)
 
 export const mountInputMasks = (view: SerializedViewData, inputMasks: InputMask[]): SerializedViewData =>
     ({
         ...view,
-        inputMasks,
+        inputMasks: [...inputMasks],
     } as SerializedViewData)
