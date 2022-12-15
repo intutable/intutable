@@ -6,6 +6,7 @@ import { internalColumnUtil } from "./InternalColumnUtil"
 import * as FilterParser from "./filter"
 import { restructure } from "./restructure"
 import { inspect } from "util"
+import * as InputMask from "shared/dist/input-masks"
 
 /**
  * ### Parser
@@ -133,7 +134,8 @@ export class ParserClass {
                 rows: view.rows,
             })
         const castedColumns = internalProcessedColumns.map(this.castColumn)
-        return {
+
+        const viewData = {
             descriptor: view.descriptor,
             metaColumns: view.columns,
             filters: view.rowOptions.conditions.map(ParserClass.parseFilter),
@@ -142,6 +144,12 @@ export class ParserClass {
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
         }
+
+        // TODO: IN DEVELOPMENT – just a quick hack to get it working
+        const masks = InputMask.getInputMasksFor(view)
+        if (masks.length > 0) InputMask.mountInputMasks(viewData, masks)
+
+        return viewData
     }
 
     static parseFilter(condition: Condition): Filter {
