@@ -1,5 +1,4 @@
 import { ViewDescriptor } from "@intutable/lazy-views"
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/AddLink"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -17,23 +16,16 @@ import {
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
-import { useAPI } from "context"
+import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
-import { useView } from "hooks/useView"
 import { useTables } from "hooks/useTables"
-import { useSnackbar } from "notistack"
+import { useView } from "hooks/useView"
 import React, { useEffect, useState } from "react"
 
 /**
  * Toolbar Item for adding rows to the data grid.
  */
 export const AddLink: React.FC = () => {
-    const { enqueueSnackbar } = useSnackbar()
-
-    const { data: currentTable, mutate: mutateTable } = useTable()
-    const { mutate: mutateView } = useView()
-    const { project } = useAPI()
-
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const handleOpenModal = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         event.preventDefault()
@@ -41,6 +33,44 @@ export const AddLink: React.FC = () => {
     }
 
     const handleCloseModal = () => setAnchorEL(null)
+
+    return (
+        <>
+            <Tooltip title="Add link to another table">
+                <LoadingButton loadingIndicator="Lädt..." startIcon={<AddIcon />} onClick={handleOpenModal}>
+                    Add Link
+                </LoadingButton>
+            </Tooltip>
+
+            <AddLinkModal open={anchorEL != null} onClose={handleCloseModal} />
+        </>
+    )
+}
+
+type AddLinkModalProps = {
+    open: boolean
+    onClose: () => void
+}
+
+export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
+    const theme = useTheme()
+
+    const { snackError, snackInfo } = useSnacki()
+
+    const { tables, error } = useTables()
+    const { data: currentTable, mutate: mutateTable } = useTable()
+    const { mutate: mutateView } = useView()
+
+    const [selection, setSelection] = useState<ViewDescriptor | null>(null)
+
+    useEffect(() => {
+        if (error) {
+            snackError("Die Tabellen konnten nicht geladen werden")
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [error])
+
+    const onClickHandler = (table: ViewDescriptor) => setSelection(table)
 
     const handleAddLink = async (table: ViewDescriptor) => {
         try {
@@ -54,69 +84,13 @@ export const AddLink: React.FC = () => {
             })
             await mutateTable()
             await mutateView()
-            enqueueSnackbar("Die Tabelle wurde erfolgreich verlinkt.", {
-                variant: "success",
-            })
+            snackInfo("Die Tabelle wurde erfolgreich verlinkt.")
         } catch (err) {
-            enqueueSnackbar("Die Tabelle konnte nicht verlinkt werden!", {
-                variant: "error",
-            })
+            snackError("Die Tabelle konnte nicht verlinkt werden!")
         } finally {
-            handleCloseModal()
+            props.onClose()
         }
     }
-
-    return (
-        <>
-            <Tooltip title="Add link to another table">
-                <LoadingButton
-                    loading={currentTable == null}
-                    loadingIndicator="Lädt..."
-                    startIcon={<AddIcon />}
-                    onClick={handleOpenModal}
-                >
-                    Add Link
-                </LoadingButton>
-            </Tooltip>
-            {currentTable && (
-                <AddLinkModal
-                    table={currentTable.metadata.descriptor}
-                    project={project!}
-                    open={anchorEL != null}
-                    onClose={handleCloseModal}
-                    onAddLink={handleAddLink}
-                />
-            )}
-        </>
-    )
-}
-
-type AddLinkModalProps = {
-    project: ProjectDescriptor
-    table: ViewDescriptor
-    open: boolean
-    onClose: () => void
-    onAddLink: (table: ViewDescriptor) => unknown
-}
-
-export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
-    const theme = useTheme()
-    const { enqueueSnackbar } = useSnackbar()
-
-    const { tables, error } = useTables({ project: props.project })
-
-    const [selection, setSelection] = useState<ViewDescriptor | null>(null)
-
-    useEffect(() => {
-        if (error) {
-            enqueueSnackbar("Die Tabellen konnten nicht geladen werden", {
-                variant: "error",
-            })
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [error])
-
-    const onClickHandler = (table: ViewDescriptor) => setSelection(table)
 
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
@@ -152,7 +126,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                     loading={tables == null && error == null}
                     loadingIndicator="Lädt..."
                     onClick={async () => {
-                        await props.onAddLink(selection!)
+                        await handleAddLink(selection!)
                         props.onClose()
                     }}
                     disabled={selection == null || error}

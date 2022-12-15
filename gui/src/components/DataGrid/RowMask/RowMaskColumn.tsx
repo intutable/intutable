@@ -1,13 +1,14 @@
 import { cellMap } from "@datagrid/Cells"
 import { ColumnAttributesWindow } from "@datagrid/renderers/HeaderRenderer/ColumnAttributesWindow"
 import EditIcon from "@mui/icons-material/Edit"
-import KeyIcon from "@mui/icons-material/Key"
-import { Box, Divider, IconButton, Stack, Typography } from "@mui/material"
+import { Box, Divider, IconButton, InputAdornment, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
 import React, { useState } from "react"
 import { Column } from "types"
-import { ProxyColumn } from "utils/column utils/ColumnProxy"
+import KeyIcon from "@mui/icons-material/Key"
+import LinkIcon from "@mui/icons-material/Link"
+import LookupIcon from "@mui/icons-material/ManageSearch"
 
 const ColumnAttributesWindowButton: React.FC<{
     column: Column.Serialized
@@ -88,7 +89,6 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                                 }}
                                 variant="subtitle1"
                             >
-                                {column.isUserPrimaryKey === true && <KeyIcon fontSize="small" />}
                                 <Icon
                                     fontSize="small"
                                     sx={{
@@ -111,17 +111,19 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                     </Box>
 
                     {/* input */}
+
                     {rowMaskState.mode === "edit" && (
                         // TODO: if `create`, then create an empty row and open it
+
                         <Input
                             content={rowMaskState.row[column.key]}
                             row={rowMaskState.row}
                             column={column}
                             hoveringOnParent={isHovering}
-                            InputProps={{
+                            forwardProps={{
                                 fullWidth: column.isUserPrimaryKey ? true : false,
                             }}
-                            InputStyle={{
+                            forwardSX={{
                                 w: 1,
                             }}
                         />
@@ -131,7 +133,12 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                     {column.isUserPrimaryKey === false && (
                         <>
                             <Box sx={{ flexGrow: 1 }} />
-                            {isHovering && <ColumnAttributesWindowButton column={column as Column.Serialized} />}
+                            {isHovering && (
+                                <>
+                                    {/* {column.kind === "link" && <AddLookupButton />} */}
+                                    <ColumnAttributesWindowButton column={column as Column.Serialized} />
+                                </>
+                            )}
                         </>
                     )}
                 </Stack>

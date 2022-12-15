@@ -61,8 +61,16 @@ export const ChangeCellType: React.FC<{
             type="select"
             value={{
                 value: cellType,
-                options: cellMap.getBrandLabelMap(),
+                options:
+                    props.column.isUserPrimaryKey === true
+                        ? cellMap.getBrandLabelMap().map(({ brand, label }) => ({
+                              brand,
+                              label,
+                              disabled: cellMap.unsafe_instantiateDummyCell(brand).canBeUserPrimaryKey === false,
+                          }))
+                        : cellMap.getBrandLabelMap(),
             }}
+            disabled={props.column.kind !== "standard"}
             onChange={handleChange}
         />
     )

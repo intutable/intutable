@@ -62,7 +62,7 @@ export function lookupColumnAttributes(name: string, contentType: string, column
         kind: "lookup",
         displayName: name,
         index: columnIndex,
-        editable: 0,
+        editable: 1,
         cellType: contentType,
     }
 }

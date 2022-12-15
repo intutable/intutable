@@ -1,5 +1,5 @@
 import { Box } from "@mui/material"
-import TextField from "@mui/material/TextField"
+import TextField, { TextFieldProps } from "@mui/material/TextField"
 import { DatePicker } from "@mui/x-date-pickers"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
@@ -12,9 +12,11 @@ import DateRangeIcon from "@mui/icons-material/DateRange"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputProps } from "../abstract/protocols"
+import { DatePickerProps } from "@mui/lab"
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 
 export class DateCell extends TempusCell {
-    static brand = "date"
+    public brand = "date"
     public label = "Date"
     public icon = DateRangeIcon
 
@@ -84,6 +86,7 @@ export class DateCell extends TempusCell {
                         onChange={date => setContent(date)} // only update the state, but do not update the actual db (only on blur – see below)
                         onAccept={handleChange} // update the db
                         disabled={this.column.editable === false}
+                        readOnly={this.isReadonlyComponent}
                         renderInput={params => (
                             <TextField
                                 {...params}
@@ -101,6 +104,7 @@ export class DateCell extends TempusCell {
                                 }}
                                 InputProps={{
                                     disableUnderline: true,
+                                    readOnly: this.isReadonlyComponent,
                                     ...params.InputProps,
                                 }}
                             />
@@ -116,7 +120,7 @@ export class DateCell extends TempusCell {
         )
     }
 
-    public ExposedInput: React.FC<ExposedInputProps<number | null>> = props => {
+    public ExposedInput: React.FC<ExposedInputProps<number | null, DatePickerProps>> = props => {
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
@@ -157,6 +161,12 @@ export class DateCell extends TempusCell {
                             actions: ["clear", "today", "accept"],
                         },
                     }}
+                    readOnly={this.isReadonlyComponent}
+                    InputProps={{
+                        startAdornment: <ExposedInputAdornment column={this.column} />,
+                    }}
+                    // sx={props.forwardSX}
+                    // {...props.forwardProps}
                 />
             </LocalizationProvider>
         )

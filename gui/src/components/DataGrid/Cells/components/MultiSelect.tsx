@@ -1,108 +1,22 @@
 import AddIcon from "@mui/icons-material/Add"
-import CheckIcon from "@mui/icons-material/Check"
+import BookmarksIcon from "@mui/icons-material/Bookmarks"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, Stack, TextField } from "@mui/material"
-import { useTheme } from "@mui/system"
+import { Box, IconButton, Stack } from "@mui/material"
+import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
-import { stringToColor } from "utils/stringToColor"
-import BookmarksIcon from "@mui/icons-material/Bookmarks"
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
-import { useRow } from "hooks/useRow"
-import { useSnacki } from "hooks/useSnacki"
-
-const ChipItem: React.FC<{
-    label: string
-    onDelete?: () => void
-}> = ({ label, onDelete }) => {
-    const color = stringToColor(label)
-    const theme = useTheme()
-    const [hovering, setHovering] = useState<boolean>(false)
-
-    return (
-        <Chip
-            onMouseEnter={() => setHovering(true)}
-            onMouseLeave={() => setHovering(false)}
-            label={label}
-            size="small"
-            onDelete={hovering ? onDelete : undefined}
-            sx={{
-                color: theme.palette.getContrastText(color),
-                bgcolor: color,
-                cursor: "pointer",
-                mr: 0.5,
-            }}
-        />
-    )
-}
-type MultiSelectMenuProps = {
-    open: boolean
-    anchor: HTMLElement
-    options: string[]
-    addOption: (option: string) => void
-    onClose: () => void
-}
-const MultiSelectMenu: React.FC<MultiSelectMenuProps> = props => {
-    const [input, setInput] = useState<string>("")
-
-    return (
-        <Menu
-            // elevation={0}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-            transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-            }}
-            open={props.open}
-            anchorEl={props.anchor}
-            onClose={props.onClose}
-            PaperProps={{
-                sx: {
-                    boxShadow: "10px 10px 20px 0px rgba(0,0,0,0.2)",
-                },
-            }}
-        >
-            <MenuItem>
-                <TextField
-                    label="Option hinzufügen"
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => {
-                        if (e.key === "Enter") props.addOption(input)
-                    }}
-                />
-                <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
-                    <CheckIcon fontSize="small" color="primary" />
-                </IconButton>
-            </MenuItem>
-            <Divider />
-            <MenuList
-                sx={{
-                    maxHeight: "200px",
-                    overflowY: "scroll",
-                }}
-            >
-                {props.options.map((item, index) => (
-                    <MenuItem
-                        key={index}
-                        data-value={item}
-                        onClick={e => props.addOption(e.currentTarget.dataset["value"] as string)}
-                    >
-                        <ChipItem label={item} />
-                    </MenuItem>
-                ))}
-            </MenuList>
-        </Menu>
-    )
-}
+import { ChipItem, SelectMenu as MultiSelectMenu } from "./Select"
 
 export class MultiSelect extends Cell {
-    static brand = "multiselect"
+    public brand = "multiselect"
     public label = "Mehrfach-Auswahlliste"
     public icon = BookmarksIcon
+    public canBeUserPrimaryKey = false
 
     constructor(column: Column.Serialized) {
         super(column)
@@ -169,6 +83,8 @@ export class MultiSelect extends Cell {
         const closeModal = () => setOpen(false)
 
         const addChip = (value: string) => {
+            if (Cell.isEmpty(value)) return
+            if (content?.includes(value)) return
             props.onRowChange({
                 ...row,
                 [key]: content ? [...content, value] : [value],
@@ -205,7 +121,7 @@ export class MultiSelect extends Cell {
                 >
                     {isEmpty ? (
                         <>
-                            {hovering && (
+                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
                                 <IconButton size="small" onClick={openModal}>
                                     <AddIcon fontSize="small" />
                                 </IconButton>
@@ -222,10 +138,14 @@ export class MultiSelect extends Cell {
                             >
                                 {isEmpty === false &&
                                     content.map(chip => (
-                                        <ChipItem label={chip} key={chip} onDelete={() => removeChip(chip)} />
+                                        <ChipItem
+                                            label={chip}
+                                            key={chip}
+                                            onDelete={this.column.editable ? () => removeChip(chip) : undefined}
+                                        />
                                     ))}
                             </Box>
-                            {hovering && (
+                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
                                 <IconButton size="small" onClick={openModal}>
                                     <KeyboardArrowDownIcon fontSize="small" />
                                 </IconButton>
@@ -263,6 +183,8 @@ export class MultiSelect extends Cell {
 
         const addChip = async (value: string) => {
             try {
+                if (Cell.isEmpty(value)) return
+                if (props.content?.includes(value)) return
                 const update = props.content ? [...props.content, value] : [value]
                 await updateRow(props.column, props.row, update)
             } catch (e) {
@@ -304,10 +226,14 @@ export class MultiSelect extends Cell {
                 >
                     {props.content &&
                         props.content.map(option => (
-                            <ChipItem label={option} key={option} onDelete={() => removeChip(option)} />
+                            <ChipItem
+                                label={option}
+                                key={option}
+                                onDelete={this.column.editable ? () => removeChip(option) : undefined}
+                            />
                         ))}
 
-                    {props.hoveringOnParent && (
+                    {props.hoveringOnParent && props.column.editable && this.isReadonlyComponent === false && (
                         <IconButton size="small" onClick={openModal}>
                             <AddIcon fontSize="small" />
                         </IconButton>

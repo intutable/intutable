@@ -1,4 +1,4 @@
-import { Box } from "@mui/material"
+import { Box, TextFieldProps } from "@mui/material"
 import { TextField } from "@mui/material"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
@@ -12,9 +12,11 @@ import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled"
 import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
+import { TimePickerProps } from "@mui/lab"
 
 export class Time extends TempusCell {
-    static brand = "time"
+    public brand = "time"
     public label = "Time"
     public icon = AccessTimeFilledIcon
 
@@ -84,6 +86,7 @@ export class Time extends TempusCell {
                         onAccept={handleChange} // update the db
                         ampm={false}
                         disabled={this.column.editable === false}
+                        readOnly={this.isReadonlyComponent}
                         renderInput={params => (
                             <TextField
                                 {...params}
@@ -101,6 +104,7 @@ export class Time extends TempusCell {
                                 }}
                                 InputProps={{
                                     disableUnderline: true,
+                                    readOnly: this.isReadonlyComponent,
                                     ...params.InputProps,
                                 }}
                             />
@@ -116,7 +120,7 @@ export class Time extends TempusCell {
         )
     }
 
-    public ExposedInput: React.FC<ExposedInputProps<number | null>> = props => {
+    public ExposedInput: React.FC<ExposedInputProps<number | null, TimePickerProps>> = props => {
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
@@ -157,6 +161,12 @@ export class Time extends TempusCell {
                             actions: ["clear", "today", "accept"],
                         },
                     }}
+                    readOnly={this.isReadonlyComponent}
+                    InputProps={{
+                        startAdornment: <ExposedInputAdornment column={this.column} />,
+                    }}
+                    // sx={props.forwardSX}
+                    // {...props.forwardProps}
                 />
             </LocalizationProvider>
         )

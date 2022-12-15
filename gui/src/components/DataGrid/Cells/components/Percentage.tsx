@@ -9,6 +9,7 @@ import PercentIcon from "@mui/icons-material/Percent"
 import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 
 const LinearProgressWithLabel = (props: LinearProgressProps & { value: number }) => (
     <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
@@ -30,9 +31,10 @@ const LinearProgressWithLabel = (props: LinearProgressProps & { value: number })
 )
 
 export class Percentage extends NumericCell {
-    static brand = "percentage"
+    public brand = "percentage"
     public label = "Percentage"
     public icon = PercentIcon
+    public canBeUserPrimaryKey = false
 
     static isValid(value: unknown): boolean {
         return typeof value === "number" && value >= 0 && value <= 100
@@ -152,7 +154,11 @@ export class Percentage extends NumericCell {
                 disabled={this.column.editable === false}
                 InputProps={{
                     endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                    readOnly: this.isReadonlyComponent,
+                    startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
+                sx={props.forwardSX}
+                {...props.forwardProps}
             />
         )
     }

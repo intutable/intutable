@@ -1,4 +1,4 @@
-import { Box, Checkbox } from "@mui/material"
+import { Box, Checkbox, FormControlLabel } from "@mui/material"
 import React from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
@@ -7,11 +7,13 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { useSnacki } from "hooks/useSnacki"
 import { useRow } from "hooks/useRow"
+import { ExposedInputIcon } from "@datagrid/RowMask/ExposedInputAdornment"
 
 export class Bool extends Cell {
-    static brand = "boolean"
+    public brand = "boolean"
     public label = "Boolean"
     public icon = ToggleOnIcon
+    public canBeUserPrimaryKey = false
 
     constructor(column: Column.Serialized) {
         super(column)
@@ -77,7 +79,12 @@ export class Bool extends Cell {
                     alignItems: "center",
                 }}
             >
-                <Checkbox checked={value} onChange={handleChange} disabled={this.column.editable === false} />
+                <Checkbox
+                    checked={value}
+                    onChange={this.isReadonlyComponent ? undefined : handleChange}
+                    readOnly={this.isReadonlyComponent}
+                    disabled={this.column.editable === false || this.isReadonlyComponent}
+                />
             </Box>
         )
     }
@@ -99,6 +106,16 @@ export class Bool extends Cell {
             }
         }
 
-        return <Checkbox checked={value} onChange={handleChange} disabled={this.column.editable === false} />
+        return (
+            <>
+                <ExposedInputIcon column={this.column} />
+                <Checkbox
+                    checked={value}
+                    onChange={this.isReadonlyComponent ? undefined : handleChange}
+                    readOnly={this.isReadonlyComponent}
+                    disabled={this.column.editable === false || this.isReadonlyComponent}
+                />
+            </>
+        )
     }
 }

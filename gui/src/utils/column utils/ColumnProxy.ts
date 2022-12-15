@@ -8,6 +8,7 @@ export const mountColumnProxy = (column: Column.Serialized): ProxyColumn =>
     new Proxy(column as ProxyColumn, ColumnProxyHandler)
 
 // must be backwards compatible with `Column`
+/** @deprecated */
 export type ProxyColumn = Column.Deserialized & {
     /**
      * The proxy does not store an actual serialized object in itself.
@@ -21,6 +22,7 @@ export type ProxyColumn = Column.Deserialized & {
 
 // BUG (27.11.22): the proxy does not work as intended
 
+/** @deprecated */
 export const ColumnProxyHandler: ProxyHandler<ProxyColumn> = {
     get(target, prop, receiver) {
         const cellCtor = cellMap.getCellCtor(target.cellType)

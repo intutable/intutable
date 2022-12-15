@@ -1,4 +1,5 @@
-import { cellMap } from "@datagrid/Cells"
+import { Cell, cellMap } from "@datagrid/Cells"
+import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 import { HeaderRenderer } from "@datagrid/renderers"
 
 import { Column, Row, ViewData } from "types"
@@ -36,14 +37,21 @@ export default class SerDes {
         const deserialized: Column.Deserialized = {
             ...column,
             editable: (() => {
-                // index columns are not editable, at least no by the editable
+                // index columns are not editable
                 if (column.kind === "index") return false
+                // lookups are always editable
+                if (column.kind === "lookup") return true
                 // some types don't have an editor and should not be editable
                 if (cell.editor == null) return false
                 // TODO: further checking here, e.g. should link and lookup columns be editable??
                 return column.editable
             })(),
-            formatter: cell.formatter,
+            formatter: (() => {
+                // special treatment when the kind is 'link' (this will be deprecated in the future)
+                if (column.kind === "link") return LinkColumnFormatter
+                // otherwise choose the formatter by its type
+                return cell.formatter
+            })(),
             editor: cell.editor,
             headerRenderer: HeaderRenderer,
             editorOptions: cell.editorOptions,

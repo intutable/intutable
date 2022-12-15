@@ -1,20 +1,15 @@
 import { cellMap } from "@datagrid/Cells"
-import { Column } from "types"
-import { asView } from "@intutable/lazy-views/dist/selectable"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import KeyIcon from "@mui/icons-material/Key"
 import LinkIcon from "@mui/icons-material/Link"
 import LookupIcon from "@mui/icons-material/ManageSearch"
 import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material"
 import { useAPI } from "context"
-import { useColumn } from "hooks/useColumn"
-import { useTable } from "hooks/useTable"
-import { useTables } from "hooks/useTables"
+import { useForeignTable } from "hooks/useForeignTable"
 import { useRouter } from "next/router"
-import React, { useMemo } from "react"
+import React from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Row } from "types"
-import { ProxyColumn } from "utils/column utils/ColumnProxy"
 import { ColumnContextMenu } from "./ColumnContextMenu"
 import { PrefixIcon } from "./PrefixIcon"
 import { SearchBar } from "./SearchBar"
@@ -23,32 +18,13 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { column } = props
     const router = useRouter()
 
-    const { data } = useTable()
-    const { getTableColumn } = useColumn()
     const { project } = useAPI()
-    const { tables } = useTables()
 
-    const col = useMemo(() => (data ? getTableColumn(props.column) : null), [data, getTableColumn, props.column])
-    // column that represents a link to another table
-    const isLinkCol = column.kind! === "link"
-    const isLookupCol = column.kind! === "lookup"
-    const isUserPrimary = column.isUserPrimaryKey
-
-    const foreignTable = useMemo(() => {
-        if (col == null) return null
-        if (!data || !tables) return undefined
-        const join = data.metadata.joins.find(j => j.id === col.joinId)
-        if (!join) return undefined
-        return tables.find(t => t.id === asView(join.foreignSource).id)
-    }, [col, tables, data])
-
+    const { foreignTable } = useForeignTable(column)
     const navigateToView = () => router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
 
-    const ctor = cellMap.getCellCtor(column.cellType)
-    const instance = new ctor((column as unknown as ProxyColumn).serialized)
-    const Icon = instance.icon
-
-    if (col == null) return null
+    const cell = cellMap.instantiate(column)
+    const Icon = cell.icon
 
     return (
         <Stack
@@ -71,10 +47,10 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
             >
                 {/* Prefix Icon Link Column */}
                 <PrefixIcon
-                    open={isLinkCol}
-                    title={`(Verlinkte Spalte) Ursprung: Primärspalte aus Tabelle '${
+                    open={column.kind === "link"}
+                    title={`Verlinkte Spalte. (Ursprung: Primärspalte aus Tabelle '${
                         foreignTable ? foreignTable.name : "Lädt..."
-                    }'.`}
+                    }'.)`}
                     iconButtonProps={{
                         onClick: navigateToView,
                         disabled: foreignTable == null,
@@ -89,8 +65,8 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
 
                 {/* Prefix Icon Primary Column */}
                 <PrefixIcon
-                    open={isUserPrimary === true}
-                    title="(Primärspalte). Inhalt sollte einzigartig sein, z.B. ein Name oder eine ID-Nummer."
+                    open={column.isUserPrimaryKey === true}
+                    title="Primärspalte. (Inhalt sollte einzigartig sein, z.B. ein Name oder eine ID-Nummer.)"
                 >
                     <KeyIcon
                         sx={{
@@ -100,7 +76,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 </PrefixIcon>
 
                 {/* Prefix Icon Lookup Column */}
-                <PrefixIcon open={isLookupCol} title="Lookup">
+                <PrefixIcon open={column.kind === "lookup"} title={`Lookup aus '${foreignTable?.name}'. (readonly)`}>
                     <LookupIcon
                         sx={{
                             fontSize: "90%",
@@ -128,7 +104,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 </Box>
 
                 <Box>
-                    <Tooltip title="Filter">
+                    {/* <Tooltip title="Filter">
                         <IconButton size="small" edge="end" disabled>
                             <FilterAltIcon
                                 sx={{
@@ -136,9 +112,9 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                                 }}
                             />
                         </IconButton>
-                    </Tooltip>
+                    </Tooltip> */}
 
-                    <ColumnContextMenu colInfo={col} foreignTable={foreignTable} headerRendererProps={props} />
+                    <ColumnContextMenu headerRendererProps={props} />
                 </Box>
             </Box>
 

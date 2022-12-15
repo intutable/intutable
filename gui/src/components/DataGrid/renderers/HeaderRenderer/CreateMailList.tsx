@@ -1,8 +1,8 @@
-import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import DownloadingIcon from "@mui/icons-material/Downloading"
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
 
 import { useAPI } from "context"
+import { useColumn } from "hooks/useColumn"
 import { useView } from "hooks/useView"
 import React, { useMemo, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
@@ -11,13 +11,10 @@ import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { ExportViewDialog } from "../../Toolbar/ToolbarItems/ExportView/ExportViewDialog"
 
 export type CreateMailListProps = {
-    colInfo: ColumnInfo
     headerRendererProps: HeaderRendererProps<Row>
 }
 
 export const CreateMailList: React.FC<CreateMailListProps> = props => {
-    const { colInfo: col } = props
-
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openModal = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
         e.preventDefault()
@@ -27,6 +24,8 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
 
     const { table, view } = useAPI()
     const { data: viewData } = useView()
+    const { getColumnInfo } = useColumn()
+    const columnInfo = getColumnInfo(props.headerRendererProps.column)
 
     const date = new Date()
     const localDateFormat = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
@@ -43,8 +42,9 @@ export const CreateMailList: React.FC<CreateMailListProps> = props => {
     )
 
     if (
-        (col && Object.prototype.hasOwnProperty.call(col, "attributes") && col.attributes.cellType === "email") ===
-            false ||
+        (columnInfo &&
+            Object.prototype.hasOwnProperty.call(columnInfo, "attributes") &&
+            columnInfo.attributes.cellType === "email") === false ||
         viewData == null
     )
         return null
