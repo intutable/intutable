@@ -40,6 +40,8 @@ export class Text extends Cell {
                 onBlur={handleBlur}
                 value={value}
                 disabled={this.column.editable === false}
+                label={props.label}
+                required={props.required}
                 InputProps={{
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,

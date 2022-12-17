@@ -1,4 +1,5 @@
 import { SxProps, Theme } from "@mui/system"
+import { FlexboxSizing } from "@shared/input-masks/types"
 import { CalculatedColumn } from "react-data-grid"
 import { Column, Row } from "types"
 import { ValueOf } from "utils/ValueOf"
@@ -43,12 +44,19 @@ export type SerializableCatchEmpty = {
 }
 
 export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {
+    /** value */
     content: T
     row: Row
     column: Column.Deserialized | CalculatedColumn<Row>
     hoveringOnParent: boolean
     forwardProps?: R
     forwardSX?: SxProps<Theme>
+    /** @default false */
+    required?: boolean
+    /** If specified, it will render an additional label near the input component */
+    label?: string
+    /** If specified, it will adjust the width of the input component – only applied to groups */
+    size?: FlexboxSizing
 }
 
 export type ExposableInputComponent = {

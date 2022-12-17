@@ -14,11 +14,6 @@ const mask: InputMask = {
         { text: "Hallo Welt 2", user: "Entwickler", created: new Date(2022, 11, 15) },
         { text: "Hallo, am nächsten Tag!", user: "Admin", created: new Date(2022, 11, 16), highlighted: true },
         { text: "Hallo aus 2021", user: "Nutzer1", created: new Date(2021, 11, 15) },
-        // {
-        //     text: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
-        //     user: "Nutzer2",
-        //     created: new Date(2050, 09, 09),
-        // }, // BUG: text too long,
         { text: "MEEEEEHHHHHRRR KOMMENTARE", user: "Nutzer2", created: new Date(2023, 11, 15) },
         { text: "MEEEEEHHHHHRRR KOMMENTARE", user: "Nutzer3", created: new Date(20237, 11, 15) },
         {
@@ -28,7 +23,15 @@ const mask: InputMask = {
         },
     ],
     active: true,
-    groups: [],
+    groups: [
+        {
+            label: "Name",
+            columns: [
+                { id: 12, size: "8", overrideIndex: 0, useMyIndexAsGroupPosition: true }, // Vorname
+                { id: 11, size: "4", overrideIndex: 1 }, // Titel
+            ],
+        },
+    ],
     columnProps: [],
     rules: [],
 }

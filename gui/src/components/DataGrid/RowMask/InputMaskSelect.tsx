@@ -1,5 +1,5 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material"
-import { useRowMask, ROW_MASK_FALLBACK_VALUE } from "context/RowMaskContext"
+import { useRowMask, NO_INPUT_MASK_DEFAULT } from "context/RowMaskContext"
 import { useInputMask } from "hooks/useInputMask"
 import { isTableOrigin } from "@shared/input-masks/utils"
 
@@ -15,11 +15,11 @@ export const InputMaskSelect: React.FC = () => {
             <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                value={selectedInputMask || ROW_MASK_FALLBACK_VALUE}
+                value={selectedInputMask || NO_INPUT_MASK_DEFAULT}
                 label="Maske"
                 onChange={e => handleChange(e.target.value)}
             >
-                <MenuItem value={ROW_MASK_FALLBACK_VALUE}>Default</MenuItem>
+                <MenuItem value={NO_INPUT_MASK_DEFAULT}>Keine</MenuItem>
                 {inputMasks.map(inputMask => (
                     <MenuItem key={inputMask.id} value={inputMask.id}>
                         {inputMask.name} (

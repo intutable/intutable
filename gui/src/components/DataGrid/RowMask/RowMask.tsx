@@ -11,9 +11,9 @@ import {
     Typography,
     Grid,
 } from "@mui/material"
-import { ROW_MASK_FALLBACK_VALUE, useRowMask } from "context/RowMaskContext"
+import { NO_INPUT_MASK_DEFAULT, useRowMask } from "context/RowMaskContext"
 import { useView } from "hooks/useView"
-import React, { useEffect, useState } from "react"
+import React, { useDebugValue, useEffect, useState } from "react"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { InputMaskSelect } from "./InputMaskSelect"
 import { AddColumnButton, AddLinkButton } from "./DialogActions"
@@ -23,20 +23,32 @@ import { RowNavigator } from "./RowNavigator"
 import { useInputMask } from "hooks/useInputMask"
 import { CommentSection } from "./Comments"
 import { useTheme } from "@mui/material/styles"
+import { AddRow } from "@datagrid/Toolbar/ToolbarItems"
+import { Column } from "types/tables/rdg"
+import { UserPrimaryKeyColumn } from "./UserPrimaryKeyColumn"
+import { ColumnGroup } from "@shared/input-masks/types"
+import { MakeInputMaskColumns } from "./MakeInputMaskColumns"
 
 export const RowMask: React.FC = () => {
     const theme = useTheme()
     const { data } = useView()
     const { rowMaskState, setRowMaskState, selectedInputMask } = useRowMask()
+    const usesInputMask = selectedInputMask !== NO_INPUT_MASK_DEFAULT
 
     const [commentsVisible, setCommentsVisible] = useState<boolean>(false)
     useEffect(() => {
-        if (selectedInputMask === ROW_MASK_FALLBACK_VALUE) setCommentsVisible(false)
-    }, [selectedInputMask])
+        // no comment section for default mask
+        if (usesInputMask === false) setCommentsVisible(false)
+    }, [usesInputMask])
 
     const abort = () => setRowMaskState({ mode: "closed" })
 
     if (data == null) return null
+
+    const nonHidden = data.columns.filter(column => column.hidden !== true)
+    const userPrimaryKeyColumn = nonHidden.find(column => column.isUserPrimaryKey === true)
+    const columns = nonHidden.filter(column => column.isUserPrimaryKey === false).sort(ColumnUtility.sortByIndex)
+
     return (
         <Dialog open={rowMaskState.mode !== "closed"} fullWidth onClose={abort} keepMounted>
             <DialogTitle>
@@ -71,26 +83,21 @@ export const RowMask: React.FC = () => {
 
             <DialogContent>
                 <Grid container spacing={0}>
+                    {/* columns */}
                     <Grid item xs={commentsVisible ? 8 : 12}>
                         <Box
                             sx={{ overflowY: "scroll", maxHeight: "70vh", minHeight: "70vh", height: "70vh", width: 1 }}
                         >
-                            {data.columns
-
-                                .filter(column => ColumnUtility.isAppColumn(column) === false)
-                                .filter(column => column.hidden !== true)
-                                .sort((a, b) =>
-                                    a.isUserPrimaryKey! === b.isUserPrimaryKey!
-                                        ? 0
-                                        : a.isUserPrimaryKey! === true
-                                        ? -1
-                                        : 1
-                                )
-                                .map(column => (
-                                    <RowMaskColumn column={column} key={column.id} />
-                                ))}
+                            {userPrimaryKeyColumn && <UserPrimaryKeyColumn column={userPrimaryKeyColumn} />}
+                            {/* without grouping */}
+                            {usesInputMask === false &&
+                                columns.map(column => <RowMaskColumn column={column} key={column.id} />)}
+                            {/* with grouping through factory component */}
+                            {usesInputMask === true && <MakeInputMaskColumns columns={columns} />}
                         </Box>
                     </Grid>
+
+                    {/* comment section */}
                     {commentsVisible && (
                         <Grid item xs={4}>
                             <Stack
@@ -117,9 +124,15 @@ export const RowMask: React.FC = () => {
                     justifyContent: "space-evenly",
                 }}
             >
-                <AddColumnButton />
-                <Divider flexItem variant="middle" orientation="vertical" />
-                <AddLinkButton />
+                <AddRow />
+                {usesInputMask === false && (
+                    <>
+                        <Divider flexItem variant="middle" orientation="vertical" />
+                        <AddColumnButton />
+                        <Divider flexItem variant="middle" orientation="vertical" />
+                        <AddLinkButton />
+                    </>
+                )}
             </DialogActions>
         </Dialog>
     )

@@ -2,7 +2,8 @@ import { InputMask } from "@shared/input-masks/types"
 import React, { useEffect, useState } from "react"
 import { Row } from "types"
 
-export const ROW_MASK_FALLBACK_VALUE = "--default-rowMask--"
+/** If not input mask specified, it will use the row mask */
+export const NO_INPUT_MASK_DEFAULT = "--default-rowMask--"
 
 export type RowMaskMode = "edit" | "create" | "closed"
 export type RowMaskState<MODE extends RowMaskMode> = MODE extends "edit"
@@ -24,7 +25,7 @@ export type RowMaskContextProps = {
 const initialState: RowMaskContextProps = {
     rowMaskState: { mode: "closed" },
     setRowMaskState: undefined!,
-    selectedInputMask: ROW_MASK_FALLBACK_VALUE,
+    selectedInputMask: NO_INPUT_MASK_DEFAULT,
     setInputMask: undefined!,
 }
 

@@ -1,7 +1,7 @@
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
 import { ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { ROW_MASK_FALLBACK_VALUE, useRowMask } from "context/RowMaskContext"
+import { NO_INPUT_MASK_DEFAULT, useRowMask } from "context/RowMaskContext"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import React, { useState } from "react"
@@ -56,9 +56,9 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                 }}
             >
                 <MenuList>
-                    <HiddenColumnsMenuItem />
+                    {selectedInputMask === NO_INPUT_MASK_DEFAULT && <HiddenColumnsMenuItem />}
 
-                    {selectedInputMask !== ROW_MASK_FALLBACK_VALUE && (
+                    {selectedInputMask !== NO_INPUT_MASK_DEFAULT && (
                         <MenuItem onClick={props.toggleCommentsVisible}>
                             {props.commentsVisible && (
                                 <ListItemIcon>
@@ -70,14 +70,9 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                     )}
 
                     {rowMaskState.mode === "edit" ? (
-                        <>
-                            <MenuItem onClick={createRow}>
-                                <ListItemText>Neuer Eintrag</ListItemText>
-                            </MenuItem>
-                            <MenuItem sx={{ color: theme.palette.warning.main }} onClick={deleteRow}>
-                                <ListItemText>Eintrag Löschen</ListItemText>
-                            </MenuItem>
-                        </>
+                        <MenuItem sx={{ color: theme.palette.warning.main }} onClick={deleteRow}>
+                            <ListItemText>Eintrag Löschen</ListItemText>
+                        </MenuItem>
                     ) : (
                         <MenuItem>
                             <ListItemText>Platzhalter für Erstellen</ListItemText>

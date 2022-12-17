@@ -25,7 +25,7 @@ const AddRow: React.FC = () => {
     return (
         <>
             <Button startIcon={<AddIcon />} onClick={handleCreateRow}>
-                Add Row
+                Neuer Eintrag
             </Button>
         </>
     )
