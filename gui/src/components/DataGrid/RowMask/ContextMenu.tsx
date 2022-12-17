@@ -1,17 +1,23 @@
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
-import { ListItemText, Menu, MenuItem, MenuList } from "@mui/material"
+import { ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { useRowMask } from "context/RowMaskContext"
+import { ROW_MASK_FALLBACK_VALUE, useRowMask } from "context/RowMaskContext"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import React, { useState } from "react"
 import { HiddenColumnsMenuItem } from "@datagrid/Toolbar/ToolbarItems/HiddenColumns/HiddenColumns"
+import CheckIcon from "@mui/icons-material/Check"
 
-export const RowMaskContextMenu: React.FC = () => {
+export type RowMaskContextMenuProps = {
+    commentsVisible: boolean
+    toggleCommentsVisible: () => void
+}
+
+export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
     const { deleteRow: _deleteRow } = useRow()
-    const { rowMaskState, setRowMaskState } = useRowMask()
+    const { rowMaskState, setRowMaskState, selectedInputMask } = useRowMask()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openContextMenu = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -51,6 +57,18 @@ export const RowMaskContextMenu: React.FC = () => {
             >
                 <MenuList>
                     <HiddenColumnsMenuItem />
+
+                    {selectedInputMask !== ROW_MASK_FALLBACK_VALUE && (
+                        <MenuItem onClick={props.toggleCommentsVisible}>
+                            {props.commentsVisible && (
+                                <ListItemIcon>
+                                    <CheckIcon fontSize="small" />
+                                </ListItemIcon>
+                            )}
+                            <ListItemText>Kommentare</ListItemText>
+                        </MenuItem>
+                    )}
+
                     {rowMaskState.mode === "edit" ? (
                         <>
                             <MenuItem onClick={createRow}>

@@ -1,18 +1,35 @@
-export type Comment = { text: string; user: string; created: Date }
+import { SerializedColumn, SerializedViewData } from "../types/tables/serialized"
+
+export type Comment = {
+    text: string
+    user: string
+    created: Date
+    /** @default false */
+    highlighted?: boolean
+}
 
 export type FlexboxSizing = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12"
+
 export type ColumnGroup = Array<{
-    column: number
+    columnId: number
     size: FlexboxSizing
+    /** It will use the first column's index where this is 'true' to position the group. */
+    useIndex: boolean
 }>
 
-export type OverridenColumn = Record<string, unknown>
+export type InputMaskColumn = {
+    /** @default false */
+    inputRequired?: boolean
+}
+export type OverridenColumn = SerializedColumn & InputMaskColumn
+
 export type Rule = unknown
 
-/** ORIGIN type narrowing */
 export type InputMask = {
+    /** unique identifier; pass a uuuidv4 to this */
     id: string
-    origin: { view: number | "*" }
+    /** specifiy a view's id oder a table's id */
+    origin: { viewId: number } | { tableId: number }
     name: string
     description: string
     created: Date
@@ -23,3 +40,5 @@ export type InputMask = {
     columnProps: OverridenColumn[]
     rules: Rule[]
 }
+
+export type UNSAFE_ViewData = SerializedViewData & { inputMasks: InputMask[] }

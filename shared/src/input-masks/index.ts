@@ -1,15 +1,16 @@
-import { ViewData, ViewInfo } from "@intutable/lazy-views"
-import { SerializedViewData } from "src/types"
+import { asView, ViewInfo } from "@intutable/lazy-views/dist"
 import * as DB from "./database"
 import { InputMask } from "./types"
+import { isTableOrigin } from "./utils"
 
-export type UNSAFE_ViewData = ViewData & { inputMasks: InputMask[] }
+export type { UNSAFE_ViewData } from "./types"
 
-export const getInputMasksFor = (view: ViewInfo): InputMask[] =>
-    DB.getAll().filter(mask => mask.origin.view === "*" || mask.origin.view === view.descriptor.id)
+export const getInputMasksFor = (view: ViewInfo): InputMask[] => {
+    const masks = DB.getAll()
 
-export const mountInputMasks = (view: SerializedViewData, inputMasks: InputMask[]): SerializedViewData =>
-    ({
-        ...view,
-        inputMasks: [...inputMasks],
-    } as SerializedViewData)
+    const tabeleOfView = asView(view.source).view
+
+    return masks.filter(mask =>
+        isTableOrigin(mask.origin) ? mask.origin.tableId === tabeleOfView.id : mask.origin.viewId === view.descriptor.id
+    )
+}

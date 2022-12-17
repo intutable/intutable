@@ -17,8 +17,8 @@ export type RowMaskState<MODE extends RowMaskMode> = MODE extends "edit"
 export type RowMaskContextProps = {
     rowMaskState: RowMaskState<RowMaskMode>
     setRowMaskState: React.Dispatch<React.SetStateAction<RowMaskState<RowMaskMode>>>
-    selectedInputMask: InputMask["id"] | null
-    setInputMask: React.Dispatch<React.SetStateAction<InputMask["id"] | null>>
+    selectedInputMask: InputMask["id"]
+    setInputMask: React.Dispatch<React.SetStateAction<InputMask["id"]>>
 }
 
 const initialState: RowMaskContextProps = {
@@ -40,7 +40,9 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     const [rowMaskState, setRowMaskState] = useState<RowMaskState<RowMaskMode>>(initialState.rowMaskState)
 
     /** if not traceable or not specified, it will use no one and display the default row mask  */
-    const [selectedInputMask, setInputMask] = useState<InputMask["id"] | null>(initialState.selectedInputMask)
+    const [selectedInputMask, setInputMask] = useState<InputMask["id"]>(initialState.selectedInputMask)
+
+    // BUG: reset selectedInputMask to default if table changes
 
     return (
         <RowMaskContext.Provider

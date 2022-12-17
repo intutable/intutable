@@ -1,6 +1,7 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material"
 import { useRowMask, ROW_MASK_FALLBACK_VALUE } from "context/RowMaskContext"
 import { useInputMask } from "hooks/useInputMask"
+import { isTableOrigin } from "@shared/input-masks/utils"
 
 export const InputMaskSelect: React.FC = () => {
     const { selectedInputMask, setInputMask } = useRowMask()
@@ -21,7 +22,8 @@ export const InputMaskSelect: React.FC = () => {
                 <MenuItem value={ROW_MASK_FALLBACK_VALUE}>Default</MenuItem>
                 {inputMasks.map(inputMask => (
                     <MenuItem key={inputMask.id} value={inputMask.id}>
-                        {inputMask.name} ({inputMask.origin.view === "*" ? "Tabelle" : `View ${inputMask.origin.view}`})
+                        {inputMask.name} (
+                        {isTableOrigin(inputMask.origin) ? "Alle Views" : `View ${inputMask.origin.viewId}`})
                     </MenuItem>
                 ))}
             </Select>
