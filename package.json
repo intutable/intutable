@@ -24,7 +24,7 @@
         "@intutable/database": "^4.0.0",
         "@intutable/http": "^0.2.0",
         "@intutable/http-cors": "^0.1.0",
-        "@intutable/lazy-views": "^6.0.0",
+        "@intutable/lazy-views": "^6.1.0",
         "@intutable/project-management": "^2.0.0",
         "@intutable/user-authentication": "^3.0.0",
         "concurrently": "^7.3.0",

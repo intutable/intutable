@@ -116,31 +116,5 @@ export const isValidFilter = (filter: PartialSimpleFilter): filter is SimpleFilt
  * and return f1.
  * If all leaf nodes in the filter are incomplete, return null.
  */
-export const stripPartialFilter = (p: PartialFilter): Filter | null => {
-    switch (p.kind) {
-        case Infix:
-            if (isValidFilter(p)) return p
-            else return null
-        case Not: {
-            const child = stripPartialFilter(p.condition)
-            if (child === null) return null
-            else return not(child)
-        }
-        case And: {
-            const leftAnd = stripPartialFilter(p.left)
-            const rightAnd = stripPartialFilter(p.right)
-            if (leftAnd === null && rightAnd === null) return null
-            else if (leftAnd === null) return rightAnd
-            else if (rightAnd === null) return leftAnd
-            else return and(leftAnd, rightAnd)
-        }
-        case Or: {
-            const leftOr = stripPartialFilter(p.left)
-            const rightOr = stripPartialFilter(p.right)
-            if (leftOr === null && rightOr === null) return null
-            else if (leftOr === null) return rightOr
-            else if (rightOr === null) return leftOr
-            else return or(leftOr, rightOr)
-        }
-    }
-}
+export const stripPartialFilter = (p: PartialFilter): Filter | null =>
+    c.filterCondition(isValidFilter, p) as Filter | null
