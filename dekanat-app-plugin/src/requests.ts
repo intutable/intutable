@@ -18,11 +18,11 @@ export const CHANNEL = "dekanat-app-plugin"
  * Response: {@link types.TableDescriptor} name and ID of the newly
  * created table.
  */
-export function createTable(sessionID: string, roleId: number, projectId: number, name: string) {
+export function createTable(connectionId: string, roleId: number, projectId: number, name: string) {
     return {
         channel: CHANNEL,
         method: createTable.name,
-        sessionID,
+        connectionId,
         roleId,
         projectId,
         name,
@@ -33,8 +33,8 @@ export function createTable(sessionID: string, roleId: number, projectId: number
  * Delete a table (along with all its views)
  * Response: { message: string } a report that the table was deleted.
  */
-export function deleteTable(sessionID: string, id: TableId) {
-    return { channel: CHANNEL, method: deleteTable.name, sessionID, id }
+export function deleteTable(connectionId: string, id: TableId) {
+    return { channel: CHANNEL, method: deleteTable.name, connectionId, id }
 }
 
 /**
@@ -50,7 +50,7 @@ export function deleteTable(sessionID: string, id: TableId) {
  * and ensure that the change cascades to views as well.
  */
 export function createStandardColumn(
-    sessionID: string,
+    connectionId: string,
     tableId: TableId,
     column: StandardColumnSpecifier,
     addToViews?: ViewId[]
@@ -58,7 +58,7 @@ export function createStandardColumn(
     return {
         channel: CHANNEL,
         method: createStandardColumn.name,
-        sessionID,
+        connectionId,
         tableId,
         column,
         addToViews,
@@ -74,7 +74,7 @@ export function createStandardColumn(
  * purely internal.
 n */
 export function addColumnToTable(
-    sessionID: string,
+    connectionId: string,
     tableId: TableId,
     /**
      * Uses serialized attributes for now because there are still next
@@ -91,7 +91,7 @@ export function addColumnToTable(
     return {
         channel: CHANNEL,
         method: addColumnToTable.name,
-        sessionID,
+        connectionId,
         tableId,
         column,
         joinId,
@@ -103,14 +103,14 @@ export function addColumnToTable(
  * Remove a column from a table view and all its filter views.
  */
 export function removeColumnFromTable(
-    sessionID: string,
+    connectionId: string,
     tableId: lv.ViewDescriptor["id"],
     columnId: lv.ColumnInfo["id"]
 ) {
     return {
         channel: CHANNEL,
         method: removeColumnFromTable.name,
-        sessionID,
+        connectionId,
         tableId,
         columnId,
     }
@@ -124,7 +124,7 @@ export function removeColumnFromTable(
  * An array of all columns that were changed.
  */
 export function changeTableColumnAttributes(
-    sessionID: string,
+    connectionId: string,
     tableId: lv.ViewDescriptor["id"],
     columnId: lv.ColumnInfo["id"],
     update: CustomColumnAttributes,
@@ -133,7 +133,7 @@ export function changeTableColumnAttributes(
     return {
         channel: CHANNEL,
         method: changeTableColumnAttributes.name,
-        sessionID,
+        connectionId,
         tableId,
         columnId,
         update,
@@ -145,8 +145,8 @@ export function changeTableColumnAttributes(
  * Get all data of a given table, both object and metadata.
  * Response: [TableData]{@link shared.types.TableData}
  */
-export function getTableData(sessionID: string, tableId: TableId) {
-    return { channel: CHANNEL, method: getTableData.name, sessionID, tableId }
+export function getTableData(connectionId: string, tableId: TableId) {
+    return { channel: CHANNEL, method: getTableData.name, connectionId, tableId }
 }
 
 /**
@@ -155,11 +155,11 @@ export function getTableData(sessionID: string, tableId: TableId) {
  * Filters can be added with {@link changeViewFilters}, while
  * hiding columns, sorting, and grouping are not yet implemented at all.
  */
-export function createView(sessionID: string, tableId: TableId, name: string) {
+export function createView(connectionId: string, tableId: TableId, name: string) {
     return {
         channel: CHANNEL,
         method: createView.name,
-        sessionID,
+        connectionId,
         tableId,
         name,
     }
@@ -169,11 +169,11 @@ export function createView(sessionID: string, tableId: TableId, name: string) {
  * Rename a view. The default view cannot be renamed.
  * Response: {@link ViewDescriptor} the descriptor of the updated view.
  */
-export function renameView(sessionID: string, viewId: ViewId, newName: string) {
+export function renameView(connectionId: string, viewId: ViewId, newName: string) {
     return {
         channel: CHANNEL,
         method: renameView.name,
-        sessionID,
+        connectionId,
         viewId,
         newName,
     }
@@ -183,23 +183,23 @@ export function renameView(sessionID: string, viewId: ViewId, newName: string) {
  * Delete a view. The default view cannot be deleted.
  * Response: { message: string } a report that the view was deleted.
  */
-export function deleteView(sessionID: string, viewId: ViewId) {
-    return { channel: CHANNEL, method: deleteView.name, sessionID, viewId }
+export function deleteView(connectionId: string, viewId: ViewId) {
+    return { channel: CHANNEL, method: deleteView.name, connectionId, viewId }
 }
 /**
  * List views on a table.
  * Response: {@link types.ViewDescriptor}[]
  */
-export function listViews(sessionID: string, id: TableId) {
-    return { channel: CHANNEL, method: listViews.name, sessionID, id }
+export function listViews(connectionId: string, id: TableId) {
+    return { channel: CHANNEL, method: listViews.name, connectionId, id }
 }
 
 /**
  * Get all data of a given view, both object and metadata.
  * Response: [SerializedViewData]{@link shared.types.SerializedViewData}
  */
-export function getViewData(sessionID: string, viewId: ViewId) {
-    return { channel: CHANNEL, method: getViewData.name, sessionID, viewId }
+export function getViewData(connectionId: string, viewId: ViewId) {
+    return { channel: CHANNEL, method: getViewData.name, connectionId, viewId }
 }
 
 /**
@@ -208,11 +208,11 @@ export function getViewData(sessionID: string, viewId: ViewId) {
  * Response: Filter[] the newly updated filters; they may be simplified or
  * re-ordered, but are semantically the same.
  */
-export function changeViewFilters(sessionID: string, viewId: ViewId, newFilters: Filter[]) {
+export function changeViewFilters(connectionId: string, viewId: ViewId, newFilters: Filter[]) {
     return {
         channel: CHANNEL,
         method: changeViewFilters.name,
-        sessionID,
+        connectionId,
         viewId,
         newFilters,
     }
