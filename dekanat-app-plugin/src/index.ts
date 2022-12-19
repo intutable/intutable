@@ -257,21 +257,7 @@ async function removeColumnFromTable(
     }
 
     // shift indices on remaining columns
-    // in case of links, more columns than the one specified may have
-    // disappeared, so we need to refresh.
-    tableInfo = (await core.events.request(lvr.getViewInfo(connectionId, tableId))) as lvt.ViewInfo
-
-    const idxKey = COLUMN_INDEX_KEY
-    await Promise.all(
-        tableInfo.columns
-            .filter(c => c.attributes[idxKey] > column.attributes[idxKey])
-            .map(
-                c => changeTableColumnAttributes(connectionId, tableId, c.id, {
-                    [idxKey]: c.attributes[idxKey] - 1,
-                })
-            )
-    )
-
+    await shiftColumnIndicesAfterDelete(connectionId, tableId)
     return { message: `removed ${kind} column #${columnId}` }
 }
 
@@ -304,18 +290,27 @@ async function removeLookupColumn(connectionId: string, tableId: number, columnI
     await core.events.request(lvr.removeColumnFromView(connectionId, columnId))
 }
 
-/**
- * Given a list of columns, return a list of columns whose index is wrong
- * and the new index it they should have.
- */
-function getColumnIndexUpdates(columns: lvt.ColumnInfo[]): { id: number; index: number }[] {
-    return columns
-        .map((c, index) => ({ column: c, index }))
-        .filter(pair => pair.column.attributes["__columnIndex__"] !== pair.index)
-        .map(pair => ({
-            id: pair.column.id,
-            index: pair.index,
-        }))
+async function shiftColumnIndicesAfterDelete(
+    connectionId: string,
+    tableId: types.TableId,
+) {
+    // in case of links, more columns than the one specified may have
+    // disappeared, so simply decrementing all indices by one is not enough - we have to
+    // go over them all and adjust their index appropriately.
+    const tableInfo = await core.events.request(
+        lvr.getViewInfo(connectionId, tableId)
+    ) as lvt.ViewInfo
+
+    const columns = [...tableInfo.columns]
+    const idxKey = COLUMN_INDEX_KEY
+    columns.sort((a, b) => a.attributes[idxKey] - b.attributes[idxKey])
+    await Promise.all(columns.map(async (c, idx) => {
+        if (c.attributes[idxKey] === idx) return
+        else
+            await changeTableColumnAttributes(connectionId, tableId, c.id, {
+                [idxKey]: idx,
+            })
+    }))
 }
 
 async function removeColumnFromViews(connectionId: string, tableId: number, parentColumnId: number): Promise<void> {
