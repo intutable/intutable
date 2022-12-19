@@ -1,7 +1,6 @@
-import { useMemo, useCallback } from "react"
-import { ColumnInfo } from "@intutable/lazy-views/dist/types"
-import { TableHookOptions, useTable } from "hooks/useTable"
-import { TableRow, TableColumn, Row, Column } from "types"
+import { RawColumn } from "@shared/types"
+import { useTable } from "hooks/useTable"
+import { TableColumn, Row, Column } from "types"
 import { useForeignTable } from "./useForeignTable"
 
 export type RowPreview = Pick<Row, "_id" | "index"> & {
@@ -29,7 +28,7 @@ export const useLink = (forColumn: Column.Deserialized) => {
             }))) ??
         []
 
-    const getColumnInfo = (column: TableColumn): ColumnInfo | null => {
+    const getColumnInfo = (column: TableColumn): RawColumn | null => {
         return linkTableData?.metadata.columns.find(c => c.key === column.key) ?? null
     }
 

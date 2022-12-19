@@ -1,5 +1,4 @@
 import { cellMap } from "@datagrid/Cells"
-import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import ContentPasteIcon from "@mui/icons-material/ContentPaste"
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
 import { useSelectedRows } from "context/SelectedRowsContext"
@@ -8,8 +7,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useCallback } from "react"
 import { HeaderRendererProps } from "react-data-grid"
-import { Column, Row } from "types"
-import { ColumnUtility } from "utils/column utils/ColumnUtility"
+import { Row } from "types"
 
 export type ColumnToClipboardProps = {
     headerRendererProps: HeaderRendererProps<Row>

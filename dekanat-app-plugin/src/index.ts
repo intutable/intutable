@@ -37,11 +37,10 @@ import {
     COLUMN_INDEX_KEY,
 } from "shared/dist/api"
 
-import { StandardColumnSpecifier, CustomColumnAttributes, DB, Filter, SerializedColumn } from "shared/dist/types"
 import sanitizeName from "shared/dist/utils/sanitizeName"
 
 import { parser, ParserClass } from "./transform/Parser"
-import * as types from "./types"
+import * as types from "shared/dist/types"
 import * as req from "./requests"
 import { error, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
@@ -157,7 +156,7 @@ async function createStandardColumn_({
 async function createStandardColumn(
     connectionId: string,
     tableId: lvt.ViewDescriptor["id"],
-    column: StandardColumnSpecifier,
+    column: types.StandardColumnSpecifier,
     addToViews?: types.ViewId[]
 ) {
     const options = (await core.events.request(lvr.getViewOptions(connectionId, tableId))) as lvt.ViewOptions
@@ -166,7 +165,7 @@ async function createStandardColumn(
     // add column to table and filter views
     const columnIndex =
         options.columnOptions.columns.length + options.columnOptions.joins.reduce((acc, j) => acc + j.columns.length, 0)
-    const allAttributes: Partial<DB.Column> = {
+    const allAttributes: Partial<types.DB.Column> = {
         ...standardColumnAttributes(column.name, column.cellType, columnIndex),
         ...parser.deparseColumn(column.attributes || {}),
     }
@@ -346,9 +345,9 @@ async function changeTableColumnAttributes(
     connectionId: string,
     tableId: number,
     columnId: number,
-    update: CustomColumnAttributes,
+    update: types.CustomColumnAttributes,
     changeInViews = true
-): Promise<SerializedColumn[]> {
+): Promise<types.SerializedColumn[]> {
     const attributes = parser.deparseColumn(update)
     const tableColumn = await core.events
         .request(lvr.changeColumnAttributes(connectionId, columnId, attributes))
@@ -362,8 +361,8 @@ async function changeColumnAttributesInViews(
     connectionId: string,
     tableId: number,
     columnId: number,
-    update: Partial<DB.Column>
-): Promise<SerializedColumn[]> {
+    update: Partial<types.DB.Column>
+): Promise<types.SerializedColumn[]> {
     const views = (await core.events.request(
         lvr.listViews(connectionId, selectable.viewId(tableId))
     )) as lvt.ViewDescriptor[]
@@ -456,7 +455,7 @@ async function getViewData(connectionId: string, viewId: types.ViewId) {
 async function changeViewFilters_({ connectionId, viewId, newFilters }: CoreRequest): Promise<CoreResponse> {
     return changeViewFilters(connectionId, viewId, newFilters)
 }
-async function changeViewFilters(connectionId: string, viewId: types.ViewId, newFilters: Filter[]) {
+async function changeViewFilters(connectionId: string, viewId: types.ViewId, newFilters: types.Filter[]) {
     let options = (await core.events.request(lvr.getViewOptions(connectionId, viewId))) as lvt.ViewOptions
     if (options.name === defaultViewName()) return error("changeViewFilters", "cannot change default view")
     const newRowOptions: lvt.RowOptions = {

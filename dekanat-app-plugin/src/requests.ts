@@ -1,6 +1,5 @@
 import { types as lv } from "@intutable/lazy-views"
-import { StandardColumnSpecifier, CustomColumnAttributes, Filter } from "shared/dist/types"
-import { TableId, ViewId } from "./types"
+import { StandardColumnSpecifier, CustomColumnAttributes, Filter, TableId, ViewId } from "shared/dist/types"
 
 export const CHANNEL = "dekanat-app-plugin"
 

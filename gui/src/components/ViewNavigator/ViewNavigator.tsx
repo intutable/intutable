@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { ViewDescriptor } from "@shared/types"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import {
     Box,

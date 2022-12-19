@@ -17,7 +17,7 @@ import DeleteIcon from "@mui/icons-material/Delete"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import { Popper, Paper, IconButton, Stack, Box, Typography } from "@mui/material"
 
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { ViewDescriptor } from "@shared/types"
 import { TableColumn } from "types"
 import { ConditionKind, Filter, PartialFilter, PartialSimpleFilter, FILTER_OPERATORS_LIST } from "types/filter"
 import { wherePartial, and, stripPartialFilter, partialFilterEquals } from "@shared/utils/filter"

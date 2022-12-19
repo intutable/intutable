@@ -1,4 +1,4 @@
-import { ColumnInfo } from "@intutable/lazy-views/dist/types"
+import { RawColumn } from "@shared/types"
 import LookupIcon from "@mui/icons-material/ManageSearch"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -52,7 +52,7 @@ const Modal: React.FC<ModalProps> = props => {
         [foreignTableData, selection, getColumnInfo]
     )
 
-    const handleAddLookup = async (column: ColumnInfo) => {
+    const handleAddLookup = async (column: RawColumn) => {
         try {
             const joinId = columnInfo!.joinId!
             await fetcher({

@@ -1,8 +1,5 @@
 import { ViewData } from "types/tables"
-
-// import { ViewDescriptor } from "@backend/types"
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
-
+import { ViewDescriptor } from "@shared/types"
 import { getViewData, deleteView, renameView } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"

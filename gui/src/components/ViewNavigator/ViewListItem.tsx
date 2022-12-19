@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { ViewDescriptor } from "@shared/types"
 import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import ClearIcon from "@mui/icons-material/Clear"
 import { IconButton, ListItem, ListItemButton, ListItemText, Menu, MenuItem, Typography } from "@mui/material"
