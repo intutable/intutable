@@ -265,11 +265,11 @@ async function removeColumnFromTable(
     await Promise.all(
         tableInfo.columns
             .filter(c => c.attributes[idxKey] > column.attributes[idxKey])
-            .map(async c => {
-                changeTableColumnAttributes(connectionId, tableId, c.id, {
+            .map(
+                c => changeTableColumnAttributes(connectionId, tableId, c.id, {
                     [idxKey]: c.attributes[idxKey] - 1,
                 })
-            })
+            )
     )
 
     return { message: `removed ${kind} column #${columnId}` }
