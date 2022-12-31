@@ -22,9 +22,10 @@
  * provided by this plugin from the front-end.
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
+import { insert } from "@intutable/database/dist/requests"
 import * as pm from "@intutable/project-management/dist/requests"
-import { ColumnDescriptor as PmColumn } from "@intutable/project-management/dist/types"
-import { types as lvt, requests as lvr, selectable, asTable } from "@intutable/lazy-views/"
+import { ColumnDescriptor as PmColumn, TableInfo as RawTableInfo } from "@intutable/project-management/dist/types"
+import { types as lvt, requests as lvr, selectable, asTable, asView } from "@intutable/lazy-views/"
 import {
     defaultViewName,
     APP_TABLE_COLUMNS,
@@ -41,6 +42,7 @@ import sanitizeName from "shared/dist/utils/sanitizeName"
 
 import { parser, ParserClass } from "./transform/Parser"
 import * as types from "shared/dist/types"
+import { RowInsertData } from "./types/requests"
 import * as req from "./requests"
 import { error, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
@@ -64,6 +66,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.listViews.name, listViews_)
         .on(req.getViewData.name, getViewData_)
         .on(req.changeViewFilters.name, changeViewFilters_)
+        .on(req.createRow.name, createRow_)
         .on(perm.getUsers.name, perm.getUsers_)
         .on(perm.getRoles.name, perm.getRoles_)
         .on(perm.createUser.name, perm.createUser_)
@@ -465,4 +468,55 @@ async function changeViewFilters(connectionId: string, viewId: types.ViewId, new
     await core.events.request(lvr.changeRowOptions(connectionId, viewId, newRowOptions))
     options = (await core.events.request(lvr.getViewOptions(connectionId, viewId))) as lvt.ViewOptions
     return options.rowOptions.conditions.map(ParserClass.deparseFilter)
+}
+
+async function createRow_({ connectionId, viewId, data }: CoreRequest): Promise<CoreResponse> {
+    return createRow(connectionId, viewId, data)
+}
+
+async function createRow(connectionId: string, viewId: types.ViewId, data: RowInsertData = {}) {
+    const info: lvt.ViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
+    let stringData: Record<string, unknown>
+    try {
+        stringData = mapRowInsertDataToStrings(info, data)
+    } catch (e) {
+        return error("createRow", e.message)
+    }
+    await createRowInRawView(connectionId, asView(info.source).view.id, stringData)
+    return { message: `inserted new row in table ${asView(info.source).view.id}` }
+}
+
+/**
+ * Traverse a chain of raw views down to the raw table at the bottom and insert a new row in it.
+ * Precondition: All columns (keys) in `data` are of kind `standard`, which means, among other
+ * things, that they belong to the base view or base table of each view in the chain, never to
+ * a join.
+ */
+async function createRowInRawView(connectionId: string, viewId: types.ViewId, data: Record<string, unknown>) {
+    const tableViewOptions: lvt.ViewOptions = await core.events.request(lvr.getViewOptions(connectionId, viewId))
+    if (selectable.isTable(tableViewOptions.source)) {
+        const rawTableInfo: RawTableInfo = await core.events.request(
+            pm.getTableInfo(connectionId, tableViewOptions.source.id)
+        )
+        await core.events.request(insert(connectionId, rawTableInfo.table.key, data))
+    } else if (selectable.isView(tableViewOptions.source)) {
+        await createRowInRawView(connectionId, tableViewOptions.source.id, data)
+    }
+}
+/**
+ * Row inserts and updates are specified with { column ID -> value } maps. To actually insert
+ * in the database, we need their string names. This function takes a view or table's
+ * raw view info and the update data and creates a new update data set with the proper names.
+ */
+function mapRowInsertDataToStrings(viewInfo: lvt.ViewInfo, update: RowInsertData): Record<string, unknown> {
+    const stringUpdate: Record<string, unknown> = {}
+    for (const key in update) {
+        // the for-let-in construction always gives you the keys as strings.
+        const column = viewInfo.columns.find(c => c.id.toString() === key)
+        if (column === undefined) throw new TypeError(`view ${viewInfo.descriptor.id} has no column with ID ${key}`)
+        else if (column.attributes.kind !== "standard")
+            throw new TypeError(`column ${key} is not a standard column, but is of kind ${column.attributes.kind}`)
+        else stringUpdate[column.name] = update[key]
+    }
+    return stringUpdate
 }

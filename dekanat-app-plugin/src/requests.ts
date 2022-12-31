@@ -1,5 +1,6 @@
 import { types as lv } from "@intutable/lazy-views"
 import { StandardColumnSpecifier, CustomColumnAttributes, Filter, TableId, ViewId } from "shared/dist/types"
+import { RowInsertData } from "./types/requests"
 
 export const CHANNEL = "dekanat-app-plugin"
 
@@ -215,4 +216,15 @@ export function changeViewFilters(connectionId: string, viewId: ViewId, newFilte
         viewId,
         newFilters,
     }
+}
+
+/**
+ * Create a new row in a given view's underlying table. The reason for letting data be inserted
+ * through the view instead of the table is that the data displayed in the front-end are those
+ * of a view, so the view's ID and column IDs will be available, and the work of mapping
+ * these to the actual table is more appropriate in the back-end than the front-end.
+ * Response: { message: string } a report that a row was inserted.
+ */
+export function createRow(connectionId: string, viewId: ViewId, data?: RowInsertData) {
+    return { channel: CHANNEL, method: createRow.name, connectionId, viewId, data }
 }

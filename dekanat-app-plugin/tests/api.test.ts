@@ -1,11 +1,11 @@
 import path from "path"
-import { Core } from "@intutable/core"
+import { Core, CoreRequest } from "@intutable/core"
 import { openConnection, closeConnection, insert } from "@intutable/database/dist/requests"
 import * as pm from "@intutable/project-management/dist/requests"
 import { TableDescriptor as PmTable } from "@intutable/project-management/dist/types"
 import { types as lvt, requests as lvr } from "@intutable/lazy-views"
-import { COLUMN_INDEX_KEY, defaultViewName } from "shared/dist/api"
-import { TableDescriptor, ViewDescriptor } from "../src/types"
+import { COLUMN_INDEX_KEY, defaultViewName, userPrimaryColumnName } from "shared/dist/api"
+import { TableDescriptor, ViewDescriptor } from "shared/dist/types"
 import { TableData, SerializedViewData, SerializedColumn } from "../src/types/tables"
 import * as req from "../src/requests"
 import { ErrorCode } from "../src/error"
@@ -73,7 +73,7 @@ describe("create table", () => {
                 expect.objectContaining({
                     id: expect.any(Number),
                     index: 2, // id: 0, (row)index: 1, name: 2
-                    name: "Name",
+                    name: userPrimaryColumnName(),
                     kind: "standard",
                     isUserPrimaryKey: true,
                 }),
@@ -146,7 +146,7 @@ describe("create view", () => {
 
         const viewData = (await core.events.request(req.getViewData(connId, VIEW.id))) as SerializedViewData
         expect(viewData.columns).toEqual(
-            expect.arrayContaining([expect.objectContaining({ [COLUMN_INDEX_KEY]: 2, name: "Name" })])
+            expect.arrayContaining([expect.objectContaining({ [COLUMN_INDEX_KEY]: 2, name: userPrimaryColumnName() })])
         )
 
         await deleteView()
@@ -181,6 +181,11 @@ describe("create view", () => {
             })
         )
         const renamePromise = core.events.request(req.renameView(connId, defaultView!.id, NEW_NAME))
+        expect(renamePromise).rejects.toEqual(
+            expect.objectContaining({
+                code: ErrorCode.changeDefaultView,
+            })
+        )
     })
 })
 
@@ -219,4 +224,72 @@ describe("create different kinds of columns", () => {
         const childColumn = testViewData.columns.find(c => c.name === column.name)
         expect(childColumn).toBeDefined()
     })
+})
+
+function coreRequest<A = unknown>(request: CoreRequest): Promise<A> {
+    return core.events.request(request) as Promise<A>
+}
+
+describe("row handling", () => {
+    const TABLE_SPEC = {
+        name: "table",
+        columns: {
+            age: { name: "Age", cellType: "number" }
+        }
+    }
+    let table: TableDescriptor
+    let view: ViewDescriptor
+    /**
+     * This object will be overwritten throughout the tests, but only under the following
+     * invariant: all properties of viewData (except `rows`) remain constant through all tests
+     */
+    let viewData: SerializedViewData
+    let nameColumn: SerializedColumn
+    let ageColumn: SerializedColumn
+
+    beforeAll(async () => {
+        table = await coreRequest<TableDescriptor>(
+            req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name)
+        )
+        const views = await coreRequest<ViewDescriptor[]>(
+            req.listViews(connId, table.id)
+        )
+        view = views.find(v => v.name === defaultViewName())!
+        await coreRequest(req.createStandardColumn(connId, table.id, TABLE_SPEC.columns.age))
+        // should contain the columns now...
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        nameColumn = viewData.columns.find(c => c.name === userPrimaryColumnName())!
+        ageColumn = viewData.columns.find(c => c.name === TABLE_SPEC.columns.age.name)!
+    })
+
+    afterAll(async () => {
+        await coreRequest(req.deleteTable(connId, table.id))
+    })
+
+    test("create a new empty row", async () => {
+        await coreRequest(req.createRow(connId, view.id))
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        expect(viewData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                _id: expect.any(Number),
+                [nameColumn.key]: null,
+                [ageColumn.key]: null,
+            })
+        ]))
+    })
+    test("create a new row with given values", async () => {
+        await coreRequest(req.createRow(connId, view.id, {
+            [nameColumn.id]: "Jeff",
+            [ageColumn.id]: "23",
+        }))
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        expect(viewData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                _id: expect.any(Number),
+                [nameColumn.key]: "Jeff",
+                [ageColumn.key]: "23",
+            })
+        ]))
+    })
+
 })

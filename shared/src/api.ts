@@ -17,8 +17,20 @@ export const APP_TABLE_COLUMNS: Column[] = [
     { name: "name", type: ColumnType.string, options: [] },
 ]
 
+/**
+ * Much functionality of tables goes directly through views, so we maintain a default view
+ * with no filters on every table. This is its name.
+ */
 export function defaultViewName() {
     return "Standard"
+}
+/**
+ * Each table is automatically created with a "name" column right off the bat. It cannot be deleted
+ * and _should_ (but does not strictly have to) have a unique value, this is what the term
+ * "user primary" or "user primary key" refers to. This function returns that column's name.
+ */
+export function userPrimaryColumnName() {
+    return "Name"
 }
 
 /**
