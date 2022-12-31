@@ -272,6 +272,7 @@ describe("row handling", () => {
         expect(viewData.rows).toEqual(expect.arrayContaining([
             expect.objectContaining({
                 _id: expect.any(Number),
+                index: viewData.rows.length - 1,
                 [nameColumn.key]: null,
                 [ageColumn.key]: null,
             })
@@ -279,17 +280,49 @@ describe("row handling", () => {
     })
     test("create a new row with given values", async () => {
         await coreRequest(req.createRow(connId, view.id, {
-            [nameColumn.id]: "Jeff",
-            [ageColumn.id]: "23",
+            values: {
+                [nameColumn.id]: "Jeff",
+                [ageColumn.id]: "23",
+            }
         }))
         viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
         expect(viewData.rows).toEqual(expect.arrayContaining([
             expect.objectContaining({
                 _id: expect.any(Number),
+                index: viewData.rows.length - 1,
                 [nameColumn.key]: "Jeff",
                 [ageColumn.key]: "23",
             })
         ]))
     })
-
+    test("create a new empty row at a desired index", async () => {
+        await coreRequest(req.createRow(connId, view.id, {
+            values: {
+                [nameColumn.id]: "Second",
+                [ageColumn.id]: "2",
+            }            
+        }))
+        await coreRequest(req.createRow(connId, view.id, {
+            atIndex: 0,
+            values: {
+                [nameColumn.id]: "First",
+                [ageColumn.id]: "1",
+            }            
+        }))
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        expect(viewData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                _id: expect.any(Number),
+                index: 0,
+                [nameColumn.key]: "First",
+                [ageColumn.key]: "1",
+            }),
+            expect.objectContaining({
+                _id: expect.any(Number),
+                index: viewData.rows.length - 1,
+                [nameColumn.key]: "Second",
+                [ageColumn.key]: "2",
+            })
+        ]))
+    })
 })

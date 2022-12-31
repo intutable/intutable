@@ -22,10 +22,13 @@
  * provided by this plugin from the front-end.
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
-import { insert } from "@intutable/database/dist/requests"
+import { insert, update } from "@intutable/database/dist/requests"
 import * as pm from "@intutable/project-management/dist/requests"
-import { ColumnDescriptor as PmColumn, TableInfo as RawTableInfo } from "@intutable/project-management/dist/types"
-import { types as lvt, requests as lvr, selectable, asTable, asView } from "@intutable/lazy-views/"
+import {
+    ColumnDescriptor as PmColumn,
+    TableDescriptor as RawTableDescriptor,
+} from "@intutable/project-management/dist/types"
+import { types as lvt, requests as lvr, selectable, asTable } from "@intutable/lazy-views/"
 import {
     defaultViewName,
     APP_TABLE_COLUMNS,
@@ -470,53 +473,99 @@ async function changeViewFilters(connectionId: string, viewId: types.ViewId, new
     return options.rowOptions.conditions.map(ParserClass.deparseFilter)
 }
 
-async function createRow_({ connectionId, viewId, data }: CoreRequest): Promise<CoreResponse> {
-    return createRow(connectionId, viewId, data)
+async function createRow_({ connectionId, viewId, atIndex, values }: CoreRequest): Promise<CoreResponse> {
+    return createRow(connectionId, viewId, atIndex, values)
 }
 
-async function createRow(connectionId: string, viewId: types.ViewId, data: RowInsertData = {}) {
-    const info: lvt.ViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
-    let stringData: Record<string, unknown>
+async function createRow(
+    connectionId: string,
+    viewId: types.ViewId,
+    atIndex: number | undefined = undefined,
+    values: RowInsertData = {}
+) {
+    // 1. find the column names needed to update the data in the actual raw table
+    const viewInfo: lvt.ViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
+    let rawData: Record<string, unknown>
     try {
-        stringData = mapRowInsertDataToStrings(info, data)
+        rawData = mapRowInsertDataToStrings(viewInfo, values)
     } catch (e) {
         return error("createRow", e.message)
     }
-    await createRowInRawView(connectionId, asView(info.source).view.id, stringData)
-    return { message: `inserted new row in table ${asView(info.source).view.id}` }
+
+    // 2. get the data of the table (since we start out with a view ID)
+    const tableViewId: types.ViewId = await getTableViewId(connectionId, viewId)
+    const tableData: types.TableData = await getTableData(connectionId, tableViewId)
+
+    // 3. determine necessary index shifts
+    if (atIndex > tableData.rows.length + 1 || atIndex < 0) return error("createRow", "invalid row index: " + atIndex)
+    const actualIndex = atIndex ?? tableData.rows.length
+    const { rowData: finalRowData, rowsToShift } = addIndexShifts(tableData, actualIndex, rawData)
+
+    // 4. shift all rows after the desired index
+    const rawTable: RawTableDescriptor = asTable(tableData.metadata.source).table
+    await Promise.all(
+        rowsToShift.map(async shift => {
+            await core.events.request(
+                update(connectionId, rawTable.key, {
+                    condition: ["_id", shift.rowId],
+                    update: { index: shift.index },
+                })
+            )
+        })
+    )
+    // 5. insert the new row
+    return core.events.request(insert(connectionId, rawTable.key, finalRowData, ["_id"]))
 }
 
 /**
- * Traverse a chain of raw views down to the raw table at the bottom and insert a new row in it.
- * Precondition: All columns (keys) in `data` are of kind `standard`, which means, among other
- * things, that they belong to the base view or base table of each view in the chain, never to
- * a join.
+ * Traverse a chain of views down to the bottom table view, i.e. the one that is based on a table,
+ * not another view.
+ * As of December 2022, we only have a fixed two layers, so the recursion is not necessary, but
+ * we eventually want allow users to share views with others who in turn can sub-filter them,
+ * which will probably have to be implemented by allowing them to create sub-views.
+ * @return {number} the ID of the lowermost view in the chain (not the table, the view!)
  */
-async function createRowInRawView(connectionId: string, viewId: types.ViewId, data: Record<string, unknown>) {
-    const tableViewOptions: lvt.ViewOptions = await core.events.request(lvr.getViewOptions(connectionId, viewId))
-    if (selectable.isTable(tableViewOptions.source)) {
-        const rawTableInfo: RawTableInfo = await core.events.request(
-            pm.getTableInfo(connectionId, tableViewOptions.source.id)
-        )
-        await core.events.request(insert(connectionId, rawTableInfo.table.key, data))
-    } else if (selectable.isView(tableViewOptions.source)) {
-        await createRowInRawView(connectionId, tableViewOptions.source.id, data)
+async function getTableViewId(connectionId: string, viewId: types.ViewId): Promise<types.ViewId> {
+    const viewOptions: lvt.ViewOptions = await core.events.request(lvr.getViewOptions(connectionId, viewId))
+    if (selectable.isTable(viewOptions.source)) {
+        return viewId
+    } else if (selectable.isView(viewOptions.source)) {
+        return getTableViewId(connectionId, viewOptions.source.id)
     }
 }
+
 /**
  * Row inserts and updates are specified with { column ID -> value } maps. To actually insert
  * in the database, we need their string names. This function takes a view or table's
  * raw view info and the update data and creates a new update data set with the proper names.
  */
-function mapRowInsertDataToStrings(viewInfo: lvt.ViewInfo, update: RowInsertData): Record<string, unknown> {
+function mapRowInsertDataToStrings(viewData: lvt.ViewInfo, update: RowInsertData): Record<string, unknown> {
     const stringUpdate: Record<string, unknown> = {}
     for (const key in update) {
         // the for-let-in construction always gives you the keys as strings.
-        const column = viewInfo.columns.find(c => c.id.toString() === key)
-        if (column === undefined) throw new TypeError(`view ${viewInfo.descriptor.id} has no column with ID ${key}`)
+        const column = viewData.columns.find(c => c.id.toString() === key)
+        if (column === undefined) throw new TypeError(`table ${viewData.descriptor.id} has no column with ID ${key}`)
         else if (column.attributes.kind !== "standard")
             throw new TypeError(`column ${key} is not a standard column, but is of kind ${column.attributes.kind}`)
         else stringUpdate[column.name] = update[key]
     }
     return stringUpdate
+}
+
+type IndexShiftData = { rowId: number; oldIndex: number; index: number }
+
+function addIndexShifts(
+    tableData: types.TableData,
+    atIndex: number,
+    rowData: Record<string, unknown>
+): { rowData: Record<string, unknown>; rowsToShift: IndexShiftData[] } {
+    const shifts = (tableData.rows as types.Row[])
+        .sort((r1, r2) => r1.index - r2.index)
+        .slice(atIndex) // yes, this is legitimate
+        .map(row => ({
+            rowId: row._id,
+            oldIndex: row.index,
+            index: row.index + 1,
+        }))
+    return { rowData: { ...rowData, index: atIndex }, rowsToShift: shifts }
 }

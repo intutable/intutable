@@ -223,8 +223,21 @@ export function changeViewFilters(connectionId: string, viewId: ViewId, newFilte
  * through the view instead of the table is that the data displayed in the front-end are those
  * of a view, so the view's ID and column IDs will be available, and the work of mapping
  * these to the actual table is more appropriate in the back-end than the front-end.
- * Response: { message: string } a report that a row was inserted.
+ * Response: { _id: number } the ID of the row that was created.
+ * Preconditions:
+ * - the `index` properties of the rows go from 0 to `rows.length - 1`
  */
-export function createRow(connectionId: string, viewId: ViewId, data?: RowInsertData) {
-    return { channel: CHANNEL, method: createRow.name, connectionId, viewId, data }
+export function createRow(
+    connectionId: string,
+    viewId: ViewId,
+    options?: { atIndex?: number; values?: RowInsertData }
+) {
+    return {
+        channel: CHANNEL,
+        method: createRow.name,
+        connectionId,
+        viewId,
+        atIndex: options?.atIndex,
+        values: options?.values,
+    }
 }

@@ -1,6 +1,9 @@
 import { Row } from "@shared/types/tables/base"
 import { DeserializedTableData, ViewData, Column } from "./rdg"
 import { SerializedColumn, TableData, SerializedViewData } from "@shared/types/tables/serialized"
+
+export type { TableDescriptor, ViewDescriptor, TableId, ViewId } from "@shared/types"
+
 export type { Row, MetaColumnProps } from "@shared/types/tables/base"
 export * from "./rdg"
 export * from "@shared/types/tables/serialized"

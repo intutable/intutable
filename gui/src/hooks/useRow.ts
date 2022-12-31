@@ -62,7 +62,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         await fetcher({
             url: "/api/row",
             body: {
-                table: asTable(table!.metadata.source).table,
+                viewId: view!.descriptor.id,
                 values: {},
                 atIndex,
             },
