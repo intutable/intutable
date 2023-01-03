@@ -1,5 +1,13 @@
-import { types as lv } from "@intutable/lazy-views"
-import { StandardColumnSpecifier, CustomColumnAttributes, Filter, TableId, ViewId } from "shared/dist/types"
+import { ColumnSpecifier } from "@intutable/lazy-views"
+import {
+    TableId,
+    ViewId,
+    Filter,
+    RawViewDescriptor,
+    RawViewColumnInfo,
+    StandardColumnSpecifier,
+    CustomColumnAttributes,
+} from "./types"
 import { RowInsertData } from "./types/requests"
 
 export const CHANNEL = "dekanat-app-plugin"
@@ -42,7 +50,7 @@ export function deleteTable(connectionId: string, id: TableId) {
  * just a plain data column that the user can populate with whatever data
  * match its type.
  * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn}
- * @param {lv.ViewDescriptor["id"]} addToViews which views to also add
+ * @param {RawViewDescriptor["id"]} addToViews which views to also add
  * the new column to. If no argument is given, the column is added to all
  * views. The attributes are simply inherited from the table column. They
  * are separate copies of the data, so they will not update automatically -
@@ -72,7 +80,7 @@ export function createStandardColumn(
  * @deprecated we will soon expose only dedicated {@link createStandardColumn},
  ` createLinkColumn` and `createLookupColumn` methods and this will be
  * purely internal.
-n */
+ */
 export function addColumnToTable(
     connectionId: string,
     tableId: TableId,
@@ -80,7 +88,7 @@ export function addColumnToTable(
      * Uses serialized attributes for now because there are still next
      * endpoints that use it.
      */
-    column: lv.ColumnSpecifier,
+    column: ColumnSpecifier,
     joinId: number | null = null,
     /**
      * @param {ViewId[] | undefined} addToViews which views to also
@@ -104,8 +112,8 @@ export function addColumnToTable(
  */
 export function removeColumnFromTable(
     connectionId: string,
-    tableId: lv.ViewDescriptor["id"],
-    columnId: lv.ColumnInfo["id"]
+    tableId: RawViewDescriptor["id"],
+    columnId: RawViewColumnInfo["id"]
 ) {
     return {
         channel: CHANNEL,
@@ -125,8 +133,8 @@ export function removeColumnFromTable(
  */
 export function changeTableColumnAttributes(
     connectionId: string,
-    tableId: lv.ViewDescriptor["id"],
-    columnId: lv.ColumnInfo["id"],
+    tableId: RawViewDescriptor["id"],
+    columnId: RawViewColumnInfo["id"],
     update: CustomColumnAttributes,
     changeInViews = true
 ) {
@@ -223,13 +231,14 @@ export function changeViewFilters(connectionId: string, viewId: ViewId, newFilte
  * through the view instead of the table is that the data displayed in the front-end are those
  * of a view, so the view's ID and column IDs will be available, and the work of mapping
  * these to the actual table is more appropriate in the back-end than the front-end.
+ * You can also pass in the ID of the table itself. The column IDs have to match up, of course.
  * Response: { _id: number } the ID of the row that was created.
  * Preconditions:
  * - the `index` properties of the rows go from 0 to `rows.length - 1`
  */
 export function createRow(
     connectionId: string,
-    viewId: ViewId,
+    viewId: ViewId | TableId,
     options?: { atIndex?: number; values?: RowInsertData }
 ) {
     return {
