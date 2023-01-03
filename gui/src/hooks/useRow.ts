@@ -5,7 +5,6 @@ import { ViewHookOptions, useView } from "hooks/useView"
 import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
 
-import { useColumn } from "./useColumn"
 import { useSnacki } from "./useSnacki"
 
 type Column = Column.Deserialized
@@ -27,19 +26,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
-    const { getColumnInfo: getTableColumn } = useColumn(tableOptions, viewOptions)
-
-    /**
-     * Get the (backend, primary key) ID of a row from its RDG counterpart.
-     * Uses the view supplied given by {@link useView} to determine the
-     * correct key. The table can be overridden with {@link viewOptions}.
-     *
-     * @deprecated Now you can just do `row._id` instead.
-     */
-    const getRowId = (row: Row): number => {
-        const uidColumn = view!.metaColumns.find(c => c.name === "_id")!
-        return row[uidColumn.key] as number
-    }
 
     /**
      * Used for row reordering / drag n drop
@@ -70,15 +56,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
         await mutateTable()
         await mutateView()
-        // const lastRowIndex = rows.length
-        // const deserializedRow = SerializableTable.deserializeRow(
-        //     serializedRow,
-        //     lastRowIndex
-        // )
-        // setRows(prev => {
-        //     prev.push(deserializedRow)
-        //     return prev
-        // })
     }
 
     // TODO: the cache should be mutated differently
@@ -90,7 +67,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: ["_id", getRowId(row)],
+                condition: ["_id", row._id],
             },
             method: "DELETE",
         })
@@ -105,16 +82,10 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     // TODO: `value` needs a (better) type
     // TODO: put `asTable` into the corresponding api route
     const updateRow = async (column: Column, row: Row, updatedValue: unknown): Promise<void> => {
-        // it's a view on top of a view, but the property `column.name`
-        // reflects the actual name in the DB regardless of how deep the
-        // tree is.
-        const metaColumn = getTableColumn(column)!
-        const baseColumnKey = metaColumn.name
-
         const serializedValue = SerDes.serializeRowValue(updatedValue, column)
 
         // TODO: put this in the api route
-        if (metaColumn.joinId !== null) {
+        if (column.kind === "lookup") {
             snackError("Dies ist ein Lookup. Änderungen dürfen nur in der Originaltabelle vorgenommen werden.")
             return
             // throw Error("attempted to edit data of a different table")
@@ -123,11 +94,9 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         await fetcher({
             url: "/api/row",
             body: {
-                table: asTable(table!.metadata.source).table,
-                condition: ["_id", getRowId(row)],
-                update: {
-                    [baseColumnKey]: serializedValue,
-                },
+                viewId: view!.descriptor.id,
+                condition: row._id,
+                values: { [column.id]: serializedValue },
             },
             method: "PATCH",
         })
@@ -136,7 +105,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     }
 
     return {
-        getRowId,
         onRowReorder,
         createRow,
         deleteRow,

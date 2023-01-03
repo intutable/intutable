@@ -59,9 +59,9 @@ import {
     StandardColumnSpecifier,
     DB,
     CustomColumnAttributes,
-    Row
+    Row,
 } from "./types"
-import { RowInsertData } from "./types/requests"
+import { RowData, RawRowData } from "./types/requests"
 import * as req from "./requests"
 import { error, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
@@ -86,6 +86,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.getViewData.name, getViewData_)
         .on(req.changeViewFilters.name, changeViewFilters_)
         .on(req.createRow.name, createRow_)
+        .on(req.updateRows.name, updateRows_)
         .on(perm.getUsers.name, perm.getUsers_)
         .on(perm.getRoles.name, perm.getRoles_)
         .on(perm.createUser.name, perm.createUser_)
@@ -116,7 +117,9 @@ async function createTable(
     const pmTable = (await core.events.request(
         pm.createTableInProject(connectionId, roleId, projectId, internalName, APP_TABLE_COLUMNS)
     )) as RawTableDescriptor
-    const pmColumns = (await core.events.request(pm.getColumnsFromTable(connectionId, pmTable.id))) as RawTableColumnDescriptor[]
+    const pmColumns = (await core.events.request(
+        pm.getColumnsFromTable(connectionId, pmTable.id)
+    )) as RawTableColumnDescriptor[]
     const idColumn = pmColumns.find(c => c.name === "_id")!
     const idxColumn = pmColumns.find(c => c.name === COLUMN_INDEX_KEY)!
     const nameColumn = pmColumns.find(c => c.name === "name")!
@@ -498,7 +501,7 @@ async function createRow(
     connectionId: string,
     viewId: ViewId | TableId,
     atIndex: number | undefined = undefined,
-    values: RowInsertData = {}
+    values: RowData = {}
 ) {
     // 1. find the column names needed to update the data in the actual raw table
     const viewInfo: RawViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
@@ -556,7 +559,7 @@ async function getTableViewId(connectionId: string, viewId: ViewId | TableId): P
  * in the database, we need their string names. This function takes a view or table's
  * raw view info and the update data and creates a new update data set with the proper names.
  */
-function mapRowInsertDataToStrings(viewData: RawViewInfo, update: RowInsertData): Record<string, unknown> {
+function mapRowInsertDataToStrings(viewData: RawViewInfo, update: RowData): RawRowData {
     const stringUpdate: Record<string, unknown> = {}
     for (const key in update) {
         // the for-let-in construction always gives you the keys as strings.
@@ -585,4 +588,35 @@ function addIndexShifts(
             index: row.index + 1,
         }))
     return { rowData: { ...rowData, index: atIndex }, rowsToShift: shifts }
+}
+
+async function updateRows_({ connectionId, viewId, condition, values }: CoreRequest): Promise<CoreResponse> {
+    return updateRows(connectionId, viewId, condition, values)
+}
+
+async function updateRows(
+    connectionId: string,
+    viewId: ViewId | TableId,
+    condition: number | number[],
+    values: RowData
+): Promise<{ rowsUpdated: number }> {
+    // 1. map condition to sql table
+    const rawViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
+    let rawCondition: (string | number | number[])[]
+    if (typeof condition === "number") rawCondition = ["_id", condition]
+    else rawCondition = ["_id", "in", condition]
+
+    // 2. map update to sql table
+    const rawUpdate = mapRowInsertDataToStrings(rawViewInfo, values)
+
+    // 3. get table key
+    const tableViewId: RawViewId = await getTableViewId(connectionId, viewId)
+    const tableViewInfo: RawViewInfo = await core.events.request(lvr.getViewInfo(connectionId, tableViewId))
+    const rawTable: RawTableDescriptor = asTable(tableViewInfo.source).table
+
+    // 4. perform the update
+    const updated = await core.events.request(
+        update(connectionId, rawTable.key, { condition: rawCondition, update: rawUpdate })
+    )
+    return updated
 }

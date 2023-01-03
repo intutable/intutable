@@ -8,7 +8,7 @@ import {
     StandardColumnSpecifier,
     CustomColumnAttributes,
 } from "./types"
-import { RowInsertData } from "./types/requests"
+import { RowData } from "./types/requests"
 
 export const CHANNEL = "dekanat-app-plugin"
 
@@ -239,7 +239,7 @@ export function changeViewFilters(connectionId: string, viewId: ViewId, newFilte
 export function createRow(
     connectionId: string,
     viewId: ViewId | TableId,
-    options?: { atIndex?: number; values?: RowInsertData }
+    options?: { atIndex?: number; values?: RowData }
 ) {
     return {
         channel: CHANNEL,
@@ -249,4 +249,26 @@ export function createRow(
         atIndex: options?.atIndex,
         values: options?.values,
     }
+}
+
+/**
+ * Update a row or set of rows, setting the values according to `values`.
+ * `condition` can be either the ID of a row or a list of IDs, in which case each of the affected
+ * rows is updated with the same data.
+ * You can reference either a table or a view, in which case the plugin will find the view's
+ * underlying table. However, columns have different IDs at each layer, so they must match up:
+ * you can do
+ * `updateRows(..., view1.id, {[view1.column1.id]: <value>, ...)` or
+ * `updateRows(..., table1.id, {[table1.column1.id]: <value>, ...)`, but not
+ * `updateRows(..., view1.table.id, {[view1.column1.id]: <value>, ...)`.
+ *                      ^ table, but the column ^ is a view column
+ * Response: { rowsUpdated: number } The number of rows changed.
+ */
+export function updateRows(
+    connectionId: string,
+    viewId: ViewId | TableId,
+    condition: number[] | number,
+    values: RowData
+) {
+    return { channel: CHANNEL, method: updateRows.name, connectionId, viewId, condition, values }
 }

@@ -6,9 +6,9 @@ import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
-import { Row, ViewId } from "types"
-import { RowInsertData } from "@backend/types/requests"
-import { createRow } from "@backend/requests"
+import { Row, ViewId, TableId } from "types"
+import { RowData } from "@backend/types/requests"
+import { createRow, updateRows } from "@backend/requests"
 import Obj from "types/Obj"
 
 // Intermediate type representing a row whose index is to be changed.
@@ -37,8 +37,8 @@ const byIndex = (a: Obj, b: Obj) => ((a.index as number) > (b.index as number) ?
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
     const { viewId, values, atIndex } = req.body as {
-        viewId: ViewId
-        values: RowInsertData
+        viewId: ViewId | TableId
+        values: RowData
         atIndex?: number
     }
     const user = req.session.user!
@@ -51,40 +51,46 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 })
 
 /**
- * Update a row, identified by `condition`. Ensuring that the types of
- * `values` match up with what the table can take is up to the user.
+ * Update a row, identified by `condition`. 
+`* @param {TableId | ViewId} viewId - can refer to either a table or a view.
+ * Beware, however, as one column will have its own metadata entity in a table, and another
+ * in every view on that table, each with different IDs.
+ * So the column IDs used as keys in the {@link RowData} must match the IDs of the columns
+ * in the table or view that is referenced by `viewId`. This should normally be pretty hard to
+ * get wrong, but it will be quite hard to debug if you do.
+ * This sounds weird, but the old set-up actually required the front-end to look into a view's
+ * backend-side metadata columns and figure out the right SQL column name so it could
+ * manually construct an update that would be passed directly to SQL. We also eventually want
+ * to introduce n-tier views (like view -> ... -> view -> table) which are now already supported
+ * by this update method.
+ * @param {number | number[]} condition - pass in either the ID of a row to update
+ * or an array of IDs to update multiple rows.
+ * @return {{ rowsUpdated: number }} how many rows were updated.
  * @tutorial
  * ```
  * Body: {
- *    table: {@type {TableDescriptor}}
- *    condition: {@type {Array<unknown>}}
- *    values: {@type {Record<string, unknown>}}
+ *    viewId: {@type {TableId | ViewId}}
+ *    condition: {@type {number | number[]}}
+ *    values: {@type {RowData}}
  * }
  * ```
  */
 const PATCH = withCatchingAPIRoute(async (req, res) => {
-    const {
-        table,
-        condition,
-        update: rowUpdate,
-    } = req.body as {
-        table: TableDescriptor
-        condition: unknown[]
-        update: { [index: string]: unknown }
+    const { viewId, condition, values } = req.body as {
+        viewId: TableId | ViewId
+        condition: number | number[]
+        values: RowData
     }
 
     const user = req.session.user!
-    const updatedRow = await withReadWriteConnection(user, async sessionID => {
-        return coreRequest<Row>(
-            update(sessionID, table.key, {
-                condition,
-                update: rowUpdate,
-            }),
+    const rowsUpdated = await withReadWriteConnection(user, async connectionId => {
+        return coreRequest<{ rowsUpdated: number }>(
+            updateRows(connectionId, viewId, condition, values),
             user.authCookie
         )
     })
 
-    res.status(200).json(updatedRow)
+    res.status(200).json(rowsUpdated)
 })
 
 /**

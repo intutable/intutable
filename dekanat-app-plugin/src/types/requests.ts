@@ -1,3 +1,4 @@
 import { SerializedColumn } from "./tables"
 
-export type RowInsertData = Record<SerializedColumn["id"], unknown>
+export type RowData = Record<SerializedColumn["id"], unknown>
+export type RawRowData = Record<string, unknown>

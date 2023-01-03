@@ -1,6 +1,6 @@
 import {
     ColumnDescriptor as PmColumn,
-    TableDescriptor as PmTableDescriptor
+    TableDescriptor as PmTableDescriptor,
 } from "@intutable/project-management/dist/types"
 
 import { types as lvt } from "@intutable/lazy-views"

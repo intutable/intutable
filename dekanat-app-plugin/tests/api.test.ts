@@ -266,8 +266,8 @@ describe("row handling", () => {
         await coreRequest(req.deleteTable(connId, table.id))
     })
 
-    test("create a new empty row", async () => {
-        await coreRequest(req.createRow(connId, view.id))
+    test("create a new empty row, update data", async () => {
+        const { _id } = await coreRequest<{ _id: number }>(req.createRow(connId, view.id))
         viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
         expect(viewData.rows).toEqual(expect.arrayContaining([
             expect.objectContaining({
@@ -275,6 +275,22 @@ describe("row handling", () => {
                 index: viewData.rows.length - 1,
                 [nameColumn.key]: null,
                 [ageColumn.key]: null,
+            })
+        ]))
+        const { rowsUpdated } = await coreRequest<{ rowsUpdated: number }>(
+            req.updateRows(connId, view.id, _id, {
+                [nameColumn.id]: "Jenny",
+                [ageColumn.id]: "18"
+            })
+        )
+        expect(rowsUpdated).toBe(1)
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        expect(viewData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                _id: expect.any(Number),
+                index: viewData.rows.length - 1,
+                [nameColumn.key]: "Jenny",
+                [ageColumn.key]: "18",
             })
         ]))
     })
@@ -295,14 +311,14 @@ describe("row handling", () => {
             })
         ]))
     })
-    test("create a new empty row at a desired index", async () => {
-        await coreRequest(req.createRow(connId, view.id, {
+    test("create a new empty row at a desired index; batch update", async () => {
+        const { _id: _id1 } = await coreRequest<{ _id: number }>(req.createRow(connId, view.id, {
             values: {
                 [nameColumn.id]: "Second",
                 [ageColumn.id]: "2",
             }            
         }))
-        await coreRequest(req.createRow(connId, view.id, {
+        const { _id: _id2 } = await coreRequest<{_id: number }>(req.createRow(connId, view.id, {
             atIndex: 0,
             values: {
                 [nameColumn.id]: "First",
@@ -324,5 +340,25 @@ describe("row handling", () => {
                 [ageColumn.key]: "2",
             })
         ]))
+        const { rowsUpdated } = await coreRequest<{ rowsUpdated: number }>(
+            req.updateRows(connId, view.id, [_id1, _id2], { [ageColumn.id]: "3" })
+        )
+        expect(rowsUpdated).toBe(2)
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        expect(viewData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                _id: expect.any(Number),
+                index: 0,
+                [nameColumn.key]: "First",
+                [ageColumn.key]: "3",
+            }),
+            expect.objectContaining({
+                _id: expect.any(Number),
+                index: viewData.rows.length - 1,
+                [nameColumn.key]: "Second",
+                [ageColumn.key]: "3",
+            })
+        ]))
+        
     })
 })

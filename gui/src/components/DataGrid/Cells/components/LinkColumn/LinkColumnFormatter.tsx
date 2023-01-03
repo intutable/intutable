@@ -3,7 +3,6 @@ import { getId } from "@intutable/lazy-views/dist/selectable"
 import { Box, Stack, Tooltip } from "@mui/material"
 import { fetcher } from "api"
 import { useColumn } from "hooks/useColumn"
-import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
 import { useTable } from "hooks/useTable"
@@ -37,7 +36,6 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const { tables } = useTables()
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
-    const { getRowId } = useRow()
 
     const metaColumn = useMemo(() => (data ? getTableColumn(column) : null), [column, data, getTableColumn])
 
@@ -65,7 +63,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                     url: `/api/join/${join!.id}`,
                     body: {
                         tableId: data!.metadata.descriptor.id,
-                        rowId: getRowId(row),
+                        rowId: row._id,
                         value: null,
                     },
                 })
