@@ -3,15 +3,10 @@ import { JoinDescriptor, ViewDescriptor } from "@intutable/lazy-views"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Button,
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemText,
     Paper,
     Table,
     TableBody,
@@ -21,12 +16,10 @@ import {
     TableRow,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { fetcher } from "api"
 import { RowPreview, useLink } from "hooks/useLink"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
-import { useSnackbar } from "notistack"
 import React, { useState } from "react"
 import { Row } from "types"
 import { Column } from "types/tables/rdg"
@@ -47,7 +40,7 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
 
     const { data: baseTableData, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
-    const { error, rowPreviews } = useLink(props.column)
+    const { error, rowPreviews, setLinkValue } = useLink(props.column)
 
     const content = props.row[props.column.key]
     const hasSelection = Cell.isEmpty(content) ? false : rowPreviews?.find(row => row.content === content)
@@ -55,14 +48,7 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
 
     const handlePickRow = async () => {
         try {
-            await fetcher({
-                url: `/api/join/${props.join.id}`,
-                body: {
-                    tableId: baseTableData!.metadata.descriptor.id,
-                    rowId: props.row._id,
-                    value: selection?._id,
-                },
-            })
+            await setLinkValue(props.row, selection)
             await mutateTable()
             await mutateView()
         } catch (err) {

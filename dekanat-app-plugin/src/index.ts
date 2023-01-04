@@ -24,7 +24,15 @@
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import { insert, update } from "@intutable/database/dist/requests"
 import * as pm from "@intutable/project-management/dist/requests"
-import { RowOptions, ColumnSpecifier, requests as lvr, selectable, asTable } from "@intutable/lazy-views/"
+import {
+    RowOptions,
+    ColumnSpecifier,
+    requests as lvr,
+    selectable,
+    isTable,
+    isView,
+    asTable,
+} from "@intutable/lazy-views/"
 import {
     defaultViewName,
     APP_TABLE_COLUMNS,
@@ -46,6 +54,7 @@ import {
     RawViewDescriptor,
     RawTableDescriptor,
     RawViewOptions,
+    RawTableInfo,
     RawViewInfo,
     RawTableColumnDescriptor,
     RawViewColumnInfo,
@@ -504,10 +513,10 @@ async function createRow(
     values: RowData = {}
 ) {
     // 1. find the column names needed to update the data in the actual raw table
-    const viewInfo: RawViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
+    const rawViewInfo: RawViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
     let rawData: Record<string, unknown>
     try {
-        rawData = mapRowInsertDataToStrings(viewInfo, values)
+        rawData = await mapRowInsertDataToStrings(connectionId, rawViewInfo, values)
     } catch (e) {
         return error("createRow", e.message)
     }
@@ -558,23 +567,23 @@ async function getTableViewId(connectionId: string, viewId: ViewId | TableId): P
  * Row inserts and updates are specified with { column ID -> value } maps. To actually insert
  * in the database, we need their string names. This function takes a view or table's
  * raw view info and the update data and creates a new update data set with the proper names.
- * @throws 
  */
-function mapRowInsertDataToStrings(viewData: RawViewInfo, update: RowData): RawRowData {
+async function mapRowInsertDataToStrings(
+    connectionId: string,
+    viewData: RawViewInfo,
+    update: RowData
+): Promise<RawRowData> {
     const stringUpdate: Record<string, unknown> = {}
     for (const key in update) {
         // the for-let-in construction always gives you the keys as strings.
         const column = viewData.columns.find(c => c.id.toString() === key)
         if (column === undefined)
+            throw errorSync("mapRowInsertDataToStrings", `table ${viewData.descriptor.id} has no column with ID ${key}`)
+        else if (!["standard", "link"].includes(column.attributes.kind))
             throw errorSync(
                 "mapRowInsertDataToStrings",
-                `table ${viewData.descriptor.id} has no column with ID ${key}`
-            )
-        else if (column.attributes.kind !== "standard")
-            throw errorSync(
-                "mapRowInsertDataToStrings",
-                `column ${key}/${column.attributes.displayName} is not a standard column,`
-                    + ` but is of kind ${column.attributes.kind}`,
+                `column ${key}/${column.attributes.displayName} is  of kind` +
+                    `${column.attributes.kind}, but only standard and link are allowed`,
                 ErrorCode.invalidRowWrite
             )
         else if (![1, true].includes(column.attributes.editable))
@@ -583,9 +592,50 @@ function mapRowInsertDataToStrings(viewData: RawViewInfo, update: RowData): RawR
                 `column ${column.key} is not editable`,
                 ErrorCode.invalidRowWrite
             )
-        else stringUpdate[column.name] = update[key]
+        else {
+            if (column.attributes.kind === "standard") stringUpdate[column.name] = update[key]
+            else if (column.attributes.kind === "link") {
+                const rawForeignKeyColumn = await getLinkColumnForeignKey(connectionId, viewData, column)
+                stringUpdate[rawForeignKeyColumn.name] = update[key]
+            }
+        }
     }
     return stringUpdate
+}
+
+/** To set the target row of a link column, one needs to know what raw table column acts as
+ * the foreign key. Since this column does not appear in any views, we have to find out the
+ * raw table to find the column.
+ * The column must be a link column. If the view is a table view (i.e. its source is a raw table)
+ * then the column must belong to a join. If the view is a higher-order view, then the column
+ * must have a chain of parents that end with a column that belongs to a join.
+ */
+async function getLinkColumnForeignKey(
+    connectionId: string,
+    rawViewInfo: RawViewInfo,
+    column: RawViewColumnInfo
+): Promise<RawTableColumnDescriptor> {
+    if (column.joinId === null) {
+        if (!isView(rawViewInfo.source))
+            return error("getLinkColumnForeignKey", `column ${column.id} is not a real link column`)
+        const parentViewInfo: RawViewInfo = await core.events.request(
+            lvr.getViewInfo(connectionId, rawViewInfo.source.view.id)
+        )
+        const parentColumn: RawViewColumnInfo = parentViewInfo.columns.find(c => c.id === column.parentColumnId)!
+        return getLinkColumnForeignKey(connectionId, parentViewInfo, parentColumn)
+    } else {
+        if (!isTable(rawViewInfo.source))
+            return error(
+                "getLinkColumnForeignKey",
+                `view ${rawViewInfo.descriptor.id} is a` + ` filter view, but has joins`
+            )
+        const join = rawViewInfo.joins.find(j => j.id === column.joinId)!
+        const fkColumnId = join.on[0]
+        const rawTableInfo: RawTableInfo = await core.events.request(
+            pm.getTableInfo(connectionId, rawViewInfo.source.table.id)
+        )
+        return rawTableInfo.columns.find(c => c.id === fkColumnId)!
+    }
 }
 
 type IndexShiftData = { rowId: number; oldIndex: number; index: number }
@@ -623,7 +673,12 @@ async function updateRows(
     else rawCondition = ["_id", "in", condition]
 
     // 2. map update to sql table
-    const rawUpdate = mapRowInsertDataToStrings(rawViewInfo, values)
+    let rawUpdate: Record<string, unknown>
+    try {
+        rawUpdate = await mapRowInsertDataToStrings(connectionId, rawViewInfo, values)
+    } catch (e) {
+        return error("createRow", e.message)
+    }
 
     // 3. get table key
     const tableViewId: RawViewId = await getTableViewId(connectionId, viewId)

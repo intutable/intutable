@@ -9,7 +9,7 @@ export enum ErrorCode {
     alreadyTaken,
     writeInternalData,
     changeDefaultView,
-    invalidRowWrite
+    invalidRowWrite,
 }
 
 export function error<A>(method: string, message: string, code?: ErrorCode, reason?: unknown): Promise<A> {

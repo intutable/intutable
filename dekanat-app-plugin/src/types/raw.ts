@@ -1,6 +1,7 @@
 import {
     ColumnDescriptor as PmColumn,
     TableDescriptor as PmTableDescriptor,
+    TableInfo,
 } from "@intutable/project-management/dist/types"
 
 import { types as lvt } from "@intutable/lazy-views"
@@ -14,6 +15,7 @@ export type RawTableDescriptor = PmTableDescriptor
 export type RawViewDescriptor = lvt.ViewDescriptor
 export type RawViewOptions = lvt.ViewOptions
 export type RawViewInfo = lvt.ViewInfo
+export type RawTableInfo = TableInfo
 
 export type RawTableColumnDescriptor = PmColumn
 export type RawViewColumnInfo = lvt.ColumnInfo

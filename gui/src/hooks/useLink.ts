@@ -1,4 +1,6 @@
+import { fetcher } from "api"
 import { RawColumn } from "@shared/types"
+import { useView } from "hooks/useView"
 import { useTable } from "hooks/useTable"
 import { TableColumn, Row, Column } from "types"
 import { useForeignTable } from "./useForeignTable"
@@ -12,6 +14,7 @@ export type RowPreview = Pick<Row, "_id" | "index"> & {
  * are loaded with this hook.
  */
 export const useLink = (forColumn: Column.Deserialized) => {
+    const { data: homeView } = useView()
     const { foreignTable } = useForeignTable(forColumn)
     const { data: linkTableData, error, mutate } = useTable({ table: foreignTable })
 
@@ -32,11 +35,25 @@ export const useLink = (forColumn: Column.Deserialized) => {
         return linkTableData?.metadata.columns.find(c => c.key === column.key) ?? null
     }
 
+    const setLinkValue = async (row: Row, target: RowPreview | null) => {
+        if (!homeView) return null
+        return fetcher({
+            url: "/api/row",
+            body: {
+                viewId: homeView!.descriptor.id,
+                condition: row._id,
+                values: { [forColumn.id]: target?._id ?? null },
+            },
+            method: "PATCH",
+        })
+    }
+
     return {
         error,
         mutate,
         linkTableData,
         rowPreviews,
         getColumnInfo,
+        setLinkValue,
     }
 }
