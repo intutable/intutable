@@ -235,6 +235,9 @@ export function changeViewFilters(connectionId: string, viewId: ViewId, newFilte
  * Response: { _id: number } the ID of the row that was created.
  * Preconditions:
  * - the `index` properties of the rows go from 0 to `rows.length - 1`
+ * Exceptions:
+ * - any specified column is not editable.
+ * - any specified column is not of kind standard.
  */
 export function createRow(
     connectionId: string,
@@ -263,6 +266,9 @@ export function createRow(
  * `updateRows(..., view1.table.id, {[view1.column1.id]: <value>, ...)`.
  *                      ^ table, but the column ^ is a view column
  * Response: { rowsUpdated: number } The number of rows changed.
+ * Exceptions:
+ * - any specified column is not editable.
+ * - any specified column is not of kind standard.
  */
 export function updateRows(
     connectionId: string,

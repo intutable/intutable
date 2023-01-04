@@ -85,8 +85,9 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         const serializedValue = SerDes.serializeRowValue(updatedValue, column)
 
         // TODO: put this in the api route
-        if (column.kind === "lookup") {
-            snackError("Dies ist ein Lookup. Änderungen dürfen nur in der Originaltabelle vorgenommen werden.")
+        if (column.kind !== "standard") {
+            snackError("Diese Spalte gehört zu einer anderen Tabelle."
+                + " Änderungen dürfen nur in der Originaltabelle vorgenommen werden.")
             return
             // throw Error("attempted to edit data of a different table")
         }

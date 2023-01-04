@@ -63,7 +63,7 @@ import {
 } from "./types"
 import { RowData, RawRowData } from "./types/requests"
 import * as req from "./requests"
-import { error, ErrorCode } from "./error"
+import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
 
 let core: PluginLoader
@@ -558,15 +558,31 @@ async function getTableViewId(connectionId: string, viewId: ViewId | TableId): P
  * Row inserts and updates are specified with { column ID -> value } maps. To actually insert
  * in the database, we need their string names. This function takes a view or table's
  * raw view info and the update data and creates a new update data set with the proper names.
+ * @throws 
  */
 function mapRowInsertDataToStrings(viewData: RawViewInfo, update: RowData): RawRowData {
     const stringUpdate: Record<string, unknown> = {}
     for (const key in update) {
         // the for-let-in construction always gives you the keys as strings.
         const column = viewData.columns.find(c => c.id.toString() === key)
-        if (column === undefined) throw new TypeError(`table ${viewData.descriptor.id} has no column with ID ${key}`)
+        if (column === undefined)
+            throw errorSync(
+                "mapRowInsertDataToStrings",
+                `table ${viewData.descriptor.id} has no column with ID ${key}`
+            )
         else if (column.attributes.kind !== "standard")
-            throw new TypeError(`column ${key} is not a standard column, but is of kind ${column.attributes.kind}`)
+            throw errorSync(
+                "mapRowInsertDataToStrings",
+                `column ${key}/${column.attributes.displayName} is not a standard column,`
+                    + ` but is of kind ${column.attributes.kind}`,
+                ErrorCode.invalidRowWrite
+            )
+        else if (![1, true].includes(column.attributes.editable))
+            throw errorSync(
+                "mapRowInsertDataToStrings",
+                `column ${column.key} is not editable`,
+                ErrorCode.invalidRowWrite
+            )
         else stringUpdate[column.name] = update[key]
     }
     return stringUpdate
