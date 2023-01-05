@@ -1,8 +1,7 @@
 import { fetcher } from "api"
-import { RawColumn } from "@shared/types"
 import { useView } from "hooks/useView"
 import { useTable } from "hooks/useTable"
-import { TableColumn, Row, Column } from "types"
+import { Row, Column } from "types"
 import { useForeignTable } from "./useForeignTable"
 
 export type RowPreview = Pick<Row, "_id" | "index"> & {

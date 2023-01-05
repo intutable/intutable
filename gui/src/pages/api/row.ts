@@ -1,25 +1,11 @@
-import { deleteRow, update } from "@intutable/database/dist/requests"
-import { getTableData } from "@intutable/project-management/dist/requests"
-import { TableDescriptor, TableData } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
-import { Row, ViewId, TableId } from "types"
+import { ViewId, TableId } from "types"
 import { RowData } from "@backend/types/requests"
 import { createRow, updateRows, deleteRows } from "@backend/requests"
-import Obj from "types/Obj"
-
-// Intermediate type representing a row whose index is to be changed.
-type IndexChange = {
-    _id: number
-    index: number
-    oldIndex: number
-}
-
-// compare two rows by index
-const byIndex = (a: Obj, b: Obj) => ((a.index as number) > (b.index as number) ? 1 : -1)
 
 /**
  * Create a new row. All user-side values will be initialized empty, unless values are
