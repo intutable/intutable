@@ -287,6 +287,10 @@ export function updateRows(
  * Preconditions:
  * - the `index` properties of the rows go from 0 to `rows.length - 1`
  */
-export function deleteRows(connectionId: string, viewId: ViewId | TableId, condition: number[] | number) {
+export function deleteRows(
+    connectionId: string,
+    viewId: ViewId | TableId,
+    condition: number[] | number
+) {
     return { channel: CHANNEL, method: deleteRows.name, connectionId, viewId, condition }
 }

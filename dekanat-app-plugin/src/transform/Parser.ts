@@ -42,14 +42,20 @@ export class ParserClass {
             ...serializedProps,
             isUserPrimaryKey: cast.toBoolean(column.isUserPrimaryKey),
             hidden: cast.toBoolean(column.hidden),
-            width: cast.orEmpty(cast.or.bind(cast.toNumber.bind(cast), cast.toString.bind(cast)), column.width),
+            width: cast.orEmpty(
+                cast.or.bind(cast.toNumber.bind(cast), cast.toString.bind(cast)),
+                column.width
+            ),
             minWidth: cast.orEmpty(cast.toNumber.bind(cast), column.minWidth),
             maxWidth: cast.orEmpty(cast.toNumber.bind(cast), column.maxWidth),
             editable: cast.orEmpty(cast.toBoolean.bind(cast), column.editable),
             frozen: cast.orEmpty(cast.toBoolean.bind(cast), column.frozen),
             resizable: cast.orEmpty(cast.toBoolean.bind(cast), column.resizable),
             sortable: cast.orEmpty(cast.toBoolean.bind(cast), column.sortable),
-            sortDescendingFirst: cast.orEmpty(cast.toBoolean.bind(cast), column.sortDescendingFirst),
+            sortDescendingFirst: cast.orEmpty(
+                cast.toBoolean.bind(cast),
+                column.sortDescendingFirst
+            ),
         }
         return casted
     }

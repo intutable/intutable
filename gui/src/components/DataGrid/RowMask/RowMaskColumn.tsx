@@ -25,7 +25,11 @@ const ColumnAttributesWindowButton: React.FC<{
             <IconButton onClick={openContextMenu} size="small" color="primary" edge="end">
                 <EditIcon fontSize="small" />
             </IconButton>
-            <ColumnAttributesWindow open={anchorEL != null} onClose={closeContextMenu} column={column} />
+            <ColumnAttributesWindow
+                open={anchorEL != null}
+                onClose={closeContextMenu}
+                column={column}
+            />
         </>
     )
 }
@@ -103,7 +107,9 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                                 <>
                                     <Box sx={{ flexGrow: 1 }} />
                                     {isHovering && (
-                                        <ColumnAttributesWindowButton column={column as Column.Serialized} />
+                                        <ColumnAttributesWindowButton
+                                            column={column as Column.Serialized}
+                                        />
                                     )}
                                 </>
                             )}
@@ -136,7 +142,9 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                             {isHovering && (
                                 <>
                                     {/* {column.kind === "link" && <AddLookupButton />} */}
-                                    <ColumnAttributesWindowButton column={column as Column.Serialized} />
+                                    <ColumnAttributesWindowButton
+                                        column={column as Column.Serialized}
+                                    />
                                 </>
                             )}
                         </>

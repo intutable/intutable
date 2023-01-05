@@ -10,7 +10,11 @@ export type ViewsProps = {
 
 export const Views: React.FC<ViewsProps> = props => {
     return (
-        <Tooltip arrow title={`Views-Editor ${props.open ? "schließen" : "öffnen"}`} enterDelay={1000}>
+        <Tooltip
+            arrow
+            title={`Views-Editor ${props.open ? "schließen" : "öffnen"}`}
+            enterDelay={1000}
+        >
             <IconButton onClick={props.handleClick} color="primary">
                 {props.open ? <ViewNavIcon /> : <ViewNavIcon color="disabled" />}
             </IconButton>

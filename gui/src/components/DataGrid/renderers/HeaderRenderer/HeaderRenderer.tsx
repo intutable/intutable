@@ -76,7 +76,10 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 </PrefixIcon>
 
                 {/* Prefix Icon Lookup Column */}
-                <PrefixIcon open={column.kind === "lookup"} title={`Lookup aus '${foreignTable?.name}'. (readonly)`}>
+                <PrefixIcon
+                    open={column.kind === "lookup"}
+                    title={`Lookup aus '${foreignTable?.name}'. (readonly)`}
+                >
                     <LookupIcon
                         sx={{
                             fontSize: "90%",

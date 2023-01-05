@@ -56,12 +56,18 @@ export function not<I extends c.IsInfixCondition>(condition: MkFilter<I>): MkFil
 }
 
 /** Utility function for making AND conditions. */
-export function and<I extends c.IsInfixCondition>(left: MkFilter<I>, right: MkFilter<I>): MkFilter<I> {
+export function and<I extends c.IsInfixCondition>(
+    left: MkFilter<I>,
+    right: MkFilter<I>
+): MkFilter<I> {
     return { kind: And, left, right }
 }
 
 /** Utility function for making OR conditions. */
-export function or<I extends c.IsInfixCondition>(left: MkFilter<I>, right: MkFilter<I>): MkFilter<I> {
+export function or<I extends c.IsInfixCondition>(
+    left: MkFilter<I>,
+    right: MkFilter<I>
+): MkFilter<I> {
     return { kind: Or, left, right }
 }
 
@@ -84,7 +90,9 @@ export const partialFilterEquals = (f1: PartialFilter, f2: PartialFilter): boole
                 partialFilterEquals(f1.right, f2.right)
             )
         case Not:
-            return f2.kind === c.ConditionKind.Not && partialFilterEquals(f1.condition, f2.condition)
+            return (
+                f2.kind === c.ConditionKind.Not && partialFilterEquals(f1.condition, f2.condition)
+            )
         case Infix:
             return f2.kind === c.ConditionKind.Infix && partialSimpleFilterEquals(f1, f2)
     }

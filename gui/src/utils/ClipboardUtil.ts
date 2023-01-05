@@ -29,7 +29,8 @@ export class ClipboardUtil implements ClipboardEvents {
 
     private getColumn(key: string) {
         const column = this.columns.find(column => column.key === key)
-        if (column == null) throw new Error(`Clipboard Event Handler: column with key '${key}' not found`)
+        if (column == null)
+            throw new Error(`Clipboard Event Handler: column with key '${key}' not found`)
         return column
     }
 

@@ -39,7 +39,13 @@ export function userPrimaryColumnName() {
  * (row index) _columns_ that exist in object tables)
  * They cannot be changed by the back-ends "change column attributes" method.
  */
-export const immutableColumnAttributes: (keyof SerializedColumn)[] = ["id", "key", "kind", "index", "isUserPrimaryKey"]
+export const immutableColumnAttributes: (keyof SerializedColumn)[] = [
+    "id",
+    "key",
+    "kind",
+    "index",
+    "isUserPrimaryKey",
+]
 
 export function standardColumnAttributes(
     name: string,
@@ -69,7 +75,11 @@ export function linkColumnAttributes(name: string, columnIndex?: number): Partia
     }
 }
 
-export function lookupColumnAttributes(name: string, contentType: string, columnIndex?: number): Partial<DB.Column> {
+export function lookupColumnAttributes(
+    name: string,
+    contentType: string,
+    columnIndex?: number
+): Partial<DB.Column> {
     return {
         kind: "lookup",
         displayName: name,

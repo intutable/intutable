@@ -96,7 +96,10 @@ export class ExportUtil {
     /** Get the view data */
     private async fetchData(): Promise<ViewData.Serialized> {
         return withReadOnlyConnection(this.user, async sessionID =>
-            coreRequest<ViewData.Serialized>(getViewData(sessionID, this.viewId), this.user.authCookie)
+            coreRequest<ViewData.Serialized>(
+                getViewData(sessionID, this.viewId),
+                this.user.authCookie
+            )
         )
     }
 
@@ -161,7 +164,9 @@ export class ExportUtil {
         // `includeEmptyRows` does not work
         // it probably depends on what `empty` means
         const data =
-            this.job.options.includeEmptyRows ?? false ? this.exportedData : _excludeEmptyRows(this.exportedData)
+            this.job.options.includeEmptyRows ?? false
+                ? this.exportedData
+                : _excludeEmptyRows(this.exportedData)
 
         return await parseAsync(data, {
             header: this.job.options.includeHeader ?? false, // default 'false' if not specified

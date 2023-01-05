@@ -25,7 +25,10 @@ export default class SerDes {
     static deserializeRow(row: Row, columns: Column.Serialized[] | Column.Deserialized[]): Row {
         columns.forEach(column => {
             const cellUtil = cellMap.getCellCtor(column.cellType)
-            row[column.key] = cellUtil.catchEmpty(cellUtil.deserialize.bind(cellUtil), row[column.key])
+            row[column.key] = cellUtil.catchEmpty(
+                cellUtil.deserialize.bind(cellUtil),
+                row[column.key]
+            )
         })
         return row
     }
@@ -67,9 +70,13 @@ export default class SerDes {
 
     /** deserialize a view */
     static deserializeView(view: ViewData.Serialized): ViewData.Deserialized {
-        const deserializedRows: Row[] = view.rows.map(row => SerDes.deserializeRow(row, view.columns))
+        const deserializedRows: Row[] = view.rows.map(row =>
+            SerDes.deserializeRow(row, view.columns)
+        )
 
-        const deserializedColumns: Column.Deserialized[] = view.columns.map(SerDes.deserializeColumn)
+        const deserializedColumns: Column.Deserialized[] = view.columns.map(
+            SerDes.deserializeColumn
+        )
 
         return {
             ...view,

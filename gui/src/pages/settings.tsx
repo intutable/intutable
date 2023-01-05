@@ -60,7 +60,10 @@ const Settings: NextPage = () => {
         sessionDuration: 14,
     })
 
-    const updateAccountSettings = <T extends keyof UserAccountSettings>(key: T, value: UserAccountSettings[T]) => {
+    const updateAccountSettings = <T extends keyof UserAccountSettings>(
+        key: T,
+        value: UserAccountSettings[T]
+    ) => {
         setAccountSettings(prev => ({
             ...prev,
             [key]: value,
@@ -84,7 +87,9 @@ const Settings: NextPage = () => {
                 subheader={<ListSubheader>Theme</ListSubheader>}
             >
                 <ListItem>
-                    <ListItemIcon>{getTheme() === "dark" ? <FlashlightOffIcon /> : <FlashlightOnIcon />}</ListItemIcon>
+                    <ListItemIcon>
+                        {getTheme() === "dark" ? <FlashlightOffIcon /> : <FlashlightOnIcon />}
+                    </ListItemIcon>
                     <ListItemText id="setting-theme-mode" primary="Dunkles Design" />
                     <ThemeSwitch />
                 </ListItem>
@@ -113,7 +118,10 @@ const Settings: NextPage = () => {
                         <ListIconWithTooltip tooltip="Ihre Anmeldedaten werden gespeichert, um bei Ihrer nächsten Anmeldung automatisch eingeloggt zu werden.">
                             <RememberMeIcon />
                         </ListIconWithTooltip>
-                        <ListItemText id="setting-placeholder" primary="Mein Benutzer-Konto merken" />
+                        <ListItemText
+                            id="setting-placeholder"
+                            primary="Mein Benutzer-Konto merken"
+                        />
                         <Switch
                             checked={accountSettings.rememberMe}
                             disabled
