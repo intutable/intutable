@@ -25,7 +25,10 @@ const USER_TABLE_COLUMNS = [
 export type UserListProps = {
     users: User[]
     onDeleteUser: (id: number) => Promise<void>
-    onOpenEditor: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, user: User) => Promise<void>
+    onOpenEditor: (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+        user: User
+    ) => Promise<void>
     sx?: SxProps<Theme>
 }
 
@@ -37,7 +40,10 @@ const UserList: React.FC<UserListProps> = props => {
                 <TableHead>
                     <TableRow>
                         {USER_TABLE_COLUMNS.map(c => (
-                            <TableCell key={c.id} style={c.minWidth ? { minWidth: c.minWidth } : {}}>
+                            <TableCell
+                                key={c.id}
+                                style={c.minWidth ? { minWidth: c.minWidth } : {}}
+                            >
                                 {c.label}
                             </TableCell>
                         ))}

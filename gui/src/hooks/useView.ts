@@ -35,7 +35,10 @@ export const useView = (options?: ViewHookOptions) => {
     const { view: currentView } = useAPI()
 
     // if the table param is specified, use that over the api context
-    const viewToFetch = useMemo(() => (options?.view ? options.view : currentView), [currentView, options?.view])
+    const viewToFetch = useMemo(
+        () => (options?.view ? options.view : currentView),
+        [currentView, options?.view]
+    )
 
     const { data, error, mutate, isValidating } = useSWR<ViewData>(
         viewToFetch

@@ -15,7 +15,10 @@ export type ErrorLike = {
  */
 export const isErrorLike = (value: unknown): value is ErrorLike => {
     const isObject =
-        value != null && typeof value === "object" && Array.isArray(value) === false && typeof "value" !== "function"
+        value != null &&
+        typeof value === "object" &&
+        Array.isArray(value) === false &&
+        typeof "value" !== "function"
 
     if (isObject === false) return false
 

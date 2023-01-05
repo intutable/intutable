@@ -30,7 +30,10 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
 
     const rowWithId = await withReadWriteConnection(user, async connectionId => {
-        return coreRequest<{ _id: number }>(createRow(connectionId, viewId, { atIndex, values }), user.authCookie)
+        return coreRequest<{ _id: number }>(
+            createRow(connectionId, viewId, { atIndex, values }),
+            user.authCookie
+        )
     })
 
     res.status(200).send(rowWithId["_id"])
@@ -98,7 +101,10 @@ const DELETE = withCatchingAPIRoute(async (req, res) => {
     const user = req.session.user!
 
     const { rowsDeleted } = await withReadWriteConnection(user, async connectionId => {
-        return coreRequest<{ rowsDeleted: number }>(deleteRows(connectionId, viewId, rowsToDelete), user.authCookie)
+        return coreRequest<{ rowsDeleted: number }>(
+            deleteRows(connectionId, viewId, rowsToDelete),
+            user.authCookie
+        )
     })
 
     res.status(200).json({ rowsDeleted })
@@ -117,7 +123,9 @@ export default withSessionRoute(
                 await DELETE(req, res)
                 break
             default:
-                res.status(["HEAD", "GET"].includes(req.method!) ? 500 : 501).send("This method is not supported!")
+                res.status(["HEAD", "GET"].includes(req.method!) ? 500 : 501).send(
+                    "This method is not supported!"
+                )
         }
     })
 )

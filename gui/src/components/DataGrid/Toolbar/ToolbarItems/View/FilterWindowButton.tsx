@@ -22,7 +22,8 @@ export const FilterWindowButton: React.FC = () => {
 
     const [anchorEl, setAnchorEl] = useState<Element | null>(null)
 
-    const openEditor = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => setAnchorEl(e.currentTarget)
+    const openEditor = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) =>
+        setAnchorEl(e.currentTarget)
     const closeEditor = () => setAnchorEl(null)
     const toggleEditor = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         if (anchorEl) return closeEditor()

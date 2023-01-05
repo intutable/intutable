@@ -33,7 +33,8 @@ export const releases: ReleaseProps[] = [
         title: "1. Testversion (Release v0.1.0-alpha.3)",
         date: new Date("07/04/2022"),
         teaser: "Eine erste Test-Version wurde im Prerelease für eine beschränkte Nutzergruppe zum Testen veröffentlicht.",
-        description: "Basale Features können getestet werden. Filter, Tabellen bieten einige Funktionen.",
+        description:
+            "Basale Features können getestet werden. Filter, Tabellen bieten einige Funktionen.",
     },
     {
         version: "v0.1.0-alpha.2",
@@ -50,6 +51,7 @@ export const releases: ReleaseProps[] = [
         title: "1. MVP (Release v0.1.0-alpha.1)",
         date: new Date("04/07/2022"),
         teaser: "Erste Präsentation der Applikation.",
-        description: "Ein erster nicht-stabiler Prototyp der Applikation wurde zu Demo-Zwecken entwickelt.",
+        description:
+            "Ein erster nicht-stabiler Prototyp der Applikation wurde zu Demo-Zwecken entwickelt.",
     },
 ]

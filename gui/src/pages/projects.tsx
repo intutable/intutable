@@ -1,7 +1,16 @@
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
 import { useTheme } from "@mui/material/styles"
-import { Box, Card, CardContent, CircularProgress, Grid, Menu, MenuItem, Typography } from "@mui/material"
+import {
+    Box,
+    Card,
+    CardContent,
+    CircularProgress,
+    Grid,
+    Menu,
+    MenuItem,
+    Typography,
+} from "@mui/material"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import MetaTitle from "components/MetaTitle"
@@ -114,7 +123,11 @@ const ProjectCard: React.FC<ProjectCardProps> = props => {
             </Card>
 
             {anchorEL && (
-                <ProjectContextMenu anchorEL={anchorEL} open={anchorEL != null} onClose={handleCloseContextMenu}>
+                <ProjectContextMenu
+                    anchorEL={anchorEL}
+                    open={anchorEL != null}
+                    onClose={handleCloseContextMenu}
+                >
                     <Box
                         onClick={async () => {
                             handleCloseContextMenu()
@@ -163,7 +176,9 @@ const ProjectList: React.FC = () => {
                     errMsg = `Name bereits vergeben.`
                     break
                 case "invalidName":
-                    errMsg = `Ungültiger Name: darf nur Buchstaben, Ziffern` + ` und Unterstriche enthalten.`
+                    errMsg =
+                        `Ungültiger Name: darf nur Buchstaben, Ziffern` +
+                        ` und Unterstriche enthalten.`
                     break
                 default:
                     errMsg = "Das Projekt konnte nicht erstellt werden!"
@@ -185,7 +200,8 @@ const ProjectList: React.FC = () => {
             await mutate()
         } catch (error) {
             const err = makeError(error)
-            if (err.message === "alreadyTaken") snackError("Zwei Projekte können nicht denselben Namen haben!")
+            if (err.message === "alreadyTaken")
+                snackError("Zwei Projekte können nicht denselben Namen haben!")
             else snackError("Das Projekt konnte nicht umbenannt werden!")
         }
     }

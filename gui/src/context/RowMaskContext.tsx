@@ -30,7 +30,9 @@ type RowMaskProviderProps = {
 }
 
 export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
-    const [rowMaskState, setRowMaskState] = useState<RowMaskState<RowMaskMode>>(initialState.rowMaskState)
+    const [rowMaskState, setRowMaskState] = useState<RowMaskState<RowMaskMode>>(
+        initialState.rowMaskState
+    )
 
     return (
         <RowMaskContext.Provider

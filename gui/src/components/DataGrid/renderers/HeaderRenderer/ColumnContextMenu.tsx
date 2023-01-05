@@ -76,7 +76,9 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
                     },
                 }}
             >
-                {headerRendererProps.column.kind === "link" && <AddLookup headerRendererProps={headerRendererProps} />}
+                {headerRendererProps.column.kind === "link" && (
+                    <AddLookup headerRendererProps={headerRendererProps} />
+                )}
 
                 <CreateMailList headerRendererProps={headerRendererProps} />
 

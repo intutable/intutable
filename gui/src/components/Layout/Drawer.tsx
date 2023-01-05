@@ -11,7 +11,15 @@ import DashboardIcon from "@mui/icons-material/Dashboard"
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined"
 import PeopleIcon from "@mui/icons-material/People"
 import PeopleIconOutlined from "@mui/icons-material/PeopleOutlined"
-import { Divider, Drawer as MuiDrawer, IconButton, ListItem, ListItemIcon, ListItemText, Toolbar } from "@mui/material"
+import {
+    Divider,
+    Drawer as MuiDrawer,
+    IconButton,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Toolbar,
+} from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { CSSObject, styled, Theme } from "@mui/material/styles"
 import { RoleKind } from "@backend/permissions/types"
@@ -79,7 +87,9 @@ const DrawerListItem: React.FC<DrawerListItemProps> = props => {
                 "&:hover": {},
             }}
         >
-            <ListItemIcon>{router.pathname === props.href ? props.activeIcon : props.nonActiveIcon}</ListItemIcon>
+            <ListItemIcon>
+                {router.pathname === props.href ? props.activeIcon : props.nonActiveIcon}
+            </ListItemIcon>
             <ListItemText primary={props.text} />
         </ListItem>
     )
@@ -95,7 +105,11 @@ const DrawerBar: React.FC<DrawerProps> = props => {
     const theme = useTheme()
     const { user } = useUser()
     return (
-        <Drawer variant="permanent" open={props.open} sx={{ height: "100vh" }} /* component={"nav"}*/>
+        <Drawer
+            variant="permanent"
+            open={props.open}
+            sx={{ height: "100vh" }} /* component={"nav"}*/
+        >
             <Toolbar
                 sx={{
                     display: "flex",
@@ -108,7 +122,12 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     <ChevronLeftIcon />
                 </IconButton>
             </Toolbar>
-            <DrawerListItem text="Startseite" href="/" nonActiveIcon={<HomeIconOutlined />} activeIcon={<HomeIcon />} />
+            <DrawerListItem
+                text="Startseite"
+                href="/"
+                nonActiveIcon={<HomeIconOutlined />}
+                activeIcon={<HomeIcon />}
+            />
             {user?.isLoggedIn && (
                 <>
                     <DrawerListItem

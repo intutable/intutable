@@ -73,7 +73,9 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                 >
                     <Stack direction="row">
                         <Box flexGrow="1">{content}</Box>
-                        {deleteIconVisible && hasContent && <DeleteButton onDelete={handleDeleteContent} />}
+                        {deleteIconVisible && hasContent && (
+                            <DeleteButton onDelete={handleDeleteContent} />
+                        )}
                     </Stack>
                 </Box>
             </Tooltip>

@@ -8,7 +8,13 @@ import React from "react"
 import { IconButton } from "@mui/material"
 import FormatIndentIncreaseIcon from "@mui/icons-material/FormatIndentIncrease"
 import { Select, SelectChangeEvent, MenuItem, TextField, Box } from "@mui/material"
-import { FILTER_OPERATORS_LIST, FilterOperator, ColumnOperand, OperandKind, PartialSimpleFilter } from "types/filter"
+import {
+    FILTER_OPERATORS_LIST,
+    FilterOperator,
+    ColumnOperand,
+    OperandKind,
+    PartialSimpleFilter,
+} from "types/filter"
 import { TableColumn } from "types"
 import { getFilterColor } from "./utils"
 

@@ -75,7 +75,12 @@ const AddUserModal: React.FC<AddUserModalProps> = props => {
                 </FormControl>
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     <InputLabel id="adduser-select-role">Rolle</InputLabel>
-                    <Select labelId="adduser-select-role" label="Rolle" value={role ?? ""} onChange={handleChangeRole}>
+                    <Select
+                        labelId="adduser-select-role"
+                        label="Rolle"
+                        value={role ?? ""}
+                        onChange={handleChangeRole}
+                    >
                         {roles.map(r => (
                             <MenuItem key={r.id} value={r.id}>
                                 {r.name}

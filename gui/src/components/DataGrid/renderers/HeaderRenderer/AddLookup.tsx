@@ -97,7 +97,9 @@ const Modal: React.FC<ModalProps> = props => {
                                         disablePadding
                                         sx={{
                                             bgcolor:
-                                                selection?.key === col.key ? theme.palette.action.selected : undefined,
+                                                selection?.key === col.key
+                                                    ? theme.palette.action.selected
+                                                    : undefined,
                                         }}
                                     >
                                         <ListItemButton onClick={onClickHandler.bind(null, col)}>
@@ -151,7 +153,11 @@ export const AddLookup: React.FC<AddLookupProps> = props => {
                 <ListItemText>Lookup hinzufügen</ListItemText>
             </MenuItem>
 
-            <Modal open={anchorEL != null} onClose={closeModal} column={headerRendererProps.column} />
+            <Modal
+                open={anchorEL != null}
+                onClose={closeModal}
+                column={headerRendererProps.column}
+            />
         </>
     )
 }

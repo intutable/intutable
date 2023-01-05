@@ -28,7 +28,11 @@ const ExportView: React.FC = () => {
                     <FileDownloadIcon />
                 </IconButton>
             </Tooltip>
-            <ExportViewDialog open={anchorEL != null} onClose={closeModal} allRowsSelected={allRowsSelected} />
+            <ExportViewDialog
+                open={anchorEL != null}
+                onClose={closeModal}
+                allRowsSelected={allRowsSelected}
+            />
         </>
     )
 }

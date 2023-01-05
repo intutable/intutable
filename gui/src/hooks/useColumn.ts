@@ -30,12 +30,16 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
     }
 
     /** Find a column in the base table given a column of a view. */
-    const getColumnInfo = (forColumn: Column.Serialized | Column.Deserialized): ColumnInfo | null => {
+    const getColumnInfo = (
+        forColumn: Column.Serialized | Column.Deserialized
+    ): ColumnInfo | null => {
         if (view == null || table == null) return null
 
         const viewColumn = view.metaColumns.find(column => column.key === forColumn.key)
         if (viewColumn == null) return null
-        const tableColumn = table.rawColumns.find(column => column.id === viewColumn?.parentColumnId)
+        const tableColumn = table.rawColumns.find(
+            column => column.id === viewColumn?.parentColumnId
+        )
 
         return tableColumn ?? null
     }

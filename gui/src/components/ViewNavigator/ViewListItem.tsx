@@ -1,7 +1,15 @@
 import { ViewDescriptor } from "@shared/types"
 import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 import ClearIcon from "@mui/icons-material/Clear"
-import { IconButton, ListItem, ListItemButton, ListItemText, Menu, MenuItem, Typography } from "@mui/material"
+import {
+    IconButton,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    Menu,
+    MenuItem,
+    Typography,
+} from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useAPI } from "context/APIContext"
 import React, { useState } from "react"

@@ -125,7 +125,8 @@ export class Percentage extends NumericCell {
 
             // parse
             try {
-                if (value === null || (typeof value === "string" && value === "")) parsedValue = null
+                if (value === null || (typeof value === "string" && value === ""))
+                    parsedValue = null
                 // return null instead of an empty string
                 else parsedValue = Number.parseInt(value)
             } catch (e) {

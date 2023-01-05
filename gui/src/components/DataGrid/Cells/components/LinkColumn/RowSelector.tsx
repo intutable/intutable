@@ -43,7 +43,9 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
     const { error, rowPreviews, setLinkValue } = useLink(props.column)
 
     const content = props.row[props.column.key]
-    const hasSelection = Cell.isEmpty(content) ? false : rowPreviews?.find(row => row.content === content)
+    const hasSelection = Cell.isEmpty(content)
+        ? false
+        : rowPreviews?.find(row => row.content === content)
     const [selection, setSelection] = useState<RowPreview | null>(hasSelection || null)
 
     const handlePickRow = async () => {
@@ -63,8 +65,8 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
     return (
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>
-                Verlinke eine Zeile aus <i>{props.column.name}</i> ({props.foreignTable.name}) mit der Zeile{" "}
-                {props.row.index} ({baseTableData?.descriptor.name}).
+                Verlinke eine Zeile aus <i>{props.column.name}</i> ({props.foreignTable.name}) mit
+                der Zeile {props.row.index} ({baseTableData?.descriptor.name}).
             </DialogTitle>
             <DialogContent>
                 <TableContainer component={Paper}>
@@ -89,7 +91,9 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
                                                 bgcolor: theme.palette.action.hover,
                                             },
                                             bgcolor:
-                                                selection?._id === row._id ? theme.palette.action.selected : undefined,
+                                                selection?._id === row._id
+                                                    ? theme.palette.action.selected
+                                                    : undefined,
                                         }}
                                     >
                                         <TableCell>{row.index}</TableCell>

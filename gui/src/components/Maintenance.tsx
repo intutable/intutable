@@ -46,7 +46,8 @@ export const Maintenance = () => {
                         color: "#fff",
                     }}
                 >
-                    This feature is currently under construction and will be released in a future version.
+                    This feature is currently under construction and will be released in a future
+                    version.
                 </Typography>
             </Stack>
         </Container>

@@ -26,7 +26,10 @@ export class CoreRequestError extends Error {
  * @returns {Promise<object>} - The response parsed from JSON as an object.
  * @throws {CoreRequestError}
  */
-export const coreRequest = async <T = unknown>(request: Obj, authCookie?: NextApiRequest | string): Promise<T> => {
+export const coreRequest = async <T = unknown>(
+    request: Obj,
+    authCookie?: NextApiRequest | string
+): Promise<T> => {
     const { channel, method, ...req } = request
 
     if (authCookie == null) throw new RangeError("AuthCookie is not defined!")

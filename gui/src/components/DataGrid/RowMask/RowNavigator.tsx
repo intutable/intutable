@@ -16,7 +16,9 @@ const _RowNavigator: React.FC = () => {
         const previousIndex = rowMaskState.row.index - 1 < 0 ? maxIndex : rowMaskState.row.index - 1
         setRowMaskState({
             mode: "edit",
-            row: data.rows.find(row => row.index === (action === "next" ? nextIndex : previousIndex))!,
+            row: data.rows.find(
+                row => row.index === (action === "next" ? nextIndex : previousIndex)
+            )!,
         })
     }
 

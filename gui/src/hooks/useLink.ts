@@ -18,7 +18,8 @@ export const useLink = (forColumn: Column.Deserialized) => {
     const { data: linkTableData, error, mutate } = useTable({ table: foreignTable })
 
     /** user defined primary key column in the foreign table */
-    const userPrimaryKeyColumn = linkTableData?.columns.find(column => column.isUserPrimaryKey) ?? null
+    const userPrimaryKeyColumn =
+        linkTableData?.columns.find(column => column.isUserPrimaryKey) ?? null
 
     /** a preview of linkable rows from the foreign table */
     const rowPreviews: RowPreview[] =

@@ -9,7 +9,11 @@ import { User } from "@backend/permissions"
  * admin)
  */
 export const useUsersAsAdmin = () => {
-    const { data: users, error, mutate } = useSWR<User[]>({ url: `/api/permissions/users`, method: "GET" })
+    const {
+        data: users,
+        error,
+        mutate,
+    } = useSWR<User[]>({ url: `/api/permissions/users`, method: "GET" })
 
     const createUser = async (user: Omit<User, "id">, password: string): Promise<void> => {
         await fetcher({

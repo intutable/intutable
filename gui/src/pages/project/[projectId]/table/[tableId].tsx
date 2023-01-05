@@ -14,7 +14,12 @@ import Link from "components/Link"
 import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
-import { APIContextProvider, HeaderSearchFieldProvider, useAPI, useHeaderSearchField } from "context"
+import {
+    APIContextProvider,
+    HeaderSearchFieldProvider,
+    useAPI,
+    useHeaderSearchField,
+} from "context"
 import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { useBrowserInfo } from "hooks/useBrowserInfo"
@@ -71,7 +76,10 @@ const TablePage: React.FC = () => {
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
 
     // TODO: this should not be here and does not work as intended in this way
-    const partialRowUpdate = async (rows: Row[], changeData: RowsChangeData<Row>): Promise<void> => {
+    const partialRowUpdate = async (
+        rows: Row[],
+        changeData: RowsChangeData<Row>
+    ): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
         const update = changedRow[col.key]
@@ -138,7 +146,10 @@ const TablePage: React.FC = () => {
                                 <DataGrid
                                     className={"rdg-" + getTheme() + " fill-grid"}
                                     rows={data.rows}
-                                    columns={[SelectColumn, ...data.columns.filter(column => column.hidden !== true)]}
+                                    columns={[
+                                        SelectColumn,
+                                        ...data.columns.filter(column => column.hidden !== true),
+                                    ]}
                                     components={{
                                         // noRowsFallback: <NoRowsFallback />, // BUG: does not work with columns but no rows bc css
                                         rowRenderer: RowRenderer,
@@ -207,7 +218,11 @@ type PageProps = {
     // }
 }
 
-const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ project, table, view }) => {
+const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({
+    project,
+    table,
+    view,
+}) => {
     return (
         <APIContextProvider project={project} table={table} view={view}>
             <SelectedRowsContextProvider>
@@ -223,7 +238,10 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
 
 export const getServerSideProps = withSSRCatch(
     withSessionSsr<PageProps>(async context => {
-        const query = context.query as DynamicRouteQuery<typeof context.query, "tableId" | "projectId">
+        const query = context.query as DynamicRouteQuery<
+            typeof context.query,
+            "tableId" | "projectId"
+        >
 
         const user = context.req.session.user
 

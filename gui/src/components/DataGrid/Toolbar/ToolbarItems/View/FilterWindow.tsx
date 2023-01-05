@@ -19,7 +19,13 @@ import { Popper, Paper, IconButton, Stack, Box, Typography } from "@mui/material
 
 import { ViewDescriptor } from "@shared/types"
 import { TableColumn } from "types"
-import { ConditionKind, Filter, PartialFilter, PartialSimpleFilter, FILTER_OPERATORS_LIST } from "types/filter"
+import {
+    ConditionKind,
+    Filter,
+    PartialFilter,
+    PartialSimpleFilter,
+    FILTER_OPERATORS_LIST,
+} from "types/filter"
 import { wherePartial, and, stripPartialFilter, partialFilterEquals } from "@shared/utils/filter"
 import { useAPI } from "context/APIContext"
 import { useUpdateTimer } from "hooks/useUpdateTimer"
@@ -116,7 +122,9 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
         const newActiveFilters = extractFilters(filters)
         if (
             activeFilters.length !== newActiveFilters.length ||
-            !(activeFilters as PartialFilter[]).every((f, i) => partialFilterEquals(f, newActiveFilters[i]))
+            !(activeFilters as PartialFilter[]).every((f, i) =>
+                partialFilterEquals(f, newActiveFilters[i])
+            )
         )
             update()
     }, [activeFilters, update, filters])
@@ -131,7 +139,10 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
     const handlePromoteFilter = async (key: number | string, filter: PartialSimpleFilter) =>
         handleChangeFilter(key, and(filter, wherePartial(undefined, "=", undefined)))
 
-    const handleChangeFilter = async (key: number | string, newFilter: PartialFilter): Promise<void> => {
+    const handleChangeFilter = async (
+        key: number | string,
+        newFilter: PartialFilter
+    ): Promise<void> => {
         const index = filters.findIndex(f => f.key === key)
         if (index === -1) return
         const newFilters = [...filters]
@@ -161,7 +172,9 @@ export const FilterWindow: React.FC<FilterWindowProps> = props => {
                                     <SimpleFilterEditor
                                         columns={columns}
                                         filter={f.filter}
-                                        onPromote={async filter => handlePromoteFilter(f.key, filter)}
+                                        onPromote={async filter =>
+                                            handlePromoteFilter(f.key, filter)
+                                        }
                                         onChange={async filter => handleChangeFilter(f.key, filter)}
                                         nestingDepth={0}
                                     />

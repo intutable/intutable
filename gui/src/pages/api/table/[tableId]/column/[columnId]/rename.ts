@@ -16,23 +16,32 @@ import { changeTableColumnAttributes } from "@backend/requests"
  * - Body: { newName: string }
  * ```
  */
-const PATCH = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"], columnId: ColumnInfo["id"]) => {
-    const { newName } = req.body as { newName: string }
-    const user = req.session.user!
+const PATCH = withCatchingAPIRoute(
+    async (req, res, tableId: ViewDescriptor["id"], columnId: ColumnInfo["id"]) => {
+        const { newName } = req.body as { newName: string }
+        const user = req.session.user!
 
-    await withReadWriteConnection(user, async sessionID => {
-        const tableInfo = await coreRequest<ViewInfo>(getViewInfo(sessionID, tableId), user.authCookie)
+        await withReadWriteConnection(user, async sessionID => {
+            const tableInfo = await coreRequest<ViewInfo>(
+                getViewInfo(sessionID, tableId),
+                user.authCookie
+            )
 
-        // check if the name is already taken
-        if (tableInfo.columns.some(c => c.attributes.displayName === newName)) throw Error("alreadyTaken")
-        else {
-            const update = { name: newName }
-            await coreRequest<void>(changeTableColumnAttributes(sessionID, tableId, columnId, update), user.authCookie)
-        }
-    })
+            // check if the name is already taken
+            if (tableInfo.columns.some(c => c.attributes.displayName === newName))
+                throw Error("alreadyTaken")
+            else {
+                const update = { name: newName }
+                await coreRequest<void>(
+                    changeTableColumnAttributes(sessionID, tableId, columnId, update),
+                    user.authCookie
+                )
+            }
+        })
 
-    res.status(200).json({})
-})
+        res.status(200).json({})
+    }
+)
 
 export default withSessionRoute(
     withUserCheck(async (req, res) => {

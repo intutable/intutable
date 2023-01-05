@@ -171,7 +171,9 @@ export class Cell {
         // default validation for text based editors
         // it should either be a non object like string, a stringified number or emtpy (null or empty str '')
         return (
-            (isJSONObject(value) === false && isJSONArray(value) === false && typeof value === "string") ||
+            (isJSONObject(value) === false &&
+                isJSONArray(value) === false &&
+                typeof value === "string") ||
             typeof value === "number" ||
             value === "" ||
             value == null
@@ -201,8 +203,16 @@ export class Cell {
     }
 
     /***** {@link SerializableCatchEmpty} *****/
-    static catchEmpty<T extends ValueOf<Serializable>>(fn: T, value: unknown): null | ReturnType<T> {
-        if (value === null || typeof value === "undefined" || (typeof value === "string" && value === "")) return null
+    static catchEmpty<T extends ValueOf<Serializable>>(
+        fn: T,
+        value: unknown
+    ): null | ReturnType<T> {
+        if (
+            value === null ||
+            typeof value === "undefined" ||
+            (typeof value === "string" && value === "")
+        )
+            return null
         return fn(value) as ReturnType<T> // TODO: bind the this-context, so it does not need to be bound elsewhere
     }
 
@@ -233,7 +243,13 @@ export class Cell {
                 [key]: e.target.value,
             })
 
-        return <this.Input onChange={handleChange} onBlur={() => props.onClose(true)} value={content} />
+        return (
+            <this.Input
+                onChange={handleChange}
+                onBlur={() => props.onClose(true)}
+                value={content}
+            />
+        )
     }
     public formatter: FormatterComponent = (props: FormatterProps<Row>) => {
         // default formatter component
