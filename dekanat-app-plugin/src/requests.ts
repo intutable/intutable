@@ -278,3 +278,15 @@ export function updateRows(
 ) {
     return { channel: CHANNEL, method: updateRows.name, connectionId, viewId, condition, values }
 }
+
+/**
+ * Delete one or many rows from a table.
+ * `viewId` can be either the ID of a table or of a view, in the latter case the underlying table
+ * is automatically found and the rows deleted appropriately.
+ * Response: { rowsDeleted: number } the number of rows deleted.
+ * Preconditions:
+ * - the `index` properties of the rows go from 0 to `rows.length - 1`
+ */
+export function deleteRows(connectionId: string, viewId: ViewId | TableId, condition: number[] | number) {
+    return { channel: CHANNEL, method: deleteRows.name, connectionId, viewId, condition }
+}

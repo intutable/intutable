@@ -8,7 +8,7 @@ import { withSessionRoute } from "auth"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { Row, ViewId, TableId } from "types"
 import { RowData } from "@backend/types/requests"
-import { createRow, updateRows } from "@backend/requests"
+import { createRow, updateRows, deleteRows } from "@backend/requests"
 import Obj from "types/Obj"
 
 // Intermediate type representing a row whose index is to be changed.
@@ -51,7 +51,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 })
 
 /**
- * Update a row, identified by `condition`. 
+ * Update a row, identified by `rowsToUpdate`. 
 `* @param {TableId | ViewId} viewId - can refer to either a table or a view.
  * Beware, however, as one column will have its own metadata entity in a table, and another
  * in every view on that table, each with different IDs.
@@ -63,7 +63,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
  * manually construct an update that would be passed directly to SQL. We also eventually want
  * to introduce n-tier views (like view -> ... -> view -> table) which are now already supported
  * by this update method.
- * @param {number | number[]} condition - pass in either the ID of a row to update
+ * @param {number | number[]} rowsToUpdate - pass in either the ID of a row to update
  * or an array of IDs to update multiple rows.
  * @return {{ rowsUpdated: number }} how many rows were updated.
  * @tutorial
@@ -76,25 +76,26 @@ const POST = withCatchingAPIRoute(async (req, res) => {
  * ```
  */
 const PATCH = withCatchingAPIRoute(async (req, res) => {
-    const { viewId, condition, values } = req.body as {
+    const { viewId, rowsToUpdate, values } = req.body as {
         viewId: TableId | ViewId
-        condition: number | number[]
+        rowsToUpdate: number | number[]
         values: RowData
     }
 
     const user = req.session.user!
-    const rowsUpdated = await withReadWriteConnection(user, async connectionId => {
+    const { rowsUpdated } = await withReadWriteConnection(user, async connectionId => {
         return coreRequest<{ rowsUpdated: number }>(
-            updateRows(connectionId, viewId, condition, values),
+            updateRows(connectionId, viewId, rowsToUpdate, values),
             user.authCookie
         )
     })
 
-    res.status(200).json(rowsUpdated)
+    res.status(200).json({ rowsUpdated })
 })
 
 /**
  * Delete a row, identified by `condition`.
+ * @return { rowsDeleted: number } how many rows were deleted.
  * @tutorial
  * ```
  * Body: {
@@ -104,41 +105,17 @@ const PATCH = withCatchingAPIRoute(async (req, res) => {
  * ```
  */
 const DELETE = withCatchingAPIRoute(async (req, res) => {
-    const { table, condition } = req.body as {
-        table: TableDescriptor
-        condition: unknown[]
+    const { viewId, rowsToDelete } = req.body as {
+        viewId: ViewId | TableId
+        rowsToDelete: number | number[]
     }
     const user = req.session.user!
 
-    await withReadWriteConnection(user, async sessionID => {
-        await coreRequest(deleteRow(sessionID, table.key, condition), user.authCookie)
-        // shift indices
-        const newData = await coreRequest<TableData<unknown>>(getTableData(sessionID, table.id), user.authCookie)
-
-        const rows = newData.rows as Row[]
-        const newIndices: IndexChange[] = rows
-            .sort(byIndex)
-            .map((row: Row, newIndex: number) => ({
-                _id: row._id as number,
-                oldIndex: row.index as number,
-                index: newIndex,
-            }))
-            .filter(row => row.oldIndex !== row.index)
-
-        await Promise.all(
-            newIndices.map(async ({ _id, index }) =>
-                coreRequest(
-                    update(sessionID, table.key, {
-                        update: { index: index },
-                        condition: ["_id", _id],
-                    }),
-                    user.authCookie
-                )
-            )
-        )
+    const { rowsDeleted } = await withReadWriteConnection(user, async connectionId => {
+        return coreRequest<{ rowsDeleted: number }>(deleteRows(connectionId, viewId, rowsToDelete), user.authCookie)
     })
 
-    res.status(200).json({})
+    res.status(200).json({ rowsDeleted })
 })
 
 export default withSessionRoute(

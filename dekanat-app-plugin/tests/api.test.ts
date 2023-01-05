@@ -278,10 +278,7 @@ describe("row handling", () => {
             })
         ]))
         const { rowsUpdated } = await coreRequest<{ rowsUpdated: number }>(
-            req.updateRows(connId, view.id, _id, {
-                [nameColumn.id]: "Jenny",
-                [ageColumn.id]: "18"
-            })
+            req.updateRows(connId, view.id, _id, { [nameColumn.id]: "Jenny", [ageColumn.id]: "18" })
         )
         expect(rowsUpdated).toBe(1)
         viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
@@ -295,12 +292,11 @@ describe("row handling", () => {
         ]))
     })
     test("create a new row with given values", async () => {
-        await coreRequest(req.createRow(connId, view.id, {
-            values: {
-                [nameColumn.id]: "Jeff",
-                [ageColumn.id]: "23",
-            }
-        }))
+        await coreRequest(
+            req.createRow(connId, view.id, {
+                values: { [nameColumn.id]: "Jeff", [ageColumn.id]: "23",}
+            })
+        )
         viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
         expect(viewData.rows).toEqual(expect.arrayContaining([
             expect.objectContaining({
@@ -359,6 +355,55 @@ describe("row handling", () => {
                 [ageColumn.key]: "3",
             })
         ]))
-        
+    })
+
+    test("row deletion", async () => {
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        const originalRowCount = viewData.rows.length
+        const { _id: _id1 } = await coreRequest<{ _id: number }>(req.createRow(connId, view.id, {
+            atIndex: 0,
+            values: {
+                [nameColumn.id]: "first_deleted",
+                [ageColumn.id]: "1",
+            }
+        }))
+        const { _id: _id2 } = await coreRequest<{_id: number }>(req.createRow(connId, view.id, {
+            atIndex: 1,
+            values: {
+                [nameColumn.id]: "second_deleted",
+                [ageColumn.id]: "2",
+            }
+        }))
+        const { _id: _id3 } = await coreRequest<{_id: number }>(req.createRow(connId, view.id, {
+            atIndex: 2,
+            values: {
+                [nameColumn.id]: "third_deleted",
+                [ageColumn.id]: "3",
+            }
+        }))
+        const { rowsDeleted } = await coreRequest<{ rowsDeleted: number }>(
+            req.deleteRows(connId, view.id, _id1)
+        )
+        expect(rowsDeleted).toBe(1)
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        // ensure that 1. row is gone 2. indices have been shifted appropriately
+        expect(viewData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                index: 0,
+                [nameColumn.key]: "second_deleted",
+                [ageColumn.key]: "2",
+            }),
+            expect.objectContaining({
+                index: 1,
+                [nameColumn.key]: "third_deleted",
+                [ageColumn.key]: "3",
+            })
+        ]))
+        const { rowsDeleted: rowsDeleted2 } = await coreRequest<{ rowsDeleted: number }>(
+            req.deleteRows(connId, view.id, [_id2, _id3])
+        )
+        expect(rowsDeleted2).toBe(2)
+        viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
+        expect(viewData.rows.length).toBe(originalRowCount)
     })
 })

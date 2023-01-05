@@ -22,7 +22,8 @@
  * provided by this plugin from the front-end.
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
-import { insert, update } from "@intutable/database/dist/requests"
+import { insert, update, deleteRow } from "@intutable/database/dist/requests"
+import { Condition as RawCondition } from "@intutable/database/dist/types"
 import * as pm from "@intutable/project-management/dist/requests"
 import {
     RowOptions,
@@ -96,6 +97,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.changeViewFilters.name, changeViewFilters_)
         .on(req.createRow.name, createRow_)
         .on(req.updateRows.name, updateRows_)
+        .on(req.deleteRows.name, deleteRows_)
         .on(perm.getUsers.name, perm.getUsers_)
         .on(perm.getRoles.name, perm.getRoles_)
         .on(perm.createUser.name, perm.createUser_)
@@ -571,7 +573,8 @@ async function getTableViewId(connectionId: string, viewId: ViewId | TableId): P
 async function mapRowInsertDataToStrings(
     connectionId: string,
     viewData: RawViewInfo,
-    update: RowData
+    update: RowData,
+    allowLinks = true
 ): Promise<RawRowData> {
     const stringUpdate: Record<string, unknown> = {}
     for (const key in update) {
@@ -579,25 +582,25 @@ async function mapRowInsertDataToStrings(
         const column = viewData.columns.find(c => c.id.toString() === key)
         if (column === undefined)
             throw errorSync("mapRowInsertDataToStrings", `table ${viewData.descriptor.id} has no column with ID ${key}`)
-        else if (!["standard", "link"].includes(column.attributes.kind))
-            throw errorSync(
+        if (!allowLinks && column.attributes.kind !== "standard")
+            return error(
                 "mapRowInsertDataToStrings",
-                `column ${key}/${column.attributes.displayName} is  of kind` +
+                `column ${key} is of kind` + ` ${column.attributes.kind}, but only standard is allowed`
+            )
+        if (!["standard", "link"].includes(column.attributes.kind))
+            return error(
+                "mapRowInsertDataToStrings",
+                `column ${key}/${column.attributes.displayName} is of kind` +
                     `${column.attributes.kind}, but only standard and link are allowed`,
                 ErrorCode.invalidRowWrite
             )
-        else if (![1, true].includes(column.attributes.editable))
-            throw errorSync(
-                "mapRowInsertDataToStrings",
-                `column ${column.key} is not editable`,
-                ErrorCode.invalidRowWrite
-            )
-        else {
-            if (column.attributes.kind === "standard") stringUpdate[column.name] = update[key]
-            else if (column.attributes.kind === "link") {
-                const rawForeignKeyColumn = await getLinkColumnForeignKey(connectionId, viewData, column)
-                stringUpdate[rawForeignKeyColumn.name] = update[key]
-            }
+        if (![1, true].includes(column.attributes.editable))
+            return error("mapRowInsertDataToStrings", `column ${column.key} is not editable`, ErrorCode.invalidRowWrite)
+        // set property with appropriate column name
+        if (column.attributes.kind === "standard") stringUpdate[column.name] = update[key]
+        else if (column.attributes.kind === "link") {
+            const rawForeignKeyColumn = await getLinkColumnForeignKey(connectionId, viewData, column)
+            stringUpdate[rawForeignKeyColumn.name] = update[key]
         }
     }
     return stringUpdate
@@ -668,7 +671,7 @@ async function updateRows(
 ): Promise<{ rowsUpdated: number }> {
     // 1. map condition to sql table
     const rawViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
-    let rawCondition: (string | number | number[])[]
+    let rawCondition: RawCondition
     if (typeof condition === "number") rawCondition = ["_id", condition]
     else rawCondition = ["_id", "in", condition]
 
@@ -690,4 +693,46 @@ async function updateRows(
         update(connectionId, rawTable.key, { condition: rawCondition, update: rawUpdate })
     )
     return updated
+}
+
+async function deleteRows_({ connectionId, viewId, condition }: CoreRequest): Promise<CoreResponse> {
+    return deleteRows(connectionId, viewId, condition)
+}
+
+async function deleteRows(
+    connectionId: string,
+    viewId: TableId | ViewId,
+    condition: number[] | number
+): Promise<{ rowsDeleted: number }> {
+    const tableViewId = await getTableViewId(connectionId, viewId)
+    const tableViewOptions = await coreRequest<RawViewOptions>(lvr.getViewOptions(connectionId, tableViewId))
+    const rawTableInfo = await coreRequest<RawTableInfo>(
+        pm.getTableInfo(connectionId, selectable.getId(tableViewOptions.source))
+    )
+    const rawTableName = rawTableInfo.table.key
+
+    const rawCondition: RawCondition = typeof condition === "number" ? ["_id", condition] : ["_id", "in", condition]
+
+    const { rowsDeleted } = await coreRequest<{ rowsDeleted: number }>(
+        deleteRow(connectionId, rawTableName, rawCondition)
+    )
+
+    // shift indices of remaining
+    const newTableData = await getTableData(connectionId, tableViewId)
+    const indexChanges: IndexShiftData[] = newTableData.rows
+        .sort((a, b) => a.index - b.index)
+        .map((row, newIndex) => ({ rowId: row._id, oldIndex: row.index, index: newIndex }))
+        .filter(shift => shift.oldIndex !== shift.index)
+    await Promise.all(
+        indexChanges.map(async ({ rowId, index }) =>
+            coreRequest(
+                update(connectionId, rawTableName, {
+                    update: { index },
+                    condition: ["_id", rowId],
+                })
+            )
+        )
+    )
+
+    return { rowsDeleted }
 }

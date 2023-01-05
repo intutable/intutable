@@ -1,4 +1,3 @@
-import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
@@ -66,8 +65,8 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         await fetcher({
             url: "/api/row",
             body: {
-                table: asTable(table!.metadata.source).table,
-                condition: ["_id", row._id],
+                viewId: view!.descriptor.id,
+                rowsToDelete: row._id,
             },
             method: "DELETE",
         })
@@ -98,7 +97,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
             url: "/api/row",
             body: {
                 viewId: view!.descriptor.id,
-                condition: row._id,
+                rowsToUpdate: row._id,
                 values: { [column.id]: serializedValue },
             },
             method: "PATCH",
