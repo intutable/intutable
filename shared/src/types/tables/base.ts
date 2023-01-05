@@ -8,16 +8,20 @@ import type {
     ColumnInfo,
     ParentColumnSpecifier as GroupColumn,
     SortColumn,
-    ViewDescriptor,
-    ViewInfo,
+    JoinDescriptor,
 } from "@intutable/lazy-views"
+import type { TableDescriptor as RawTableDescriptor } from "@intutable/project-management/dist/types"
+import type { ViewDescriptor } from "."
 import type { Filter } from "../filter"
 
 // #################################################################
 //       Table
 // #################################################################
 export type Table<COL, ROW> = {
-    metadata: Omit<ViewInfo, "rowOptions">
+    descriptor: ViewDescriptor
+    rawTable: RawTableDescriptor
+    rawColumns: ColumnInfo[]
+    joins: JoinDescriptor[]
     columns: COL[]
     rows: ROW[]
 }

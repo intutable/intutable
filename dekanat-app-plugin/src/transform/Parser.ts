@@ -1,4 +1,6 @@
-import type { ColumnInfo as RawColumn, Condition, ViewData as RawViewData } from "@intutable/lazy-views/dist/types"
+import type { Condition } from "@intutable/lazy-views/dist/types"
+import { asTable } from "@intutable/lazy-views/dist/selectable"
+import type { RawViewColumnInfo, RawViewData } from "../types/raw"
 import { DB, SerializedColumn, SerializedViewData, TableData } from "shared/dist/types"
 import { Filter } from "../types/filter"
 import { cast } from "./cast"
@@ -52,7 +54,7 @@ export class ParserClass {
         return casted
     }
 
-    public parseColumn(column: RawColumn): SerializedColumn {
+    public parseColumn(column: RawViewColumnInfo): SerializedColumn {
         const restructured = restructure.column(column)
         return this.castColumn(restructured)
     }
@@ -119,7 +121,10 @@ export class ParserClass {
         const castedColumns = internalProcessedColumns.map(this.castColumn)
 
         return {
-            metadata: { ...view },
+            descriptor: view.descriptor,
+            joins: view.joins,
+            rawTable: asTable(view.source).table,
+            rawColumns: view.columns,
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
         }

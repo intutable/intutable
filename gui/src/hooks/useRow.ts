@@ -42,7 +42,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    // TODO: put `asTable` into the corresponding api route
     const createRow = async (atIndex?: number): Promise<void> => {
         await fetcher({
             url: "/api/row",
@@ -59,8 +58,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    // TODO: filter row and delete by index and then shift them
-    // TODO: put `asTable` into the corresponding api route
     const deleteRow = async (row: Row): Promise<void> => {
         await fetcher({
             url: "/api/row",
@@ -77,9 +74,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    // TODO: do not use the col key, use its id
     // TODO: `value` needs a (better) type
-    // TODO: put `asTable` into the corresponding api route
     const updateRow = async (column: Column, row: Row, updatedValue: unknown): Promise<void> => {
         const serializedValue = SerDes.serializeRowValue(updatedValue, column)
 

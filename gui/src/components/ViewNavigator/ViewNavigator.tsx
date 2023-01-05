@@ -66,7 +66,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     const { view: currentView, setView } = useAPI()
     const { data } = useTable()
     const { views, createView, renameView, deleteView, mutate } = useViews({
-        table: data?.metadata.descriptor,
+        table: data?.descriptor,
     })
     const { snackInfo, snackError } = useSnacki()
 

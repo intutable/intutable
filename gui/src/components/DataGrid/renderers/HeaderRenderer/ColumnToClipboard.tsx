@@ -2,7 +2,6 @@ import { cellMap } from "@datagrid/Cells"
 import ContentPasteIcon from "@mui/icons-material/ContentPaste"
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material"
 import { useSelectedRows } from "context/SelectedRowsContext"
-import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useCallback } from "react"
@@ -20,42 +19,33 @@ export const ColumnToClipboard: React.FC<ColumnToClipboardProps> = props => {
 
     const { data: viewData } = useView()
     const { snackInfo } = useSnacki()
-    const { getColumnInfo } = useColumn()
-    const columnInfo = getColumnInfo(props.headerRendererProps.column)
+
+    const column = headerRendererProps.column
 
     const handleCopyToClipboard = useCallback(() => {
-        if (columnInfo == null) return null
-        const viewColInfo = viewData?.metaColumns.find(c => c.parentColumnId === columnInfo.id)
-        if (viewColInfo == null) return
+        if (column === null) return null
 
         // get values
-        let values = viewData!.rows.map(row => row[viewColInfo!.key]).filter(e => e != null)
+        let values = viewData!.rows.map(row => row[column.key]).filter(e => e != null)
 
         // consider row selection
         if (headerRendererProps.allRowsSelected === false && selectedRows.size > 0) {
             values = viewData!.rows
                 .map(row => {
-                    const value = row[viewColInfo!.key]
+                    const value = row[column.key]
                     if (selectedRows.has(row.index)) return value
                 })
                 .filter(e => e != null)
         }
 
-        const cellCtor = cellMap.getCellCtor(props.headerRendererProps.column.cellType)
+        const cellCtor = cellMap.getCellCtor(column.cellType)
 
         values = values.filter(val => val != null && val !== "").map(val => cellCtor.export(val))
 
         navigator.clipboard.writeText(values.join(", "))
 
         snackInfo("In die Zwischenablage kopiert!")
-    }, [
-        columnInfo,
-        viewData,
-        headerRendererProps.allRowsSelected,
-        selectedRows,
-        props.headerRendererProps.column,
-        snackInfo,
-    ])
+    }, [column, viewData, headerRendererProps.allRowsSelected, selectedRows, snackInfo])
 
     return (
         <MenuItem onClick={handleCopyToClipboard}>

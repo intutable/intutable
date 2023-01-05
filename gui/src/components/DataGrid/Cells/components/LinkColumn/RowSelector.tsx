@@ -64,7 +64,7 @@ export const RowSelector: React.FC<RowSelectorProps> = props => {
         <Dialog open={props.open} onClose={() => props.onClose()}>
             <DialogTitle>
                 Verlinke eine Zeile aus <i>{props.column.name}</i> ({props.foreignTable.name}) mit der Zeile{" "}
-                {props.row.index} ({baseTableData?.metadata.descriptor.name}).
+                {props.row.index} ({baseTableData?.descriptor.name}).
             </DialogTitle>
             <DialogContent>
                 <TableContainer component={Paper}>

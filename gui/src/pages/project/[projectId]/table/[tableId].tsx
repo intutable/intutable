@@ -271,7 +271,7 @@ export const getServerSideProps = withSSRCatch(
         }
         const view: ViewDescriptor = viewList[0]
 
-        const data = await fetcher<ViewData.Serialized>({
+        const viewData = await fetcher<ViewData.Serialized>({
             url: `/api/view/${view.id}`,
             method: "GET",
             headers: context.req.headers as HeadersInit,
@@ -280,9 +280,9 @@ export const getServerSideProps = withSSRCatch(
         return {
             props: {
                 project,
-                table: tableData.metadata.descriptor,
+                table: tableData.descriptor,
                 tableList,
-                view: data.descriptor,
+                view: viewData.descriptor,
                 viewList,
                 // fallback: {
                 //     [unstable_serialize({

@@ -78,7 +78,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
             await fetcher({
                 url: "/api/join",
                 body: {
-                    tableId: currentTable.metadata.descriptor.id,
+                    tableId: currentTable.descriptor.id,
                     foreignTableId: table.id,
                 },
             })

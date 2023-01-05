@@ -53,7 +53,7 @@ const Modal: React.FC<ModalProps> = props => {
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
-                    tableId: data!.metadata.descriptor.id,
+                    tableId: data!.descriptor.id,
                     joinId,
                 },
             })

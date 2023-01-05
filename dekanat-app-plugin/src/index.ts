@@ -533,11 +533,10 @@ async function createRow(
     const { rowData: finalRowData, rowsToShift } = addIndexShifts(tableData, actualIndex, rawData)
 
     // 4. shift all rows after the desired index
-    const rawTable: RawTableDescriptor = asTable(tableData.metadata.source).table
     await Promise.all(
         rowsToShift.map(async shift => {
             await core.events.request(
-                update(connectionId, rawTable.key, {
+                update(connectionId, tableData.rawTable.key, {
                     condition: ["_id", shift.rowId],
                     update: { index: shift.index },
                 })
@@ -545,7 +544,7 @@ async function createRow(
         })
     )
     // 5. insert the new row
-    return core.events.request(insert(connectionId, rawTable.key, finalRowData, ["_id"]))
+    return core.events.request(insert(connectionId, tableData.rawTable.key, finalRowData, ["_id"]))
 }
 
 /**
