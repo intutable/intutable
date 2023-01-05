@@ -31,10 +31,9 @@ export const useLink = (forColumn: Column.Deserialized) => {
             }))) ??
         []
 
-    const getColumnInfo = (column: TableColumn): RawColumn | null => {
-        return linkTableData?.metadata.columns.find(c => c.key === column.key) ?? null
-    }
-
+    /**
+     * Link a row in the current table to a row in the foreign table.
+     */
     const setLinkValue = async (row: Row, target: RowPreview | null) => {
         if (!homeView) return null
         return fetcher({
@@ -53,7 +52,6 @@ export const useLink = (forColumn: Column.Deserialized) => {
         mutate,
         linkTableData,
         rowPreviews,
-        getColumnInfo,
         setLinkValue,
     }
 }

@@ -1,4 +1,3 @@
-import { RawColumn } from "@shared/types"
 import LookupIcon from "@mui/icons-material/ManageSearch"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -21,7 +20,7 @@ import { fetcher } from "api/fetcher"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
 
@@ -40,21 +39,17 @@ const Modal: React.FC<ModalProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { foreignTable, columnInfo } = useForeignTable(props.column)
-    const { linkTableData: foreignTableData, error, getColumnInfo } = useLink(props.column)
+    const { foreignTable, join } = useForeignTable(props.column)
+    const { linkTableData: foreignTableData, error } = useLink(props.column)
 
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 
     const [selection, setSelection] = useState<TableColumn | null>(null)
-    const selectedColDescriptor = useMemo(
-        () => (selection && foreignTableData ? getColumnInfo(selection) : null),
-        [foreignTableData, selection, getColumnInfo]
-    )
 
-    const handleAddLookup = async (column: RawColumn) => {
+    const handleAddLookup = async (column: TableColumn) => {
         try {
-            const joinId = columnInfo!.joinId!
+            const joinId = join!.id
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
@@ -120,10 +115,10 @@ const Modal: React.FC<ModalProps> = props => {
                     loading={foreignTableData == null && error == null}
                     loadingIndicator="Lädt..."
                     onClick={async () => {
-                        await handleAddLookup(selectedColDescriptor!)
+                        await handleAddLookup(selection!)
                         props.onClose()
                     }}
-                    disabled={selectedColDescriptor == null || error}
+                    disabled={selection == null || error}
                 >
                     Hinzufügen
                 </LoadingButton>

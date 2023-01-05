@@ -21,7 +21,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
     const { project } = useAPI()
 
     const { foreignTable } = useForeignTable(column)
-    const navigateToView = () => router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
+    const navigateToTable = () => router.push(`/project/${project!.id}/table/${foreignTable?.id}`)
 
     const cell = cellMap.instantiate(column)
     const Icon = cell.icon
@@ -52,7 +52,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         foreignTable ? foreignTable.name : "Lädt..."
                     }'.)`}
                     iconButtonProps={{
-                        onClick: navigateToView,
+                        onClick: navigateToTable,
                         disabled: foreignTable == null,
                     }}
                 >
