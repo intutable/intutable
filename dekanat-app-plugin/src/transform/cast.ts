@@ -27,7 +27,10 @@ export type CastOperationEmpty = {
      * this wrapper ensures that null/undefined is returned
      * in case.
      */
-    orEmpty: <T extends ValueOf<CastOperation>>(castFn: T, value: unknown) => null | undefined | ReturnType<T>
+    orEmpty: <T extends ValueOf<CastOperation>>(
+        castFn: T,
+        value: unknown
+    ) => null | undefined | ReturnType<T>
 }
 
 export class Cast implements CastOperation, CastOperationEmpty {
@@ -35,7 +38,10 @@ export class Cast implements CastOperation, CastOperationEmpty {
         return value === null || typeof value === "undefined"
     }
 
-    orEmpty<T extends ValueOf<CastOperation>>(castFn: T, value: unknown): null | undefined | ReturnType<T> {
+    orEmpty<T extends ValueOf<CastOperation>>(
+        castFn: T,
+        value: unknown
+    ): null | undefined | ReturnType<T> {
         return this.isEmpty(value) ? value : (castFn(value) as ReturnType<T>) // TODO: bind the this-context, so it does not need to be bound elsewhere
     }
 

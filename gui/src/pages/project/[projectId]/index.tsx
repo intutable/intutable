@@ -1,7 +1,16 @@
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
-import { Box, Card, CardContent, CircularProgress, Grid, Menu, MenuItem, Typography } from "@mui/material"
+import {
+    Box,
+    Card,
+    CardContent,
+    CircularProgress,
+    Grid,
+    Menu,
+    MenuItem,
+    Typography,
+} from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
@@ -120,7 +129,11 @@ const TableCard: React.FC<TableCardProps> = props => {
             </Card>
 
             {anchorEL && (
-                <TableContextMenu anchorEL={anchorEL} open={anchorEL != null} onClose={handleCloseContextMenu}>
+                <TableContextMenu
+                    anchorEL={anchorEL}
+                    open={anchorEL != null}
+                    onClose={handleCloseContextMenu}
+                >
                     <Box
                         onClick={async () => {
                             handleCloseContextMenu()
@@ -266,7 +279,10 @@ type PageProps = {
     project: ProjectDescriptor
     fallback: { [cackeKey: string]: ViewDescriptor[] }
 }
-const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ fallback, project }) => (
+const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({
+    fallback,
+    project,
+}) => (
     <SWRConfig value={{ fallback }}>
         <TableList project={project} />
     </SWRConfig>

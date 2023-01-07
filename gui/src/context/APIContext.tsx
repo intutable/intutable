@@ -1,12 +1,12 @@
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { TableDescriptor, ViewDescriptor } from "@shared/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import React, { useEffect, useState } from "react"
 
 export type APIContextProps = {
     project: ProjectDescriptor | null
     setProject: React.Dispatch<React.SetStateAction<ProjectDescriptor | null>>
-    table: ViewDescriptor | null
-    setTable: React.Dispatch<React.SetStateAction<ViewDescriptor | null>>
+    table: TableDescriptor | null
+    setTable: React.Dispatch<React.SetStateAction<TableDescriptor | null>>
     view: ViewDescriptor | null
     setView: React.Dispatch<React.SetStateAction<ViewDescriptor | null>>
 }
@@ -26,7 +26,7 @@ export const useAPI = () => React.useContext(APIContext)
 
 export type APIContextProviderProps = {
     project?: ProjectDescriptor
-    table?: ViewDescriptor
+    table?: TableDescriptor
     view?: ViewDescriptor
     children: React.ReactNode
 }
@@ -37,7 +37,7 @@ export const APIContextProvider: React.FC<APIContextProviderProps> = props => {
     // If a projects gets set to null, the table must be set to null equally
     const [project, setProject] = useState<ProjectDescriptor | null>(props.project || null)
 
-    const [table, setTable] = useState<ViewDescriptor | null>(props.table || null)
+    const [table, setTable] = useState<TableDescriptor | null>(props.table || null)
 
     const [view, setView] = useState<ViewDescriptor | null>(props.view || null)
 

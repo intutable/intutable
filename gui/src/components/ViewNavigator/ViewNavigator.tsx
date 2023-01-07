@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { ViewDescriptor } from "@shared/types"
 import AddBoxIcon from "@mui/icons-material/AddBox"
 import {
     Box,
@@ -38,7 +38,12 @@ const AddViewModal: React.FC<AddViewModalProps> = props => {
             <DialogContent>
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     {/* Name */}
-                    <TextField label="Name" variant="outlined" value={name} onChange={e => setName(e.target.value)} />
+                    <TextField
+                        label="Name"
+                        variant="outlined"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                    />
                 </FormControl>
             </DialogContent>
             <DialogActions>
@@ -66,7 +71,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     const { view: currentView, setView } = useAPI()
     const { data } = useTable()
     const { views, createView, renameView, deleteView, mutate } = useViews({
-        table: data?.metadata.descriptor,
+        table: data?.descriptor,
     })
     const { snackInfo, snackError } = useSnacki()
 
@@ -81,7 +86,8 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
             setView(newView)
         } catch (error) {
             const err = makeError(error)
-            if (err.message === "alreadyTaken") snackError("Dieser Name wird bereits für eine Sicht verwendet!")
+            if (err.message === "alreadyTaken")
+                snackError("Dieser Name wird bereits für eine Sicht verwendet!")
             else snackError("unbekannter Fehler beim erstellen der Sicht")
         }
     }
@@ -95,8 +101,10 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
             await renameView(view.id, newName)
         } catch (error) {
             const err = makeError(error)
-            if (err.message === "alreadyTaken") snackError("Dieser Name wird bereits für eine Sicht verwendet!")
-            else if (err.message === "changeDefaultView") snackInfo("Standardsicht kann nicht umbenannt werden.")
+            if (err.message === "alreadyTaken")
+                snackError("Dieser Name wird bereits für eine Sicht verwendet!")
+            else if (err.message === "changeDefaultView")
+                snackInfo("Standardsicht kann nicht umbenannt werden.")
             else snackError("Sicht konnte nicht umbenannt werden!")
         }
     }
@@ -112,7 +120,8 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
             mutate()
         } catch (error) {
             const err = makeError(error)
-            if (err.message === "changeDefaultView") snackInfo("Standardsicht kann nicht gelöscht werden..")
+            if (err.message === "changeDefaultView")
+                snackInfo("Standardsicht kann nicht gelöscht werden..")
             else snackError("Sicht konnte nicht gelöscht werden")
         }
     }

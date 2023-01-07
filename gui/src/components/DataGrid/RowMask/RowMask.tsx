@@ -70,7 +70,11 @@ export const RowMask: React.FC = () => {
                     .filter(column => ColumnUtility.isAppColumn(column) === false)
                     .filter(column => column.hidden !== true)
                     .sort((a, b) =>
-                        a.isUserPrimaryKey! === b.isUserPrimaryKey! ? 0 : a.isUserPrimaryKey! === true ? -1 : 1
+                        a.isUserPrimaryKey! === b.isUserPrimaryKey!
+                            ? 0
+                            : a.isUserPrimaryKey! === true
+                            ? -1
+                            : 1
                     )
                     .map(column => (
                         <RowMaskColumn column={column} key={column.id} />

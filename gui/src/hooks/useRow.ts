@@ -1,11 +1,9 @@
-import { asTable } from "@intutable/lazy-views/dist/selectable"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
 
-import { useColumn } from "./useColumn"
 import { useSnacki } from "./useSnacki"
 
 type Column = Column.Deserialized
@@ -27,19 +25,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
-    const { getColumnInfo: getTableColumn } = useColumn(tableOptions, viewOptions)
-
-    /**
-     * Get the (backend, primary key) ID of a row from its RDG counterpart.
-     * Uses the view supplied given by {@link useView} to determine the
-     * correct key. The table can be overridden with {@link viewOptions}.
-     *
-     * @deprecated Now you can just do `row._id` instead.
-     */
-    const getRowId = (row: Row): number => {
-        const uidColumn = view!.metaColumns.find(c => c.name === "_id")!
-        return row[uidColumn.key] as number
-    }
 
     /**
      * Used for row reordering / drag n drop
@@ -57,12 +42,11 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    // TODO: put `asTable` into the corresponding api route
     const createRow = async (atIndex?: number): Promise<void> => {
         await fetcher({
             url: "/api/row",
             body: {
-                table: asTable(table!.metadata.source).table,
+                viewId: view!.descriptor.id,
                 values: {},
                 atIndex,
             },
@@ -70,27 +54,16 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
         await mutateTable()
         await mutateView()
-        // const lastRowIndex = rows.length
-        // const deserializedRow = SerializableTable.deserializeRow(
-        //     serializedRow,
-        //     lastRowIndex
-        // )
-        // setRows(prev => {
-        //     prev.push(deserializedRow)
-        //     return prev
-        // })
     }
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    // TODO: filter row and delete by index and then shift them
-    // TODO: put `asTable` into the corresponding api route
     const deleteRow = async (row: Row): Promise<void> => {
         await fetcher({
             url: "/api/row",
             body: {
-                table: asTable(table!.metadata.source).table,
-                condition: ["_id", getRowId(row)],
+                viewId: view!.descriptor.id,
+                rowsToDelete: row._id,
             },
             method: "DELETE",
         })
@@ -101,21 +74,16 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    // TODO: do not use the col key, use its id
     // TODO: `value` needs a (better) type
-    // TODO: put `asTable` into the corresponding api route
     const updateRow = async (column: Column, row: Row, updatedValue: unknown): Promise<void> => {
-        // it's a view on top of a view, but the property `column.name`
-        // reflects the actual name in the DB regardless of how deep the
-        // tree is.
-        const metaColumn = getTableColumn(column)!
-        const baseColumnKey = metaColumn.name
-
         const serializedValue = SerDes.serializeRowValue(updatedValue, column)
 
         // TODO: put this in the api route
-        if (metaColumn.joinId !== null) {
-            snackError("Dies ist ein Lookup. Änderungen dürfen nur in der Originaltabelle vorgenommen werden.")
+        if (!["standard", "link"].includes(column.kind)) {
+            snackError(
+                "Diese Spalte gehört zu einer anderen Tabelle." +
+                    " Änderungen dürfen nur in der Originaltabelle vorgenommen werden."
+            )
             return
             // throw Error("attempted to edit data of a different table")
         }
@@ -123,11 +91,9 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         await fetcher({
             url: "/api/row",
             body: {
-                table: asTable(table!.metadata.source).table,
-                condition: ["_id", getRowId(row)],
-                update: {
-                    [baseColumnKey]: serializedValue,
-                },
+                viewId: view!.descriptor.id,
+                rowsToUpdate: row._id,
+                values: { [column.id]: serializedValue },
             },
             method: "PATCH",
         })
@@ -136,7 +102,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     }
 
     return {
-        getRowId,
         onRowReorder,
         createRow,
         deleteRow,

@@ -40,9 +40,14 @@ export class CellMap extends Map<string, CellCtor> {
         return instances.map(cell => cell.label)
     }
 
-    public getBrandLabelMap(column: Column.Serialized | "suppress" = "suppress"): { brand: string; label: string }[] {
+    public getBrandLabelMap(
+        column: Column.Serialized | "suppress" = "suppress"
+    ): { brand: string; label: string }[] {
         const _column = column === "suppress" ? ColumnFactory.createDummy() : column
-        return Array.from(this.entries()).map(([brand, ctor]) => ({ brand, label: new ctor(_column).label }))
+        return Array.from(this.entries()).map(([brand, ctor]) => ({
+            brand,
+            label: new ctor(_column).label,
+        }))
     }
 
     /** E.g. when you only want to get some properties that do no rely on explicit column information (such as the label or icon)  */
@@ -69,6 +74,8 @@ export class CellMap extends Map<string, CellCtor> {
         })
         const uniqueBrands = new Set(brands)
         if (brands.length !== uniqueBrands.size)
-            throw new Error(`Duplicate brands found: ${brands.filter(brand => !uniqueBrands.has(brand))}`)
+            throw new Error(
+                `Duplicate brands found: ${brands.filter(brand => !uniqueBrands.has(brand))}`
+            )
     }
 }

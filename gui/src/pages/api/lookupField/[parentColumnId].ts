@@ -26,7 +26,10 @@ const POST = withCatchingAPIRoute(async (req, res, parentColumnId: ColumnInfo["i
     const user = req.session.user!
 
     const column = await withReadWriteConnection(user, async sessionID => {
-        const tableInfo = await coreRequest<ViewInfo>(getViewInfo(sessionID, tableId), user.authCookie)
+        const tableInfo = await coreRequest<ViewInfo>(
+            getViewInfo(sessionID, tableId),
+            user.authCookie
+        )
 
         // find the column
         const join = tableInfo.joins.find(j => j.id === joinId)!
@@ -44,7 +47,12 @@ const POST = withCatchingAPIRoute(async (req, res, parentColumnId: ColumnInfo["i
 
         // add to table and views
         const newColumn = await coreRequest<ColumnInfo>(
-            addColumnToTable(sessionID, tableId, { parentColumnId: parentColumnId, attributes }, joinId),
+            addColumnToTable(
+                sessionID,
+                tableId,
+                { parentColumnId: parentColumnId, attributes },
+                joinId
+            ),
             user.authCookie
         )
         return newColumn

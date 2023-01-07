@@ -34,7 +34,10 @@ const UserPage: React.FC = () => {
         setAddUserAnchorEl(event.currentTarget)
     }
 
-    const handleOpenEditUserModal = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, user: User) => {
+    const handleOpenEditUserModal = async (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+        user: User
+    ) => {
         setEditUserAnchorEl(event.currentTarget)
         setUserBeingEdited(user)
     }

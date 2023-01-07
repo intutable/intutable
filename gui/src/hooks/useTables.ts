@@ -1,7 +1,7 @@
 import { ViewDescriptor } from "@intutable/lazy-views"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { useAPI } from "context/APIContext"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import useSWR, { unstable_serialize } from "swr"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 

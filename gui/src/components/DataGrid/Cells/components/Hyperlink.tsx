@@ -41,13 +41,20 @@ export class Hyperlink extends Cell {
             }
         }, [input, key, props, row])
 
-        return <this.Input onChange={e => setInput(e.target.value)} onBlur={() => props.onClose(true)} value={input} />
+        return (
+            <this.Input
+                onChange={e => setInput(e.target.value)}
+                onBlur={() => props.onClose(true)}
+                value={input}
+            />
+        )
     }
 
     public formatter = (props: FormatterProps<Row>) => {
         const { content } = this.destruct<string | null | undefined>(props)
 
-        if (Hyperlink.isValid(content) === false || content == null || content.length < 1) return null
+        if (Hyperlink.isValid(content) === false || content == null || content.length < 1)
+            return null
 
         return (
             <Box

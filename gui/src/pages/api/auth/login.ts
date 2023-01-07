@@ -19,7 +19,8 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
         })
 
         // TODO: make proper checker function
-        if (loginRequest.status !== 302) throw new Error(`Netzwerkfehler, Status = ${loginRequest.status}`)
+        if (loginRequest.status !== 302)
+            throw new Error(`Netzwerkfehler, Status = ${loginRequest.status}`)
 
         const text = await loginRequest.text()
 
@@ -33,7 +34,8 @@ const loginRoute = async (req: NextApiRequest, res: NextApiResponse) => {
             .find(c => c[0] === "connect.sid")![1]
 
         const user = await getCurrentUser(authCookie)
-        if (user == null) throw new Error("Could not get the current user from user-authentication!")
+        if (user == null)
+            throw new Error("Could not get the current user from user-authentication!")
 
         req.session.user = { isLoggedIn: true, ...user } as User
 

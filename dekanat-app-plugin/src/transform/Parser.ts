@@ -1,11 +1,12 @@
-import type { ColumnInfo, Condition, ViewData as RawViewData } from "@intutable/lazy-views"
+import type { Condition } from "@intutable/lazy-views/dist/types"
+import { asTable } from "@intutable/lazy-views/dist/selectable"
+import type { RawViewColumnInfo, RawViewData } from "../types/raw"
 import { DB, SerializedColumn, SerializedViewData, TableData } from "shared/dist/types"
 import { Filter } from "../types/filter"
 import { cast } from "./cast"
 import { internalColumnUtil } from "./InternalColumnUtil"
 import * as FilterParser from "./filter"
 import { restructure } from "./restructure"
-import { inspect } from "util"
 
 /**
  * ### Parser
@@ -41,19 +42,25 @@ export class ParserClass {
             ...serializedProps,
             isUserPrimaryKey: cast.toBoolean(column.isUserPrimaryKey),
             hidden: cast.toBoolean(column.hidden),
-            width: cast.orEmpty(cast.or.bind(cast.toNumber.bind(cast), cast.toString.bind(cast)), column.width),
+            width: cast.orEmpty(
+                cast.or.bind(cast.toNumber.bind(cast), cast.toString.bind(cast)),
+                column.width
+            ),
             minWidth: cast.orEmpty(cast.toNumber.bind(cast), column.minWidth),
             maxWidth: cast.orEmpty(cast.toNumber.bind(cast), column.maxWidth),
             editable: cast.orEmpty(cast.toBoolean.bind(cast), column.editable),
             frozen: cast.orEmpty(cast.toBoolean.bind(cast), column.frozen),
             resizable: cast.orEmpty(cast.toBoolean.bind(cast), column.resizable),
             sortable: cast.orEmpty(cast.toBoolean.bind(cast), column.sortable),
-            sortDescendingFirst: cast.orEmpty(cast.toBoolean.bind(cast), column.sortDescendingFirst),
+            sortDescendingFirst: cast.orEmpty(
+                cast.toBoolean.bind(cast),
+                column.sortDescendingFirst
+            ),
         }
         return casted
     }
 
-    public parseColumn(column: ColumnInfo): SerializedColumn {
+    public parseColumn(column: RawViewColumnInfo): SerializedColumn {
         const restructured = restructure.column(column)
         return this.castColumn(restructured)
     }
@@ -120,7 +127,10 @@ export class ParserClass {
         const castedColumns = internalProcessedColumns.map(this.castColumn)
 
         return {
-            metadata: { ...view },
+            descriptor: view.descriptor,
+            joins: view.joins,
+            rawTable: asTable(view.source).table,
+            rawColumns: view.columns,
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
         }

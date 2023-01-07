@@ -53,8 +53,12 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
     const { data: viewData } = useView()
     const { selectedRows } = useSelectedRows() // TODO: consider row selection
 
-    const [file, setFile] = useState<ExportRequest["file"]>(props.options?.initialState?.file || initialState.file)
-    const [options, setOptions] = useState<ExportOptions>(props.options?.initialState?.options || initialState.options)
+    const [file, setFile] = useState<ExportRequest["file"]>(
+        props.options?.initialState?.file || initialState.file
+    )
+    const [options, setOptions] = useState<ExportOptions>(
+        props.options?.initialState?.options || initialState.options
+    )
     const [considerRowSelection, setConsiderRowSelection] = useState<boolean>(false)
     const resetState = () => {
         setFile(props.options?.initialState?.file || initialState.file)
@@ -106,7 +110,9 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
 
     return (
         <Dialog open={props.open} onClose={props.onClose}>
-            <DialogTitle>{props.options?.title || `View ${viewData?.descriptor.name} exportieren`}</DialogTitle>
+            <DialogTitle>
+                {props.options?.title || `View ${viewData?.descriptor.name} exportieren`}
+            </DialogTitle>
             <DialogContent>
                 {options.columnSelection.length > 0 && (
                     <DialogContentText
@@ -157,7 +163,11 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                             labelId="format-label"
                             value={file.format}
                             onChange={e =>
-                                updateState("file", "format", e.target.value as ExportRequest["file"]["format"])
+                                updateState(
+                                    "file",
+                                    "format",
+                                    e.target.value as ExportRequest["file"]["format"]
+                                )
                             }
                             input={<OutlinedInput label="Format" />}
                         >
@@ -205,7 +215,9 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                         control={
                             <Switch
                                 checked={options.includeHeader ?? false}
-                                onChange={e => updateState("options", "includeHeader", e.target.checked)}
+                                onChange={e =>
+                                    updateState("options", "includeHeader", e.target.checked)
+                                }
                             />
                         }
                         label="Spalten-Titel mit exportieren"
@@ -215,7 +227,9 @@ export const ExportViewDialog: React.FC<ExportViewDialogProps> = props => {
                         control={
                             <Switch
                                 checked={options.includeEmptyRows ?? false}
-                                onChange={e => updateState("options", "includeEmptyRows", e.target.checked)}
+                                onChange={e =>
+                                    updateState("options", "includeEmptyRows", e.target.checked)
+                                }
                             />
                         }
                         label="Leere Zeilen mit exportieren"

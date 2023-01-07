@@ -1,4 +1,3 @@
-import { ColumnInfo } from "@intutable/lazy-views/dist/types"
 import LookupIcon from "@mui/icons-material/ManageSearch"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -21,7 +20,7 @@ import { fetcher } from "api/fetcher"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
 
@@ -40,25 +39,21 @@ const Modal: React.FC<ModalProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { foreignTable, columnInfo } = useForeignTable(props.column)
-    const { linkTableData: foreignTableData, error, getColumnInfo } = useLink(props.column)
+    const { foreignTable, join } = useForeignTable(props.column)
+    const { linkTableData: foreignTableData, error } = useLink(props.column)
 
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 
     const [selection, setSelection] = useState<TableColumn | null>(null)
-    const selectedColDescriptor = useMemo(
-        () => (selection && foreignTableData ? getColumnInfo(selection) : null),
-        [foreignTableData, selection, getColumnInfo]
-    )
 
-    const handleAddLookup = async (column: ColumnInfo) => {
+    const handleAddLookup = async (column: TableColumn) => {
         try {
-            const joinId = columnInfo!.joinId!
+            const joinId = join!.id
             await fetcher({
                 url: `/api/lookupField/${column.id}`,
                 body: {
-                    tableId: data!.metadata.descriptor.id,
+                    tableId: data!.descriptor.id,
                     joinId,
                 },
             })
@@ -102,7 +97,9 @@ const Modal: React.FC<ModalProps> = props => {
                                         disablePadding
                                         sx={{
                                             bgcolor:
-                                                selection?.key === col.key ? theme.palette.action.selected : undefined,
+                                                selection?.key === col.key
+                                                    ? theme.palette.action.selected
+                                                    : undefined,
                                         }}
                                     >
                                         <ListItemButton onClick={onClickHandler.bind(null, col)}>
@@ -120,10 +117,10 @@ const Modal: React.FC<ModalProps> = props => {
                     loading={foreignTableData == null && error == null}
                     loadingIndicator="Lädt..."
                     onClick={async () => {
-                        await handleAddLookup(selectedColDescriptor!)
+                        await handleAddLookup(selection!)
                         props.onClose()
                     }}
-                    disabled={selectedColDescriptor == null || error}
+                    disabled={selection == null || error}
                 >
                     Hinzufügen
                 </LoadingButton>
@@ -156,7 +153,11 @@ export const AddLookup: React.FC<AddLookupProps> = props => {
                 <ListItemText>Lookup hinzufügen</ListItemText>
             </MenuItem>
 
-            <Modal open={anchorEL != null} onClose={closeModal} column={headerRendererProps.column} />
+            <Modal
+                open={anchorEL != null}
+                onClose={closeModal}
+                column={headerRendererProps.column}
+            />
         </>
     )
 }

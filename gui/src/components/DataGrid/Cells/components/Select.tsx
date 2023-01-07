@@ -1,7 +1,17 @@
 import AddIcon from "@mui/icons-material/Add"
 import CheckIcon from "@mui/icons-material/Check"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, Stack, TextField } from "@mui/material"
+import {
+    Box,
+    Chip,
+    Divider,
+    IconButton,
+    Menu,
+    MenuItem,
+    MenuList,
+    Stack,
+    TextField,
+} from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
@@ -115,9 +125,13 @@ export class Select extends Cell {
     public editor = () => null
 
     private getOptions(column: Column.Deserialized, rows: Row[], self?: string | null): string[] {
-        const options = rows.map(row => row[column.key]).filter(option => Cell.isEmpty(option) === false) // remove empty values
+        const options = rows
+            .map(row => row[column.key])
+            .filter(option => Cell.isEmpty(option) === false) // remove empty values
 
-        const optionsWithoutSelf = (self == null ? options : options.filter(option => self !== option)) as string[]
+        const optionsWithoutSelf = (
+            self == null ? options : options.filter(option => self !== option)
+        ) as string[]
 
         const uniqueOptions = new Set(optionsWithoutSelf)
 
@@ -148,7 +162,10 @@ export class Select extends Cell {
         }
 
         const { data } = useView()
-        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : []), [data, column, content])
+        const list = useMemo(
+            () => (data ? this.getOptions(column, data.rows, content) : []),
+            [data, column, content]
+        )
 
         return (
             <>
@@ -185,14 +202,18 @@ export class Select extends Cell {
                             >
                                 <ChipItem
                                     label={content}
-                                    onDelete={this.column.editable ? () => changeOption("") : undefined}
+                                    onDelete={
+                                        this.column.editable ? () => changeOption("") : undefined
+                                    }
                                 />
                             </Box>
-                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
-                                <IconButton size="small" onClick={openModal}>
-                                    <KeyboardArrowDownIcon fontSize="small" />
-                                </IconButton>
-                            )}
+                            {hovering &&
+                                this.column.editable &&
+                                this.isReadonlyComponent === false && (
+                                    <IconButton size="small" onClick={openModal}>
+                                        <KeyboardArrowDownIcon fontSize="small" />
+                                    </IconButton>
+                                )}
                         </>
                     )}
                 </Box>
@@ -260,11 +281,13 @@ export class Select extends Cell {
                         />
                     )}
 
-                    {props.hoveringOnParent && props.column.editable && this.isReadonlyComponent === false && (
-                        <IconButton size="small" onClick={openModal}>
-                            <AddIcon fontSize="small" />
-                        </IconButton>
-                    )}
+                    {props.hoveringOnParent &&
+                        props.column.editable &&
+                        this.isReadonlyComponent === false && (
+                            <IconButton size="small" onClick={openModal}>
+                                <AddIcon fontSize="small" />
+                            </IconButton>
+                        )}
                 </Stack>
 
                 {modalRef.current !== null && (

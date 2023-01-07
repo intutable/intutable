@@ -22,9 +22,18 @@
  * provided by this plugin from the front-end.
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
+import { insert, update, deleteRow } from "@intutable/database/dist/requests"
+import { Condition as RawCondition } from "@intutable/database/dist/types"
 import * as pm from "@intutable/project-management/dist/requests"
-import { ColumnDescriptor as PmColumn } from "@intutable/project-management/dist/types"
-import { types as lvt, requests as lvr, selectable, asTable } from "@intutable/lazy-views/"
+import {
+    RowOptions,
+    ColumnSpecifier,
+    requests as lvr,
+    selectable,
+    isTable,
+    isView,
+    asTable,
+} from "@intutable/lazy-views/"
 import {
     defaultViewName,
     APP_TABLE_COLUMNS,
@@ -37,13 +46,34 @@ import {
     COLUMN_INDEX_KEY,
 } from "shared/dist/api"
 
-import { StandardColumnSpecifier, CustomColumnAttributes, DB, Filter, SerializedColumn } from "shared/dist/types"
 import sanitizeName from "shared/dist/utils/sanitizeName"
 
 import { parser, ParserClass } from "./transform/Parser"
-import * as types from "./types"
+import {
+    RawViewId,
+    RawTableId,
+    RawViewDescriptor,
+    RawTableDescriptor,
+    RawViewOptions,
+    RawTableInfo,
+    RawViewInfo,
+    RawTableColumnDescriptor,
+    RawViewColumnInfo,
+    TableId,
+    ViewId,
+    TableDescriptor,
+    ViewDescriptor,
+    TableData,
+    SerializedColumn,
+    Filter,
+    StandardColumnSpecifier,
+    DB,
+    CustomColumnAttributes,
+    Row,
+} from "./types"
+import { RowData, RawRowData } from "./types/requests"
 import * as req from "./requests"
-import { error, ErrorCode } from "./error"
+import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
 
 let core: PluginLoader
@@ -65,6 +95,9 @@ export async function init(plugins: PluginLoader) {
         .on(req.listViews.name, listViews_)
         .on(req.getViewData.name, getViewData_)
         .on(req.changeViewFilters.name, changeViewFilters_)
+        .on(req.createRow.name, createRow_)
+        .on(req.updateRows.name, updateRows_)
+        .on(req.deleteRows.name, deleteRows_)
         .on(perm.getUsers.name, perm.getUsers_)
         .on(perm.getRoles.name, perm.getRoles_)
         .on(perm.createUser.name, perm.createUser_)
@@ -76,25 +109,33 @@ function coreRequest<T = unknown>(req: CoreRequest): Promise<T> {
     return core.events.request(req)
 }
 //==================== core methods ==========================
-async function createTable_({ sessionID, roleId, projectId, name }: CoreRequest): Promise<CoreResponse> {
-    return createTable(sessionID, roleId, projectId, name)
+
+async function createTable_({
+    connectionId,
+    roleId,
+    projectId,
+    name,
+}: CoreRequest): Promise<CoreResponse> {
+    return createTable(connectionId, roleId, projectId, name)
 }
 async function createTable(
-    sessionID: string,
+    connectionId: string,
     roleId: number,
     projectId: number,
     name: string
-): Promise<types.TableDescriptor> {
+): Promise<TableDescriptor> {
     const internalName = sanitizeName(name)
     const existingTables = (await core.events.request(
-        pm.getTablesFromProject(sessionID, projectId)
-    )) as lvt.TableDescriptor[]
+        pm.getTablesFromProject(connectionId, projectId)
+    )) as RawTableDescriptor[]
     if (existingTables.some(t => t.name === internalName))
         return error(createTable.name, "table name already taken", ErrorCode.alreadyTaken)
     const pmTable = (await core.events.request(
-        pm.createTableInProject(sessionID, roleId, projectId, internalName, APP_TABLE_COLUMNS)
-    )) as lvt.TableDescriptor
-    const pmColumns = (await core.events.request(pm.getColumnsFromTable(sessionID, pmTable.id))) as PmColumn[]
+        pm.createTableInProject(connectionId, roleId, projectId, internalName, APP_TABLE_COLUMNS)
+    )) as RawTableDescriptor
+    const pmColumns = (await core.events.request(
+        pm.getColumnsFromTable(connectionId, pmTable.id)
+    )) as RawTableColumnDescriptor[]
     const idColumn = pmColumns.find(c => c.name === "_id")!
     const idxColumn = pmColumns.find(c => c.name === COLUMN_INDEX_KEY)!
     const nameColumn = pmColumns.find(c => c.name === "name")!
@@ -108,7 +149,7 @@ async function createTable(
     ]
     const tableView = (await core.events.request(
         lvr.createView(
-            sessionID,
+            connectionId,
             selectable.tableId(pmTable.id),
             /* Doesn't need to be sanitized, as it's not used as an SQL name */
             name,
@@ -116,15 +157,15 @@ async function createTable(
             emptyRowOptions(),
             roleId
         )
-    )) as lvt.ViewDescriptor
+    )) as RawViewDescriptor
 
     // create default filter view
     const tableViewColumns = (await core.events
-        .request(lvr.getViewInfo(sessionID, tableView.id))
-        .then(info => info.columns)) as lvt.ColumnInfo[]
+        .request(lvr.getViewInfo(connectionId, tableView.id))
+        .then(info => info.columns)) as RawViewColumnInfo[]
     await core.events.request(
         lvr.createView(
-            sessionID,
+            connectionId,
             selectable.viewId(tableView.id),
             defaultViewName(),
             { columns: [], /* [] means all columns */ joins: [] },
@@ -134,39 +175,53 @@ async function createTable(
     )
     return tableView
 }
-async function deleteTable_({ sessionID, id }: CoreRequest): Promise<CoreResponse> {
-    return deleteTable(sessionID, id)
+async function deleteTable_({ connectionId, id }: CoreRequest): Promise<CoreResponse> {
+    return deleteTable(connectionId, id)
 }
-async function deleteTable(sessionID: string, id: types.TableId) {
-    const filterViews = await listViews(sessionID, id)
-    Promise.all(filterViews.map(v => core.events.request(lvr.deleteView(sessionID, v.id))))
-    const tableViewOptions = (await core.events.request(lvr.getViewOptions(sessionID, id))) as lvt.ViewOptions
-    await core.events.request(lvr.deleteView(sessionID, id))
-    await core.events.request(pm.removeTable(sessionID, selectable.asTable(tableViewOptions.source).id))
+async function deleteTable(connectionId: string, id: TableId) {
+    const filterViews = await listViews(connectionId, id)
+    Promise.all(filterViews.map(v => core.events.request(lvr.deleteView(connectionId, v.id))))
+    const tableViewOptions = (await core.events.request(
+        lvr.getViewOptions(connectionId, id)
+    )) as RawViewOptions
+    await core.events.request(lvr.deleteView(connectionId, id))
+    await core.events.request(
+        pm.removeTable(connectionId, selectable.asTable(tableViewOptions.source).id)
+    )
     return { message: `deleted table ${id}` }
 }
 
-async function createStandardColumn_({ sessionID, tableId, column, addToViews }: CoreRequest): Promise<CoreResponse> {
-    return createStandardColumn(sessionID, tableId, column, addToViews)
+async function createStandardColumn_({
+    connectionId,
+    tableId,
+    column,
+    addToViews,
+}: CoreRequest): Promise<CoreResponse> {
+    return createStandardColumn(connectionId, tableId, column, addToViews)
 }
 async function createStandardColumn(
-    sessionID: string,
-    tableId: lvt.ViewDescriptor["id"],
+    connectionId: string,
+    tableId: RawViewDescriptor["id"],
     column: StandardColumnSpecifier,
-    addToViews?: types.ViewId[]
+    addToViews?: ViewId[]
 ) {
-    const options = (await core.events.request(lvr.getViewOptions(sessionID, tableId))) as lvt.ViewOptions
+    const options = (await core.events.request(
+        lvr.getViewOptions(connectionId, tableId)
+    )) as RawViewOptions
     const key = sanitizeName(column.name)
-    const tableColumn = await core.events.request(pm.createColumnInTable(sessionID, asTable(options.source).id, key))
+    const tableColumn = await core.events.request(
+        pm.createColumnInTable(connectionId, asTable(options.source).id, key)
+    )
     // add column to table and filter views
     const columnIndex =
-        options.columnOptions.columns.length + options.columnOptions.joins.reduce((acc, j) => acc + j.columns.length, 0)
+        options.columnOptions.columns.length +
+        options.columnOptions.joins.reduce((acc, j) => acc + j.columns.length, 0)
     const allAttributes: Partial<DB.Column> = {
         ...standardColumnAttributes(column.name, column.cellType, columnIndex),
         ...parser.deparseColumn(column.attributes || {}),
     }
     const tableViewColumn = await addColumnToTable(
-        sessionID,
+        connectionId,
         tableId,
         {
             parentColumnId: tableColumn.id,
@@ -181,27 +236,27 @@ async function createStandardColumn(
 }
 
 async function addColumnToTable_({
-    sessionID,
+    connectionId,
     tableId,
     column,
     joinId,
     addToViews,
 }: CoreRequest): Promise<CoreResponse> {
-    return addColumnToTable(sessionID, tableId, column, joinId, addToViews)
+    return addColumnToTable(connectionId, tableId, column, joinId, addToViews)
 }
 async function addColumnToTable(
-    sessionID: string,
-    tableId: lvt.ViewDescriptor["id"],
-    column: lvt.ColumnSpecifier,
+    connectionId: string,
+    tableId: RawViewDescriptor["id"],
+    column: ColumnSpecifier,
     joinId: number | null = null,
-    addToViews?: types.ViewId[]
-): Promise<lvt.ColumnInfo> {
+    addToViews?: ViewId[]
+): Promise<RawViewColumnInfo> {
     const tableColumn = (await core.events.request(
-        lvr.addColumnToView(sessionID, tableId, column, joinId)
-    )) as lvt.ColumnInfo
+        lvr.addColumnToView(connectionId, tableId, column, joinId)
+    )) as RawViewColumnInfo
     if (addToViews === undefined || addToViews.length !== 0)
         await addColumnToFilterViews(
-            sessionID,
+            connectionId,
             tableId,
             {
                 parentColumnId: tableColumn.id,
@@ -213,126 +268,154 @@ async function addColumnToTable(
 }
 
 async function addColumnToFilterViews(
-    sessionID: string,
-    tableId: lvt.ViewDescriptor["id"],
-    column: lvt.ColumnSpecifier,
-    views?: types.ViewId[]
-): Promise<lvt.ColumnInfo[]> {
+    connectionId: string,
+    tableId: RawViewDescriptor["id"],
+    column: ColumnSpecifier,
+    views?: ViewId[]
+): Promise<RawViewColumnInfo[]> {
     const filterViews = (await core.events.request(
-        lvr.listViews(sessionID, selectable.viewId(tableId))
-    )) as lvt.ViewDescriptor[]
-    const selectedViews = views === undefined ? filterViews : filterViews.filter(v => views.includes(v.id))
-    return Promise.all(selectedViews.map(v => core.events.request(lvr.addColumnToView(sessionID, v.id, column))))
+        lvr.listViews(connectionId, selectable.viewId(tableId))
+    )) as RawViewDescriptor[]
+    const selectedViews =
+        views === undefined ? filterViews : filterViews.filter(v => views.includes(v.id))
+    return Promise.all(
+        selectedViews.map(v => core.events.request(lvr.addColumnToView(connectionId, v.id, column)))
+    )
 }
 
-async function removeColumnFromTable_({ sessionID, tableId, columnId }: CoreRequest): Promise<CoreResponse> {
-    return removeColumnFromTable(sessionID, tableId, columnId)
+async function removeColumnFromTable_({
+    connectionId,
+    tableId,
+    columnId,
+}: CoreRequest): Promise<CoreResponse> {
+    return removeColumnFromTable(connectionId, tableId, columnId)
 }
 async function removeColumnFromTable(
-    sessionID: string,
-    tableId: lvt.ViewDescriptor["id"],
-    columnId: lvt.ColumnInfo["id"]
+    connectionId: string,
+    tableId: RawViewDescriptor["id"],
+    columnId: RawViewColumnInfo["id"]
 ) {
-    let tableInfo = (await core.events.request(lvr.getViewInfo(sessionID, tableId))) as lvt.ViewInfo
+    const tableInfo = (await core.events.request(
+        lvr.getViewInfo(connectionId, tableId)
+    )) as RawViewInfo
 
     if (!selectable.isTable(tableInfo.source))
         return error("removeColumnFromTable", `view #${tableId} is a filter view, not a table`)
 
     const column = tableInfo.columns.find(c => c.id === columnId)
-    if (!column) return error("removeColumnFromTable", `view #${tableId} has no column with ID ${columnId}`)
+    if (!column)
+        return error("removeColumnFromTable", `view #${tableId} has no column with ID ${columnId}`)
 
     const kind = column.attributes.kind
     switch (kind) {
         case "standard":
-            await removeStandardColumn(sessionID, tableId, column)
+            await removeStandardColumn(connectionId, tableId, column)
             break
         case "link":
-            await removeLinkColumn(sessionID, tableId, column)
+            await removeLinkColumn(connectionId, tableId, column)
             break
         case "lookup":
-            await removeLookupColumn(sessionID, tableId, columnId)
+            await removeLookupColumn(connectionId, tableId, columnId)
             break
         default:
             return error("removeColumnFromTable", `column #${columnId} has unknown kind ${kind}`)
     }
 
     // shift indices on remaining columns
-    // in case of links, more columns than the one specified may have
-    // disappeared, so we need to refresh.
-    tableInfo = (await core.events.request(lvr.getViewInfo(sessionID, tableId))) as lvt.ViewInfo
-
-    const idxKey = COLUMN_INDEX_KEY
-    await Promise.all(
-        tableInfo.columns
-            .filter(c => c.attributes[idxKey] > column.attributes[idxKey])
-            .map(async c => {
-                changeTableColumnAttributes(sessionID, tableId, c.id, {
-                    [idxKey]: c.attributes[idxKey] - 1,
-                })
-            })
-    )
-
+    await shiftColumnIndicesAfterDelete(connectionId, tableId)
     return { message: `removed ${kind} column #${columnId}` }
 }
 
-async function removeLinkColumn(sessionID: string, tableId: number, column: lvt.ColumnInfo): Promise<void> {
-    const info = (await core.events.request(lvr.getViewInfo(sessionID, tableId))) as lvt.ViewInfo
+async function removeLinkColumn(
+    connectionId: string,
+    tableId: number,
+    column: RawViewColumnInfo
+): Promise<void> {
+    const info = (await core.events.request(lvr.getViewInfo(connectionId, tableId))) as RawViewInfo
     const join = info.joins.find(j => j.id === column.joinId)
 
-    if (!join) return error("removeColumnFromTable", `no join with ID ${column.joinId}, in table ${tableId}`)
+    if (!join)
+        return error(
+            "removeColumnFromTable",
+            `no join with ID ${column.joinId}, in table ${tableId}`
+        )
     // remove lookup columns
-    const lookupColumns = info.columns.filter(c => c.joinId === join.id && c.attributes.kind === "lookup")
+    const lookupColumns = info.columns.filter(
+        c => c.joinId === join.id && c.attributes.kind === "lookup"
+    )
 
-    await Promise.all(lookupColumns.map(async c => removeColumnFromTable(sessionID, tableId, c.id)))
+    await Promise.all(
+        lookupColumns.map(async c => removeColumnFromTable(connectionId, tableId, c.id))
+    )
     // remove link column
-    await removeColumnFromViews(sessionID, tableId, column.id)
-    await core.events.request(lvr.removeColumnFromView(sessionID, column.id))
+    await removeColumnFromViews(connectionId, tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(connectionId, column.id))
     // remove join and FK column
-    await core.events.request(lvr.removeJoinFromView(sessionID, join.id))
+    await core.events.request(lvr.removeJoinFromView(connectionId, join.id))
     const fkColumnId = join.on[0]
-    await core.events.request(pm.removeColumn(sessionID, fkColumnId))
+    await core.events.request(pm.removeColumn(connectionId, fkColumnId))
 }
 
-async function removeStandardColumn(sessionID: string, tableId: number, column: lvt.ColumnInfo): Promise<void> {
-    await removeColumnFromViews(sessionID, tableId, column.id)
-    await core.events.request(lvr.removeColumnFromView(sessionID, column.id))
-    await core.events.request(pm.removeColumn(sessionID, column.parentColumnId))
+async function removeStandardColumn(
+    connectionId: string,
+    tableId: number,
+    column: RawViewColumnInfo
+): Promise<void> {
+    await removeColumnFromViews(connectionId, tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(connectionId, column.id))
+    await core.events.request(pm.removeColumn(connectionId, column.parentColumnId))
 }
 
-async function removeLookupColumn(sessionID: string, tableId: number, columnId: number): Promise<void> {
-    await removeColumnFromViews(sessionID, tableId, columnId)
-    await core.events.request(lvr.removeColumnFromView(sessionID, columnId))
+async function removeLookupColumn(
+    connectionId: string,
+    tableId: number,
+    columnId: number
+): Promise<void> {
+    await removeColumnFromViews(connectionId, tableId, columnId)
+    await core.events.request(lvr.removeColumnFromView(connectionId, columnId))
 }
 
-/**
- * Given a list of columns, return a list of columns whose index is wrong
- * and the new index it they should have.
- */
-function getColumnIndexUpdates(columns: lvt.ColumnInfo[]): { id: number; index: number }[] {
-    return columns
-        .map((c, index) => ({ column: c, index }))
-        .filter(pair => pair.column.attributes["__columnIndex__"] !== pair.index)
-        .map(pair => ({
-            id: pair.column.id,
-            index: pair.index,
-        }))
+async function shiftColumnIndicesAfterDelete(connectionId: string, tableId: TableId) {
+    // in case of links, more columns than the one specified may have
+    // disappeared, so simply decrementing all indices by one is not enough - we have to
+    // go over them all and adjust their index appropriately.
+    const tableInfo = (await core.events.request(
+        lvr.getViewInfo(connectionId, tableId)
+    )) as RawViewInfo
+
+    const columns = [...tableInfo.columns]
+    const idxKey = COLUMN_INDEX_KEY
+    columns.sort((a, b) => a.attributes[idxKey] - b.attributes[idxKey])
+    await Promise.all(
+        columns.map(async (c, idx) => {
+            if (c.attributes[idxKey] === idx) return
+            else await changeTableColumnAttributes(connectionId, tableId, c.id, { [idxKey]: idx })
+        })
+    )
 }
 
-async function removeColumnFromViews(sessionID: string, tableId: number, parentColumnId: number): Promise<void> {
+async function removeColumnFromViews(
+    connectionId: string,
+    tableId: number,
+    parentColumnId: number
+): Promise<void> {
     const views = (await core.events.request(
-        lvr.listViews(sessionID, selectable.viewId(tableId))
-    )) as lvt.ViewDescriptor[]
+        lvr.listViews(connectionId, selectable.viewId(tableId))
+    )) as RawViewDescriptor[]
     await Promise.all(
         views.map(async v => {
-            const info = (await core.events.request(lvr.getViewInfo(sessionID, v.id))) as lvt.ViewInfo
+            const info = (await core.events.request(
+                lvr.getViewInfo(connectionId, v.id)
+            )) as RawViewInfo
             const viewColumn = info.columns.find(c => c.parentColumnId === parentColumnId)
-            if (viewColumn) await core.events.request(lvr.removeColumnFromView(sessionID, viewColumn.id))
+            if (viewColumn)
+                await core.events.request(lvr.removeColumnFromView(connectionId, viewColumn.id))
         })
     )
 }
 
 async function changeTableColumnAttributes_({
-    sessionID,
+    connectionId,
     tableId,
     columnId,
     update,
@@ -345,11 +428,11 @@ async function changeTableColumnAttributes_({
                 `cannot edit immutable column attribute ${illegalAttribute}`,
                 ErrorCode.writeInternalData
             )
-    return changeTableColumnAttributes(sessionID, tableId, columnId, update, changeInViews)
+    return changeTableColumnAttributes(connectionId, tableId, columnId, update, changeInViews)
 }
 
 async function changeTableColumnAttributes(
-    sessionID: string,
+    connectionId: string,
     tableId: number,
     columnId: number,
     update: CustomColumnAttributes,
@@ -357,25 +440,29 @@ async function changeTableColumnAttributes(
 ): Promise<SerializedColumn[]> {
     const attributes = parser.deparseColumn(update)
     const tableColumn = await core.events
-        .request(lvr.changeColumnAttributes(sessionID, columnId, attributes))
+        .request(lvr.changeColumnAttributes(connectionId, columnId, attributes))
         .then(c => parser.parseColumn(c))
     if (changeInViews)
-        return [tableColumn].concat(await changeColumnAttributesInViews(sessionID, tableId, columnId, attributes))
+        return [tableColumn].concat(
+            await changeColumnAttributesInViews(connectionId, tableId, columnId, attributes)
+        )
     else return [tableColumn]
 }
 
 async function changeColumnAttributesInViews(
-    sessionID: string,
+    connectionId: string,
     tableId: number,
     columnId: number,
     update: Partial<DB.Column>
 ): Promise<SerializedColumn[]> {
     const views = (await core.events.request(
-        lvr.listViews(sessionID, selectable.viewId(tableId))
-    )) as lvt.ViewDescriptor[]
-    const viewColumns: (lvt.ColumnInfo | undefined)[] = await Promise.all(
+        lvr.listViews(connectionId, selectable.viewId(tableId))
+    )) as RawViewDescriptor[]
+    const viewColumns: (RawViewColumnInfo | undefined)[] = await Promise.all(
         views.map(async v => {
-            const info = (await core.events.request(lvr.getViewInfo(sessionID, v.id))) as lvt.ViewInfo
+            const info = (await core.events.request(
+                lvr.getViewInfo(connectionId, v.id)
+            )) as RawViewInfo
             const viewColumn = info.columns.find(c => c.parentColumnId === columnId)
             return viewColumn
         })
@@ -386,30 +473,42 @@ async function changeColumnAttributesInViews(
             .filter(c => c !== undefined)
             .map(async c =>
                 core.events
-                    .request(lvr.changeColumnAttributes(sessionID, c.id, update))
+                    .request(lvr.changeColumnAttributes(connectionId, c.id, update))
                     .then(c => parser.parseColumn(c))
             )
     )
 }
 
-async function getTableData_({ sessionID, tableId }: CoreRequest): Promise<CoreResponse> {
-    return getTableData(sessionID, tableId)
+async function getTableData_({ connectionId, tableId }: CoreRequest): Promise<CoreResponse> {
+    return getTableData(connectionId, tableId)
 }
-async function getTableData(sessionID: string, tableId: types.TableId) {
-    return core.events.request(lvr.getViewData(sessionID, tableId)).then(table => parser.parseTable(table))
+async function getTableData(connectionId: string, tableId: TableId) {
+    return core.events
+        .request(lvr.getViewData(connectionId, tableId))
+        .then(table => parser.parseTable(table))
 }
 
-async function createView_({ sessionID, tableId, name }: CoreRequest): Promise<CoreResponse> {
-    const existingViews = await listViews(sessionID, tableId)
+async function createView_({ connectionId, tableId, name }: CoreRequest): Promise<CoreResponse> {
+    const existingViews = await listViews(connectionId, tableId)
     if (existingViews.some(v => v.name === name))
-        return error(req.createView.name, `view named ${name} already exists`, ErrorCode.alreadyTaken)
-    return createView(sessionID, tableId, name)
+        return error(
+            req.createView.name,
+            `view named ${name} already exists`,
+            ErrorCode.alreadyTaken
+        )
+    return createView(connectionId, tableId, name)
 }
-async function createView(sessionID: string, tableId: types.TableId, name: string): Promise<types.ViewDescriptor> {
-    const tableInfo = (await core.events.request(lvr.getViewInfo(sessionID, tableId))) as lvt.ViewInfo
+async function createView(
+    connectionId: string,
+    tableId: TableId,
+    name: string
+): Promise<ViewDescriptor> {
+    const tableInfo = (await core.events.request(
+        lvr.getViewInfo(connectionId, tableId)
+    )) as RawViewInfo
     return core.events.request(
         lvr.createView(
-            sessionID,
+            connectionId,
             selectable.viewId(tableId),
             name,
             { columns: [], joins: [] },
@@ -418,58 +517,345 @@ async function createView(sessionID: string, tableId: types.TableId, name: strin
     )
 }
 
-async function renameView_({ sessionID, viewId, newName }: CoreRequest): Promise<CoreResponse> {
-    return renameView(sessionID, viewId, newName)
+async function renameView_({ connectionId, viewId, newName }: CoreRequest): Promise<CoreResponse> {
+    return renameView(connectionId, viewId, newName)
 }
-async function renameView(sessionID: string, viewId: types.ViewId, newName: string): Promise<types.ViewDescriptor> {
-    const options = await coreRequest<lvt.ViewOptions>(lvr.getViewOptions(sessionID, viewId))
+async function renameView(
+    connectionId: string,
+    viewId: ViewId,
+    newName: string
+): Promise<ViewDescriptor> {
+    const options = await coreRequest<RawViewOptions>(lvr.getViewOptions(connectionId, viewId))
     // prevent renaming the default view
     if (options.name === defaultViewName())
         return error("renameView", "cannot rename default view", ErrorCode.changeDefaultView)
 
     // check if name is taken
-    const otherViews = await listViews(sessionID, viewId)
+    const otherViews = await listViews(connectionId, viewId)
     const isTaken = otherViews.map(view => view.name.toLowerCase()).includes(newName.toLowerCase())
     if (isTaken) return error("renameView", `name ${newName} already taken`, ErrorCode.alreadyTaken)
 
-    return coreRequest<types.ViewDescriptor>(lvr.renameView(sessionID, viewId, newName))
+    return coreRequest<ViewDescriptor>(lvr.renameView(connectionId, viewId, newName))
 }
-async function deleteView_({ sessionID, viewId }: CoreRequest): Promise<CoreResponse> {
-    return deleteView(sessionID, viewId)
+async function deleteView_({ connectionId, viewId }: CoreRequest): Promise<CoreResponse> {
+    return deleteView(connectionId, viewId)
 }
-async function deleteView(sessionID: string, viewId: types.ViewId) {
-    const options = await coreRequest<lvt.ViewOptions>(lvr.getViewOptions(sessionID, viewId))
+async function deleteView(connectionId: string, viewId: ViewId) {
+    const options = await coreRequest<RawViewOptions>(lvr.getViewOptions(connectionId, viewId))
     if (options.name === defaultViewName())
         return error("deleteView", "cannot delete the default view", ErrorCode.changeDefaultView)
-    await coreRequest(lvr.deleteView(sessionID, viewId))
+    await coreRequest(lvr.deleteView(connectionId, viewId))
     return { message: `deleted view #${viewId}` }
 }
 
-async function listViews_({ sessionID, id }: CoreRequest): Promise<CoreResponse> {
-    return listViews(sessionID, id)
+async function listViews_({ connectionId, id }: CoreRequest): Promise<CoreResponse> {
+    return listViews(connectionId, id)
 }
-async function listViews(sessionID: string, id: types.TableId) {
-    return core.events.request(lvr.listViews(sessionID, selectable.viewId(id))) as Promise<lvt.ViewDescriptor[]>
-}
-
-async function getViewData_({ sessionID, viewId }: CoreRequest): Promise<CoreResponse> {
-    return getViewData(sessionID, viewId)
-}
-async function getViewData(sessionID: string, viewId: types.ViewId) {
-    return core.events.request(lvr.getViewData(sessionID, viewId)).then(view => parser.parseView(view))
+async function listViews(connectionId: string, id: TableId) {
+    return core.events.request(lvr.listViews(connectionId, selectable.viewId(id))) as Promise<
+        RawViewDescriptor[]
+    >
 }
 
-async function changeViewFilters_({ sessionID, viewId, newFilters }: CoreRequest): Promise<CoreResponse> {
-    return changeViewFilters(sessionID, viewId, newFilters)
+async function getViewData_({ connectionId, viewId }: CoreRequest): Promise<CoreResponse> {
+    return getViewData(connectionId, viewId)
 }
-async function changeViewFilters(sessionID: string, viewId: types.ViewId, newFilters: Filter[]) {
-    let options = (await core.events.request(lvr.getViewOptions(sessionID, viewId))) as lvt.ViewOptions
-    if (options.name === defaultViewName()) return error("changeViewFilters", "cannot change default view")
-    const newRowOptions: lvt.RowOptions = {
+async function getViewData(connectionId: string, viewId: ViewId) {
+    return core.events
+        .request(lvr.getViewData(connectionId, viewId))
+        .then(view => parser.parseView(view))
+}
+
+async function changeViewFilters_({
+    connectionId,
+    viewId,
+    newFilters,
+}: CoreRequest): Promise<CoreResponse> {
+    return changeViewFilters(connectionId, viewId, newFilters)
+}
+async function changeViewFilters(connectionId: string, viewId: ViewId, newFilters: Filter[]) {
+    let options = (await core.events.request(
+        lvr.getViewOptions(connectionId, viewId)
+    )) as RawViewOptions
+    if (options.name === defaultViewName())
+        return error("changeViewFilters", "cannot change default view")
+    const newRowOptions: RowOptions = {
         ...options.rowOptions,
         conditions: newFilters.map(ParserClass.deparseFilter),
     }
-    await core.events.request(lvr.changeRowOptions(sessionID, viewId, newRowOptions))
-    options = (await core.events.request(lvr.getViewOptions(sessionID, viewId))) as lvt.ViewOptions
+    await core.events.request(lvr.changeRowOptions(connectionId, viewId, newRowOptions))
+    options = (await core.events.request(
+        lvr.getViewOptions(connectionId, viewId)
+    )) as RawViewOptions
     return options.rowOptions.conditions.map(ParserClass.deparseFilter)
+}
+
+async function createRow_({
+    connectionId,
+    viewId,
+    atIndex,
+    values,
+}: CoreRequest): Promise<CoreResponse> {
+    return createRow(connectionId, viewId, atIndex, values)
+}
+
+async function createRow(
+    connectionId: string,
+    viewId: ViewId | TableId,
+    atIndex: number | undefined = undefined,
+    values: RowData = {}
+) {
+    // 1. find the column names needed to update the data in the actual raw table
+    const rawViewInfo: RawViewInfo = await core.events.request(
+        lvr.getViewInfo(connectionId, viewId)
+    )
+    let rawData: Record<string, unknown>
+    try {
+        rawData = await mapRowInsertDataToStrings(connectionId, rawViewInfo, values)
+    } catch (e) {
+        return error("createRow", e.message)
+    }
+
+    // 2. get the data of the table (since we start out with a view ID)
+    const tableViewId: RawViewId = await getTableViewId(connectionId, viewId)
+    const tableData: TableData = await getTableData(connectionId, tableViewId)
+
+    // 3. determine necessary index shifts
+    if (atIndex > tableData.rows.length + 1 || atIndex < 0)
+        return error("createRow", "invalid row index: " + atIndex)
+    const actualIndex = atIndex ?? tableData.rows.length
+    const { rowData: finalRowData, rowsToShift } = addIndexShifts(tableData, actualIndex, rawData)
+
+    // 4. shift all rows after the desired index
+    await Promise.all(
+        rowsToShift.map(async shift => {
+            await core.events.request(
+                update(connectionId, tableData.rawTable.key, {
+                    condition: ["_id", shift.rowId],
+                    update: { index: shift.index },
+                })
+            )
+        })
+    )
+    // 5. insert the new row
+    return core.events.request(insert(connectionId, tableData.rawTable.key, finalRowData, ["_id"]))
+}
+
+/**
+ * Traverse a chain of views down to the bottom table view, i.e. the one that is based on a table,
+ * not another view.
+ * As of December 2022, we only have a fixed two layers, so the recursion is not necessary, but
+ * we eventually want allow users to share views with others who in turn can sub-filter them,
+ * which will probably have to be implemented by allowing them to create sub-views.
+ * @return {number} the ID of the lowermost view in the chain (not the table, the view!)
+ */
+async function getTableViewId(connectionId: string, viewId: ViewId | TableId): Promise<RawTableId> {
+    const viewOptions: RawViewOptions = await core.events.request(
+        lvr.getViewOptions(connectionId, viewId)
+    )
+    if (selectable.isTable(viewOptions.source)) {
+        return viewId
+    } else if (selectable.isView(viewOptions.source)) {
+        return getTableViewId(connectionId, viewOptions.source.id)
+    }
+}
+
+/**
+ * Row inserts and updates are specified with { column ID -> value } maps. To actually insert
+ * in the database, we need their string names. This function takes a view or table's
+ * raw view info and the update data and creates a new update data set with the proper names.
+ */
+async function mapRowInsertDataToStrings(
+    connectionId: string,
+    viewData: RawViewInfo,
+    update: RowData,
+    allowLinks = true
+): Promise<RawRowData> {
+    const stringUpdate: Record<string, unknown> = {}
+    for (const key in update) {
+        // the for-let-in construction always gives you the keys as strings.
+        const column = viewData.columns.find(c => c.id.toString() === key)
+        if (column === undefined)
+            throw errorSync(
+                "mapRowInsertDataToStrings",
+                `table ${viewData.descriptor.id} has no column with ID ${key}`
+            )
+        if (!allowLinks && column.attributes.kind !== "standard")
+            return error(
+                "mapRowInsertDataToStrings",
+                `column ${key} is of kind` +
+                    ` ${column.attributes.kind}, but only standard is allowed`
+            )
+        if (!["standard", "link"].includes(column.attributes.kind))
+            return error(
+                "mapRowInsertDataToStrings",
+                `column ${key}/${column.attributes.displayName} is of kind` +
+                    `${column.attributes.kind}, but only standard and link are allowed`,
+                ErrorCode.invalidRowWrite
+            )
+        if (![1, true].includes(column.attributes.editable))
+            return error(
+                "mapRowInsertDataToStrings",
+                `column ${column.key} is not editable`,
+                ErrorCode.invalidRowWrite
+            )
+        // set property with appropriate column name
+        if (column.attributes.kind === "standard") stringUpdate[column.name] = update[key]
+        else if (column.attributes.kind === "link") {
+            const rawForeignKeyColumn = await getLinkColumnForeignKey(
+                connectionId,
+                viewData,
+                column
+            )
+            stringUpdate[rawForeignKeyColumn.name] = update[key]
+        }
+    }
+    return stringUpdate
+}
+
+/** To set the target row of a link column, one needs to know what raw table column acts as
+ * the foreign key. Since this column does not appear in any views, we have to find out the
+ * raw table to find the column.
+ * The column must be a link column. If the view is a table view (i.e. its source is a raw table)
+ * then the column must belong to a join. If the view is a higher-order view, then the column
+ * must have a chain of parents that end with a column that belongs to a join.
+ */
+async function getLinkColumnForeignKey(
+    connectionId: string,
+    rawViewInfo: RawViewInfo,
+    column: RawViewColumnInfo
+): Promise<RawTableColumnDescriptor> {
+    if (column.joinId === null) {
+        if (!isView(rawViewInfo.source))
+            return error("getLinkColumnForeignKey", `column ${column.id} is not a real link column`)
+        const parentViewInfo: RawViewInfo = await core.events.request(
+            lvr.getViewInfo(connectionId, rawViewInfo.source.view.id)
+        )
+        const parentColumn: RawViewColumnInfo = parentViewInfo.columns.find(
+            c => c.id === column.parentColumnId
+        )!
+        return getLinkColumnForeignKey(connectionId, parentViewInfo, parentColumn)
+    } else {
+        if (!isTable(rawViewInfo.source))
+            return error(
+                "getLinkColumnForeignKey",
+                `view ${rawViewInfo.descriptor.id} is a` + ` filter view, but has joins`
+            )
+        const join = rawViewInfo.joins.find(j => j.id === column.joinId)!
+        const fkColumnId = join.on[0]
+        const rawTableInfo: RawTableInfo = await core.events.request(
+            pm.getTableInfo(connectionId, rawViewInfo.source.table.id)
+        )
+        return rawTableInfo.columns.find(c => c.id === fkColumnId)!
+    }
+}
+
+type IndexShiftData = { rowId: number; oldIndex: number; index: number }
+
+function addIndexShifts(
+    tableData: TableData,
+    atIndex: number,
+    rowData: Record<string, unknown>
+): { rowData: Record<string, unknown>; rowsToShift: IndexShiftData[] } {
+    const shifts = (tableData.rows as Row[])
+        .sort((r1, r2) => r1.index - r2.index)
+        .slice(atIndex) // yes, this is legitimate
+        .map(row => ({
+            rowId: row._id,
+            oldIndex: row.index,
+            index: row.index + 1,
+        }))
+    return { rowData: { ...rowData, index: atIndex }, rowsToShift: shifts }
+}
+
+async function updateRows_({
+    connectionId,
+    viewId,
+    condition,
+    values,
+}: CoreRequest): Promise<CoreResponse> {
+    return updateRows(connectionId, viewId, condition, values)
+}
+
+async function updateRows(
+    connectionId: string,
+    viewId: ViewId | TableId,
+    condition: number | number[],
+    values: RowData
+): Promise<{ rowsUpdated: number }> {
+    // 1. map condition to sql table
+    const rawViewInfo = await core.events.request(lvr.getViewInfo(connectionId, viewId))
+    let rawCondition: RawCondition
+    if (typeof condition === "number") rawCondition = ["_id", condition]
+    else rawCondition = ["_id", "in", condition]
+
+    // 2. map update to sql table
+    let rawUpdate: Record<string, unknown>
+    try {
+        rawUpdate = await mapRowInsertDataToStrings(connectionId, rawViewInfo, values)
+    } catch (e) {
+        return error("createRow", e.message)
+    }
+
+    // 3. get table key
+    const tableViewId: RawViewId = await getTableViewId(connectionId, viewId)
+    const tableViewInfo: RawViewInfo = await core.events.request(
+        lvr.getViewInfo(connectionId, tableViewId)
+    )
+    const rawTable: RawTableDescriptor = asTable(tableViewInfo.source).table
+
+    // 4. perform the update
+    const updated = await core.events.request(
+        update(connectionId, rawTable.key, { condition: rawCondition, update: rawUpdate })
+    )
+    return updated
+}
+
+async function deleteRows_({
+    connectionId,
+    viewId,
+    condition,
+}: CoreRequest): Promise<CoreResponse> {
+    return deleteRows(connectionId, viewId, condition)
+}
+
+async function deleteRows(
+    connectionId: string,
+    viewId: TableId | ViewId,
+    condition: number[] | number
+): Promise<{ rowsDeleted: number }> {
+    const tableViewId = await getTableViewId(connectionId, viewId)
+    const tableViewOptions = await coreRequest<RawViewOptions>(
+        lvr.getViewOptions(connectionId, tableViewId)
+    )
+    const rawTableInfo = await coreRequest<RawTableInfo>(
+        pm.getTableInfo(connectionId, selectable.getId(tableViewOptions.source))
+    )
+    const rawTableName = rawTableInfo.table.key
+
+    const rawCondition: RawCondition =
+        typeof condition === "number" ? ["_id", condition] : ["_id", "in", condition]
+
+    const { rowsDeleted } = await coreRequest<{ rowsDeleted: number }>(
+        deleteRow(connectionId, rawTableName, rawCondition)
+    )
+
+    // shift indices of remaining
+    const newTableData = await getTableData(connectionId, tableViewId)
+    const indexChanges: IndexShiftData[] = newTableData.rows
+        .sort((a, b) => a.index - b.index)
+        .map((row, newIndex) => ({ rowId: row._id, oldIndex: row.index, index: newIndex }))
+        .filter(shift => shift.oldIndex !== shift.index)
+    await Promise.all(
+        indexChanges.map(async ({ rowId, index }) =>
+            coreRequest(
+                update(connectionId, rawTableName, {
+                    update: { index },
+                    condition: ["_id", rowId],
+                })
+            )
+        )
+    )
+
+    return { rowsDeleted }
 }

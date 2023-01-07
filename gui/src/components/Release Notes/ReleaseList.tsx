@@ -15,13 +15,20 @@ export const ReleaseList: React.FC = props => {
             }}
         >
             {releases.sort(byDate).map((release, index, array) => (
-                <ReleaseListItem key={release.date.getTime()} release={release} index={array.length - index} />
+                <ReleaseListItem
+                    key={release.date.getTime()}
+                    release={release}
+                    index={array.length - index}
+                />
             ))}
         </List>
     )
 }
 
-const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({ release: props, index }) => {
+const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({
+    release: props,
+    index,
+}) => {
     const router = useRouter()
 
     return (

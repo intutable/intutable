@@ -1,4 +1,4 @@
-import { ColumnInfo } from "@intutable/lazy-views/dist/types"
+import { ColumnInfo as RawColumn } from "@intutable/lazy-views/dist/types"
 import { DB, MetaColumnProps } from "shared/dist/types"
 
 /**
@@ -8,7 +8,7 @@ import { DB, MetaColumnProps } from "shared/dist/types"
 
 export class Restructure {
     /** Restructures (e.g. renaming) the column. Information will be lost. This will be lost in the future */
-    public column(column: ColumnInfo): DB.Restructured.Column {
+    public column(column: RawColumn): DB.Restructured.Column {
         const { displayName, kind, ...properties } = column.attributes as DB.Column
 
         return {

@@ -21,14 +21,21 @@ export const parse = (c: Condition): Filter => {
         case ConditionKind.Infix:
             return parseSimpleFilter(c)
         case ConditionKind.Boolean:
-            throw TypeError(`{$parse.name}: Filter type may not contain any` + ` trivial boolean conditions`)
+            throw TypeError(
+                `{$parse.name}: Filter type may not contain any` + ` trivial boolean conditions`
+            )
     }
 }
 
 const parseSimpleFilter = (c: InfixCondition): SimpleFilter => {
-    if (c.left.kind !== OperandKind.Column || c.right.kind !== OperandKind.Literal || !isFilterOperator(c.operator))
+    if (
+        c.left.kind !== OperandKind.Column ||
+        c.right.kind !== OperandKind.Literal ||
+        !isFilterOperator(c.operator)
+    )
         throw TypeError(
-            `expected condition of type <column> - <filterOperator>` + ` - <string>, got: ${JSON.stringify(c)}`
+            `expected condition of type <column> - <filterOperator>` +
+                ` - <string>, got: ${JSON.stringify(c)}`
         )
     else
         return {

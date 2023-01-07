@@ -24,22 +24,22 @@ const initialState: UseForeignTableReturnType = {
 export const useForeignTable = (forColumn: Column.Deserialized) => {
     const column = forColumn // rename
 
-    const { data } = useTable()
+    const { data: currentTableData } = useTable()
     const { getColumnInfo } = useColumn()
     const { tables } = useTables()
 
     const result = useMemo<UseForeignTableReturnType>(() => {
         const columnInfo = getColumnInfo(column)
-        if (data == null || columnInfo == null || tables == null) return initialState
+        if (currentTableData == null || columnInfo == null || tables == null) return initialState
 
-        const join = data.metadata.joins.find(join => join.id === columnInfo.joinId)
+        const join = currentTableData.joins.find(join => join.id === columnInfo.joinId)
         if (join == null) return initialState
 
         const foreignTable = tables.find(table => table.id === asView(join.foreignSource).id)
         if (foreignTable == null) return initialState
 
         return { foreignTable, join, columnInfo }
-    }, [column, data, getColumnInfo, tables])
+    }, [column, currentTableData, getColumnInfo, tables])
 
     return result
 }

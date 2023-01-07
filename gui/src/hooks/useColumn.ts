@@ -30,12 +30,16 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
     }
 
     /** Find a column in the base table given a column of a view. */
-    const getColumnInfo = (forColumn: Column.Serialized | Column.Deserialized): ColumnInfo | null => {
+    const getColumnInfo = (
+        forColumn: Column.Serialized | Column.Deserialized
+    ): ColumnInfo | null => {
         if (view == null || table == null) return null
 
         const viewColumn = view.metaColumns.find(column => column.key === forColumn.key)
         if (viewColumn == null) return null
-        const tableColumn = table.metadata.columns.find(column => column.id === viewColumn?.parentColumnId)
+        const tableColumn = table.rawColumns.find(
+            column => column.id === viewColumn?.parentColumnId
+        )
 
         return tableColumn ?? null
     }
@@ -43,7 +47,7 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const createColumn = async (column: ColumnFactory): Promise<void> => {
-        const tableId = table!.metadata.descriptor.id
+        const tableId = table!.descriptor.id
 
         const col = column.create()
         // kludge here, turning the column into the type that the backend
@@ -69,7 +73,7 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
         column: Column.Deserialized | Column.Serialized,
         newName: Column["name"]
     ): Promise<void> => {
-        const tableId = table!.metadata.descriptor.id
+        const tableId = table!.descriptor.id
         const baseColumn = getColumnInfo(column)
         await fetcher({
             url: `/api/table/${tableId}/column/${baseColumn!.id}/rename`,
@@ -85,7 +89,7 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
         column: Column.Deserialized | Column.Serialized,
         update: Partial<Pick<Column.Serialized, SettableColumnProps>>
     ): Promise<void> => {
-        const tableId = table!.metadata.descriptor.id
+        const tableId = table!.descriptor.id
         const baseColumn = getColumnInfo(column)
         await fetcher({
             url: `/api/table/${tableId}/column/${baseColumn!.id}`,
@@ -99,11 +103,11 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
     // TODO: the state should be updated differently
     // TODO: get rid of `getColumnByKey`
     const deleteColumn = async (column: Column.Serialized | Column.Deserialized): Promise<void> => {
-        const tableId = table!.metadata.descriptor.id
+        const tableId = table!.descriptor.id
         const tableColumn = getColumnInfo(column)
         await fetcher({
             url: `/api/table/${tableId}/column/${tableColumn!.id}`,
-            body: { tableId: table!.metadata.descriptor.id },
+            body: { tableId: table!.descriptor.id },
             method: "DELETE",
         })
 

@@ -3,13 +3,15 @@ import { Feature } from "components/Wiki/SupportedFeatures"
 export const supportedFeatures: Feature[] = [
     {
         name: "Filter für Tabellen",
-        infoText: "Boolsche Filter für ganze Tabellen resp. Views (bspw. wenn X gleich Y, dann zeige diese Daten)",
+        infoText:
+            "Boolsche Filter für ganze Tabellen resp. Views (bspw. wenn X gleich Y, dann zeige diese Daten)",
         support: "supported",
         release: "v0.1.0-alpha.3",
     },
     {
         name: "Sortieren & Suchen",
-        infoText: "Sortieren von Spalten (bspw. alphabetisch, abfolgend etc.) und textbasierte Suchen in Spalten",
+        infoText:
+            "Sortieren von Spalten (bspw. alphabetisch, abfolgend etc.) und textbasierte Suchen in Spalten",
         support: "unsupported",
     },
     {

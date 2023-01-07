@@ -56,7 +56,12 @@ const EditUserModal: React.FC<EditUserModalProps> = props => {
                 </FormControl>
                 <FormControl fullWidth sx={{ mt: 2 }}>
                     <InputLabel id="edituser-select-role">Rolle</InputLabel>
-                    <Select labelId="edituser-select-role" label="Rolle" value={role ?? ""} onChange={handleChangeRole}>
+                    <Select
+                        labelId="edituser-select-role"
+                        label="Rolle"
+                        value={role ?? ""}
+                        onChange={handleChangeRole}
+                    >
                         {roles.map(r => (
                             <MenuItem key={r.id} value={r.id}>
                                 {r.name}

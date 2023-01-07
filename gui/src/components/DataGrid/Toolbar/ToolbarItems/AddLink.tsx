@@ -37,7 +37,11 @@ export const AddLink: React.FC = () => {
     return (
         <>
             <Tooltip title="Add link to another table">
-                <LoadingButton loadingIndicator="Lädt..." startIcon={<AddIcon />} onClick={handleOpenModal}>
+                <LoadingButton
+                    loadingIndicator="Lädt..."
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenModal}
+                >
                     Add Link
                 </LoadingButton>
             </Tooltip>
@@ -78,7 +82,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
             await fetcher({
                 url: "/api/join",
                 body: {
-                    tableId: currentTable.metadata.descriptor.id,
+                    tableId: currentTable.descriptor.id,
                     foreignTableId: table.id,
                 },
             })
@@ -108,7 +112,10 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                                     key={i}
                                     disablePadding
                                     sx={{
-                                        bgcolor: selection?.id === tbl.id ? theme.palette.action.selected : undefined,
+                                        bgcolor:
+                                            selection?.id === tbl.id
+                                                ? theme.palette.action.selected
+                                                : undefined,
                                     }}
                                 >
                                     <ListItemButton onClick={onClickHandler.bind(null, tbl)}>

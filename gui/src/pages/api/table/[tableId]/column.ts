@@ -32,7 +32,10 @@ const POST = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"]
     const user = req.session.user!
 
     const newColumn: Column.Serialized = await withReadWriteConnection(user, async sessionID =>
-        coreRequest<Column.Serialized>(createStandardColumn(sessionID, tableId, column), user.authCookie)
+        coreRequest<Column.Serialized>(
+            createStandardColumn(sessionID, tableId, column),
+            user.authCookie
+        )
     )
 
     res.status(200).json(newColumn)
