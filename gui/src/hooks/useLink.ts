@@ -40,7 +40,7 @@ export const useLink = (forColumn: Column.Deserialized) => {
             url: "/api/row",
             body: {
                 viewId: homeView!.descriptor.id,
-                condition: row._id,
+                rowsToUpdate: row._id,
                 values: { [forColumn.id]: target?._id ?? null },
             },
             method: "PATCH",
