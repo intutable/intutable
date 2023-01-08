@@ -23,11 +23,12 @@
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import { insert, update, deleteRow } from "@intutable/database/dist/requests"
-import { Condition as RawCondition } from "@intutable/database/dist/types"
+import { Condition as RawCondition, ColumnType } from "@intutable/database/dist/types"
 import * as pm from "@intutable/project-management/dist/requests"
 import {
     RowOptions,
     ColumnSpecifier,
+    JoinDescriptor,
     requests as lvr,
     selectable,
     isTable,
@@ -41,6 +42,7 @@ import {
     idColumnAttributes,
     indexColumnAttributes,
     standardColumnAttributes,
+    linkColumnAttributes,
     emptyRowOptions,
     defaultRowOptions,
     COLUMN_INDEX_KEY,
@@ -67,6 +69,7 @@ import {
     SerializedColumn,
     Filter,
     StandardColumnSpecifier,
+    LinkColumnSpecifier,
     DB,
     CustomColumnAttributes,
     Row,
@@ -85,6 +88,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.createTable.name, createTable_)
         .on(req.deleteTable.name, deleteTable_)
         .on(req.createStandardColumn.name, createStandardColumn_)
+        .on(req.createLinkColumn.name, createLinkColumn_)
         .on(req.addColumnToTable.name, addColumnToTable_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
@@ -204,7 +208,7 @@ async function createStandardColumn(
     tableId: RawViewDescriptor["id"],
     column: StandardColumnSpecifier,
     addToViews?: ViewId[]
-) {
+): Promise<SerializedColumn> {
     const options = (await core.events.request(
         lvr.getViewOptions(connectionId, tableId)
     )) as RawViewOptions
@@ -233,6 +237,69 @@ async function createStandardColumn(
 
     const parsedColumn = parser.parseColumn(tableViewColumn)
     return parsedColumn
+}
+
+async function createLinkColumn_({
+    connectionId,
+    tableId,
+    column,
+    addToViews,
+}: CoreRequest): Promise<CoreResponse> {
+    return createLinkColumn(connectionId, tableId, column, addToViews)
+}
+
+async function createLinkColumn(
+    connectionId: string,
+    tableId: TableId,
+    column: LinkColumnSpecifier,
+    addToViews?: ViewId[]
+): Promise<SerializedColumn> {
+    const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const foreignTableInfo = await coreRequest<RawViewInfo>(
+        lvr.getViewInfo(connectionId, column.foreignTable)
+    )
+    // create foreign key column
+    const foreignKeyColumn = await coreRequest<RawTableColumnDescriptor>(
+        pm.createColumnInTable(
+            connectionId,
+            asTable(homeTableInfo.source).table.id,
+            makeForeignKeyName(homeTableInfo),
+            ColumnType.integer
+        )
+    )
+    // add join to the home table's table-view
+    const foreignIdColumn = foreignTableInfo.columns.find(c => c.name === "_id")!
+    const join = await coreRequest<JoinDescriptor>(
+        lvr.addJoinToView(connectionId, tableId, {
+            foreignSource: selectable.viewId(column.foreignTable),
+            on: [foreignKeyColumn.id, "=", foreignIdColumn.id],
+            columns: [],
+        })
+    )
+    // add and return link column
+    const foreignUserPrimaryColumn = foreignTableInfo.columns.find(
+        c => c.attributes.isUserPrimaryKey! === 1
+    )!
+    const displayName = (foreignUserPrimaryColumn.attributes.displayName ||
+        foreignUserPrimaryColumn.name) as string
+    const columnIndex = homeTableInfo.columns.length
+    const attributes = linkColumnAttributes(displayName, columnIndex)
+    const linkColumn = await addColumnToTable(
+        connectionId,
+        tableId,
+        { parentColumnId: foreignUserPrimaryColumn.id, attributes },
+        join.id,
+        addToViews
+    )
+    return parser.parseColumn(linkColumn)
+}
+function makeForeignKeyName(viewInfo: RawViewInfo) {
+    // We pick a number greater than any join so far's ID...
+    const nextJoinIndex = Math.max(0, ...viewInfo.joins.map(j => j.id)) + 1
+    // and add a special character so that there can't be clashes with
+    // user-added columns (see ./sanitizeName)
+    const fkColumnName = `j#${nextJoinIndex}_fk`
+    return fkColumnName
 }
 
 async function addColumnToTable_({

@@ -6,6 +6,7 @@ import {
     RawViewDescriptor,
     RawViewColumnInfo,
     StandardColumnSpecifier,
+    LinkColumnSpecifier,
     CustomColumnAttributes,
 } from "./types"
 import { RowData } from "./types/requests"
@@ -53,9 +54,9 @@ export function deleteTable(connectionId: string, id: TableId) {
  * @param {RawViewDescriptor["id"]} addToViews which views to also add
  * the new column to. If no argument is given, the column is added to all
  * views. The attributes are simply inherited from the table column. They
- * are separate copies of the data, so they will not update automatically -
+ * are separate copies of the original attributes, so they will not update automatically -
  * be sure to use {@link changeTableColumnAttributes} to change attributes
- * and ensure that the change cascades to views as well.
+ * and ensure that the change cascades to views as well, and not use any lower-level methods for it.
  */
 export function createStandardColumn(
     connectionId: string,
@@ -66,6 +67,36 @@ export function createStandardColumn(
     return {
         channel: CHANNEL,
         method: createStandardColumn.name,
+        connectionId,
+        tableId,
+        column,
+        addToViews,
+    }
+}
+
+/**
+ * Create a _Link Column_, which links the data of the affected table (_home table_ from here on)
+ * to another table, the _foreign table_. The user can click on a cell of the link column and
+ * choose a row from the foreign table to set the value of a foreign key column, causing
+ * the row containing the cell and the row selected to be displayed next to each other.
+ * This is how we make foreign keys and joins accessible to users who do not know SQL.
+ * To keep things intuitive, the link column is equivalent to the link - any operations
+ * on the link, such as deleting it or adding more columns from the
+ * foreign table, are done via the link column's context menu.
+ * The link column itself displays the "Name" field of the linked row, or whichever column is
+ * marked by the `isUserPrimary` attribute. More columns, up to the whole table, can be added
+ * with {@link createLookupColumn}.
+ * Response: {SerializedColumn} the newly created column.
+ */
+export function createLinkColumn(
+    connectionId: string,
+    tableId: TableId,
+    column: LinkColumnSpecifier,
+    addToViews?: ViewId[]
+) {
+    return {
+        channel: CHANNEL,
+        method: createLinkColumn.name,
         connectionId,
         tableId,
         column,

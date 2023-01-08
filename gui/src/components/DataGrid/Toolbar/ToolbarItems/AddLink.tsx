@@ -80,11 +80,8 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
         try {
             if (currentTable == null) throw new Error()
             await fetcher({
-                url: "/api/join",
-                body: {
-                    tableId: currentTable.descriptor.id,
-                    foreignTableId: table.id,
-                },
+                url: `/api/table/${currentTable.descriptor.id}/linkColumn`,
+                body: { column: { foreignTable: table.id } },
             })
             await mutateTable()
             await mutateView()

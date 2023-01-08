@@ -11,14 +11,14 @@ import type {
     JoinDescriptor,
 } from "@intutable/lazy-views"
 import type { TableDescriptor as RawTableDescriptor } from "@intutable/project-management/dist/types"
-import type { ViewDescriptor } from "."
+import type { ViewDescriptor, TableDescriptor } from "."
 import type { Filter } from "../filter"
 
 // #################################################################
 //       Table
 // #################################################################
 export type Table<COL, ROW> = {
-    descriptor: ViewDescriptor
+    descriptor: TableDescriptor
     rawTable: RawTableDescriptor
     rawColumns: ColumnInfo[]
     joins: JoinDescriptor[]
