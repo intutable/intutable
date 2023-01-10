@@ -34,6 +34,7 @@ import {
     isTable,
     isView,
     asTable,
+    asView,
 } from "@intutable/lazy-views/"
 import {
     defaultViewName,
@@ -43,6 +44,7 @@ import {
     indexColumnAttributes,
     standardColumnAttributes,
     linkColumnAttributes,
+    lookupColumnAttributes,
     emptyRowOptions,
     defaultRowOptions,
     COLUMN_INDEX_KEY,
@@ -70,6 +72,7 @@ import {
     Filter,
     StandardColumnSpecifier,
     LinkColumnSpecifier,
+    LookupColumnSpecifier,
     DB,
     CustomColumnAttributes,
     Row,
@@ -89,7 +92,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.deleteTable.name, deleteTable_)
         .on(req.createStandardColumn.name, createStandardColumn_)
         .on(req.createLinkColumn.name, createLinkColumn_)
-        .on(req.addColumnToTable.name, addColumnToTable_)
+        .on(req.createLookupColumn.name, createLookupColumn_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
         .on(req.getTableData.name, getTableData_)
@@ -224,7 +227,7 @@ async function createStandardColumn(
         ...standardColumnAttributes(column.name, column.cellType, columnIndex),
         ...parser.deparseColumn(column.attributes || {}),
     }
-    const tableViewColumn = await addColumnToTable(
+    const tableViewColumn = await addColumnToTableView(
         connectionId,
         tableId,
         {
@@ -284,7 +287,7 @@ async function createLinkColumn(
         foreignUserPrimaryColumn.name) as string
     const columnIndex = homeTableInfo.columns.length
     const attributes = linkColumnAttributes(displayName, columnIndex)
-    const linkColumn = await addColumnToTable(
+    const linkColumn = await addColumnToTableView(
         connectionId,
         tableId,
         { parentColumnId: foreignUserPrimaryColumn.id, attributes },
@@ -302,16 +305,56 @@ function makeForeignKeyName(viewInfo: RawViewInfo) {
     return fkColumnName
 }
 
-async function addColumnToTable_({
+async function createLookupColumn_({
     connectionId,
     tableId,
     column,
-    joinId,
     addToViews,
 }: CoreRequest): Promise<CoreResponse> {
-    return addColumnToTable(connectionId, tableId, column, joinId, addToViews)
+    return createLookupColumn(connectionId, tableId, column, addToViews)
 }
-async function addColumnToTable(
+
+async function createLookupColumn(
+    connectionId: string,
+    tableId: TableId,
+    column: LookupColumnSpecifier,
+    addToViews?: ViewId[]
+): Promise<SerializedColumn> {
+    const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const linkColumn = homeTableInfo.columns.find(c => c.id === column.linkColumn)
+    if (!linkColumn || linkColumn.attributes.kind !== "link" || linkColumn.joinId === null)
+        return error(
+            "createLookupColumn",
+            `home table ${tableId} has no link column with ID ${column.linkColumn}`
+        )
+    const join = homeTableInfo.joins.find(j => j.id === linkColumn.joinId)!
+    const foreignTableId = asView(join.foreignSource).id
+    const foreignTableInfo = await coreRequest<RawViewInfo>(
+        lvr.getViewInfo(connectionId, foreignTableId)
+    )
+    const foreignColumn = foreignTableInfo.columns.find(c => c.id === column.foreignColumn)
+    if (!foreignColumn)
+        return error(
+            "createLookupColumn",
+            `foreign table ${foreignTableId} has no column with ID ${column.foreignColumn}`
+        )
+
+    // determine meta attributes
+    const displayName = foreignColumn.attributes.displayName || foreignColumn.name
+    const contentType = foreignColumn.attributes.cellType || "string"
+    const columnIndex = homeTableInfo.columns.length
+    const attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
+    const lookupColumn = await addColumnToTableView(
+        connectionId,
+        tableId,
+        { parentColumnId: foreignColumn.id, attributes },
+        join.id,
+        addToViews
+    )
+    return parser.parseColumn(lookupColumn)
+}
+
+async function addColumnToTableView(
     connectionId: string,
     tableId: RawViewDescriptor["id"],
     column: ColumnSpecifier,

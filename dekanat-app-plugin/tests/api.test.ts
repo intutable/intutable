@@ -196,8 +196,8 @@ describe("create different kinds of columns", () => {
     const TABLE_SPEC = {
         name: "employees",
         columns: [
-            { name: "Department", cellType: "string", editable: true },
-            { name: "Salary", cellType: "number", editable: true },
+            { name: "Department", cellType: "string" },
+            { name: "Salary", cellType: "number" },
         ],
     }
     let TEST_TABLE: TableDescriptor
@@ -426,9 +426,11 @@ describe("links between tables", () => {
     let foreignTableName = "supervisors"
     let foreignTable: TableDescriptor
     let foreignNameColumn: SerializedColumn
-    let foreignRow1 = { _id: -1, name: "Bill Lumbergh" }
+    let foreignLevelColumn: SerializedColumn
+    let foreignRow1 = { _id: -1, name: "Bill Lumbergh", authorityLevel: "total" }
 
     let linkColumn: SerializedColumn
+    let lookupColumn: SerializedColumn
 
     beforeAll(async () => {
         // set up a table with the default column and two rows
@@ -456,6 +458,12 @@ describe("links between tables", () => {
         foreignTable = await coreRequest<TableDescriptor>(
             req.createTable(connId, ADMIN_ID, PROJECT_ID, foreignTableName)
         )
+        foreignLevelColumn = await coreRequest<SerializedColumn>(
+            req.createStandardColumn(connId, foreignTable.id, {
+                name: "Authority Level",
+                cellType: "string",
+            })
+        )
 
         const foreignTableData = await coreRequest<TableData>(
             req.getTableData(connId, foreignTable.id)
@@ -464,7 +472,10 @@ describe("links between tables", () => {
 
         const { _id: foreignId1 } = await coreRequest<{ _id: number }>(
             req.createRow(connId, foreignTable.id, {
-                values: { [foreignNameColumn.id]: foreignRow1.name }
+                values: {
+                    [foreignNameColumn.id]: foreignRow1.name,
+                    [foreignLevelColumn.id]: foreignRow1.authorityLevel,
+                }
             })
         )
         foreignRow1._id = foreignId1
@@ -473,6 +484,12 @@ describe("links between tables", () => {
         linkColumn = await coreRequest<SerializedColumn>(
             req.createLinkColumn(connId, homeTable.id, { foreignTable: foreignTable.id })
         )
+        lookupColumn = await coreRequest<SerializedColumn>(
+            req.createLookupColumn(connId, homeTable.id, {
+                linkColumn: linkColumn.id,
+                foreignColumn: foreignLevelColumn.id,
+            })
+        )
     })
 
     afterAll(async () => {
@@ -480,11 +497,15 @@ describe("links between tables", () => {
         await coreRequest(req.deleteTable(connId, foreignTable.id))
     })
 
-    test("link column created", async () => {
+    test("link and lookup columns created", async () => {
         expect(linkColumn).toEqual(expect.objectContaining({
             id: expect.any(Number),
             name: userPrimaryColumnName(),
             kind: "link",
+        }))
+        expect(lookupColumn).toEqual(expect.objectContaining({
+            id: expect.any(Number),
+            kind: "lookup",
         }))
     })
 
@@ -502,11 +523,13 @@ describe("links between tables", () => {
                 _id: homeRow1._id,
                 [homeNameColumn.key]: homeRow1.name,
                 [linkColumn.key]: foreignRow1.name,
+                [lookupColumn.key]: foreignRow1.authorityLevel,
             }),
             expect.objectContaining({
                 _id: homeRow2._id,
                 [homeNameColumn.key]: homeRow2.name,
                 [linkColumn.key]: foreignRow1.name,
+                [lookupColumn.key]: foreignRow1.authorityLevel,
             }),
         ]))
     })
