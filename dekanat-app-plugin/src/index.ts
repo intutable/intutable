@@ -29,6 +29,7 @@ import {
     RowOptions,
     ColumnSpecifier,
     JoinDescriptor,
+    types as lvt,
     requests as lvr,
     selectable,
     isTable,
@@ -220,9 +221,7 @@ async function createStandardColumn(
         pm.createColumnInTable(connectionId, asTable(options.source).id, key)
     )
     // add column to table and filter views
-    const columnIndex =
-        options.columnOptions.columns.length +
-        options.columnOptions.joins.reduce((acc, j) => acc + j.columns.length, 0)
+    const columnIndex = getNextColumnIndex(options.columnOptions)
     const allAttributes: Partial<DB.Column> = {
         ...standardColumnAttributes(column.name, column.cellType, columnIndex),
         ...parser.deparseColumn(column.attributes || {}),
@@ -240,6 +239,13 @@ async function createStandardColumn(
 
     const parsedColumn = parser.parseColumn(tableViewColumn)
     return parsedColumn
+}
+function getNextColumnIndex(options: lvt.ColumnOptions | RawViewInfo): number {
+    const baseColumns = options.columns.length
+    return (options.joins as lvt.JoinSpecifier[]).reduce(
+        (acc, j) => acc + j.columns.length,
+        baseColumns
+    )
 }
 
 async function createLinkColumn_({
@@ -285,7 +291,7 @@ async function createLinkColumn(
     )!
     const displayName = (foreignUserPrimaryColumn.attributes.displayName ||
         foreignUserPrimaryColumn.name) as string
-    const columnIndex = homeTableInfo.columns.length
+    const columnIndex = getNextColumnIndex(homeTableInfo)
     const attributes = linkColumnAttributes(displayName, columnIndex)
     const linkColumn = await addColumnToTableView(
         connectionId,
@@ -342,7 +348,12 @@ async function createLookupColumn(
     // determine meta attributes
     const displayName = foreignColumn.attributes.displayName || foreignColumn.name
     const contentType = foreignColumn.attributes.cellType || "string"
-    const columnIndex = homeTableInfo.columns.length
+    const columnIndex =
+        Math.max(
+            ...homeTableInfo.columns
+                .filter(c => c.joinId === linkColumn.joinId)
+                .map(c => c.attributes[COLUMN_INDEX_KEY])
+        ) + 1
     const attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
     const lookupColumn = await addColumnToTableView(
         connectionId,
@@ -351,7 +362,19 @@ async function createLookupColumn(
         join.id,
         addToViews
     )
-    return parser.parseColumn(lookupColumn)
+    const newColumn = parser.parseColumn(lookupColumn)
+    // and shift the column index of all columns that come after the position where it was inserted
+    const idxKey = COLUMN_INDEX_KEY
+    await Promise.all(
+        homeTableInfo.columns
+            .filter(c => c.attributes[idxKey] >= columnIndex)
+            .map(c =>
+                changeTableColumnAttributes(connectionId, tableId, c.id, {
+                    [idxKey]: c.attributes[idxKey] + 1,
+                })
+            )
+    )
+    return newColumn
 }
 
 async function addColumnToTableView(
@@ -489,10 +512,7 @@ async function shiftColumnIndicesAfterDelete(connectionId: string, tableId: Tabl
     // in case of links, more columns than the one specified may have
     // disappeared, so simply decrementing all indices by one is not enough - we have to
     // go over them all and adjust their index appropriately.
-    const tableInfo = (await core.events.request(
-        lvr.getViewInfo(connectionId, tableId)
-    )) as RawViewInfo
-
+    const tableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
     const columns = [...tableInfo.columns]
     const idxKey = COLUMN_INDEX_KEY
     columns.sort((a, b) => a.attributes[idxKey] - b.attributes[idxKey])
