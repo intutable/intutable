@@ -29,11 +29,8 @@ export type ColumnGroup = {
 export type InputMaskColumnProps = {
     /** @default false */
     inputRequired?: boolean
-    /** @default undefined */
     defaultValue?: unknown
-    /** @default undefined */
     tooltip?: string
-    /** @default undefined */
     inputPlaceholderText?: string
     /** @default false */
     suppressInputLabel?: boolean
@@ -68,6 +65,7 @@ export type InputMask = {
     comments: Comment[]
     active: boolean
     // -- actual specification --
+    addRecordButtonText?: string
     groups: ColumnGroup[]
     columnProps: InputMaskColumn[]
     rules: Rule[]

@@ -9,11 +9,13 @@ const mask: InputMask = {
     description: "Mit dieser Eingabemaske können beliebige Einträge der Tabelle 'Personen' hinzugefügt werden.",
     created: new Date(2022, 11, 15),
     lastEdited: new Date(2023, 0, 15),
+    addRecordButtonText: "Neue Person",
     comments: [
         {
             text: "Nachstehend die Änderungen, die dieser Eingabemaske hinzugefügt wurden!",
             user: "Entwickler",
             created: new Date(2023, 0, 15),
+            highlighted: true,
         },
         {
             text: "Es wurde eine Gruppe aus den Spalten 'Titel'+'Vorname'+'Nachname' mit dem Gruppen-Label 'Name' erstellt und auf die Position '0' fixiert.",
@@ -26,6 +28,7 @@ const mask: InputMask = {
         {
             label: "Name",
             index: 0,
+            tooltip: "Ich bin ein Hinweis!",
             columns: [
                 { name: "Titel", size: "2" },
                 { name: "Vorname", size: "5" },
@@ -36,16 +39,19 @@ const mask: InputMask = {
     columnProps: [
         {
             origin: { name: "Titel" },
+            index: 0,
             defaultValue: "Dr.",
         },
         {
             origin: { name: "Vorname" },
+            index: 1,
             inputRequired: true,
             inputPlaceholderText: "Vorname",
             suppressInputLabel: true,
         },
         {
             origin: { name: "Nachname" },
+            index: 2,
             inputRequired: true,
             inputPlaceholderText: "Nachname",
             suppressInputLabel: true,

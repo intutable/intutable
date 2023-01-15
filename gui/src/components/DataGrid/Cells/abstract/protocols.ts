@@ -55,8 +55,6 @@ export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {
     required?: boolean
     /** If specified, it will render an additional label near the input component */
     label?: string
-    /** If specified, it will adjust the width of the input component – only applied to groups */
-    size?: FlexboxSizing
 }
 
 export type ExposableInputComponent = {

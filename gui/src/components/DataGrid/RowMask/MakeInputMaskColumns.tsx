@@ -3,7 +3,7 @@ import { isColumnGroup, isColumnIdOrigin } from "@shared/input-masks/utils"
 import { useInputMask } from "hooks/useInputMask"
 import { Column } from "types/tables/rdg"
 import { RowMaskColumn } from "./Column"
-import { GroupedColumn } from "./ColumnGroup"
+import { ColumnGroupComponent } from "./ColumnGroup"
 /**
  * // BUG: somewhere we loose some columns
  *
@@ -51,7 +51,7 @@ export const MakeInputMaskColumns: React.FC<{ columns: Column[] }> = ({ columns 
         <>
             {orderedColumns.map(item =>
                 isColumnGroup(item) ? (
-                    <GroupedColumn
+                    <ColumnGroupComponent
                         key={item.index}
                         group={item}
                         columns={columns.filter(column => columnIsInGroup(column, [item]))}

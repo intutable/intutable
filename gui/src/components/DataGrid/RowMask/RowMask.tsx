@@ -32,6 +32,7 @@ export const RowMask: React.FC = () => {
     const theme = useTheme()
     const { data } = useView()
     const { rowMaskState, setRowMaskState, selectedInputMask } = useRowMask()
+    const { currentInputMask } = useInputMask()
     const isInputMask = selectedInputMask !== NO_INPUT_MASK_DEFAULT
 
     const [commentsVisible, setCommentsVisible] = useState<boolean>(false)
@@ -123,7 +124,7 @@ export const RowMask: React.FC = () => {
                     justifyContent: "space-evenly",
                 }}
             >
-                <AddRow />
+                <AddRow text={isInputMask ? currentInputMask?.addRecordButtonText : undefined} />
                 {isInputMask === false && (
                     <>
                         <Divider flexItem variant="middle" orientation="vertical" />

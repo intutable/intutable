@@ -8,7 +8,7 @@ import React from "react"
 /**
  * Toolbar Item for adding rows to the data grid.
  */
-const AddRow: React.FC = () => {
+const AddRow: React.FC<{ text?: string }> = ({ text }) => {
     const { enqueueSnackbar } = useSnackbar()
 
     const { createRow } = useRow()
@@ -30,7 +30,7 @@ const AddRow: React.FC = () => {
     return (
         <>
             <Button startIcon={<AddIcon />} onClick={handleCreateRow}>
-                Neuer Eintrag
+                {text || "Neuer Eintrag"}
             </Button>
         </>
     )
