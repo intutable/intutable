@@ -42,7 +42,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     }
     const user = req.session.user!
 
-    const rowId = await withReadWriteConnection(user, async sessionID => {
+    const row: { _id: number } = await withReadWriteConnection(user, async sessionID => {
         const oldData = await coreRequest<TableData<unknown>>(getTableData(sessionID, table.id), user.authCookie)
 
         // mind-bending "insert at certain index" logic... good lord!
@@ -74,10 +74,10 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         }
 
         // create row in database
-        return coreRequest<number>(insert(sessionID, table.key, newRow, ["_id"]), user.authCookie)
+        return coreRequest<{ _id: number }>(insert(sessionID, table.key, newRow, ["_id"]), user.authCookie)
     })
 
-    res.status(200).send(rowId)
+    res.status(200).send(row)
 })
 
 /**

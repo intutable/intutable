@@ -6,6 +6,7 @@ import { useTheme } from "@mui/material/styles"
 import { NO_INPUT_MASK_DEFAULT, useRowMask } from "context/RowMaskContext"
 import React, { useState } from "react"
 import { Column } from "types"
+import KeyIcon from "@mui/icons-material/Key"
 
 export const ColumnAttributesWindowButton: React.FC<{
     column: Column.Serialized
@@ -79,9 +80,6 @@ export const RowMaskColumnBox: React.FC<RowMaskColumnBoxProps> = props => {
 }
 
 export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ column }) => {
-    if (column.isUserPrimaryKey === true)
-        throw new Error("This component is supposed to be used only for columns that are NOT user primary key columns.")
-
     const theme = useTheme()
     const { rowMaskState, selectedInputMask } = useRowMask()
 

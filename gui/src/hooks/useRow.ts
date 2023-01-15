@@ -58,8 +58,8 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: put `asTable` into the corresponding api route
-    const createRow = async (atIndex?: number): Promise<void> => {
-        await fetcher({
+    const createRow = async (atIndex?: number): Promise<{ _id: number }> => {
+        const row: { _id: number } = await fetcher({
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
@@ -67,9 +67,9 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
                 atIndex,
             },
         })
-
         await mutateTable()
         await mutateView()
+        return row
         // const lastRowIndex = rows.length
         // const deserializedRow = SerializableTable.deserializeRow(
         //     serializedRow,

@@ -1,45 +1,36 @@
 import { ColumnGroup } from "./types"
 
-export type TableOrigin = { tableId: number }
-export type ViewOrigin = { viewId: number }
+export type TableIdOrigin = { tableId: number }
+export type TableNameOrigin = { tableName: string }
+export type TableOrigin = TableIdOrigin | TableNameOrigin
+
+export type ViewIdOrigin = { viewId: number }
+export type ViewNameOrigin = { viewName: string; viewsTableName: string }
+export type ViewOrigin = ViewIdOrigin | ViewNameOrigin
+
 export type Origin = TableOrigin | ViewOrigin
 
-/** type guard for InputMask */
-export const isTableOrigin = (value: Origin): value is TableOrigin =>
+export const isTableIdOrigin = (value: Origin): value is TableIdOrigin =>
     Object.prototype.hasOwnProperty.call(value, "tableId")
+export const isTableNameOrigin = (value: Origin): value is TableNameOrigin =>
+    Object.prototype.hasOwnProperty.call(value, "tableName")
+
+export const isViewIdOrigin = (value: Origin): value is ViewIdOrigin =>
+    Object.prototype.hasOwnProperty.call(value, "viewId")
+export const isViewNameOrigin = (value: Origin): value is ViewNameOrigin =>
+    Object.prototype.hasOwnProperty.call(value, "viewName") &&
+    Object.prototype.hasOwnProperty.call(value, "viewsTableName")
 
 /** type guard for ColumnGroup */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isColumnGroup = (value: any): value is ColumnGroup => {
-    // use as a hint that this is a ColumnGroup
-    return Object.prototype.hasOwnProperty.call(value, "columns") && Array.isArray(value.columns)
-}
+export const isColumnGroup = (value: any): value is ColumnGroup =>
+    Object.prototype.hasOwnProperty.call(value, "columns") &&
+    Object.prototype.hasOwnProperty.call(value, "index") &&
+    Array.isArray(value.columns)
 
-/** Minimum information it requires to sort */
-type SortableColumn = { id: number; index: number }
-/**
- * Utility that helps finding the index of a column group
- *
- * Order in which the index is 'calculated' to position the whole group:
- * 1. if a column in the group has 'useMyIndexAsGroupPosition' set to true, it uses the index of that column
- * 2. otherwise, it uses the highest index of all columns in the group
- */
-export const getIndexOfGroup = (group: ColumnGroup, columns: SortableColumn[]): number => {
-    const hasUseMyIndexAsGroupPosition = group.columns.find(column => column.useMyIndexAsGroupPosition)
+export type ColumnIdOrigin = { id: number }
+export type ColumnNameOrigin = { name: string }
+export type ColumnOrigin = ColumnIdOrigin | ColumnNameOrigin
 
-    // the group uses the first column it finds with 'useMyIndexAsGroupPosition' set to true
-    if (hasUseMyIndexAsGroupPosition) {
-        const column = columns.find(column => column.id === hasUseMyIndexAsGroupPosition.id)
-        if (column == null)
-            throw new Error("Malformed input mask: this input mask likley specified a malformed column group!")
-        return column.index
-    }
-
-    // get all columns included in the group and sort them by their index
-    const columnsOfGroup = columns
-        .filter(column => group.columns.map(c => c.id).includes(column.id))
-        .sort((a, b) => (a.index > b.index ? 1 : -1))
-
-    // then return the highest index, which is the first element
-    return columnsOfGroup[0].index
-}
+export const isColumnIdOrigin = (value: ColumnOrigin): value is ColumnIdOrigin =>
+    Object.prototype.hasOwnProperty.call(value, "id")

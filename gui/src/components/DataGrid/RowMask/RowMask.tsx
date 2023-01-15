@@ -25,7 +25,6 @@ import { CommentSection } from "./Comments"
 import { useTheme } from "@mui/material/styles"
 import { AddRow } from "@datagrid/Toolbar/ToolbarItems"
 import { Column } from "types/tables/rdg"
-import { UserPrimaryKeyColumn } from "./UserPrimaryKeyColumn"
 import { ColumnGroup } from "@shared/input-masks/types"
 import { MakeInputMaskColumns } from "./MakeInputMaskColumns"
 
@@ -33,21 +32,20 @@ export const RowMask: React.FC = () => {
     const theme = useTheme()
     const { data } = useView()
     const { rowMaskState, setRowMaskState, selectedInputMask } = useRowMask()
-    const usesInputMask = selectedInputMask !== NO_INPUT_MASK_DEFAULT
+    const isInputMask = selectedInputMask !== NO_INPUT_MASK_DEFAULT
 
     const [commentsVisible, setCommentsVisible] = useState<boolean>(false)
     useEffect(() => {
         // no comment section for default mask
-        if (usesInputMask === false) setCommentsVisible(false)
-    }, [usesInputMask])
+        if (isInputMask === false) setCommentsVisible(false)
+    }, [isInputMask])
 
     const abort = () => setRowMaskState({ mode: "closed" })
 
     if (data == null) return null
 
     const nonHidden = data.columns.filter(column => column.hidden !== true)
-    const userPrimaryKeyColumn = nonHidden.find(column => column.isUserPrimaryKey === true)
-    const columns = nonHidden.filter(column => column.isUserPrimaryKey === false).sort(ColumnUtility.sortByIndex)
+    const columns = nonHidden
 
     return (
         <Dialog open={rowMaskState.mode !== "closed"} fullWidth onClose={abort} keepMounted>
@@ -88,12 +86,13 @@ export const RowMask: React.FC = () => {
                         <Box
                             sx={{ overflowY: "scroll", maxHeight: "70vh", minHeight: "70vh", height: "70vh", width: 1 }}
                         >
-                            {userPrimaryKeyColumn && <UserPrimaryKeyColumn column={userPrimaryKeyColumn} />}
-                            {/* without grouping */}
-                            {usesInputMask === false &&
-                                columns.map(column => <RowMaskColumn column={column} key={column.id} />)}
-                            {/* with grouping through factory component */}
-                            {usesInputMask === true && <MakeInputMaskColumns columns={columns} />}
+                            {isInputMask ? (
+                                <MakeInputMaskColumns columns={columns} />
+                            ) : (
+                                columns
+                                    .sort(ColumnUtility.sortByIndex)
+                                    .map(column => <RowMaskColumn column={column} key={column.id} />)
+                            )}
                         </Box>
                     </Grid>
 
@@ -125,7 +124,7 @@ export const RowMask: React.FC = () => {
                 }}
             >
                 <AddRow />
-                {usesInputMask === false && (
+                {isInputMask === false && (
                     <>
                         <Divider flexItem variant="middle" orientation="vertical" />
                         <AddColumnButton />

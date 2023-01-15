@@ -1,37 +1,43 @@
 import type { ColumnGroup } from "@shared/input-masks/types"
-import { getIndexOfGroup } from "@shared/input-masks/utils"
+import { isColumnGroup, isColumnIdOrigin } from "@shared/input-masks/utils"
 import { useInputMask } from "hooks/useInputMask"
 import { Column } from "types/tables/rdg"
-import { ColumnUtility } from "utils/column utils/ColumnUtility"
 import { RowMaskColumn } from "./Column"
 import { GroupedColumn } from "./ColumnGroup"
 /**
  * // BUG: somewhere we loose some columns
+ *
+ * still the case?
  */
 
-type OrderedColumnMap = Map<number, { __type: "column"; column: Column } | { __type: "group"; group: ColumnGroup }>
-const makeOrderedColumnMap = (columns: Column[], groups: ColumnGroup[]): OrderedColumnMap => {
-    const nonGroupedColumns = columns.filter(column => columnIsInGroup(column, groups) === false)
+const columnIsInGroup = (column: Column, groups: ColumnGroup[]) =>
+    groups.some(group =>
+        group.columns.some(groupColumn =>
+            isColumnIdOrigin(groupColumn) ? groupColumn.id === column.id : groupColumn.name === column.name
+        )
+    )
 
-    const columnMap = nonGroupedColumns.reduce((map: OrderedColumnMap, column) => {
-        map.set(column.index, { __type: "column", column })
-        return map
-    }, new Map())
-    const groupMap = groups.reduce((map: OrderedColumnMap, group) => {
-        map.set(getIndexOfGroup(group, columns), { __type: "group", group })
-        return map
-    }, new Map())
+const OrderedColumnMapSort = (a: Column | ColumnGroup, b: Column | ColumnGroup) => {
+    // special case: groups override column indices if they use the same index
+    if (
+        ((isColumnGroup(a) && isColumnGroup(b) === false) || (isColumnGroup(b) && isColumnGroup(a) === false)) && // one group AND one column in a/b
+        a.index === b.index // that share the same index
+    )
+        return isColumnGroup(a) ? 1 : -1
 
-    // overlapping indices -> malformed input mask
-    if (Object.keys(columnMap).some(key => Object.keys(groupMap).includes(key)))
-        throw new Error("A column group uses an index that is already used by an non-group column!")
-
-    // combine and sort by index
-    return new Map([...columnMap, ...groupMap].sort((a, b) => (a[0] > b[0] ? 1 : -1)))
+    return a.index > b.index ? 1 : -1
 }
 
-const columnIsInGroup = (column: Column, groups: ColumnGroup[]) =>
-    groups.some(group => group.columns.some(groupColumn => groupColumn.id === column.id))
+const orderColumnsAndGroups = (columns: Column[], groups: ColumnGroup[]): (Column | ColumnGroup)[] => {
+    // filter out columns that are in a group
+    const nonGroupedColumns = columns.filter(column => columnIsInGroup(column, groups) === false)
+
+    // combine left over columns w/ groups
+    const columnsAndGroups = [...nonGroupedColumns, ...groups]
+
+    // return them sorted
+    return columnsAndGroups.sort(OrderedColumnMapSort)
+}
 
 /** 'columns' should be already filterd by userPrimaryKey-columns and hiddens ones */
 export const MakeInputMaskColumns: React.FC<{ columns: Column[] }> = ({ columns }) => {
@@ -39,22 +45,21 @@ export const MakeInputMaskColumns: React.FC<{ columns: Column[] }> = ({ columns 
 
     if (currentInputMask == null) return null
 
-    const orderedColumns = makeOrderedColumnMap(columns, currentInputMask.groups)
+    const orderedColumns = orderColumnsAndGroups(columns, currentInputMask.groups)
 
     return (
         <>
-            {Array.from(orderedColumns).map(([index, columnOrGroup]) => {
-                if (columnOrGroup.__type === "column")
-                    return <RowMaskColumn key={index} column={columnOrGroup.column} />
-                else
-                    return (
-                        <GroupedColumn
-                            key={index}
-                            group={columnOrGroup.group}
-                            columns={columns.filter(column => columnIsInGroup(column, [columnOrGroup.group]))}
-                        />
-                    )
-            })}
+            {orderedColumns.map(item =>
+                isColumnGroup(item) ? (
+                    <GroupedColumn
+                        key={item.index}
+                        group={item}
+                        columns={columns.filter(column => columnIsInGroup(column, [item]))}
+                    />
+                ) : (
+                    <RowMaskColumn key={item.index} column={item} />
+                )
+            )}
         </>
     )
 }

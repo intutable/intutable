@@ -11,29 +11,38 @@ export type Comment = {
 export type FlexboxSizing = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12"
 export type ColumnGroup = {
     label?: string
-    columns: {
-        /** reference to the column; atm user-primary-key-columns are not allowed to be included in a group */
-        id: number
-        size: FlexboxSizing
-        /**
-         * It will use the column's indexes to order the columns in a group.
-         * This can be overriden using 'overrideIndex' starting from 0.
-         */
-        overrideIndex?: number
-        /**
-         * @default false
-         * It will use the first column's index where this is 'true' to position the group.
-         * If no one found in a group, it uses the highest index.
-         */
-        useMyIndexAsGroupPosition?: boolean
-    }[]
+    tooltip?: string
+    /** What index to use for the group. Can be a duplicate of any column, than it will override that index. */
+    index: number
+    columns: (
+        | {
+              id: number
+              size: FlexboxSizing
+          }
+        | {
+              name: string
+              size: FlexboxSizing
+          }
+    )[]
 }
 
-export type InputMaskColumn = {
+export type InputMaskColumnProps = {
     /** @default false */
     inputRequired?: boolean
+    /** @default undefined */
+    defaultValue?: unknown
+    /** @default undefined */
+    tooltip?: string
+    /** @default undefined */
+    inputPlaceholderText?: string
+    /** @default false */
+    suppressInputLabel?: boolean
 }
-export type OverridenColumn = SerializedColumn & InputMaskColumn
+export type OverrideableColumnProps = Partial<
+    Pick<SerializedColumn, "name" | "editable" | "frozen" | "index" | "hidden">
+>
+export type InputMaskColumnOrigin = { origin: { id: number } | { name: string } }
+export type InputMaskColumn = InputMaskColumnOrigin & OverrideableColumnProps & InputMaskColumnProps
 
 export type Rule = {
     [key in keyof SerializedColumn]?: Permission
@@ -41,19 +50,28 @@ export type Rule = {
 export type Permission = unknown
 
 export type InputMask = {
+    // -- meta --
     /** unique identifier; pass a uuuidv4 to this */
     id: string
-    /** specifiy a view's id oder a table's id */
-    origin: { viewId: number } | { tableId: number }
+    /** specifiy a view's id oder a table's id; or for more comfort: map it to a name (unsecure) */
+    // Because of changing ids through multiple dev setups and resets it is more comfortable to map to value that does not change
+    // then a view requires also the table name to map
+    origin:
+        | { viewId: number }
+        | { tableId: number }
+        | { viewName: string; viewsTableName: string }
+        | { tableName: string }
     name: string
     description: string
     created: Date
     lastEdited: Date
     comments: Comment[]
     active: boolean
+    // -- actual specification --
     groups: ColumnGroup[]
-    columnProps: OverridenColumn[]
+    columnProps: InputMaskColumn[]
     rules: Rule[]
 }
 
+/** only for development */
 export type UNSAFE_ViewData = SerializedViewData & { inputMasks: InputMask[] }
