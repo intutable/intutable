@@ -53,19 +53,17 @@ export class MultiSelect extends Cell {
 
     public editor = () => null
 
-    private getOptions(column: Column.Deserialized, rows: Row[], self?: string[] | null): string[] {
+    /** Returns a list of all available options in this column (the values of other chips) */
+    private getAvailableOptions(column: Column.Deserialized, rows: Row[], self?: string[] | null): string[] {
         const options = rows
             .map(row => row[column.key])
             .flat()
             .filter(option => Cell.isEmpty(option) === false) // remove empty values
-
         const optionsWithoutSelf = (
             self == null ? options : options.filter(option => self.includes(option as string) === false)
-        ) as string[]
-
-        const uniqueOptions = new Set(optionsWithoutSelf)
-
-        return [...uniqueOptions]
+        ) as string[] // remove self from list
+        const uniqueOptions = new Set(optionsWithoutSelf) // remove duplicates from list
+        return [...uniqueOptions] // return sorted
     }
 
     public formatter = (props: FormatterProps<Row>) => {
@@ -73,7 +71,7 @@ export class MultiSelect extends Cell {
         const isEmpty = content == null || content.length === 0
 
         const [hovering, setHovering] = useState<boolean>(false)
-        const modalRef = useRef<HTMLElement | null>(null)
+        const modalRef = useRef(null)
         const [open, setOpen] = useState<boolean>(false)
         const openModal = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             e.preventDefault()
@@ -101,7 +99,12 @@ export class MultiSelect extends Cell {
         }
 
         const { data } = useView()
-        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : []), [data, column, content])
+        const list = useMemo(
+            () => (data ? this.getAvailableOptions(column, data.rows, content) : []),
+            [data, column, content]
+        )
+
+        const showSelectMenuButton = (hovering || open) && this.column.editable && this.isReadonlyComponent === false
 
         return (
             <>
@@ -117,12 +120,11 @@ export class MultiSelect extends Cell {
                         alignItems: "center",
                         whiteSpace: "nowrap",
                     }}
-                    ref={modalRef}
                 >
                     {isEmpty ? (
                         <>
-                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
-                                <IconButton size="small" onClick={openModal}>
+                            {showSelectMenuButton && (
+                                <IconButton size="small" onClick={openModal} ref={modalRef}>
                                     <AddIcon fontSize="small" />
                                 </IconButton>
                             )}
@@ -145,8 +147,8 @@ export class MultiSelect extends Cell {
                                         />
                                     ))}
                             </Box>
-                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
-                                <IconButton size="small" onClick={openModal}>
+                            {showSelectMenuButton && (
+                                <IconButton size="small" onClick={openModal} ref={modalRef}>
                                     <KeyboardArrowDownIcon fontSize="small" />
                                 </IconButton>
                             )}
@@ -207,7 +209,7 @@ export class MultiSelect extends Cell {
 
         const { data } = useView()
         const list = useMemo(
-            () => (data ? this.getOptions(props.column, data.rows, props.content) : []),
+            () => (data ? this.getAvailableOptions(props.column, data.rows, props.content) : []),
             [data, props.column, props.content]
         )
 
@@ -229,7 +231,11 @@ export class MultiSelect extends Cell {
                             <ChipItem
                                 label={option}
                                 key={option}
-                                onDelete={this.column.editable ? () => removeChip(option) : undefined}
+                                onDelete={
+                                    this.column.editable && this.isReadonlyComponent === false
+                                        ? () => removeChip(option)
+                                        : undefined
+                                }
                             />
                         ))}
 

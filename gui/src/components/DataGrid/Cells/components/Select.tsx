@@ -4,7 +4,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import { Box, Chip, Divider, IconButton, Menu, MenuItem, MenuList, Stack, TextField } from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
@@ -50,8 +50,7 @@ export const SelectMenu: React.FC<SelectMenuProps> = props => {
 
     return (
         <Menu
-            // elevation={0}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             transformOrigin={{
                 vertical: "top",
                 horizontal: "right",
@@ -70,6 +69,7 @@ export const SelectMenu: React.FC<SelectMenuProps> = props => {
                     label="Option hinzufügen"
                     value={input}
                     onChange={e => setInput(e.target.value)}
+                    size="small"
                     onKeyDown={e => {
                         if (e.key === "Enter") props.addOption(input)
                     }}
@@ -114,14 +114,12 @@ export class Select extends Cell {
 
     public editor = () => null
 
-    private getOptions(column: Column.Deserialized, rows: Row[], self?: string | null): string[] {
+    /** Returns a list of all available options in this column (the values of other chips) */
+    private getAvailableOptions(column: Column.Deserialized, rows: Row[], self?: string | null): string[] {
         const options = rows.map(row => row[column.key]).filter(option => Cell.isEmpty(option) === false) // remove empty values
-
-        const optionsWithoutSelf = (self == null ? options : options.filter(option => self !== option)) as string[]
-
-        const uniqueOptions = new Set(optionsWithoutSelf)
-
-        return [...uniqueOptions]
+        const optionsWithoutSelf = (self == null ? options : options.filter(option => self !== option)) as string[] // remove self from list
+        const uniqueOptions = new Set(optionsWithoutSelf) // remove duplicates from list
+        return [...uniqueOptions] // return sorted
     }
 
     public formatter = (props: FormatterProps<Row>) => {
@@ -139,16 +137,20 @@ export class Select extends Cell {
         const closeModal = () => setOpen(false)
 
         const changeOption = (value: string) => {
-            if (value)
-                props.onRowChange({
-                    ...row,
-                    [key]: value,
-                })
+            props.onRowChange({
+                ...row,
+                [key]: value,
+            })
             closeModal()
         }
 
         const { data } = useView()
-        const list = useMemo(() => (data ? this.getOptions(column, data.rows, content) : []), [data, column, content])
+        const list = useMemo(
+            () => (data ? this.getAvailableOptions(column, data.rows, content) : []),
+            [data, column, content]
+        )
+
+        const showSelectMenuButton = (hovering || open) && this.column.editable && this.isReadonlyComponent === false
 
         return (
             <>
@@ -164,12 +166,11 @@ export class Select extends Cell {
                         alignItems: "center",
                         whiteSpace: "nowrap",
                     }}
-                    ref={modalRef}
                 >
                     {isEmpty ? (
                         <>
-                            {hovering && this.column.editable && this.isReadonlyComponent == false && (
-                                <IconButton size="small" onClick={openModal}>
+                            {showSelectMenuButton && (
+                                <IconButton size="small" onClick={openModal} ref={modalRef}>
                                     <AddIcon fontSize="small" />
                                 </IconButton>
                             )}
@@ -185,11 +186,15 @@ export class Select extends Cell {
                             >
                                 <ChipItem
                                     label={content}
-                                    onDelete={this.column.editable ? () => changeOption("") : undefined}
+                                    onDelete={
+                                        this.column.editable && this.isReadonlyComponent === false
+                                            ? () => changeOption("")
+                                            : undefined
+                                    }
                                 />
                             </Box>
-                            {hovering && this.column.editable && this.isReadonlyComponent === false && (
-                                <IconButton size="small" onClick={openModal}>
+                            {showSelectMenuButton && (
+                                <IconButton size="small" onClick={openModal} ref={modalRef}>
                                     <KeyboardArrowDownIcon fontSize="small" />
                                 </IconButton>
                             )}
@@ -236,7 +241,7 @@ export class Select extends Cell {
 
         const { data } = useView()
         const list = useMemo(
-            () => (data ? this.getOptions(props.column, data.rows, props.content) : []),
+            () => (data ? this.getAvailableOptions(props.column, data.rows, props.content) : []),
             [data, props.column, props.content]
         )
 
