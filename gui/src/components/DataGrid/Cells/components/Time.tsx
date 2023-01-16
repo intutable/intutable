@@ -154,7 +154,7 @@ export class Time extends TempusCell {
                     showToolbar
                     value={content}
                     onChange={handleChange}
-                    renderInput={props => <TextField {...props} />}
+                    renderInput={props => <TextField size="small" {...props} />}
                     disabled={this.column.editable === false}
                     componentsProps={{
                         actionBar: {

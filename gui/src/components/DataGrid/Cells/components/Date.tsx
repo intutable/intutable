@@ -155,7 +155,7 @@ export class DateCell extends TempusCell {
                     value={content}
                     disabled={this.column.editable === false}
                     onChange={handleChange}
-                    renderInput={props => <TextField {...props} />}
+                    renderInput={props => <TextField size="small" {...props} />}
                     componentsProps={{
                         actionBar: {
                             actions: ["clear", "today", "accept"],
