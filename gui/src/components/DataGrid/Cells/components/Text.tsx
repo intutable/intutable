@@ -22,6 +22,7 @@ export class Text extends Cell {
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content)
+        const isEmpty = value == null || value === ""
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
@@ -46,6 +47,9 @@ export class Text extends Cell {
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
+                placeholder={props.label == null && props.required ? props.placeholder + "*" : props.placeholder}
+                error={props.required && isEmpty}
+                helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
                 sx={props.forwardSX}
                 {...props.forwardProps}
             />

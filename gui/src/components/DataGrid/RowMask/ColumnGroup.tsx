@@ -63,23 +63,44 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponentProps> = props =
                 borderRadius: theme.shape.borderRadius,
                 mb: 2,
                 px: 3,
-                py: props.group.label ? 4 : 1.5,
+                py: props.group.label ? 5 : 1.5,
                 boxSizing: "border-box",
                 position: "relative",
             }}
         >
             {props.group.label && (
-                <Typography
-                    variant="caption"
-                    fontSize="small"
-                    sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                    }}
-                >
-                    [{props.group.label}]
-                </Typography>
+                <>
+                    <Stack
+                        direction="row"
+                        sx={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            alignItems: "center",
+                        }}
+                    >
+                        <Typography
+                            variant="caption"
+                            fontSize="small"
+                            sx={{
+                                mr: 0.5,
+                                ml: "24px",
+                            }}
+                        >
+                            {props.group.label}
+                        </Typography>
+                        {props.group.tooltip && (
+                            <Tooltip title={props.group.tooltip} arrow placement="right">
+                                <InfoIcon
+                                    sx={{
+                                        fontSize: "80%",
+                                    }}
+                                    color="disabled"
+                                />
+                            </Tooltip>
+                        )}
+                    </Stack>
+                </>
             )}
             <Grid container spacing={1}>
                 {mergedColumns.sort(ColumnUtility.sortByIndex).map(column => {
@@ -98,7 +119,8 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponentProps> = props =
                                 content={rowMaskState.row[column.key]}
                                 row={rowMaskState.row}
                                 column={column}
-                                label={column.name as string}
+                                placeholder={column.inputPlaceholderText}
+                                label={column.suppressInputLabel !== true ? (column.name as string) : undefined}
                                 hoveringOnParent={isHovering}
                                 required={column.inputRequired}
                             />
@@ -106,11 +128,6 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponentProps> = props =
                     )
                 })}
             </Grid>
-            {props.group.tooltip && (
-                <Tooltip title={props.group.tooltip} arrow placement="right">
-                    <InfoIcon />
-                </Tooltip>
-            )}
         </Box>
     )
 }

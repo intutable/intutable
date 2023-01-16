@@ -55,6 +55,7 @@ export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {
     required?: boolean
     /** If specified, it will render an additional label near the input component */
     label?: string
+    placeholder?: string
 }
 
 export type ExposableInputComponent = {
