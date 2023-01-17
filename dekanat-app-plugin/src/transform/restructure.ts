@@ -13,6 +13,7 @@ export class Restructure {
 
         return {
             id: column.id,
+            parentColumnId: column.parentColumnId,
             key: column.key,
             name: displayName,
             kind: kind as MetaColumnProps["kind"],

@@ -13,7 +13,7 @@ import { restructure } from "./restructure"
  *
  * The `Parser` combines multiple operations on multiple data structures.
  *
- * #### Restrcuturing
+ * #### Restructuring
  *
  * Some data structures need to be restructured when they come out ot the database.
  * This includes renaming properties and merging objects into a single one.
@@ -124,7 +124,12 @@ export class ParserClass {
                 columns: restructuredColumns,
                 rows: view.rows,
             })
-        const castedColumns = internalProcessedColumns.map(this.castColumn)
+        const castedColumns = internalProcessedColumns.map(
+            column => ({
+                ...this.castColumn(column),
+                parentColumnId: null
+            })
+        )
 
         return {
             descriptor: view.descriptor,

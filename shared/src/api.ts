@@ -41,6 +41,7 @@ export function userPrimaryColumnName() {
  */
 export const immutableColumnAttributes: (keyof SerializedColumn)[] = [
     "id",
+    "parentColumnId",
     "key",
     "kind",
     "index",

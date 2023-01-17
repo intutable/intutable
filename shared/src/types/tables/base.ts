@@ -84,17 +84,23 @@ export type Row = {
  *
  * __Note__: in many rdg handlers you want get a column of type {@link Column}.
  * You will receive a column of type {@link CalculatedColumn}.
- * Then you need to provide this loss of information by a context e.g.
+ * Then you need to provide this loss of information by a context.
  *
  * __Note__: These properties must be add to {@link Column} __and__ {@link SerializedColumn}.
  *
  */
 export type MetaColumnProps = {
     /**
-     * core/plugion unique id
-     * used for columns, rows, tables etc.
+     * unique ID
      */
     readonly id: number
+    /**
+     * The ID of the column that a (view) column is based on. If a table has a column named
+     * "Name" and ID 10, then a view on that table will have a column of the same name, and
+     * the view column's `parentColumnId` will be 10.
+     * In table columns, `parentColumnId` is null.
+     */
+    readonly parentColumnId: number | null
     /**
      * @property {(standard | link | lookup)} kind meta type of a column.
      *
@@ -118,7 +124,8 @@ export type MetaColumnProps = {
     cellType: string
     /**
      * @property {number | null} index ordering position of the
-     * column.
+     * column. Starts from 0, includes both ID and index. ID is index 0, index is index 1.
+     * All other columns' indices can change.
      */
     index: number
     /**
