@@ -102,6 +102,12 @@ export type MetaColumnProps = {
      */
     readonly parentColumnId: number | null
     /**
+     * If the column is taken from another table via a link, then that link is a separate entity
+     * and this is its ID. If the column is from the home table, equivalent to its `kind` not
+     * being link or lookup, then `linkId` is null.
+     */
+    readonly linkId: number | null
+    /**
      * @property {(standard | link | lookup)} kind meta type of a column.
      *
      * ---
