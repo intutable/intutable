@@ -28,6 +28,14 @@ import { Column } from "types/tables/rdg"
 import { ColumnGroup } from "@shared/input-masks/types"
 import { MakeInputMaskColumns } from "./MakeInputMaskColumns"
 
+/**
+ * // BUG:
+ *
+ * 1. RowMask does not update on state changes
+ *
+ * 2. exposed input components lose focus when onMouseLeave event fires on that parent, which wont call onBlut (<- updates the cell)
+ */
+
 export const RowMask: React.FC = () => {
     const theme = useTheme()
     const { data } = useView()

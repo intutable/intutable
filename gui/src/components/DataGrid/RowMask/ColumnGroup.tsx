@@ -16,7 +16,7 @@ import React from "react"
 import { useState } from "react"
 import { Column } from "types/tables/rdg"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
-import { RowMaskColumnBox } from "./Column"
+
 import InfoIcon from "@mui/icons-material/Info"
 
 type MergedColumn = Column & InputMaskColumnProps

@@ -4,9 +4,10 @@ import EditIcon from "@mui/icons-material/Edit"
 import { Box, Divider, IconButton, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { NO_INPUT_MASK_DEFAULT, useRowMask } from "context/RowMaskContext"
-import React, { useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Column } from "types"
 import KeyIcon from "@mui/icons-material/Key"
+import { useHover } from "hooks/useHover"
 
 export const ColumnAttributesWindowButton: React.FC<{
     column: Column.Serialized
@@ -27,126 +28,112 @@ export const ColumnAttributesWindowButton: React.FC<{
         </>
     )
 }
-type RowMaskColumnBoxProps = {
-    /** Optional label – useful for groups */
-    label?: string
-    isHovering: boolean
-    setIsHovering: React.Dispatch<React.SetStateAction<boolean>>
-    children: React.ReactNode
-}
-export const RowMaskColumnBox: React.FC<RowMaskColumnBoxProps> = props => {
-    const theme = useTheme()
+
+const ExposedInput: React.FC<{ column: Column.Deserialized }> = ({ column }) => {
+    // const { hoverRef, isHovering } = useHover()
+    const { rowMaskState } = useRowMask()
+
+    const cell = cellMap.instantiate(column)
+    // const Input = React.memo(cell.ExposedInput)
+    const Input = cell.ExposedInput
+
+    if (rowMaskState.mode !== "edit") return null
+
     return (
-        <Box
-            onMouseEnter={() => props.setIsHovering(true)}
-            onMouseLeave={() => props.setIsHovering(false)}
-            sx={{
-                bgcolor: props.isHovering ? theme.palette.grey[100] : "inherit",
-                borderRadius: theme.shape.borderRadius,
-                mb: 2,
-                px: 3,
-                py: 1.5,
-                boxSizing: "border-box",
-                position: "relative",
-            }}
-        >
-            {props.isHovering && (
-                <Typography
-                    variant="caption"
-                    fontSize="small"
-                    sx={{
-                        position: "absolute",
-                        top: 2,
-                        left: 20,
-                    }}
-                >
-                    {props.label}
-                </Typography>
-            )}
-            <Stack
-                direction="row"
-                sx={{
-                    width: 1,
-                    height: 1,
-                    flexWrap: "nowrap",
-                    alignItems: "center",
-                    justifyContent: "center",
-                }}
-            >
-                {props.children}
-            </Stack>
-        </Box>
+        <Input
+            content={rowMaskState.row[column.key]}
+            row={rowMaskState.row}
+            column={column}
+            hoveringOnParent={false} // <- //TODO
+        />
     )
 }
 
 export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ column }) => {
     const theme = useTheme()
-    const { rowMaskState, selectedInputMask } = useRowMask()
+    const { hoverRef, isHovering } = useHover()
+    const { selectedInputMask } = useRowMask()
+    const isInputMask = selectedInputMask !== NO_INPUT_MASK_DEFAULT
 
     const cell = cellMap.instantiate(column)
     const Icon = cell.icon
-    const Input = React.memo(cell.ExposedInput)
-
-    const [isHovering, setIsHovering] = useState<boolean>(false)
 
     return (
         <>
-            <RowMaskColumnBox isHovering={isHovering} setIsHovering={setIsHovering}>
-                {/* label */}
+            <Box
+                ref={hoverRef}
+                sx={{
+                    // bgcolor: isHovering ? theme.palette.grey[100] : "inherit",
+                    bgcolor: "inherit",
+                    "&:hover": {
+                        bgcolor: theme.palette.grey[100],
+                    },
+                    borderRadius: theme.shape.borderRadius,
+                    mb: 2,
+                    px: 3,
+                    py: 1.5,
+                    boxSizing: "border-box",
+                    position: "relative",
+                }}
+            >
                 <Stack
                     direction="row"
                     sx={{
-                        mb: 0,
-                        mr: 6,
-                        bosSizing: "border-box",
+                        width: 1,
+                        height: 1,
+                        flexWrap: "nowrap",
+                        alignItems: "center",
+                        justifyContent: "center",
                     }}
                 >
                     {/* label */}
-                    <Typography
+                    <Stack
+                        direction="row"
                         sx={{
-                            width: "150px",
-                            maxWidth: "150px",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                            textOverflow: "ellipsis",
-                            textAlign: "right",
+                            mb: 0,
+                            mr: 6,
+                            bosSizing: "border-box",
                         }}
-                        variant="subtitle1"
                     >
-                        <Icon
-                            fontSize="small"
+                        {/* label */}
+                        <Typography
                             sx={{
-                                mr: 1,
+                                width: "150px",
+                                maxWidth: "150px",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                                textOverflow: "ellipsis",
+                                textAlign: "right",
                             }}
-                        />
-                        {column.name}
-                    </Typography>
+                            variant="subtitle1"
+                        >
+                            <Icon
+                                fontSize="small"
+                                sx={{
+                                    mr: 1,
+                                }}
+                            />
+                            {column.name}
+                        </Typography>
+                    </Stack>
+
+                    {/* input */}
+                    <ExposedInput column={column} />
+
+                    {/* edit icon */}
+                    {isInputMask === false && (
+                        <>
+                            <Box sx={{ flexGrow: 1 }} />
+                            {isHovering && (
+                                <>
+                                    {/* {column.kind === "link" && <AddLookupButton />} */}
+                                    <ColumnAttributesWindowButton column={column as Column.Serialized} />
+                                </>
+                            )}
+                        </>
+                    )}
                 </Stack>
-
-                {/* input */}
-
-                {rowMaskState.mode === "edit" && (
-                    <Input
-                        content={rowMaskState.row[column.key]}
-                        row={rowMaskState.row}
-                        column={column}
-                        hoveringOnParent={isHovering}
-                    />
-                )}
-
-                {/* edit icon */}
-                {selectedInputMask === NO_INPUT_MASK_DEFAULT && (
-                    <>
-                        <Box sx={{ flexGrow: 1 }} />
-                        {isHovering && (
-                            <>
-                                {/* {column.kind === "link" && <AddLookupButton />} */}
-                                <ColumnAttributesWindowButton column={column as Column.Serialized} />
-                            </>
-                        )}
-                    </>
-                )}
-            </RowMaskColumnBox>
+            </Box>
         </>
     )
 }
