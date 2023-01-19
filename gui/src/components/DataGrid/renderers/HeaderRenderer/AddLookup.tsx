@@ -39,7 +39,7 @@ const Modal: React.FC<ModalProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
 
-    const { foreignTable, columnInfo } = useForeignTable(props.column)
+    const { foreignTable } = useForeignTable(props.column)
     const { linkTableData: foreignTableData, error } = useLink(props.column)
 
     const { data, mutate: mutateTable } = useTable()
@@ -51,7 +51,7 @@ const Modal: React.FC<ModalProps> = props => {
         try {
             await fetcher({
                 url: `/api/table/${data!.descriptor.id}/lookupColumn`,
-                body: { column: { linkColumn: columnInfo!.id, foreignColumn: column.id } },
+                body: { column: { linkColumn: props.column.id, foreignColumn: column.id } },
             })
             await mutateTable()
             await mutateView()

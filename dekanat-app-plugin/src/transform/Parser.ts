@@ -140,7 +140,6 @@ export class ParserClass {
             descriptor: view.descriptor,
             joins: view.joins,
             rawTable: asTable(view.source).table,
-            rawColumns: view.columns,
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
         }
@@ -155,7 +154,6 @@ export class ParserClass {
         const castedColumns = internalProcessedColumns.map(this.castColumn)
         return {
             descriptor: view.descriptor,
-            metaColumns: view.columns,
             filters: view.rowOptions.conditions.map(ParserClass.parseFilter),
             sortColumns: view.rowOptions.sortColumns,
             groupColumns: view.rowOptions.groupColumns,

@@ -2,6 +2,9 @@
  * @module types.tables.base
  * Parameterized types to be used by the other table-relevant modules
  * (compare `types.tables.serialized` and `types.tables.rdg` for context)
+ * This is the core of an abstraction layer built on top of `@intutable/lazy-views`, because its
+ * types turned out not to be flexible enough after all, even though they were made specifically
+ * for this application.
  */
 
 import type {
@@ -13,15 +16,18 @@ import type {
 import type { TableDescriptor as RawTableDescriptor } from "@intutable/project-management/dist/types"
 import type { ViewDescriptor, TableDescriptor } from "."
 import type { Filter } from "../filter"
-
 // #################################################################
 //       Table
 // #################################################################
+/**
+ * Placeholder alias for now. Will eventually be its own type.
+ */
+export type LinkDescriptor = JoinDescriptor
+
 export type Table<COL, ROW> = {
     descriptor: TableDescriptor
     rawTable: RawTableDescriptor
-    rawColumns: ColumnInfo[]
-    joins: JoinDescriptor[]
+    joins: LinkDescriptor[]
     columns: COL[]
     rows: ROW[]
 }
@@ -32,15 +38,6 @@ export type Table<COL, ROW> = {
 
 export type View<COL, ROW> = {
     descriptor: ViewDescriptor
-    /**
-     * Since {@link columns} only contains direct display-relevant data and
-     * not backend-side metadata like IDs, we we also keep the original
-     * ColumnInfos around so we have access e.g. to the column's ID when it
-     * is to be deleted.
-     * TODO: we are gradually expanding the display columns to contain
-     * everything needed, hopefully making this prop obsolete soon.
-     */
-    metaColumns: ColumnInfo[]
     /** Filters for the displayed data. */
     filters: Filter[]
     /**
