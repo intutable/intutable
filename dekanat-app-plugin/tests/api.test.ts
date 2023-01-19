@@ -80,7 +80,9 @@ describe("create table", () => {
             ])
         )
         // check for hidden columns too
-        const rawData = (await core.events.request(lvr.getViewInfo(connId, TABLE.id))) as lvt.ViewData
+        const rawData = await coreRequest<lvt.ViewInfo>(
+            lvr.getViewInfo(connId, TABLE.id)
+        )
         expect(rawData.columns.length).toBe(3)
         expect(rawData.columns).toEqual(
             expect.arrayContaining([
@@ -91,16 +93,12 @@ describe("create table", () => {
         )
     })
     test("table has default view", async () => {
-        const views: lvt.ViewDescriptor[] = await core.events.request(req.listViews(connId, TABLE.id))
+        const views = await coreRequest<lvt.ViewDescriptor[]>(req.listViews(connId, TABLE.id))
         expect(views.length).toBe(1)
-        const view: SerializedViewData = await core.events.request(req.getViewData(connId, views[0].id))
+        const view = await coreRequest<SerializedViewData>(req.getViewData(connId, views[0].id))
         expect(view.descriptor.name).toBe("Standard")
-        expect(view.metaColumns).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ name: "_id" }),
-                expect.objectContaining({ name: "index" }),
-                expect.objectContaining({ name: "name" }),
-            ])
+        expect(view.columns).toEqual(
+            expect.arrayContaining([ expect.objectContaining({ name: "Name" }) ])
         )
     })
     test("delete table", async () => {
@@ -486,7 +484,7 @@ describe("links between tables", () => {
         )
         lookupColumn = await coreRequest<SerializedColumn>(
             req.createLookupColumn(connId, homeTable.id, {
-                linkColumn: linkColumn.id,
+                linkId: linkColumn.linkId,
                 foreignColumn: foreignLevelColumn.id,
             })
         )

@@ -1,4 +1,4 @@
-import { SerializedColumn, TableId } from "./tables"
+import { LinkDescriptor, SerializedColumn, TableId } from "./tables"
 export * from "./tables"
 export * from "./filter"
 
@@ -45,7 +45,7 @@ export type LinkColumnSpecifier = {
  * should be added
  */
 export type LookupColumnSpecifier = {
-    linkColumn: SerializedColumn["id"]
+    linkId: LinkDescriptor["id"]
     foreignColumn: SerializedColumn["id"]
     attributes?: CustomColumnAttributes
 }

@@ -111,8 +111,11 @@ export function createLinkColumn(
  * that the lookup column should be based on.
  * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn} the newly created
  * lookup column.
- * Precondition: The table `tableId` has a link column with ID `column.linkColumn`, which points
+ * Pre: The table `tableId` has a link with ID `column.linkId`, which points
  * to a table which has a column whose ID is `column.foreignColumn`.
+ * Post: The table `tableId` has a new column whose data are taken from the other table's column
+ * `column.foreignColumn`. Its index is such that it is directly to the right of the other
+ * columns from the link.
  */
 export function createLookupColumn(
     connectionId: string,

@@ -327,13 +327,13 @@ async function createLookupColumn(
     addToViews?: ViewId[]
 ): Promise<SerializedColumn> {
     const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
-    const linkColumn = homeTableInfo.columns.find(c => c.id === column.linkColumn)
-    if (!linkColumn || linkColumn.attributes.kind !== "link" || linkColumn.joinId === null)
+    const join = homeTableInfo.joins.find(j => j.id === column.linkId)!
+    if (!join)
         return error(
             "createLookupColumn",
-            `home table ${tableId} has no link column with ID ${column.linkColumn}`
+            `home table ${tableId} has no link with ID ${column.linkId}`
         )
-    const join = homeTableInfo.joins.find(j => j.id === linkColumn.joinId)!
+
     const foreignTableId = asView(join.foreignSource).id
     const foreignTableInfo = await coreRequest<RawViewInfo>(
         lvr.getViewInfo(connectionId, foreignTableId)
@@ -351,7 +351,7 @@ async function createLookupColumn(
     const columnIndex =
         Math.max(
             ...homeTableInfo.columns
-                .filter(c => c.joinId === linkColumn.joinId)
+                .filter(c => c.joinId === join.id)
                 .map(c => c.attributes[COLUMN_INDEX_KEY])
         ) + 1
     const attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
