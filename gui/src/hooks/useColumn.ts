@@ -3,7 +3,8 @@ import { TableHookOptions, useTable } from "hooks/useTable"
 import { useView, ViewHookOptions } from "hooks/useView"
 import { Column } from "types"
 
-import { StandardColumnSpecifier, CustomColumnAttributes } from "@shared/types"
+import { CustomColumnAttributes } from "@shared/types"
+import { StandardColumnSpecifier } from "@backend/types/requests"
 import { ColumnFactory, SettableColumnProps } from "utils/column utils/ColumnFactory"
 
 type Column = Column.Deserialized

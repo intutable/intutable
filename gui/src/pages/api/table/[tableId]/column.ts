@@ -7,8 +7,7 @@ import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 
-import { StandardColumnSpecifier } from "@shared/types"
-import { createStandardColumn } from "@backend/requests"
+import { createStandardColumn, StandardColumnSpecifier } from "@backend/requests"
 
 /**
  * Add a column to a table.

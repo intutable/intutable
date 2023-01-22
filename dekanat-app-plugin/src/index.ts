@@ -71,14 +71,17 @@ import {
     TableData,
     SerializedColumn,
     Filter,
-    StandardColumnSpecifier,
-    LinkColumnSpecifier,
-    LookupColumnSpecifier,
     DB,
     CustomColumnAttributes,
     Row,
 } from "./types"
-import { RowData, RawRowData } from "./types/requests"
+import {
+    RowData,
+    RawRowData,
+    StandardColumnSpecifier,
+    LinkColumnSpecifier,
+    LookupColumnSpecifier,
+} from "./types/requests"
 import * as req from "./requests"
 import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"

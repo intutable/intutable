@@ -7,8 +7,7 @@ import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 
-import { LinkColumnSpecifier } from "@shared/types"
-import { createLinkColumn } from "@backend/requests"
+import { createLinkColumn, LinkColumnSpecifier } from "@backend/requests"
 
 /**
  * Add a column to a table.
