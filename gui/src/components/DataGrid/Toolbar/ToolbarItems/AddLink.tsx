@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { TableDescriptor } from "@shared/types"
 import AddIcon from "@mui/icons-material/AddLink"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -65,7 +65,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
     const { data: currentTable, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 
-    const [selection, setSelection] = useState<ViewDescriptor | null>(null)
+    const [selection, setSelection] = useState<TableDescriptor | null>(null)
 
     useEffect(() => {
         if (error) {
@@ -74,9 +74,9 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    const onClickHandler = (table: ViewDescriptor) => setSelection(table)
+    const onClickHandler = (table: TableDescriptor) => setSelection(table)
 
-    const handleAddLink = async (table: ViewDescriptor) => {
+    const handleAddLink = async (table: TableDescriptor) => {
         try {
             if (currentTable == null) throw new Error()
             await fetcher({

@@ -138,7 +138,7 @@ export class ParserClass {
 
         return {
             descriptor: view.descriptor,
-            joins: view.joins,
+            links: view.joins,
             rawTable: asTable(view.source).table,
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,

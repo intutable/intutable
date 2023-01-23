@@ -1,5 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views"
-
+import { TableDescriptor } from "@shared/types"
 import { Column } from "types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
@@ -24,7 +23,7 @@ import { createLinkColumn, LinkColumnSpecifier } from "@backend/requests"
  * }
  * ```
  */
-const POST = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"]) => {
+const POST = withCatchingAPIRoute(async (req, res, tableId: TableDescriptor["id"]) => {
     const { column } = req.body as {
         column: LinkColumnSpecifier
     }

@@ -4,7 +4,7 @@ import { RowRenderer } from "@datagrid/renderers"
 import RowMask from "@datagrid/RowMask/RowMask"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { ViewDescriptor } from "@shared/types"
+import { TableDescriptor, ViewDescriptor } from "@shared/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Box, Button, Grid, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
@@ -200,18 +200,13 @@ const TablePage: React.FC = () => {
 
 type PageProps = {
     project: ProjectDescriptor
-    /**
-     * In order to allow links/joins, tables are actually implemented using
-     * views. The user-facing views (filtering, hiding columns, etc.) are
-     * implemented as views on views, so be careful not to get confused.
-     */
-    table: ViewDescriptor
-    tableList: ViewDescriptor[]
-    /**
-     * The current filter view, which selects from the table view
-     * {@link table}
-     */
+    /** The currently displayed table */
+    table: TableDescriptor
+    /** The list of all available tables in this project */
+    tableList: TableDescriptor[]
+    /** The currently displayed filter view */
     view: ViewDescriptor
+    /** The list of all available views on this table */
     viewList: ViewDescriptor[]
     // fallback: {
     //     [cacheKey: string]: ViewData

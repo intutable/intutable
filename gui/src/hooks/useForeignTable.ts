@@ -30,7 +30,7 @@ export const useForeignTable = (forColumn: Column.Deserialized) => {
         const tableColumn = getTableColumn(forColumn)
         if (tableColumn == null) return initialState
 
-        const link = currentTableData.joins.find(join => join.id === tableColumn.linkId)
+        const link = currentTableData.links.find(link => link.id === tableColumn.linkId)
         if (link == null) return initialState
 
         const foreignTable = tables.find(table => table.id === asView(link.foreignSource).id)

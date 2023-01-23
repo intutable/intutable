@@ -27,7 +27,7 @@ export type LinkDescriptor = JoinDescriptor
 export type Table<COL, ROW> = {
     descriptor: TableDescriptor
     rawTable: RawTableDescriptor
-    joins: LinkDescriptor[]
+    links: LinkDescriptor[]
     columns: COL[]
     rows: ROW[]
 }

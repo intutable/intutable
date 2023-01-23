@@ -4,7 +4,7 @@ import { RawRow } from "./raw"
 export type RowData = Record<SerializedColumn["id"], unknown>
 export type RawRowData = RawRow
 
-import type { TableId, LinkDescriptor, CustomColumnAttributes } from "shared/dist/types"
+import type { TableId, CustomColumnAttributes } from "shared/dist/types"
 export { CustomColumnAttributes }
 
 /**
