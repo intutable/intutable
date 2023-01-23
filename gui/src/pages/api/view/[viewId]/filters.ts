@@ -1,5 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views"
-
+import { ViewDescriptor } from "@shared/types"
 import { changeViewFilters } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"

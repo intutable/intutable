@@ -1,14 +1,13 @@
-import { ColumnSpecifier } from "@intutable/lazy-views"
+import { TableId, ViewId, Filter, RawViewDescriptor, RawViewColumnInfo } from "./types"
 import {
-    TableId,
-    ViewId,
-    Filter,
-    RawViewDescriptor,
-    RawViewColumnInfo,
+    RowData,
     StandardColumnSpecifier,
+    LinkColumnSpecifier,
+    LookupColumnSpecifier,
     CustomColumnAttributes,
-} from "./types"
-import { RowData } from "./types/requests"
+} from "./types/requests"
+
+export * from "./types/requests"
 
 export const CHANNEL = "dekanat-app-plugin"
 
@@ -53,9 +52,9 @@ export function deleteTable(connectionId: string, id: TableId) {
  * @param {RawViewDescriptor["id"]} addToViews which views to also add
  * the new column to. If no argument is given, the column is added to all
  * views. The attributes are simply inherited from the table column. They
- * are separate copies of the data, so they will not update automatically -
+ * are separate copies of the original attributes, so they will not update automatically -
  * be sure to use {@link changeTableColumnAttributes} to change attributes
- * and ensure that the change cascades to views as well.
+ * and ensure that the change cascades to views as well, and not use any lower-level methods for it.
  */
 export function createStandardColumn(
     connectionId: string,
@@ -74,35 +73,62 @@ export function createStandardColumn(
 }
 
 /**
- * Create a column in a table view, optionally (default is yes) adding it
- * to all of the table's filter views.
- * PM column must already be present.
- * @deprecated we will soon expose only dedicated {@link createStandardColumn},
- ` createLinkColumn` and `createLookupColumn` methods and this will be
- * purely internal.
+ * Create a _Link Column_, which links the data of the affected table (_home table_ from here on)
+ * to another table, the _foreign table_. The user can click on a cell of the link column and
+ * choose a row from the foreign table to set the value of a foreign key column, causing
+ * the row containing the cell and the row selected to be displayed next to each other.
+ * This is how we make foreign keys and joins accessible to users who do not know SQL.
+ * To keep things intuitive, the link column is equivalent to the link - any operations
+ * on the link, such as deleting it or adding more columns from the
+ * foreign table, are done via the link column's context menu.
+ * The link column itself displays the "Name" field of the linked row, or whichever column is
+ * marked by the `isUserPrimary` attribute. More columns, up to the whole table, can be added
+ * with {@link createLookupColumn}.
+ * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn} the newly created column.
  */
-export function addColumnToTable(
+export function createLinkColumn(
     connectionId: string,
     tableId: TableId,
-    /**
-     * Uses serialized attributes for now because there are still next
-     * endpoints that use it.
-     */
-    column: ColumnSpecifier,
-    joinId: number | null = null,
-    /**
-     * @param {ViewId[] | undefined} addToViews which views to also
-     * corresponding column in. If undefined, add the column to all views
-     */
+    column: LinkColumnSpecifier,
     addToViews?: ViewId[]
 ) {
     return {
         channel: CHANNEL,
-        method: addColumnToTable.name,
+        method: createLinkColumn.name,
         connectionId,
         tableId,
         column,
-        joinId,
+        addToViews,
+    }
+}
+
+/**
+ * Create a _Lookup Column_, which adds another column to a link. For example, one could create
+ * a link from a table "Employees" to a table "Departments", which would allow assigning each
+ * employee a department. The link column itself would show the name of the department. To
+ * also show the address alongside the name and the employee's remaining data, one would add a
+ * lookup column to the link, specifying the home table, link, and ID of the additional column
+ * that the lookup column should be based on.
+ * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn} the newly created
+ * lookup column.
+ * Pre: The table `tableId` has a link with ID `column.linkId`, which points
+ * to a table which has a column whose ID is `column.foreignColumn`.
+ * Post: The table `tableId` has a new column whose data are taken from the other table's column
+ * `column.foreignColumn`. Its index is such that it is directly to the right of the other
+ * columns from the link.
+ */
+export function createLookupColumn(
+    connectionId: string,
+    tableId: TableId,
+    column: LookupColumnSpecifier,
+    addToViews?: ViewId[]
+) {
+    return {
+        channel: CHANNEL,
+        method: createLookupColumn.name,
+        connectionId,
+        tableId,
+        column,
         addToViews,
     }
 }

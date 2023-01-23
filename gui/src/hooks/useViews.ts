@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@shared/types"
 import useSWR, { unstable_serialize } from "swr"
 import { fetcher } from "api"
 import { useAPI } from "context/APIContext"

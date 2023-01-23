@@ -1,10 +1,10 @@
-import { ColumnInfo } from "@intutable/lazy-views"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { useView, ViewHookOptions } from "hooks/useView"
 import { Column } from "types"
 
-import { StandardColumnSpecifier, CustomColumnAttributes } from "@shared/types"
+import { CustomColumnAttributes } from "@shared/types"
+import { StandardColumnSpecifier } from "@backend/types/requests"
 import { ColumnFactory, SettableColumnProps } from "utils/column utils/ColumnFactory"
 
 type Column = Column.Deserialized
@@ -30,16 +30,12 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
     }
 
     /** Find a column in the base table given a column of a view. */
-    const getColumnInfo = (
+    const getTableColumn = (
         forColumn: Column.Serialized | Column.Deserialized
-    ): ColumnInfo | null => {
+    ): Column.Serialized | null => {
         if (view == null || table == null) return null
 
-        const viewColumn = view.metaColumns.find(column => column.key === forColumn.key)
-        if (viewColumn == null) return null
-        const tableColumn = table.rawColumns.find(
-            column => column.id === viewColumn?.parentColumnId
-        )
+        const tableColumn = table.columns.find(column => column.id === forColumn.parentColumnId)
 
         return tableColumn ?? null
     }
@@ -74,7 +70,7 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
         newName: Column["name"]
     ): Promise<void> => {
         const tableId = table!.descriptor.id
-        const baseColumn = getColumnInfo(column)
+        const baseColumn = getTableColumn(column)
         await fetcher({
             url: `/api/table/${tableId}/column/${baseColumn!.id}/rename`,
             body: { newName },
@@ -90,7 +86,7 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
         update: Partial<Pick<Column.Serialized, SettableColumnProps>>
     ): Promise<void> => {
         const tableId = table!.descriptor.id
-        const baseColumn = getColumnInfo(column)
+        const baseColumn = getTableColumn(column)
         await fetcher({
             url: `/api/table/${tableId}/column/${baseColumn!.id}`,
             body: { update },
@@ -104,7 +100,7 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
     // TODO: get rid of `getColumnByKey`
     const deleteColumn = async (column: Column.Serialized | Column.Deserialized): Promise<void> => {
         const tableId = table!.descriptor.id
-        const tableColumn = getColumnInfo(column)
+        const tableColumn = getTableColumn(column)
         await fetcher({
             url: `/api/table/${tableId}/column/${tableColumn!.id}`,
             body: { tableId: table!.descriptor.id },
@@ -116,7 +112,7 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
 
     return {
         mutate,
-        getColumnInfo,
+        getTableColumn,
         createColumn,
         renameColumn,
         changeAttributes,

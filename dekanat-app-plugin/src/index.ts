@@ -23,16 +23,19 @@
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
 import { insert, update, deleteRow } from "@intutable/database/dist/requests"
-import { Condition as RawCondition } from "@intutable/database/dist/types"
+import { Condition as RawCondition, ColumnType } from "@intutable/database/dist/types"
 import * as pm from "@intutable/project-management/dist/requests"
 import {
     RowOptions,
     ColumnSpecifier,
+    JoinDescriptor,
+    types as lvt,
     requests as lvr,
     selectable,
     isTable,
     isView,
     asTable,
+    asView,
 } from "@intutable/lazy-views/"
 import {
     defaultViewName,
@@ -41,6 +44,8 @@ import {
     idColumnAttributes,
     indexColumnAttributes,
     standardColumnAttributes,
+    linkColumnAttributes,
+    lookupColumnAttributes,
     emptyRowOptions,
     defaultRowOptions,
     COLUMN_INDEX_KEY,
@@ -66,12 +71,17 @@ import {
     TableData,
     SerializedColumn,
     Filter,
-    StandardColumnSpecifier,
     DB,
     CustomColumnAttributes,
     Row,
 } from "./types"
-import { RowData, RawRowData } from "./types/requests"
+import {
+    RowData,
+    RawRowData,
+    StandardColumnSpecifier,
+    LinkColumnSpecifier,
+    LookupColumnSpecifier,
+} from "./types/requests"
 import * as req from "./requests"
 import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
@@ -85,7 +95,8 @@ export async function init(plugins: PluginLoader) {
         .on(req.createTable.name, createTable_)
         .on(req.deleteTable.name, deleteTable_)
         .on(req.createStandardColumn.name, createStandardColumn_)
-        .on(req.addColumnToTable.name, addColumnToTable_)
+        .on(req.createLinkColumn.name, createLinkColumn_)
+        .on(req.createLookupColumn.name, createLookupColumn_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
         .on(req.getTableData.name, getTableData_)
@@ -204,7 +215,7 @@ async function createStandardColumn(
     tableId: RawViewDescriptor["id"],
     column: StandardColumnSpecifier,
     addToViews?: ViewId[]
-) {
+): Promise<SerializedColumn> {
     const options = (await core.events.request(
         lvr.getViewOptions(connectionId, tableId)
     )) as RawViewOptions
@@ -213,14 +224,12 @@ async function createStandardColumn(
         pm.createColumnInTable(connectionId, asTable(options.source).id, key)
     )
     // add column to table and filter views
-    const columnIndex =
-        options.columnOptions.columns.length +
-        options.columnOptions.joins.reduce((acc, j) => acc + j.columns.length, 0)
+    const columnIndex = getNextColumnIndex(options.columnOptions)
     const allAttributes: Partial<DB.Column> = {
         ...standardColumnAttributes(column.name, column.cellType, columnIndex),
         ...parser.deparseColumn(column.attributes || {}),
     }
-    const tableViewColumn = await addColumnToTable(
+    const tableViewColumn = await addColumnToTableView(
         connectionId,
         tableId,
         {
@@ -234,17 +243,144 @@ async function createStandardColumn(
     const parsedColumn = parser.parseColumn(tableViewColumn)
     return parsedColumn
 }
+function getNextColumnIndex(options: lvt.ColumnOptions | RawViewInfo): number {
+    const baseColumns = options.columns.length
+    return (options.joins as lvt.JoinSpecifier[]).reduce(
+        (acc, j) => acc + j.columns.length,
+        baseColumns
+    )
+}
 
-async function addColumnToTable_({
+async function createLinkColumn_({
     connectionId,
     tableId,
     column,
-    joinId,
     addToViews,
 }: CoreRequest): Promise<CoreResponse> {
-    return addColumnToTable(connectionId, tableId, column, joinId, addToViews)
+    return createLinkColumn(connectionId, tableId, column, addToViews)
 }
-async function addColumnToTable(
+
+async function createLinkColumn(
+    connectionId: string,
+    tableId: TableId,
+    column: LinkColumnSpecifier,
+    addToViews?: ViewId[]
+): Promise<SerializedColumn> {
+    const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const foreignTableInfo = await coreRequest<RawViewInfo>(
+        lvr.getViewInfo(connectionId, column.foreignTable)
+    )
+    // create foreign key column
+    const foreignKeyColumn = await coreRequest<RawTableColumnDescriptor>(
+        pm.createColumnInTable(
+            connectionId,
+            asTable(homeTableInfo.source).table.id,
+            makeForeignKeyName(homeTableInfo),
+            ColumnType.integer
+        )
+    )
+    // add join to the home table's table-view
+    const foreignIdColumn = foreignTableInfo.columns.find(c => c.name === "_id")!
+    const join = await coreRequest<JoinDescriptor>(
+        lvr.addJoinToView(connectionId, tableId, {
+            foreignSource: selectable.viewId(column.foreignTable),
+            on: [foreignKeyColumn.id, "=", foreignIdColumn.id],
+            columns: [],
+        })
+    )
+    // add and return link column
+    const foreignUserPrimaryColumn = foreignTableInfo.columns.find(
+        c => c.attributes.isUserPrimaryKey! === 1
+    )!
+    const displayName = (foreignUserPrimaryColumn.attributes.displayName ||
+        foreignUserPrimaryColumn.name) as string
+    const columnIndex = getNextColumnIndex(homeTableInfo)
+    const attributes = linkColumnAttributes(displayName, columnIndex)
+    const linkColumn = await addColumnToTableView(
+        connectionId,
+        tableId,
+        { parentColumnId: foreignUserPrimaryColumn.id, attributes },
+        join.id,
+        addToViews
+    )
+    return parser.parseColumn(linkColumn)
+}
+function makeForeignKeyName(viewInfo: RawViewInfo) {
+    // We pick a number greater than any join so far's ID...
+    const nextJoinIndex = Math.max(0, ...viewInfo.joins.map(j => j.id)) + 1
+    // and add a special character so that there can't be clashes with
+    // user-added columns (see ./sanitizeName)
+    const fkColumnName = `j#${nextJoinIndex}_fk`
+    return fkColumnName
+}
+
+async function createLookupColumn_({
+    connectionId,
+    tableId,
+    column,
+    addToViews,
+}: CoreRequest): Promise<CoreResponse> {
+    return createLookupColumn(connectionId, tableId, column, addToViews)
+}
+
+async function createLookupColumn(
+    connectionId: string,
+    tableId: TableId,
+    column: LookupColumnSpecifier,
+    addToViews?: ViewId[]
+): Promise<SerializedColumn> {
+    const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const join = homeTableInfo.joins.find(j => j.id === column.linkId)!
+    if (!join)
+        return error(
+            "createLookupColumn",
+            `home table ${tableId} has no link with ID ${column.linkId}`
+        )
+
+    const foreignTableId = asView(join.foreignSource).id
+    const foreignTableInfo = await coreRequest<RawViewInfo>(
+        lvr.getViewInfo(connectionId, foreignTableId)
+    )
+    const foreignColumn = foreignTableInfo.columns.find(c => c.id === column.foreignColumn)
+    if (!foreignColumn)
+        return error(
+            "createLookupColumn",
+            `foreign table ${foreignTableId} has no column with ID ${column.foreignColumn}`
+        )
+
+    // determine meta attributes
+    const displayName = foreignColumn.attributes.displayName || foreignColumn.name
+    const contentType = foreignColumn.attributes.cellType || "string"
+    const columnIndex =
+        Math.max(
+            ...homeTableInfo.columns
+                .filter(c => c.joinId === join.id)
+                .map(c => c.attributes[COLUMN_INDEX_KEY])
+        ) + 1
+    const attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
+    const lookupColumn = await addColumnToTableView(
+        connectionId,
+        tableId,
+        { parentColumnId: foreignColumn.id, attributes },
+        join.id,
+        addToViews
+    )
+    const newColumn = parser.parseColumn(lookupColumn)
+    // and shift the column index of all columns that come after the position where it was inserted
+    const idxKey = COLUMN_INDEX_KEY
+    await Promise.all(
+        homeTableInfo.columns
+            .filter(c => c.attributes[idxKey] >= columnIndex)
+            .map(c =>
+                changeTableColumnAttributes(connectionId, tableId, c.id, {
+                    [idxKey]: c.attributes[idxKey] + 1,
+                })
+            )
+    )
+    return newColumn
+}
+
+async function addColumnToTableView(
     connectionId: string,
     tableId: RawViewDescriptor["id"],
     column: ColumnSpecifier,
@@ -379,10 +515,7 @@ async function shiftColumnIndicesAfterDelete(connectionId: string, tableId: Tabl
     // in case of links, more columns than the one specified may have
     // disappeared, so simply decrementing all indices by one is not enough - we have to
     // go over them all and adjust their index appropriately.
-    const tableInfo = (await core.events.request(
-        lvr.getViewInfo(connectionId, tableId)
-    )) as RawViewInfo
-
+    const tableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
     const columns = [...tableInfo.columns]
     const idxKey = COLUMN_INDEX_KEY
     columns.sort((a, b) => a.attributes[idxKey] - b.attributes[idxKey])

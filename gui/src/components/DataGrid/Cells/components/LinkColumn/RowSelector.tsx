@@ -1,5 +1,5 @@
 import { Cell } from "@datagrid/Cells/abstract/Cell"
-import { JoinDescriptor, ViewDescriptor } from "@intutable/lazy-views"
+import { TableDescriptor } from "@shared/types"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
     Button,
@@ -27,8 +27,7 @@ import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 export type RowSelectorProps = {
     row: Row
-    join: JoinDescriptor
-    foreignTable: ViewDescriptor
+    foreignTable: TableDescriptor
     open: boolean
     onClose: () => void
     column: Column

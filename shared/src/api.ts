@@ -4,7 +4,7 @@
 import { Column, ColumnType } from "@intutable/database/dist/types"
 import { ParentColumnDescriptor, RowOptions, SortOrder } from "@intutable/lazy-views/dist/types"
 
-import { SerializedColumn, DB } from "./types"
+import { ImmutableColumnAttributes, SerializedColumn, DB } from "./types"
 
 /**
  * The two basic columns that every table must have (in addition to _id, but
@@ -39,8 +39,10 @@ export function userPrimaryColumnName() {
  * (row index) _columns_ that exist in object tables)
  * They cannot be changed by the back-ends "change column attributes" method.
  */
-export const immutableColumnAttributes: (keyof SerializedColumn)[] = [
+export const immutableColumnAttributes: ImmutableColumnAttributes[] = [
     "id",
+    "parentColumnId",
+    "linkId",
     "key",
     "kind",
     "index",

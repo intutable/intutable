@@ -80,7 +80,9 @@ describe("create table", () => {
             ])
         )
         // check for hidden columns too
-        const rawData = (await core.events.request(lvr.getViewInfo(connId, TABLE.id))) as lvt.ViewData
+        const rawData = await coreRequest<lvt.ViewInfo>(
+            lvr.getViewInfo(connId, TABLE.id)
+        )
         expect(rawData.columns.length).toBe(3)
         expect(rawData.columns).toEqual(
             expect.arrayContaining([
@@ -91,16 +93,12 @@ describe("create table", () => {
         )
     })
     test("table has default view", async () => {
-        const views: lvt.ViewDescriptor[] = await core.events.request(req.listViews(connId, TABLE.id))
+        const views = await coreRequest<lvt.ViewDescriptor[]>(req.listViews(connId, TABLE.id))
         expect(views.length).toBe(1)
-        const view: SerializedViewData = await core.events.request(req.getViewData(connId, views[0].id))
+        const view = await coreRequest<SerializedViewData>(req.getViewData(connId, views[0].id))
         expect(view.descriptor.name).toBe("Standard")
-        expect(view.metaColumns).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ name: "_id" }),
-                expect.objectContaining({ name: "index" }),
-                expect.objectContaining({ name: "name" }),
-            ])
+        expect(view.columns).toEqual(
+            expect.arrayContaining([ expect.objectContaining({ name: "Name" }) ])
         )
     })
     test("delete table", async () => {
@@ -110,6 +108,9 @@ describe("create table", () => {
         )
         await core.events.request(req.deleteTable(connId, otherTable.id))
         const tables: PmTable[] = await core.events.request(pm.getTablesFromProject(connId, PROJECT_ID))
+        expect(tables).not.toEqual(expect.arrayContaining([
+            expect.objectContaining({ name: otherTableName })
+        ]))
     })
 })
 
@@ -161,7 +162,7 @@ describe("create view", () => {
     test("rename view", async () => {
         await createView()
         await core.events.request(req.renameView(connId, VIEW.id, NEW_NAME))
-        const views = (await core.events.request(req.listViews(connId, TABLE.id))) as ViewDescriptor[]
+        const views = await coreRequest<ViewDescriptor[]>(req.listViews(connId, TABLE.id))
         expect(views).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ name: defaultViewName() }),
@@ -193,14 +194,18 @@ describe("create different kinds of columns", () => {
     const TABLE_SPEC = {
         name: "employees",
         columns: [
-            { name: "Department", cellType: "string", editable: true },
-            { name: "Salary", cellType: "number", editable: true },
+            { name: "Department", cellType: "string" },
+            { name: "Salary", cellType: "number" },
         ],
     }
     let TEST_TABLE: TableDescriptor
 
     beforeAll(async () => {
         TEST_TABLE = await core.events.request(req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name))
+    })
+
+    afterAll(async () => {
+        await coreRequest(req.deleteTable(connId, TEST_TABLE.id))
     })
 
     test("create standard column", async () => {
@@ -405,5 +410,125 @@ describe("row handling", () => {
         expect(rowsDeleted2).toBe(2)
         viewData = await coreRequest<SerializedViewData>(req.getViewData(connId, view.id))
         expect(viewData.rows.length).toBe(originalRowCount)
+    })
+})
+
+describe("links between tables", () => {
+    const homeTableName = "employees"
+    let homeTable: TableDescriptor
+    let homeTableData: TableData
+    let homeNameColumn: SerializedColumn
+    let homeRow1 = { _id: -1, name: "John Doe" }
+    let homeRow2 = { _id: -1, name: "Jane Stag" }
+
+    let foreignTableName = "supervisors"
+    let foreignTable: TableDescriptor
+    let foreignNameColumn: SerializedColumn
+    let foreignLevelColumn: SerializedColumn
+    let foreignRow1 = { _id: -1, name: "Bill Lumbergh", authorityLevel: "total" }
+
+    let linkColumn: SerializedColumn
+    let lookupColumn: SerializedColumn
+
+    beforeAll(async () => {
+        // set up a table with the default column and two rows
+        homeTable = await coreRequest<TableDescriptor>(
+            req.createTable(connId, ADMIN_ID, PROJECT_ID, homeTableName)
+        )
+
+        homeTableData = await coreRequest<TableData>(req.getTableData(connId, homeTable.id))
+        homeNameColumn = homeTableData.columns.find(c => c.name === userPrimaryColumnName())!
+
+        const { _id: id1 } = await coreRequest<{ _id: number }>(
+            req.createRow(connId, homeTable.id, {
+                values: { [homeNameColumn.id]: homeRow1.name }
+            })
+        )
+        homeRow1._id = id1
+        const { _id: id2 } = await coreRequest<{ _id: number }>(
+            req.createRow(connId, homeTable.id, {
+                values: { [homeNameColumn.id]: homeRow2.name }
+            })
+        )
+        homeRow2._id = id2
+
+        // set up another table with one row
+        foreignTable = await coreRequest<TableDescriptor>(
+            req.createTable(connId, ADMIN_ID, PROJECT_ID, foreignTableName)
+        )
+        foreignLevelColumn = await coreRequest<SerializedColumn>(
+            req.createStandardColumn(connId, foreignTable.id, {
+                name: "Authority Level",
+                cellType: "string",
+            })
+        )
+
+        const foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        )
+        foreignNameColumn = foreignTableData.columns.find(c => c.name === userPrimaryColumnName())!
+
+        const { _id: foreignId1 } = await coreRequest<{ _id: number }>(
+            req.createRow(connId, foreignTable.id, {
+                values: {
+                    [foreignNameColumn.id]: foreignRow1.name,
+                    [foreignLevelColumn.id]: foreignRow1.authorityLevel,
+                }
+            })
+        )
+        foreignRow1._id = foreignId1
+
+        // finally, the link
+        linkColumn = await coreRequest<SerializedColumn>(
+            req.createLinkColumn(connId, homeTable.id, { foreignTable: foreignTable.id })
+        )
+        lookupColumn = await coreRequest<SerializedColumn>(
+            req.createLookupColumn(connId, homeTable.id, {
+                linkId: linkColumn.linkId,
+                foreignColumn: foreignLevelColumn.id,
+            })
+        )
+    })
+
+    afterAll(async () => {
+        await coreRequest(req.deleteTable(connId, homeTable.id))
+        await coreRequest(req.deleteTable(connId, foreignTable.id))
+    })
+
+    test("link and lookup columns created", async () => {
+        expect(linkColumn).toEqual(expect.objectContaining({
+            id: expect.any(Number),
+            name: userPrimaryColumnName(),
+            kind: "link",
+        }))
+        expect(lookupColumn).toEqual(expect.objectContaining({
+            id: expect.any(Number),
+            kind: "lookup",
+        }))
+    })
+
+    test("link rows to each other", async () => {
+        await coreRequest(
+            req.updateRows(connId, homeTable.id, [homeRow1._id, homeRow2._id], {
+                [linkColumn.id]: foreignRow1._id
+            })
+        )
+        homeTableData = await coreRequest<TableData>(
+            req.getTableData(connId, homeTable.id)
+        )
+        expect(homeTableData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                _id: homeRow1._id,
+                [homeNameColumn.key]: homeRow1.name,
+                [linkColumn.key]: foreignRow1.name,
+                [lookupColumn.key]: foreignRow1.authorityLevel,
+            }),
+            expect.objectContaining({
+                _id: homeRow2._id,
+                [homeNameColumn.key]: homeRow2.name,
+                [linkColumn.key]: foreignRow1.name,
+                [lookupColumn.key]: foreignRow1.authorityLevel,
+            }),
+        ]))
     })
 })

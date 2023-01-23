@@ -4,7 +4,7 @@ import { ViewData } from "types"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@shared/types"
 import { Filter } from "types/filter"
 import { fetcher } from "api/fetcher"
 

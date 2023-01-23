@@ -6,7 +6,7 @@ import { withUserCheck } from "api/utils/withUserCheck"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withSessionRoute } from "auth"
 
-import { createStandardColumn, StandardColumnSpecifier } from "@backend/requests"
+import { createLinkColumn, LinkColumnSpecifier } from "@backend/requests"
 
 /**
  * Add a column to a table.
@@ -25,13 +25,13 @@ import { createStandardColumn, StandardColumnSpecifier } from "@backend/requests
  */
 const POST = withCatchingAPIRoute(async (req, res, tableId: TableDescriptor["id"]) => {
     const { column } = req.body as {
-        column: StandardColumnSpecifier
+        column: LinkColumnSpecifier
     }
     const user = req.session.user!
 
-    const newColumn: Column.Serialized = await withReadWriteConnection(user, async sessionID =>
+    const newColumn: Column.Serialized = await withReadWriteConnection(user, async connectionId =>
         coreRequest<Column.Serialized>(
-            createStandardColumn(sessionID, tableId, column),
+            createLinkColumn(connectionId, tableId, column),
             user.authCookie
         )
     )

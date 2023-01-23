@@ -33,7 +33,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const { mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 
-    const { join, foreignTable } = useForeignTable(column)
+    const { foreignTable } = useForeignTable(column)
     const { setLinkValue } = useLink(column)
 
     const key = column.key as keyof Row
@@ -56,7 +56,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
         [mutateTable, mutateView, setLinkValue, row, snackError]
     )
 
-    if (join == null || foreignTable == null) return null
+    if (foreignTable == null) return null
 
     return (
         <>
@@ -81,7 +81,6 @@ const _LinkColumnFormatter: FormatterComponent = props => {
             </Tooltip>
             <RowSelector
                 row={row}
-                join={join}
                 foreignTable={foreignTable}
                 open={anchorEL != null}
                 onClose={handleCloseModal}

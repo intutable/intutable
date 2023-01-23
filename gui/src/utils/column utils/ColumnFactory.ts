@@ -1,5 +1,5 @@
+import { ImmutableColumnAttributes } from "@shared/types"
 import { Column } from "types"
-import { Text } from "@datagrid/Cells/components/Text"
 import { useEffect, useState } from "react"
 import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
@@ -7,10 +7,7 @@ import { useSnacki } from "hooks/useSnacki"
 export type CreateColumnFactoryProps = Pick<Column.Serialized, "name" | "cellType">
 
 // properties that can be set programmatically from the frontend
-export type SettableColumnProps = keyof Omit<
-    Column.Serialized,
-    "key" | "id" | "isUserPrimaryKey" | "index"
->
+export type SettableColumnProps = keyof Omit<Column.Serialized, ImmutableColumnAttributes>
 
 // properties that the user can set directly & arbitrarily
 export type UserSettableColumnProps = Exclude<SettableColumnProps, "kind" | "minWidth" | "maxWidth">
@@ -18,7 +15,6 @@ export type UserSettableColumnProps = Exclude<SettableColumnProps, "kind" | "min
 export class ColumnFactory {
     static readonly DEFAULT_COLUMN: Pick<Column.Serialized, SettableColumnProps> = {
         name: "",
-        kind: "standard",
         hidden: false,
         cellType: "string", // Text.brand
         width: undefined,
@@ -70,6 +66,9 @@ export class ColumnFactory {
             name: "Dummy",
             key: "dummy",
             id: -1,
+            parentColumnId: -1,
+            linkId: -1,
+            kind: "standard",
             isUserPrimaryKey: false,
             index: -1,
         }

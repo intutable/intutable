@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { TableDescriptor } from "@shared/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { useAPI } from "context/APIContext"
 import { useMemo } from "react"
@@ -9,10 +9,10 @@ export type UseTablesOptions = {
     project?: ProjectDescriptor | null
     swrOptions?: Partial<
         PublicConfiguration<
-            ViewDescriptor[],
+            TableDescriptor[],
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             any,
-            BareFetcher<ViewDescriptor[]>
+            BareFetcher<TableDescriptor[]>
         >
     >
 }
@@ -42,7 +42,7 @@ export const useTables = (options?: UseTablesOptions) => {
         error,
         mutate,
         isValidating,
-    } = useSWR<ViewDescriptor[]>(
+    } = useSWR<TableDescriptor[]>(
         projectToUse ? { url: `/api/tables/${projectToUse.id}`, method: "GET" } : null,
         options?.swrOptions
     )
