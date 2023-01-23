@@ -28,13 +28,14 @@ export type LinkColumnSpecifier = {
 
 /**
  * Specifies properties for creating a lookup column.
- * @prop {SerializedColumn["id"]} linkColumn the ID of the link that the new column should be
- * added to
+ * @prop {number} linkId the ID of the link that the new column should be
+ * added to (NOT the link column, but the link object! It is accessible through the property
+ * `linkId` of a `SerializedColumn`)
  * @prop {SerializedColumn["id"]} foreignColumn the ID of the column from the other table that
  * should be added
  */
 export type LookupColumnSpecifier = {
-    linkId: LinkDescriptor["id"]
+    linkId: number
     foreignColumn: SerializedColumn["id"]
     attributes?: CustomColumnAttributes
 }
