@@ -423,12 +423,15 @@ describe("links between tables", () => {
 
     let foreignTableName = "supervisors"
     let foreignTable: TableDescriptor
+    let foreignTableData: TableData
     let foreignNameColumn: SerializedColumn
     let foreignLevelColumn: SerializedColumn
     let foreignRow1 = { _id: -1, name: "Bill Lumbergh", authorityLevel: "total" }
 
     let linkColumn: SerializedColumn
     let lookupColumn: SerializedColumn
+
+    let backwardLinkColumn: SerializedColumn
 
     beforeAll(async () => {
         // set up a table with the default column and two rows
@@ -463,7 +466,7 @@ describe("links between tables", () => {
             })
         )
 
-        const foreignTableData = await coreRequest<TableData>(
+        foreignTableData = await coreRequest<TableData>(
             req.getTableData(connId, foreignTable.id)
         )
         foreignNameColumn = foreignTableData.columns.find(c => c.name === userPrimaryColumnName())!
@@ -482,17 +485,24 @@ describe("links between tables", () => {
         linkColumn = await coreRequest<SerializedColumn>(
             req.createLinkColumn(connId, homeTable.id, { foreignTable: foreignTable.id })
         )
+
         lookupColumn = await coreRequest<SerializedColumn>(
             req.createLookupColumn(connId, homeTable.id, {
                 linkId: linkColumn.linkId,
                 foreignColumn: foreignLevelColumn.id,
             })
         )
+        foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        ).catch(e => { console.dir(e); return Promise.reject(e) })
+        backwardLinkColumn = foreignTableData.columns.find(
+            c => c.inverseLinkColumnId === linkColumn.id
+        )!
     })
 
     afterAll(async () => {
-        await coreRequest(req.deleteTable(connId, homeTable.id))
-        await coreRequest(req.deleteTable(connId, foreignTable.id))
+        // await coreRequest(req.deleteTable(connId, homeTable.id))
+        // await coreRequest(req.deleteTable(connId, foreignTable.id))
     })
 
     test("link and lookup columns created", async () => {
@@ -504,6 +514,11 @@ describe("links between tables", () => {
         expect(lookupColumn).toEqual(expect.objectContaining({
             id: expect.any(Number),
             kind: "lookup",
+        }))
+        expect(backwardLinkColumn).toEqual(expect.objectContaining({
+            id: expect.any(Number),
+            name: userPrimaryColumnName(),
+            kind: "backwardLink",
         }))
     })
 
@@ -530,5 +545,45 @@ describe("links between tables", () => {
                 [lookupColumn.key]: foreignRow1.authorityLevel,
             }),
         ]))
+        foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        )
+        // there should be two rows, one for each associated row. We may eventually switch this
+        // to an aggregated display.
+        expect(foreignTableData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                _id: foreignRow1._id,
+                [foreignNameColumn.key]: foreignRow1.name,
+                [foreignLevelColumn.key]: foreignRow1.authorityLevel,
+                [backwardLinkColumn.key]: homeRow1.name,
+            }),
+            expect.objectContaining({
+                _id: foreignRow1._id,
+                [foreignNameColumn.key]: foreignRow1.name,
+                [foreignLevelColumn.key]: foreignRow1.authorityLevel,
+                [backwardLinkColumn.key]: homeRow2.name,
+            })
+        ]))
+    })
+
+    test("automatically cleans up all artifacts of forward and backward links", async () => {
+        const linkColumn2 = await coreRequest<SerializedColumn>(
+            req.createLinkColumn(connId, homeTable.id, { foreignTable: foreignTable.id })
+        )
+        foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        )
+        let backwardLinkColumn2 = foreignTableData.columns.find(
+            c => c.id === linkColumn2.inverseLinkColumnId
+        )
+        expect(backwardLinkColumn2).toBeDefined()
+        await coreRequest(req.removeColumnFromTable(connId, homeTable.id, linkColumn2.id))
+        foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        )        
+        backwardLinkColumn2 = foreignTableData.columns.find(
+            c => c.id === linkColumn2.inverseLinkColumnId
+        )
+        expect(backwardLinkColumn2).not.toBeDefined()
     })
 })

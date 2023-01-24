@@ -84,13 +84,23 @@ export function createStandardColumn(
  * The link column itself displays the "Name" field of the linked row, or whichever column is
  * marked by the `isUserPrimary` attribute. More columns, up to the whole table, can be added
  * with {@link createLookupColumn}.
+ * Creating a link column also creates a similar link column in the target table. However, since
+ * the link is a partial functional relation, this "backward" link column will give rise to
+ * a 1:n relationship. It can not be edited; one must link rows via the forward link colum
+ * (for now)
  * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn} the newly created column.
+ * @param {ViewId[]} addToHomeViews The column created in a table may or may not also be added
+ * to all views. This parameter specifies which views to add the forward link column to.
+ * If undefined, it is added to all views.
+ * @param {ViewId[]} addToForeignViews Which of the views of the _foreign_ table should have the
+ * _backward_ link column added to them.
  */
 export function createLinkColumn(
     connectionId: string,
     tableId: TableId,
     column: LinkColumnSpecifier,
-    addToViews?: ViewId[]
+    addToHomeViews?: ViewId[],
+    addToForeignViews?: ViewId[]
 ) {
     return {
         channel: CHANNEL,
@@ -98,7 +108,8 @@ export function createLinkColumn(
         connectionId,
         tableId,
         column,
-        addToViews,
+        addToHomeViews,
+        addToForeignViews,
     }
 }
 

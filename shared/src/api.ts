@@ -53,7 +53,7 @@ export const immutableColumnAttributes: ImmutableColumnAttributes[] = [
 export function standardColumnAttributes(
     name: string,
     contentType: string,
-    columnIndex?: number,
+    columnIndex: number,
     userPrimary?: boolean
 ): Partial<DB.Column> {
     return {
@@ -68,7 +68,7 @@ export function standardColumnAttributes(
     }
 }
 
-export function linkColumnAttributes(name: string, columnIndex?: number): Partial<DB.Column> {
+export function linkColumnAttributes(name: string, columnIndex: number): Partial<DB.Column> {
     return {
         kind: "link",
         displayName: name,
@@ -79,7 +79,7 @@ export function linkColumnAttributes(name: string, columnIndex?: number): Partia
 }
 export function backwardLinkColumnAttributes(
     name: string,
-    columnIndex?: number
+    columnIndex: number
 ): Partial<DB.Column> {
     return {
         kind: "backwardLink",
@@ -89,10 +89,19 @@ export function backwardLinkColumnAttributes(
         cellType: "string",
     }
 }
+export function foreignKeyColumnAttributes(columnIndex: number): Partial<DB.Column> {
+    return {
+        kind: "foreignKey",
+        index: columnIndex,
+        cellType: "number",
+        isInternal: 1,
+        editable: 0,
+    }
+}
 export function lookupColumnAttributes(
     name: string,
     contentType: string,
-    columnIndex?: number
+    columnIndex: number
 ): Partial<DB.Column> {
     return {
         kind: "lookup",
@@ -103,7 +112,7 @@ export function lookupColumnAttributes(
     }
 }
 
-export function idColumnAttributes(columnIndex?: number): Partial<DB.Column> {
+export function idColumnAttributes(columnIndex: number): Partial<DB.Column> {
     return {
         kind: "standard",
         displayName: "ID",
@@ -113,7 +122,7 @@ export function idColumnAttributes(columnIndex?: number): Partial<DB.Column> {
         cellType: "number",
     }
 }
-export function indexColumnAttributes(columnIndex?: number): Partial<DB.Column> {
+export function indexColumnAttributes(columnIndex: number): Partial<DB.Column> {
     return {
         displayName: "Index",
         kind: "index",

@@ -157,7 +157,7 @@ export class ParserClass {
 
     private parseLink(join: JoinDescriptor, columns: SerializedColumn[]): LinkDescriptor {
         const linkColumns = columns.filter(
-            c => c.linkId === join.id && ["link", "backwardsLink"].includes(c.kind)
+            c => c.linkId === join.id && ["link", "backwardLink"].includes(c.kind)
         )
         if (linkColumns.length !== 1)
             throw errorSync(
@@ -184,7 +184,13 @@ export class ParserClass {
         join: JoinDescriptor,
         linkColumn: SerializedColumn
     ): BackwardLinkDescriptor {
-        throw errorSync("parseBackwardLink", "not implemented")
+        return {
+            kind: LinkKind.Backward,
+            id: join.id,
+            homeTable: asView(join.foreignSource).id,
+            forwardLinkColumn: linkColumn.inverseLinkColumnId!,
+            backwardLinkColumn: linkColumn.id,
+        }
     }
 
     public parseView(view: RawViewData): SerializedViewData {

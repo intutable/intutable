@@ -107,7 +107,7 @@ export type Row = {
 //       Column
 // #################################################################
 
-export type ColumnKind = "standard" | "link" | "backwardLink" | "lookup" | "index"
+export type ColumnKind = "standard" | "link" | "backwardLink" | "lookup" | "index" | "foreignKey"
 /**
  * @description General, app-relevant properties for a column - these are
  * (usually) relevant to both serialized and deserialized columns.

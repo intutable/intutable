@@ -45,6 +45,8 @@ import {
     indexColumnAttributes,
     standardColumnAttributes,
     linkColumnAttributes,
+    backwardLinkColumnAttributes,
+    foreignKeyColumnAttributes,
     lookupColumnAttributes,
     emptyRowOptions,
     defaultRowOptions,
@@ -243,28 +245,27 @@ async function createStandardColumn(
     const parsedColumn = parser.parseColumn(tableViewColumn)
     return parsedColumn
 }
-function getNextColumnIndex(options: lvt.ColumnOptions | RawViewInfo): number {
+function getNextColumnIndex(options: lvt.ColumnOptions): number {
     const baseColumns = options.columns.length
-    return (options.joins as lvt.JoinSpecifier[]).reduce(
-        (acc, j) => acc + j.columns.length,
-        baseColumns
-    )
+    return options.joins.reduce((acc, j) => acc + j.columns.length, baseColumns)
 }
 
 async function createLinkColumn_({
     connectionId,
     tableId,
     column,
-    addToViews,
+    addToHomeViews,
+    addToForeignViews,
 }: CoreRequest): Promise<CoreResponse> {
-    return createLinkColumn(connectionId, tableId, column, addToViews)
+    return createLinkColumn(connectionId, tableId, column, addToHomeViews, addToForeignViews)
 }
 
 async function createLinkColumn(
     connectionId: string,
     tableId: TableId,
     column: LinkColumnSpecifier,
-    addToViews?: ViewId[]
+    addToHomeViews?: ViewId[],
+    addToForeignViews?: ViewId[]
 ): Promise<SerializedColumn> {
     const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
     const foreignTableInfo = await coreRequest<RawViewInfo>(
@@ -279,11 +280,56 @@ async function createLinkColumn(
             ColumnType.integer
         )
     )
+    let forwardLinkColumn = await createForwardLinkColumn(
+        connectionId,
+        homeTableInfo,
+        foreignTableInfo,
+        foreignKeyColumn,
+        addToHomeViews
+    )
+    const backwardLinkColumn = await createBackwardLinkColumn(
+        connectionId,
+        homeTableInfo,
+        foreignTableInfo,
+        foreignKeyColumn,
+        addToForeignViews
+    )
+    // connect the two columns, so we can find one from the other later.
+    // our handy `changeTableColumnAttributes` function is not available for this, since it
+    // blocks editing sacred internal column attributes, of which `inverseLinkColumnId` is one.
+    await coreRequest<RawViewColumnInfo>(
+        lvr.changeColumnAttributes(connectionId, backwardLinkColumn.id, {
+            inverseLinkColumnId: forwardLinkColumn.id,
+        })
+    )
+    forwardLinkColumn = await coreRequest<RawViewColumnInfo>(
+        lvr.changeColumnAttributes(connectionId, forwardLinkColumn.id, {
+            inverseLinkColumnId: backwardLinkColumn.id,
+        })
+    )
+    return parser.parseColumn(forwardLinkColumn)
+}
+
+function makeForeignKeyName(viewInfo: RawViewInfo) {
+    // We pick a number greater than any join so far's ID...
+    const nextJoinIndex = Math.max(0, ...viewInfo.joins.map(j => j.id)) + 1
+    // and add a special character so that there can't be clashes with
+    // user-added columns (see ./sanitizeName)
+    const fkColumnName = `j#${nextJoinIndex}_fk`
+    return fkColumnName
+}
+async function createForwardLinkColumn(
+    connectionId: string,
+    homeTableInfo: RawViewInfo,
+    foreignTableInfo: RawViewInfo,
+    foreignKeyColumn: RawTableColumnDescriptor,
+    addToViews?: ViewId[]
+): Promise<RawViewColumnInfo> {
     // add join to the home table's table-view
     const foreignIdColumn = foreignTableInfo.columns.find(c => c.name === "_id")!
     const join = await coreRequest<JoinDescriptor>(
-        lvr.addJoinToView(connectionId, tableId, {
-            foreignSource: selectable.viewId(column.foreignTable),
+        lvr.addJoinToView(connectionId, homeTableInfo.descriptor.id, {
+            foreignSource: selectable.viewId(foreignTableInfo.descriptor.id),
             on: [foreignKeyColumn.id, "=", foreignIdColumn.id],
             columns: [],
         })
@@ -294,24 +340,59 @@ async function createLinkColumn(
     )!
     const displayName = (foreignUserPrimaryColumn.attributes.displayName ||
         foreignUserPrimaryColumn.name) as string
-    const columnIndex = getNextColumnIndex(homeTableInfo)
+    const columnIndex = homeTableInfo.columns.length
     const attributes = linkColumnAttributes(displayName, columnIndex)
     const linkColumn = await addColumnToTableView(
         connectionId,
-        tableId,
+        homeTableInfo.descriptor.id,
         { parentColumnId: foreignUserPrimaryColumn.id, attributes },
         join.id,
         addToViews
     )
-    return parser.parseColumn(linkColumn)
+    return linkColumn
 }
-function makeForeignKeyName(viewInfo: RawViewInfo) {
-    // We pick a number greater than any join so far's ID...
-    const nextJoinIndex = Math.max(0, ...viewInfo.joins.map(j => j.id)) + 1
-    // and add a special character so that there can't be clashes with
-    // user-added columns (see ./sanitizeName)
-    const fkColumnName = `j#${nextJoinIndex}_fk`
-    return fkColumnName
+async function createBackwardLinkColumn(
+    connectionId: string,
+    homeTableInfo: RawViewInfo,
+    foreignTableInfo: RawViewInfo,
+    foreignKeyColumn: RawTableColumnDescriptor,
+    addToViews?: ViewId[]
+): Promise<RawViewColumnInfo> {
+    // since our join links the foreign table's raw table to the home table's table view,
+    // we must create an extra view column over the foreign key, and get the raw table column
+    // of the foreign table's ID column
+    const foreignIdColumn = foreignTableInfo.columns.find(c => c.name === "_id")!
+    const forwardLinkColumnIndex = homeTableInfo.columns.length
+    const foreignKeyViewColumn = await coreRequest<RawViewColumnInfo>(
+        lvr.addColumnToView(connectionId, homeTableInfo.descriptor.id, {
+            parentColumnId: foreignKeyColumn.id,
+            // the forward link column gets the next index, we just add 1 here to keep it short.
+            attributes: foreignKeyColumnAttributes(forwardLinkColumnIndex + 1),
+        })
+    )
+    const join = await coreRequest<JoinDescriptor>(
+        lvr.addJoinToView(connectionId, foreignTableInfo.descriptor.id, {
+            foreignSource: selectable.viewId(homeTableInfo.descriptor.id),
+            on: [foreignIdColumn.parentColumnId, "=", foreignKeyViewColumn.id],
+            columns: [],
+        })
+    )
+    // add and return link column
+    const homeUserPrimaryColumn = homeTableInfo.columns.find(
+        c => c.attributes.isUserPrimaryKey! === 1
+    )!
+    const displayName = (homeUserPrimaryColumn.attributes.displayName ||
+        homeUserPrimaryColumn.name) as string
+    const columnIndex = foreignTableInfo.columns.length
+    const attributes = backwardLinkColumnAttributes(displayName, columnIndex)
+    const linkColumn = await addColumnToTableView(
+        connectionId,
+        foreignTableInfo.descriptor.id,
+        { parentColumnId: homeUserPrimaryColumn.id, attributes },
+        join.id,
+        addToViews
+    )
+    return linkColumn
 }
 
 async function createLookupColumn_({

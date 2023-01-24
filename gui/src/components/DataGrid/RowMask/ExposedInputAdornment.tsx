@@ -24,4 +24,6 @@ export const ExposedInputIcon: React.FC<{ column: Column.Deserialized | Column.S
         <LookupIcon fontSize="small" />
     ) : column.kind === "link" ? (
         <LinkIcon fontSize="small" />
+    ) : column.kind === "backwardLink" ? (
+        <LinkIcon fontSize="small" />
     ) : null
