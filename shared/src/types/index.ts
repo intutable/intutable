@@ -11,6 +11,7 @@ export type ImmutableColumnAttributes =
     | "id"
     | "parentColumnId"
     | "linkId"
+    | "inverseLinkColumnId"
     | "key"
     | "kind"
     | "index"

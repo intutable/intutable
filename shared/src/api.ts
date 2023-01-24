@@ -4,7 +4,7 @@
 import { Column, ColumnType } from "@intutable/database/dist/types"
 import { ParentColumnDescriptor, RowOptions, SortOrder } from "@intutable/lazy-views/dist/types"
 
-import { ImmutableColumnAttributes, SerializedColumn, DB } from "./types"
+import { ImmutableColumnAttributes, DB } from "./types"
 
 /**
  * The two basic columns that every table must have (in addition to _id, but
@@ -43,6 +43,7 @@ export const immutableColumnAttributes: ImmutableColumnAttributes[] = [
     "id",
     "parentColumnId",
     "linkId",
+    "inverseLinkColumnId",
     "key",
     "kind",
     "index",
@@ -76,7 +77,18 @@ export function linkColumnAttributes(name: string, columnIndex?: number): Partia
         cellType: "string",
     }
 }
-
+export function backwardLinkColumnAttributes(
+    name: string,
+    columnIndex?: number
+): Partial<DB.Column> {
+    return {
+        kind: "backwardLink",
+        displayName: name,
+        index: columnIndex,
+        editable: 1,
+        cellType: "string",
+    }
+}
 export function lookupColumnAttributes(
     name: string,
     contentType: string,
