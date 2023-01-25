@@ -40,6 +40,8 @@ export const ChipItem: React.FC<{
 
 export type SelectMenuProps = {
     open: boolean
+    /** @default false */
+    disallowAddingValues?: boolean
     anchor: HTMLElement
     options: string[]
     addOption: (option: string) => void
@@ -47,6 +49,8 @@ export type SelectMenuProps = {
 }
 export const SelectMenu: React.FC<SelectMenuProps> = props => {
     const [input, setInput] = useState<string>("")
+
+    const disallowAddingValues = props.disallowAddingValues ?? false
 
     return (
         <Menu
@@ -64,21 +68,25 @@ export const SelectMenu: React.FC<SelectMenuProps> = props => {
                 },
             }}
         >
-            <MenuItem>
-                <TextField
-                    label="Option hinzufügen"
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    size="small"
-                    onKeyDown={e => {
-                        if (e.key === "Enter") props.addOption(input)
-                    }}
-                />
-                <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
-                    <CheckIcon fontSize="small" color="primary" />
-                </IconButton>
-            </MenuItem>
-            <Divider />
+            {disallowAddingValues === false && (
+                <>
+                    <MenuItem>
+                        <TextField
+                            label="Option hinzufügen"
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            size="small"
+                            onKeyDown={e => {
+                                if (e.key === "Enter") props.addOption(input)
+                            }}
+                        />
+                        <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
+                            <CheckIcon fontSize="small" color="primary" />
+                        </IconButton>
+                    </MenuItem>
+                    <Divider />
+                </>
+            )}
             <MenuList
                 sx={{
                     maxHeight: "200px",
@@ -245,6 +253,9 @@ export class Select extends Cell {
             [data, props.column, props.content]
         )
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const disallowNewSelectValues = (props.column as any).disallowNewSelectValues ?? false
+
         return (
             <>
                 <Stack
@@ -274,6 +285,7 @@ export class Select extends Cell {
 
                 {modalRef.current !== null && (
                     <SelectMenu
+                        disallowAddingValues={disallowNewSelectValues}
                         open={open}
                         anchor={modalRef.current}
                         options={list}

@@ -2,30 +2,25 @@ import { InputMask } from "@shared/input-masks/types"
 import React, { useEffect, useState } from "react"
 import { Row } from "types"
 
-/** If not input mask specified, it will use the row mask */
-export const NO_INPUT_MASK_DEFAULT = "--default-rowMask--"
-
-export type RowMaskMode = "edit" | "create" | "closed"
+export type RowMaskMode = "edit" | "closed"
 export type RowMaskState<MODE extends RowMaskMode> = MODE extends "edit"
     ? {
           mode: "edit"
           row: Row
       }
-    : MODE extends "create"
-    ? { mode: "create" }
     : { mode: "closed" }
 
 export type RowMaskContextProps = {
     rowMaskState: RowMaskState<RowMaskMode>
     setRowMaskState: React.Dispatch<React.SetStateAction<RowMaskState<RowMaskMode>>>
-    selectedInputMask: InputMask["id"]
-    setInputMask: React.Dispatch<React.SetStateAction<InputMask["id"]>>
+    appliedInputMask: InputMask["id"] | null
+    setInputMask: React.Dispatch<React.SetStateAction<InputMask["id"] | null>>
 }
 
 const initialState: RowMaskContextProps = {
     rowMaskState: { mode: "closed" },
     setRowMaskState: undefined!,
-    selectedInputMask: NO_INPUT_MASK_DEFAULT,
+    appliedInputMask: null,
     setInputMask: undefined!,
 }
 
@@ -41,7 +36,7 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     const [rowMaskState, setRowMaskState] = useState<RowMaskState<RowMaskMode>>(initialState.rowMaskState)
 
     /** if not traceable or not specified, it will use no one and display the default row mask  */
-    const [selectedInputMask, setInputMask] = useState<InputMask["id"]>(initialState.selectedInputMask)
+    const [appliedInputMask, setInputMask] = useState<InputMask["id"] | null>(null)
 
     // BUG: reset selectedInputMask to default if table changes
 
@@ -50,7 +45,7 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
             value={{
                 rowMaskState,
                 setRowMaskState,
-                selectedInputMask,
+                appliedInputMask,
                 setInputMask,
             }}
         >

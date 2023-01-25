@@ -15,7 +15,7 @@ import { InputMask } from "@shared/input-masks/types"
 // input mask => row mask + additonal features
 export const useInputMask = () => {
     const { data } = useView()
-    const { selectedInputMask } = useRowMask()
+    const { appliedInputMask: selectedInputMask } = useRowMask()
 
     const view = data ? (data as unknown as UNSAFE_ViewData) : null
     const inputMasks = view ? view.inputMasks : []

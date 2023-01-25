@@ -34,6 +34,8 @@ export type InputMaskColumnProps = {
     inputPlaceholderText?: string
     /** @default false */
     suppressInputLabel?: boolean
+    /** @default false */
+    disallowNewSelectValues?: boolean
 }
 export type OverrideableColumnProps = Partial<
     Pick<SerializedColumn, "name" | "editable" | "frozen" | "index" | "hidden">

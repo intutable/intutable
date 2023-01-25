@@ -41,6 +41,7 @@ const mask: InputMask = {
             origin: { name: "Titel" },
             index: 0,
             defaultValue: "Dr.",
+            disallowNewSelectValues: true,
         },
         {
             origin: { name: "Vorname" },

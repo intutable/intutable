@@ -1,13 +1,7 @@
 import { cellMap } from "@datagrid/Cells"
 import { Box, Grid, Stack, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import type {
-    ColumnGroup,
-    FlexboxSizing,
-    InputMaskColumn,
-    InputMaskColumnOrigin,
-    InputMaskColumnProps,
-} from "@shared/input-masks/types"
+import type { ColumnGroup, FlexboxSizing, InputMaskColumnOrigin } from "@shared/input-masks/types"
 import { isColumnIdOrigin } from "@shared/input-masks/utils"
 
 import { useRowMask } from "context/RowMaskContext"
@@ -18,57 +12,39 @@ import { Column } from "types/tables/rdg"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 import InfoIcon from "@mui/icons-material/Info"
+import { merge, MergedColumn } from "./merge"
 
-type MergedColumn = Column & InputMaskColumnProps
-
-const merge = (columns: Column[], withInputMaskColumns: InputMaskColumn[]): MergedColumn[] =>
-    columns.map(column => {
-        const maskCol = withInputMaskColumns.find(c =>
-            isColumnIdOrigin(c.origin) ? c.origin.id === column.id : c.origin.name === column.name
-        )
-        if (maskCol) {
-            const { origin, ...rest } = maskCol
-            Object.assign(column, rest)
-        }
-        const merged = column as MergedColumn
-
-        // add default values if nullish
-        merged.inputRequired ??= false
-        merged.suppressInputLabel ??= false
-
-        return column
-    })
-
-export type ColumnGroupComponentProps = {
+export type ColumnGroupComponent = {
     group: ColumnGroup
     /** columns in that group */
-    columns: Column[]
+    columns: MergedColumn[]
 }
-export const ColumnGroupComponent: React.FC<ColumnGroupComponentProps> = props => {
+export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, group }) => {
     const theme = useTheme()
-    const { rowMaskState, selectedInputMask } = useRowMask()
+    const { rowMaskState, appliedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
     const [isHovering, setIsHovering] = useState<boolean>(false)
 
     if (rowMaskState.mode !== "edit" || !currentInputMask) return null
-
-    const mergedColumns = merge(props.columns, currentInputMask.columnProps)
 
     return (
         <Box
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
             sx={{
-                bgcolor: isHovering ? theme.palette.grey[100] : "inherit",
+                bgcolor: "inherit",
+                "&:hover": {
+                    bgcolor: theme.palette.grey[100],
+                },
                 borderRadius: theme.shape.borderRadius,
                 mb: 2,
                 px: 3,
-                py: props.group.label ? 5 : 1.5,
+                py: group.label ? 5 : 1.5,
                 boxSizing: "border-box",
                 position: "relative",
             }}
         >
-            {props.group.label && (
+            {group.label && (
                 <>
                     <Stack
                         direction="row"
@@ -87,10 +63,10 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponentProps> = props =
                                 ml: "24px",
                             }}
                         >
-                            {props.group.label}
+                            {group.label}
                         </Typography>
-                        {props.group.tooltip && (
-                            <Tooltip title={props.group.tooltip} arrow placement="right">
+                        {group.tooltip && (
+                            <Tooltip title={group.tooltip} arrow placement="right">
                                 <InfoIcon
                                     sx={{
                                         fontSize: "80%",
@@ -103,12 +79,12 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponentProps> = props =
                 </>
             )}
             <Grid container spacing={1}>
-                {mergedColumns.sort(ColumnUtility.sortByIndex).map(column => {
+                {columns.sort(ColumnUtility.sortByIndex).map(column => {
                     const cell = cellMap.instantiate(column)
                     const Icon = cell.icon
                     const Input = React.memo(cell.ExposedInput)
 
-                    const groupCol = props.group.columns.find(col =>
+                    const groupCol = group.columns.find(col =>
                         isColumnIdOrigin(col) ? col.id === column.id : col.name === column.name
                     )
                     if (groupCol === undefined) throw new Error("Could not find the column in the group!")

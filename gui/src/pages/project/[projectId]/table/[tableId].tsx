@@ -1,7 +1,7 @@
 import { SelectColumn } from "@datagrid/Cells/SelectColumn"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton"
 import { RowRenderer } from "@datagrid/renderers"
-import RowMask from "@datagrid/RowMask/RowMask"
+import RowMaskContainer from "@datagrid/RowMask/Container"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
@@ -180,7 +180,7 @@ const TablePage: React.FC = () => {
                         </Box>
                     </Grid>
 
-                    <RowMask />
+                    <RowMaskContainer />
                 </Grid>
             )}
         </>

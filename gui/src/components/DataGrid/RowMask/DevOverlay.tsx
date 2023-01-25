@@ -1,26 +1,26 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material"
-import { useRowMask, NO_INPUT_MASK_DEFAULT } from "context/RowMaskContext"
+import { useRowMask } from "context/RowMaskContext"
 import { useInputMask } from "hooks/useInputMask"
 import { isTableIdOrigin, isTableNameOrigin, isViewIdOrigin } from "@shared/input-masks/utils"
 import React from "react"
 
-export const InputMaskSelect: React.FC = () => {
-    const { selectedInputMask, setInputMask } = useRowMask()
+export const DevOverlay: React.FC = () => {
+    const { appliedInputMask, setInputMask } = useRowMask()
     const { inputMasks } = useInputMask()
 
     const handleChange = (inputMaskId: string) => setInputMask(inputMaskId)
 
     return (
         <FormControl size="small" sx={{ mr: 2 }} color="warning">
-            <InputLabel id="demo-simple-select-label">Maske</InputLabel>
+            <InputLabel id="dev-overlay">Maske</InputLabel>
             <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={selectedInputMask || NO_INPUT_MASK_DEFAULT}
+                labelId="dev-overlay"
+                id="dev-overlay"
+                value={appliedInputMask || "none"}
                 label="Maske"
                 onChange={e => handleChange(e.target.value)}
             >
-                <MenuItem value={NO_INPUT_MASK_DEFAULT}>Keine</MenuItem>
+                <MenuItem value="none">Keine</MenuItem>
                 {inputMasks.map(inputMask => (
                     <MenuItem key={inputMask.id} value={inputMask.id}>
                         {inputMask.name} (

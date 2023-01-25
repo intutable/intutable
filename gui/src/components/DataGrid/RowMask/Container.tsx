@@ -11,11 +11,11 @@ import {
     Typography,
     Grid,
 } from "@mui/material"
-import { NO_INPUT_MASK_DEFAULT, useRowMask } from "context/RowMaskContext"
+import { useRowMask } from "context/RowMaskContext"
 import { useView } from "hooks/useView"
 import React, { useDebugValue, useEffect, useState } from "react"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
-import { InputMaskSelect } from "./InputMaskSelect"
+import { DevOverlay } from "./DevOverlay"
 import { AddColumnButton, AddLinkButton } from "./DialogActions"
 import { RowMaskColumn } from "./Column"
 import { RowMaskContextMenu } from "./ContextMenu"
@@ -26,7 +26,7 @@ import { useTheme } from "@mui/material/styles"
 import { AddRow } from "@datagrid/Toolbar/ToolbarItems"
 import { Column } from "types/tables/rdg"
 import { ColumnGroup } from "@shared/input-masks/types"
-import { MakeInputMaskColumns } from "./MakeInputMaskColumns"
+import { MakeInputMaskColumns } from "./InputMask"
 
 /**
  * // BUG:
@@ -36,12 +36,12 @@ import { MakeInputMaskColumns } from "./MakeInputMaskColumns"
  * 2. exposed input components lose focus when onMouseLeave event fires on that parent, which wont call onBlut (<- updates the cell)
  */
 
-export const RowMask: React.FC = () => {
+export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
     const { data } = useView()
-    const { rowMaskState, setRowMaskState, selectedInputMask } = useRowMask()
+    const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
-    const isInputMask = selectedInputMask !== NO_INPUT_MASK_DEFAULT
+    const isInputMask = selectedInputMask !== null
 
     const [commentsVisible, setCommentsVisible] = useState<boolean>(false)
     useEffect(() => {
@@ -51,13 +51,13 @@ export const RowMask: React.FC = () => {
 
     const abort = () => setRowMaskState({ mode: "closed" })
 
-    if (data == null) return null
+    if (rowMaskState.mode === "closed" || data == null) return null
 
     const nonHidden = data.columns.filter(column => column.hidden !== true)
     const columns = nonHidden
 
     return (
-        <Dialog open={rowMaskState.mode !== "closed"} fullWidth onClose={abort} keepMounted>
+        <Dialog open fullWidth onClose={abort} keepMounted>
             <DialogTitle>
                 <Stack
                     direction="row"
@@ -66,17 +66,11 @@ export const RowMask: React.FC = () => {
                     }}
                 >
                     {rowMaskState.mode === "edit" && <RowNavigator />}
-                    <Typography sx={{ ml: 2 }}>
-                        {rowMaskState.mode === "create"
-                            ? "Neue Zeile erstellen"
-                            : rowMaskState.mode === "edit"
-                            ? `Zeile ${rowMaskState.row.index}`
-                            : ""}
-                    </Typography>
+                    <Typography sx={{ ml: 2 }}>Zeile {rowMaskState.row.index}</Typography>
 
                     <Box flexGrow={1} />
 
-                    <InputMaskSelect />
+                    <DevOverlay />
                     <RowMaskContextMenu
                         commentsVisible={commentsVisible}
                         toggleCommentsVisible={() => setCommentsVisible(prev => !prev)}
@@ -146,4 +140,4 @@ export const RowMask: React.FC = () => {
     )
 }
 
-export default RowMask
+export default RowMaskContainer

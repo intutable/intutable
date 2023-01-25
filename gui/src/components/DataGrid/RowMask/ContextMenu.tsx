@@ -17,7 +17,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
     const { deleteRow: _deleteRow } = useRow()
-    const { rowMaskState, setRowMaskState, selectedInputMask } = useRowMask()
+    const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openContextMenu = (e: React.MouseEvent<SVGSVGElement>) => {

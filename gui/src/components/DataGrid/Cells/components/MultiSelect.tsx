@@ -213,6 +213,9 @@ export class MultiSelect extends Cell {
             [data, props.column, props.content]
         )
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const disallowNewSelectValues = (props.column as any).disallowNewSelectValues ?? false
+
         return (
             <>
                 <Stack
@@ -248,6 +251,7 @@ export class MultiSelect extends Cell {
 
                 {modalRef.current !== null && (
                     <MultiSelectMenu
+                        disallowAddingValues={disallowNewSelectValues}
                         open={open}
                         anchor={modalRef.current}
                         options={list}

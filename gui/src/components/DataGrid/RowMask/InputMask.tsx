@@ -4,11 +4,7 @@ import { useInputMask } from "hooks/useInputMask"
 import { Column } from "types/tables/rdg"
 import { RowMaskColumn } from "./Column"
 import { ColumnGroupComponent } from "./ColumnGroup"
-/**
- * // BUG: somewhere we loose some columns
- *
- * still the case?
- */
+import { merge, MergedColumn } from "./merge"
 
 const columnIsInGroup = (column: Column, groups: ColumnGroup[]) =>
     groups.some(group =>
@@ -17,7 +13,7 @@ const columnIsInGroup = (column: Column, groups: ColumnGroup[]) =>
         )
     )
 
-const OrderedColumnMapSort = (a: Column | ColumnGroup, b: Column | ColumnGroup) => {
+const OrderedColumnMapSort = (a: Column | ColumnGroup | MergedColumn, b: Column | ColumnGroup | MergedColumn) => {
     // special case: groups override column indices if they use the same index
     if (
         ((isColumnGroup(a) && isColumnGroup(b) === false) || (isColumnGroup(b) && isColumnGroup(a) === false)) && // one group AND one column in a/b
@@ -39,13 +35,16 @@ const orderColumnsAndGroups = (columns: Column[], groups: ColumnGroup[]): (Colum
     return columnsAndGroups.sort(OrderedColumnMapSort)
 }
 
+// const mergeColumns
+
 /** 'columns' should be already filterd by userPrimaryKey-columns and hiddens ones */
 export const MakeInputMaskColumns: React.FC<{ columns: Column[] }> = ({ columns }) => {
     const { currentInputMask } = useInputMask()
 
     if (currentInputMask == null) return null
 
-    const orderedColumns = orderColumnsAndGroups(columns, currentInputMask.groups)
+    const mergedColumns = merge(columns, currentInputMask.columnProps)
+    const orderedColumns = orderColumnsAndGroups(mergedColumns, currentInputMask.groups)
 
     return (
         <>
