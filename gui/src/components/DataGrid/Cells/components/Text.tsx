@@ -39,6 +39,12 @@ export class Text extends Cell {
                 size="small"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                onKeyDown={e => {
+                    if (e.key === "Enter") {
+                        e.preventDefault()
+                        handleBlur()
+                    }
+                }}
                 value={value}
                 disabled={this.column.editable === false}
                 label={props.label}
