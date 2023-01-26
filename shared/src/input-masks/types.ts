@@ -29,7 +29,6 @@ export type ColumnGroup = {
 export type InputMaskColumnProps = {
     /** @default false */
     inputRequired?: boolean
-    defaultValue?: unknown
     tooltip?: string
     inputPlaceholderText?: string
     /** @default false */

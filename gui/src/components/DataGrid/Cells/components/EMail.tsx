@@ -10,6 +10,7 @@ import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
+import { HelperTooltip } from "./Text"
 
 export class EMail extends Cell {
     public brand = "email"
@@ -72,6 +73,7 @@ export class EMail extends Cell {
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content ?? "")
+        const isEmpty = value == null || value === ""
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
@@ -86,29 +88,48 @@ export class EMail extends Cell {
 
         return (
             <TextField
-                error={EMail.isValid(value) === false}
                 size="small"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                onKeyDown={e => {
+                    if (e.key === "Enter") {
+                        e.preventDefault()
+                        handleBlur()
+                    }
+                }}
                 value={value}
                 disabled={this.column.editable === false}
+                label={props.label}
+                required={props.required}
                 InputProps={{
                     endAdornment: (
-                        <InputAdornment
-                            position="end"
-                            onClick={() => props.content && open(`mailto:${props.content}`)}
-                            sx={{
-                                cursor: "pointer",
-                            }}
-                        >
-                            <this.icon fontSize="small" color="success" />
-                        </InputAdornment>
+                        <>
+                            <InputAdornment
+                                position="end"
+                                onClick={() => props.content && open(`mailto:${props.content}`)}
+                                sx={{
+                                    cursor: "pointer",
+                                }}
+                            >
+                                <this.icon fontSize="small" color="success" />
+                            </InputAdornment>
+                            <HelperTooltip text={props.tooltip} />
+                        </>
                     ),
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
-                {...props.forwardProps}
+                placeholder={props.label == null && props.required ? props.placeholder + "*" : props.placeholder}
+                error={EMail.isValid(value) === false || (props.required && isEmpty)}
+                helperText={
+                    EMail.isValid(value) === false
+                        ? "Keine valide E-Mail-Adresse!"
+                        : props.required && isEmpty
+                        ? "Pflichtfeld"
+                        : undefined
+                }
                 sx={props.forwardSX}
+                {...props.forwardProps}
             />
         )
     }

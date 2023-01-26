@@ -254,6 +254,19 @@ export class Select extends Cell {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const disallowNewSelectValues = (props.column as any).disallowNewSelectValues ?? false
 
+        /**
+         * to implement
+         * • required
+         * • error
+         * • label
+         * • disabled
+         * • readOnly
+         * • placeholder
+         * • tooltip
+         */
+
+        // TODO: Select und MultiSelect zu Dropdown mit Chips umbauen
+
         return (
             <>
                 <Stack

@@ -8,6 +8,7 @@ import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
+import { HelperTooltip } from "./Text"
 
 export class Currency extends NumericCell {
     public brand = "currency"
@@ -64,6 +65,7 @@ export class Currency extends NumericCell {
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content)
+        const isEmpty = value == null || (value as unknown) === ""
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             if (Currency.isValid(e.target.value)) setValue(Number.parseInt(e.target.value))
@@ -83,13 +85,29 @@ export class Currency extends NumericCell {
                 type="number"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={value}
+                onKeyDown={e => {
+                    if (e.key === "Enter") {
+                        e.preventDefault()
+                        handleBlur()
+                    }
+                }}
+                value={value ?? ""}
                 disabled={this.column.editable === false}
+                label={props.label}
+                required={props.required}
                 InputProps={{
-                    endAdornment: <InputAdornment position="end">€</InputAdornment>,
+                    endAdornment: (
+                        <>
+                            <InputAdornment position="end">€</InputAdornment>
+                            <HelperTooltip text={props.tooltip} />
+                        </>
+                    ),
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
+                placeholder={props.label == null && props.required ? props.placeholder + "*" : props.placeholder}
+                error={props.required && isEmpty}
+                helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
                 sx={props.forwardSX}
                 {...props.forwardProps}
             />

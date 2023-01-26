@@ -10,6 +10,7 @@ import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
+import { HelperTooltip } from "./Text"
 
 const LinearProgressWithLabel = (props: LinearProgressProps & { value: number }) => (
     <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
@@ -118,6 +119,7 @@ export class Percentage extends NumericCell {
         const { snackError } = useSnacki()
 
         const [percentage, setValue] = useState(props.content)
+        const isEmpty = percentage == null || (percentage as unknown) === ""
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = e.target.value
@@ -150,13 +152,29 @@ export class Percentage extends NumericCell {
                 type="number"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={percentage}
+                onKeyDown={e => {
+                    if (e.key === "Enter") {
+                        e.preventDefault()
+                        handleBlur()
+                    }
+                }}
+                value={percentage ?? ""}
                 disabled={this.column.editable === false}
+                label={props.label}
+                required={props.required}
                 InputProps={{
-                    endAdornment: <InputAdornment position="end">%</InputAdornment>,
                     readOnly: this.isReadonlyComponent,
+                    endAdornment: (
+                        <>
+                            <InputAdornment position="end">%</InputAdornment>
+                            <HelperTooltip text={props.tooltip} />
+                        </>
+                    ),
                     startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
+                placeholder={props.label == null && props.required ? props.placeholder + "*" : props.placeholder}
+                error={props.required && isEmpty}
+                helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
                 sx={props.forwardSX}
                 {...props.forwardProps}
             />

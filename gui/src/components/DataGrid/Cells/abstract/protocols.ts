@@ -56,6 +56,7 @@ export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {
     /** If specified, it will render an additional label near the input component */
     label?: string
     placeholder?: string
+    tooltip?: string
 }
 
 export type ExposableInputComponent = {
