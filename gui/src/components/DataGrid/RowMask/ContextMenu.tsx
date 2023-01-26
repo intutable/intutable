@@ -1,12 +1,13 @@
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
 import { ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { NO_INPUT_MASK_DEFAULT, useRowMask } from "context/RowMaskContext"
+import { useRowMask } from "context/RowMaskContext"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import React, { useState } from "react"
 import { HiddenColumnsMenuItem } from "@datagrid/Toolbar/ToolbarItems/HiddenColumns/HiddenColumns"
 import CheckIcon from "@mui/icons-material/Check"
+import { useView } from "hooks/useView"
 
 export type RowMaskContextMenuProps = {
     commentsVisible: boolean
@@ -17,6 +18,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const theme = useTheme()
     const { snackError } = useSnacki()
     const { deleteRow: _deleteRow } = useRow()
+    const { data: view } = useView()
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -26,15 +28,12 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     }
     const closeContextMenu = () => setAnchorEL(null)
 
-    const createRow = async () =>
-        setRowMaskState({
-            mode: "create",
-        })
-
     const deleteRow = async () => {
-        if (rowMaskState.mode !== "edit") return
+        if (rowMaskState.mode !== "edit" || view == null) return
+        const selectedRow = view.rows.find(row => row._id === rowMaskState.row._id)
+        if (selectedRow == null) return
         try {
-            await _deleteRow(rowMaskState.row)
+            await _deleteRow(selectedRow)
         } catch (error) {
             snackError("Der Eintrag konnte nicht gelöscht werden.")
         }
@@ -56,9 +55,9 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                 }}
             >
                 <MenuList>
-                    {selectedInputMask === NO_INPUT_MASK_DEFAULT && <HiddenColumnsMenuItem />}
+                    {selectedInputMask == null && <HiddenColumnsMenuItem />}
 
-                    {selectedInputMask !== NO_INPUT_MASK_DEFAULT && (
+                    {selectedInputMask != null && (
                         <MenuItem onClick={props.toggleCommentsVisible}>
                             {props.commentsVisible && (
                                 <ListItemIcon>

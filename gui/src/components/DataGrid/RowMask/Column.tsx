@@ -7,6 +7,7 @@ import { useRowMask } from "context/RowMaskContext"
 import React, { useEffect, useRef, useState } from "react"
 import { Column } from "types"
 import KeyIcon from "@mui/icons-material/Key"
+import { useView } from "hooks/useView"
 
 export const ColumnAttributesWindowButton: React.FC<{
     column: Column.Serialized
@@ -30,6 +31,7 @@ export const ColumnAttributesWindowButton: React.FC<{
 
 export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ column }) => {
     const theme = useTheme()
+    const { data: view } = useView()
     const [isHovering, setIsHovering] = useState<boolean>(false)
     const { rowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const isInputMask = selectedInputMask !== null
@@ -38,7 +40,12 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
     const Icon = cell.icon
     const Input = cell.ExposedInput
 
-    if (rowMaskState.mode !== "edit") return null
+    if (rowMaskState.mode !== "edit" || view == null) return null
+
+    const selectedRow = view.rows.find(row => row._id === rowMaskState.row._id)
+    if (selectedRow == null) return null
+
+    const content = selectedRow[column.key]
 
     return (
         <>
@@ -100,12 +107,7 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                     </Stack>
 
                     {/* input */}
-                    <Input
-                        content={rowMaskState.row[column.key]}
-                        row={rowMaskState.row}
-                        column={column}
-                        hoveringOnParent={isHovering}
-                    />
+                    <Input content={content} row={selectedRow} column={column} hoveringOnParent={isHovering} />
 
                     {/* edit icon */}
                     {isInputMask === false && (

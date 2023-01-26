@@ -13,6 +13,7 @@ import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 import InfoIcon from "@mui/icons-material/Info"
 import { merge, MergedColumn } from "./merge"
+import { useView } from "hooks/useView"
 
 export type ColumnGroupComponent = {
     group: ColumnGroup
@@ -23,6 +24,7 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
     const theme = useTheme()
     const { rowMaskState, appliedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
+    const { data: view } = useView()
     const [isHovering, setIsHovering] = useState<boolean>(false)
 
     if (rowMaskState.mode !== "edit" || !currentInputMask) return null
@@ -81,7 +83,7 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
             <Grid container spacing={1}>
                 {columns.sort(ColumnUtility.sortByIndex).map(column => {
                     const cell = cellMap.instantiate(column)
-                    const Icon = cell.icon
+                    // const Icon = cell.icon
                     const Input = React.memo(cell.ExposedInput)
 
                     const groupCol = group.columns.find(col =>
@@ -89,11 +91,14 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
                     )
                     if (groupCol === undefined) throw new Error("Could not find the column in the group!")
 
+                    const selectedRow = view?.rows.find(row => row._id === rowMaskState.row._id)
+                    if (selectedRow == null) return null
+
                     return (
                         <Grid item xs={parseInt(groupCol.size)} key={column.id}>
                             <Input
-                                content={rowMaskState.row[column.key]}
-                                row={rowMaskState.row}
+                                content={selectedRow[column.key]}
+                                row={selectedRow}
                                 column={column}
                                 placeholder={column.inputPlaceholderText}
                                 label={column.suppressInputLabel !== true ? (column.name as string) : undefined}

@@ -31,7 +31,16 @@ import { MakeInputMaskColumns } from "./InputMask"
 /**
  * // BUG:
  *
- * 1. RowMask does not update on state changes
+ * 1. Inputs do not update when its value changes
+ * This is directly related to the input components – not this component. The input components are not updated when the cell value changes.
+ *
+ * After editing an input, neither `props.content` nor `values` changes in `Text.ExposedInput` – The ExposedInput-Component does not get an updated value or the properties do not change.
+ * RowMaskColumn->content does not change either.
+ *
+ * The value is accessed through the `rowMaskState` <-- maybe this is the problem?
+ *
+ *
+ * YEEEESSSS : RowMaskContenxt is the problem. The rowMaskState is not updated when the cell value changes.
  *
  * 2. exposed input components lose focus when onMouseLeave event fires on that parent, which wont call onBlut (<- updates the cell)
  */
@@ -56,6 +65,9 @@ export const RowMaskContainer: React.FC = () => {
     const nonHidden = data.columns.filter(column => column.hidden !== true)
     const columns = nonHidden
 
+    const selectedRow = data.rows.find(row => row._id === rowMaskState.row._id)
+    if (selectedRow == null) return null
+
     return (
         <Dialog open fullWidth onClose={abort} keepMounted>
             <DialogTitle>
@@ -66,7 +78,7 @@ export const RowMaskContainer: React.FC = () => {
                     }}
                 >
                     {rowMaskState.mode === "edit" && <RowNavigator />}
-                    <Typography sx={{ ml: 2 }}>Zeile {rowMaskState.row.index}</Typography>
+                    <Typography sx={{ ml: 2 }}>Zeile {selectedRow.index}</Typography>
 
                     <Box flexGrow={1} />
 

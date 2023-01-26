@@ -11,12 +11,16 @@ const _RowNavigator: React.FC = () => {
 
     const navigateRow = (action: "next" | "previous") => {
         if (rowMaskState.mode !== "edit" || data == null) return
+        const selectedRow = data?.rows.find(row => row._id === rowMaskState.row._id)
+        if (selectedRow == null) return
+
         const maxIndex = data.rows.length - 1
-        const nextIndex = rowMaskState.row.index + 1 > maxIndex ? 0 : rowMaskState.row.index + 1
-        const previousIndex = rowMaskState.row.index - 1 < 0 ? maxIndex : rowMaskState.row.index - 1
+        const nextIndex = selectedRow.index + 1 > maxIndex ? 0 : selectedRow.index + 1
+        const previousIndex = selectedRow.index - 1 < 0 ? maxIndex : selectedRow.index - 1
+
         setRowMaskState({
             mode: "edit",
-            row: data.rows.find(row => row.index === (action === "next" ? nextIndex : previousIndex))!,
+            row: { _id: data.rows.find(row => row.index === (action === "next" ? nextIndex : previousIndex))!._id },
         })
     }
 

@@ -68,25 +68,23 @@ export const SelectMenu: React.FC<SelectMenuProps> = props => {
                 },
             }}
         >
-            {disallowAddingValues === false && (
-                <>
-                    <MenuItem>
-                        <TextField
-                            label="Option hinzufügen"
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                            size="small"
-                            onKeyDown={e => {
-                                if (e.key === "Enter") props.addOption(input)
-                            }}
-                        />
-                        <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
-                            <CheckIcon fontSize="small" color="primary" />
-                        </IconButton>
-                    </MenuItem>
-                    <Divider />
-                </>
-            )}
+            {disallowAddingValues === false && [
+                <MenuItem key={"menu-439587394857239457"}>
+                    <TextField
+                        label="Option hinzufügen"
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        size="small"
+                        onKeyDown={e => {
+                            if (e.key === "Enter") props.addOption(input)
+                        }}
+                    />
+                    <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
+                        <CheckIcon fontSize="small" color="primary" />
+                    </IconButton>
+                </MenuItem>,
+                <Divider key={"divider-329847913456834"} />,
+            ]}
             <MenuList
                 sx={{
                     maxHeight: "200px",
