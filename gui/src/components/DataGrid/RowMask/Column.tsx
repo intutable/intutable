@@ -4,7 +4,7 @@ import EditIcon from "@mui/icons-material/Edit"
 import { Box, Divider, IconButton, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Column } from "types"
 import KeyIcon from "@mui/icons-material/Key"
 import { useView } from "hooks/useView"
@@ -36,9 +36,10 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
     const { rowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const isInputMask = selectedInputMask !== null
 
-    const cell = cellMap.instantiate(column)
-    const Icon = cell.icon
-    const Input = cell.ExposedInput
+    // BUG: this causes the input component to rerender every time a state is changed
+    const cell = useMemo(() => cellMap.instantiate(column), [column])
+    const Icon = React.memo(cell.icon)
+    const Input = React.memo(cell.ExposedInput)
 
     if (rowMaskState.mode !== "edit" || view == null) return null
 
