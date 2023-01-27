@@ -40,8 +40,10 @@ const mask: InputMask = {
         {
             origin: { name: "Titel" },
             index: 0,
-            defaultValue: "Dr.",
             disallowNewSelectValues: true,
+            inputRequired: true,
+            inputPlaceholderText: "Titel",
+            suppressInputLabel: true,
         },
         {
             origin: { name: "Vorname" },

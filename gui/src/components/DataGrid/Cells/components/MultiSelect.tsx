@@ -12,6 +12,9 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { ChipItem, SelectMenu as MultiSelectMenu } from "./Select"
 
+export type MultiSelectUnformattedValue = { source: string; values: unknown[] }
+export type MultiSelectValue = string[]
+
 export class MultiSelect extends Cell {
     public brand = "multiselect"
     public label = "Mehrfach-Auswahlliste"

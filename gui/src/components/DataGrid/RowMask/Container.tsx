@@ -28,29 +28,12 @@ import { Column } from "types/tables/rdg"
 import { ColumnGroup } from "@shared/input-masks/types"
 import { MakeInputMaskColumns } from "./InputMask"
 
-/**
- * // BUG:
- *
- * 1. Inputs do not update when its value changes
- * This is directly related to the input components – not this component. The input components are not updated when the cell value changes.
- *
- * After editing an input, neither `props.content` nor `values` changes in `Text.ExposedInput` – The ExposedInput-Component does not get an updated value or the properties do not change.
- * RowMaskColumn->content does not change either.
- *
- * The value is accessed through the `rowMaskState` <-- maybe this is the problem?
- *
- *
- * YEEEESSSS : RowMaskContenxt is the problem. The rowMaskState is not updated when the cell value changes.
- *
- * 2. exposed input components lose focus when onMouseLeave event fires on that parent, which wont call onBlut (<- updates the cell)
- */
-
 export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
     const { data } = useView()
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
-    const isInputMask = selectedInputMask !== null
+    const isInputMask = selectedInputMask != null
 
     const [commentsVisible, setCommentsVisible] = useState<boolean>(false)
     useEffect(() => {
