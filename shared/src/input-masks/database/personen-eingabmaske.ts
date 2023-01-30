@@ -36,6 +36,16 @@ const mask: InputMask = {
             ],
         },
     ],
+    components: [
+        {
+            __component: "note",
+            index: 1,
+            text: "Rolle*: [Platzhalter: Bidirektionaler Link in Entwicklung]",
+            headline: "[Platzhalter]",
+        },
+        { __component: "divider", index: 999, label: "Dekanats View" },
+        { __component: "note", index: 1000, text: "Frage: Was soll hier stehen?" },
+    ],
     columnProps: [
         {
             origin: { name: "Titel" },

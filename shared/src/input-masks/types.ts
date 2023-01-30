@@ -42,6 +42,10 @@ export type OverrideableColumnProps = Partial<
 export type InputMaskColumnOrigin = { origin: { id: number } | { name: string } }
 export type InputMaskColumn = InputMaskColumnOrigin & OverrideableColumnProps & InputMaskColumnProps
 
+export type Divider = { __component: "divider"; index: number; label?: string }
+export type Note = { __component: "note"; index: number; text: string; headline?: string }
+export type InputMaskComponents = Divider | Note
+
 export type Rule = {
     [key in keyof SerializedColumn]?: Permission
 }
@@ -69,6 +73,7 @@ export type InputMask = {
     addRecordButtonText?: string
     groups: ColumnGroup[]
     columnProps: InputMaskColumn[]
+    components: InputMaskComponents[]
     rules: Rule[]
 }
 

@@ -1,4 +1,4 @@
-import { ColumnGroup } from "./types"
+import { ColumnGroup, InputMaskComponents } from "./types"
 
 export type TableIdOrigin = { tableId: number }
 export type TableNameOrigin = { tableName: string }
@@ -34,3 +34,6 @@ export type ColumnOrigin = ColumnIdOrigin | ColumnNameOrigin
 
 export const isColumnIdOrigin = (value: ColumnOrigin): value is ColumnIdOrigin =>
     Object.prototype.hasOwnProperty.call(value, "id")
+
+export const isInputMaskComponent = (value: unknown): value is InputMaskComponents =>
+    Object.prototype.hasOwnProperty.call(value, "__component") && Object.prototype.hasOwnProperty.call(value, "index")
