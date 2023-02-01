@@ -138,7 +138,10 @@ export class Cell {
             return (
                 // default Input component, used in editor/formatter components
                 <InputUnstyled
-                    components={{ Input: StyledInputElement }}
+                    // components={{ Input: StyledInputElement }}
+                    slots={{
+                        input: StyledInputElement,
+                    }}
                     ref={ref || inputRef}
                     onKeyDown={props.onKeyDown}
                     disabled={this.column.editable === false}

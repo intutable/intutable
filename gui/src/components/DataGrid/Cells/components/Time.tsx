@@ -120,7 +120,7 @@ export class Time extends TempusCell {
         )
     }
 
-    public ExposedInput: React.FC<ExposedInputProps<number | null, TimePickerProps>> = props => {
+    public ExposedInput: React.FC<ExposedInputProps<number | null, TimePickerProps<unknown>>> = props => {
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
