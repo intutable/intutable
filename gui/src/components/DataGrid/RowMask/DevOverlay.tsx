@@ -8,7 +8,7 @@ export const DevOverlay: React.FC = () => {
     const { appliedInputMask, setInputMask } = useRowMask()
     const { inputMasks } = useInputMask()
 
-    const handleChange = (inputMaskId: string) => setInputMask(inputMaskId)
+    const handleChange = (inputMaskId: string) => setInputMask(inputMaskId === "none" ? null : inputMaskId)
 
     return (
         <FormControl size="small" sx={{ mr: 2 }} color="warning">
