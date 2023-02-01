@@ -1,50 +1,47 @@
 import React from "react"
-import Document, { Html, Head, Main, NextScript, DocumentContext } from "next/document"
+import Document, { Html, Head, Main, NextScript, DocumentContext, DocumentInitialProps } from "next/document"
+import { createEmotionCache } from "utils/createEmotionCache"
+import createEmotionServer from "@emotion/server/types/create-instance"
+import { AppType } from "next/app"
+import { CustomAppProps } from "./_app"
 
 class MyDocument extends Document {
     // compatible w/ SSG
-    static async getInitialProps(ctx: DocumentContext) {
-        // Resolution order
-        //
-        // On the server:
-        // 1. app.getInitialProps
-        // 2. page.getInitialProps
-        // 3. document.getInitialProps
-        // 4. app.render
-        // 5. page.render
-        // 6. document.render
-        //
-        // On the server with error:
-        // 1. document.getInitialProps
-        // 2. app.render
-        // 3. page.render
-        // 4. document.render
-        //
-        // On the client
-        // 1. app.getInitialProps
-        // 2. page.getInitialProps
-        // 3. app.render
-        // 4. page.render
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
         const originalRenderPage = ctx.renderPage
 
-        // TODO: implement emotion cache
+        const cache = createEmotionCache()
+        const { extractCriticalToChunks } = createEmotionServer(cache)
+
+        ctx.renderPage = () =>
+            originalRenderPage({
+                enhanceApp: App =>
+                    function EnhanceApp(props) {
+                        return <App emotionCache={cache} {...props} />
+                    },
+            })
 
         const initialProps = await Document.getInitialProps(ctx)
+
+        const emotionStyles = extractCriticalToChunks(initialProps.html)
+        const emotionStyleTags = emotionStyles.styles.map(style => (
+            <style
+                data-emotion={`${style.key} ${style.ids.join(" ")}`}
+                key={style.key}
+                dangerouslySetInnerHTML={{ __html: style.css }}
+            />
+        ))
+
         return {
             ...initialProps,
-            styles: [...React.Children.toArray(initialProps.styles)],
+            emotionStyleTags,
         }
     }
 
     render() {
         return (
             <Html lang="en">
-                <Head>
-                    {/* Normally those meta tags a here,
-                        instead look into _app.tsx */}
-                </Head>
+                <Head>{this.props.emotionStyleTags}</Head>
                 <body>
                     <Main />
                     <NextScript />

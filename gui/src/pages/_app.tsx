@@ -11,6 +11,8 @@ import { SWRConfig } from "swr"
 import { getDesignToken } from "theme"
 import createTheme from "theme/utils"
 import ErrorIcon from "@mui/icons-material/Error"
+import { CacheProvider, EmotionCache } from "@emotion/react"
+import { createEmotionCache } from "utils/createEmotionCache"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void
@@ -20,8 +22,16 @@ const ThemeTogglerContext = React.createContext<ThemeTogglerContextProps>(undefi
 export const useThemeToggler = () => React.useContext(ThemeTogglerContext)
 export const THEME_MODE_STORAGE_KEY = "__USER_THEME_PREFERENCE__"
 
-const MyApp = (props: AppProps) => {
+const clientSideEmotionCache = createEmotionCache()
+
+export type CustomAppProps = AppProps & {
+    emotionCache: EmotionCache
+}
+
+// = {emotionCache = clientSideEmotionCache}
+const MyApp = (props: AppProps<CustomAppProps>) => {
     const { Component, pageProps } = props
+    const { emotionCache = clientSideEmotionCache } = pageProps
 
     // const systemPreferredThemeMode: PaletteMode = useMediaQuery(
     //     "(prefers-color-scheme: dark)"
@@ -83,24 +93,26 @@ const MyApp = (props: AppProps) => {
                     revalidateOnFocus: false,
                 }}
             >
-                <ThemeTogglerContext.Provider value={colorMode}>
-                    <ThemeProvider theme={theme}>
-                        <SnackbarProvider
-                            autoHideDuration={2500}
-                            maxSnack={5}
-                            dense
-                            preventDuplicate
-                            iconVariant={{
-                                error: <ErrorIcon fontSize="small" sx={{ mr: 1 }} />,
-                            }}
-                        >
-                            <CssBaseline />
-                            <Layout>
-                                <Component {...pageProps} />
-                            </Layout>
-                        </SnackbarProvider>
-                    </ThemeProvider>
-                </ThemeTogglerContext.Provider>
+                <CacheProvider value={emotionCache}>
+                    <ThemeTogglerContext.Provider value={colorMode}>
+                        <ThemeProvider theme={theme}>
+                            <SnackbarProvider
+                                autoHideDuration={2500}
+                                maxSnack={5}
+                                dense
+                                preventDuplicate
+                                iconVariant={{
+                                    error: <ErrorIcon fontSize="small" sx={{ mr: 1 }} />,
+                                }}
+                            >
+                                <CssBaseline />
+                                <Layout>
+                                    <Component {...pageProps} />
+                                </Layout>
+                            </SnackbarProvider>
+                        </ThemeProvider>
+                    </ThemeTogglerContext.Provider>
+                </CacheProvider>
             </SWRConfig>
         </>
     )
