@@ -1,6 +1,9 @@
 import { Button } from "@mui/material"
+import { useInputMask } from "hooks/useInputMask"
+import { usePrevious } from "hooks/usePrevious"
 import { useSnacki } from "hooks/useSnacki"
 import React, { useEffect, useState } from "react"
+import { useRowMask } from "./RowMaskContext"
 
 export type ConstraintMismatch = {
     title: string
@@ -35,10 +38,20 @@ type ConstraintsProviderProps = {
 export const ConstraintsProvider: React.FC<ConstraintsProviderProps> = props => {
     const { snackError, snackWarning, closeSnackbar } = useSnacki()
 
+    const { rowMaskState } = useRowMask()
+    const { currentInputMask } = useInputMask()
+
     const [constraintMismatches, setConstraintMismatches] = useState<ConstraintMismatch[]>([])
     const [isSynchronising, setIsSynchronising] = useState<boolean>(false)
     const [loaded, setLoaded] = useState<boolean>(false)
     const [error, setError] = useState<Error | null>(null)
+
+    const reset = () => {
+        setConstraintMismatches([])
+        setIsSynchronising(false)
+        setLoaded(false)
+        setError(null)
+    }
 
     // snack errors & mismatches
     useEffect(() => {
@@ -63,13 +76,16 @@ export const ConstraintsProvider: React.FC<ConstraintsProviderProps> = props => 
     /** dummy behaviour */
     useEffect(() => {
         const dummyBehaviour1 = () => {
+            console.log("dummy behaviour 1")
             setLoaded(true)
             setIsSynchronising(true)
         }
         const dummyBehaviour2 = () => {
+            console.log("dummy behaviour 2")
             setIsSynchronising(false)
         }
         const dummyBehaviour3 = () => {
+            console.log("dummy behaviour 3")
             setConstraintMismatches(prev => [
                 ...prev,
                 {

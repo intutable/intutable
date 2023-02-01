@@ -32,6 +32,7 @@ import VerifiedIcon from "@mui/icons-material/Verified"
 import RuleIcon from "@mui/icons-material/Rule"
 import { ConstraintsValid } from "./ConstraintsValid"
 import { ConstraintMismatches } from "./ConstraintMismatches"
+import { useConstraints } from "context/ConstraintsContext"
 
 export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
