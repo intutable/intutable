@@ -1,14 +1,12 @@
-import VerifiedIcon from "@mui/icons-material/Verified"
 import RuleIcon from "@mui/icons-material/Rule"
 import SyncIcon from "@mui/icons-material/Sync"
 import SyncDisabledIcon from "@mui/icons-material/SyncDisabled"
 import SyncProblemIcon from "@mui/icons-material/SyncProblem"
+import VerifiedIcon from "@mui/icons-material/Verified"
 
-import { useEffect, useState } from "react"
-import { Grow, IconButton, Tooltip, Zoom } from "@mui/material"
+import { Badge, Grow, IconButton, Tooltip, Zoom } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { useSnacki } from "hooks/useSnacki"
-import { useConstraints } from "hooks/useConstraints"
+import { useConstraints } from "context/ConstraintsContext"
 
 export type ConstraintsValidProps = {
     onShowInvalidConstraints: () => void
@@ -17,7 +15,7 @@ export type ConstraintsValidProps = {
 export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
     const theme = useTheme()
 
-    const { isValid, isSynchronising, loaded, error } = useConstraints()
+    const { isValid, isSynchronising, loaded, error, constraintMismatches } = useConstraints()
 
     // if an error occured, always display it first
     if (error != null)
@@ -84,7 +82,9 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
                 TransitionComponent={Zoom}
             >
                 <IconButton color="error" onClick={props.onShowInvalidConstraints}>
-                    <RuleIcon />
+                    <Badge badgeContent={constraintMismatches.length} color="error">
+                        <RuleIcon />
+                    </Badge>
                 </IconButton>
             </Tooltip>
         )

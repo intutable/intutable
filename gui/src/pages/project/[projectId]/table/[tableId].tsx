@@ -15,6 +15,7 @@ import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
 import { APIContextProvider, HeaderSearchFieldProvider, useAPI, useHeaderSearchField } from "context"
+import { ConstraintsProvider } from "context/ConstraintsContext"
 import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { useBrowserInfo } from "hooks/useBrowserInfo"
@@ -213,7 +214,9 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
             <SelectedRowsContextProvider>
                 <HeaderSearchFieldProvider>
                     <RowMaskProvider>
-                        <TablePage />
+                        <ConstraintsProvider>
+                            <TablePage />
+                        </ConstraintsProvider>
                     </RowMaskProvider>
                 </HeaderSearchFieldProvider>
             </SelectedRowsContextProvider>

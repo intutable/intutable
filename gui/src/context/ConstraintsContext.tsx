@@ -1,6 +1,6 @@
 import { Button } from "@mui/material"
 import { useSnacki } from "hooks/useSnacki"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 
 export type ConstraintMismatch = {
     title: string
@@ -8,7 +8,31 @@ export type ConstraintMismatch = {
     conflict: { field: string; value: string }[]
 }
 
-export const useConstraints = () => {
+export type ConstraintsContextProps = {
+    isValid: boolean
+    constraintMismatches: ConstraintMismatch[]
+    isSynchronising: boolean
+    loaded: boolean
+    error: Error | null
+}
+
+const initialState: ConstraintsContextProps = {
+    isValid: undefined!,
+    constraintMismatches: [],
+    isSynchronising: undefined!,
+    loaded: false,
+    error: null,
+}
+
+const ConstraintsContext = React.createContext<ConstraintsContextProps>(initialState)
+
+export const useConstraints = () => React.useContext(ConstraintsContext)
+
+type ConstraintsProviderProps = {
+    children: React.ReactNode
+}
+
+export const ConstraintsProvider: React.FC<ConstraintsProviderProps> = props => {
     const { snackError, snackWarning, closeSnackbar } = useSnacki()
 
     const [constraintMismatches, setConstraintMismatches] = useState<ConstraintMismatch[]>([])
@@ -74,11 +98,17 @@ export const useConstraints = () => {
         }
     }, [])
 
-    return {
-        isValid: constraintMismatches.length === 0,
-        constraintMismatches,
-        isSynchronising,
-        loaded,
-        error,
-    }
+    return (
+        <ConstraintsContext.Provider
+            value={{
+                isValid: constraintMismatches.length === 0,
+                constraintMismatches,
+                isSynchronising,
+                loaded,
+                error,
+            }}
+        >
+            {props.children}
+        </ConstraintsContext.Provider>
+    )
 }

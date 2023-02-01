@@ -1,5 +1,5 @@
 import { Box, IconButton, Stack, Typography } from "@mui/material"
-import { ConstraintMismatch, useConstraints } from "hooks/useConstraints"
+import { ConstraintMismatch, useConstraints } from "context/ConstraintsContext"
 import { useTheme } from "@mui/material/styles"
 import CloseIcon from "@mui/icons-material/Close"
 
