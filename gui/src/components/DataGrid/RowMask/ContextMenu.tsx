@@ -70,13 +70,9 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                         </MenuItem>
                     )}
 
-                    {rowMaskState.mode === "edit" ? (
+                    {rowMaskState.mode === "edit" && (
                         <MenuItem sx={{ color: theme.palette.warning.main }} onClick={deleteRow}>
                             <ListItemText>Eintrag Löschen</ListItemText>
-                        </MenuItem>
-                    ) : (
-                        <MenuItem>
-                            <ListItemText>Platzhalter für Erstellen</ListItemText>
                         </MenuItem>
                     )}
                 </MenuList>
