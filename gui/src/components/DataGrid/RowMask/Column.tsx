@@ -8,6 +8,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Column } from "types"
 import KeyIcon from "@mui/icons-material/Key"
 import { useView } from "hooks/useView"
+import { MergedColumn } from "./merge"
 
 export const ColumnAttributesWindowButton: React.FC<{
     column: Column.Serialized
@@ -29,7 +30,7 @@ export const ColumnAttributesWindowButton: React.FC<{
     )
 }
 
-export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ column }) => {
+export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) => {
     const theme = useTheme()
     const { data: view } = useView()
     const [isHovering, setIsHovering] = useState<boolean>(false)
@@ -108,7 +109,15 @@ export const RowMaskColumn: React.FC<{ column: Column.Deserialized }> = ({ colum
                     </Stack>
 
                     {/* input */}
-                    <Input content={content} row={selectedRow} column={column} hoveringOnParent={isHovering} />
+                    <Input
+                        content={content}
+                        row={selectedRow}
+                        column={column}
+                        hoveringOnParent={isHovering}
+                        placeholder={column.inputPlaceholderText}
+                        label={column.suppressInputLabel !== true ? (column.name as string) : undefined}
+                        required={column.inputRequired}
+                    />
 
                     {/* edit icon */}
                     {isInputMask === false && (

@@ -8,6 +8,7 @@ import React, { useState } from "react"
 import { HiddenColumnsMenuItem } from "@datagrid/Toolbar/ToolbarItems/HiddenColumns/HiddenColumns"
 import CheckIcon from "@mui/icons-material/Check"
 import { useView } from "hooks/useView"
+import { useInputMask } from "hooks/useInputMask"
 
 export type RowMaskContextMenuProps = {
     commentsVisible: boolean
@@ -20,6 +21,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const { deleteRow: _deleteRow } = useRow()
     const { data: view } = useView()
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
+    const { currentInputMask } = useInputMask()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openContextMenu = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -57,7 +59,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                 <MenuList>
                     {selectedInputMask == null && <HiddenColumnsMenuItem />}
 
-                    {selectedInputMask != null && (
+                    {selectedInputMask != null && currentInputMask && currentInputMask.comments.length > 0 && (
                         <MenuItem onClick={props.toggleCommentsVisible}>
                             {props.commentsVisible && (
                                 <ListItemIcon>

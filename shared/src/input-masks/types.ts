@@ -14,6 +14,10 @@ export type ColumnGroup = {
     tooltip?: string
     /** What index to use for the group. Can be a duplicate of any column, than it will override that index. */
     index: number
+    /** @default false */
+    collapsable?: boolean
+    /** @default false */
+    collapsed?: boolean
     columns: (
         | {
               id: number
@@ -74,7 +78,7 @@ export type InputMask = {
     groups: ColumnGroup[]
     columnProps: InputMaskColumn[]
     components: InputMaskComponents[]
-    rules: Rule[]
+    rules: Rule[] // TODO: maybe rename to 'constraints'
 }
 
 /** only for development */

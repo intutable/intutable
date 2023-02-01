@@ -28,6 +28,11 @@ import { Column } from "types/tables/rdg"
 import { ColumnGroup } from "@shared/input-masks/types"
 import { MakeInputMaskColumns } from "./InputMask"
 
+import VerifiedIcon from "@mui/icons-material/Verified"
+import RuleIcon from "@mui/icons-material/Rule"
+import { ConstraintsValid } from "./ConstraintsValid"
+import { ConstraintMismatches } from "./ConstraintMismatches"
+
 export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
     const { data } = useView()
@@ -41,7 +46,16 @@ export const RowMaskContainer: React.FC = () => {
         if (isInputMask === false) setCommentsVisible(false)
     }, [isInputMask])
 
-    const abort = () => setRowMaskState({ mode: "closed" })
+    const [mismatchingConstraintsVisible, setMismatchingConstraintsVisible] = useState<boolean>(false)
+
+    const abort = () => {
+        // if (isInputMask) {
+        //     const allRequiredInputsFilled = true
+        //     const confirmClose = confirm("Nicht alle Pflichtfelder sind ausgefüllt. Wollen Sie wirklich beenden?")
+        //     if (confirmClose === false) return
+        // }
+        setRowMaskState({ mode: "closed" })
+    }
 
     if (rowMaskState.mode === "closed" || data == null) return null
 
@@ -66,6 +80,7 @@ export const RowMaskContainer: React.FC = () => {
                     <Box flexGrow={1} />
 
                     <DevOverlay />
+
                     <RowMaskContextMenu
                         commentsVisible={commentsVisible}
                         toggleCommentsVisible={() => setCommentsVisible(prev => !prev)}
@@ -93,6 +108,24 @@ export const RowMaskContainer: React.FC = () => {
                             )}
                         </Box>
                     </Grid>
+
+                    {/* constraints section */}
+                    {mismatchingConstraintsVisible && (
+                        <Grid item xs={4}>
+                            <Stack
+                                sx={{
+                                    maxHeight: "70vh",
+                                    minHeight: "70vh",
+                                    height: "70vh",
+                                    width: 1,
+                                }}
+                                direction="row"
+                            >
+                                <Divider orientation="vertical" sx={{ mx: 2 }} />
+                                <ConstraintMismatches onClose={() => setMismatchingConstraintsVisible(false)} />
+                            </Stack>
+                        </Grid>
+                    )}
 
                     {/* comment section */}
                     {commentsVisible && (
@@ -129,6 +162,16 @@ export const RowMaskContainer: React.FC = () => {
                         <Divider flexItem variant="middle" orientation="vertical" />
                         <AddLinkButton />
                     </>
+                )}
+                {isInputMask && (
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            right: 10,
+                        }}
+                    >
+                        <ConstraintsValid onShowInvalidConstraints={() => setMismatchingConstraintsVisible(true)} />
+                    </Box>
                 )}
             </DialogActions>
         </Dialog>

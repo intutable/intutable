@@ -95,7 +95,9 @@ export const MakeInputMaskColumns: React.FC<{ columns: Column[] }> = ({ columns 
                             throw new Error("Unexpected input mask component")
                     }
 
-                return <RowMaskColumn key={item.index} column={item as Column} />
+                if (isColumnItem(item)) return <RowMaskColumn key={item.index} column={item} />
+
+                throw new Error("Unexpected input mask item")
             })}
         </>
     )
