@@ -1,5 +1,5 @@
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
-import { ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material"
+import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
 import { useRow } from "hooks/useRow"
@@ -24,7 +24,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const { currentInputMask } = useInputMask()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
-    const openContextMenu = (e: React.MouseEvent<SVGSVGElement>) => {
+    const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         setAnchorEL(e.currentTarget)
     }
@@ -43,7 +43,9 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
 
     return (
         <>
-            <MoreHorizIcon fontSize="small" sx={{ cursor: "pointer" }} onClick={openContextMenu} />
+            <IconButton size="small" onClick={openContextMenu}>
+                <MoreHorizIcon fontSize="small" />
+            </IconButton>
             <Menu
                 elevation={0}
                 anchorOrigin={{ vertical: "top", horizontal: "right" }}

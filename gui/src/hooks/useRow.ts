@@ -85,12 +85,12 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     // TODO: the state should be updated differently
     // TODO: filter row and delete by index and then shift them
     // TODO: put `asTable` into the corresponding api route
-    const deleteRow = async (row: Row): Promise<void> => {
+    const deleteRow = async (row: { _id: number }): Promise<void> => {
         await fetcher({
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: ["_id", getRowId(row)],
+                condition: ["_id", row._id],
             },
             method: "DELETE",
         })
@@ -124,7 +124,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
             url: "/api/row",
             body: {
                 table: asTable(table!.metadata.source).table,
-                condition: ["_id", getRowId(row)],
+                condition: ["_id", row._id],
                 update: {
                     [baseColumnKey]: serializedValue,
                 },

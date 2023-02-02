@@ -48,6 +48,7 @@ export const ConstraintsProvider: React.FC<ConstraintsProviderProps> = props => 
         removeConstraintMismatch,
         clear: clearConstraintsCache,
     } = useConstraintsCache() // TODO:  find a solution here
+    // TODO: when a value via the input mask is updated, detect that and fire a constraint check
     const [isSynchronising, setIsSynchronising] = useState<boolean>(false)
     const [loaded, setLoaded] = useState<boolean>(false)
     const [error, setError] = useState<Error | null>(null)

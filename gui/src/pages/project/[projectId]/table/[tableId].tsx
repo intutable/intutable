@@ -226,7 +226,22 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
 
 export const getServerSideProps = withSSRCatch(
     withSessionSsr<PageProps>(async context => {
-        const query = context.query as DynamicRouteQuery<typeof context.query, "tableId" | "projectId">
+        const queryParameters = context.query as DynamicRouteQuery<typeof context.query, "tableId" | "projectId">
+        // const routeParameters = context.query as DynamicRouteQuery<typeof context.params>
+
+        // /project/:projectId/table/:tableId?viewId=:viewId&inputMask=:inputMaskId&rowId=:rowId
+
+        /**
+         * Query Parameters (required)
+         * :projectId
+         * :tableId
+         *
+         * Route Parameters (optional)
+         * :viewId -> selects a specific view
+         * :inputMaskId -> opens a specific input mask and creates a new
+         * :rowId -> opens a specific row in the input mask
+         *
+         */
 
         const user = context.req.session.user
 
@@ -235,8 +250,8 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
-        const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
-        const tableId: ViewDescriptor["id"] = Number.parseInt(query.tableId)
+        const projectId: ProjectDescriptor["id"] = Number.parseInt(queryParameters.projectId)
+        const tableId: ViewDescriptor["id"] = Number.parseInt(queryParameters.tableId)
 
         if (isNaN(projectId) || isNaN(tableId))
             return {

@@ -10,6 +10,8 @@ import {
     Stack,
     Typography,
     Grid,
+    Tooltip,
+    IconButton,
 } from "@mui/material"
 import { useRowMask } from "context/RowMaskContext"
 import { useView } from "hooks/useView"
@@ -34,14 +36,22 @@ import { ConstraintsValid } from "./ConstraintsValid"
 import { ConstraintMismatches } from "./ConstraintMismatches"
 import { useConstraints } from "context/ConstraintsContext"
 import { useCheckRequiredInputs } from "hooks/useCheckRequiredInputs"
+import DeleteIcon from "@mui/icons-material/Delete"
+import { useRecordDraftSession } from "hooks/useRecordDraftSession"
+import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
 
 export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
+    const { snackWarning, snackError } = useSnacki()
     const { data } = useView()
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
     const isInputMask = selectedInputMask != null
     const { isValid } = useConstraints()
+    const { deleteRow } = useRow()
+
+    const { isDraft } = useRecordDraftSession()
 
     const [commentsVisible, setCommentsVisible] = useState<boolean>(false)
     useEffect(() => {
@@ -49,7 +59,17 @@ export const RowMaskContainer: React.FC = () => {
         if (isInputMask === false) setCommentsVisible(false)
     }, [isInputMask])
 
-    const { ...state } = useCheckRequiredInputs()
+    const deleteDraft = async () => {
+        try {
+            if (selectedRow == null) throw new Error("No row selected")
+            await deleteRow(selectedRow)
+            snackWarning("Entwurf gelöscht.")
+        } catch (error) {
+            snackError("Der Entwurf konnte nicht gelöscht werden.")
+        }
+    }
+
+    // const { ...state } = useCheckRequiredInputs()
     // console.log(state)
 
     const [mismatchingConstraintsVisible, setMismatchingConstraintsVisible] = useState<boolean>(false)
@@ -78,17 +98,41 @@ export const RowMaskContainer: React.FC = () => {
                 >
                     {rowMaskState.mode === "edit" && <RowNavigator />}
                     <Typography sx={{ ml: 2 }}>Zeile {selectedRow.index}</Typography>
-
                     <Box flexGrow={1} />
-
                     <DevOverlay />
-
                     <RowMaskContextMenu
                         commentsVisible={commentsVisible}
                         toggleCommentsVisible={() => setCommentsVisible(prev => !prev)}
                     />
                     <Divider orientation="vertical" flexItem sx={{ mx: 2 }} variant="middle" />
-                    <CloseIcon onClick={abort} fontSize="small" sx={{ cursor: "pointer" }} />
+                    {isInputMask && currentInputMask?.draftsCanBeDeleted && isDraft(selectedRow) && (
+                        <Tooltip arrow placement="bottom" title="Entwurf löschen" enterDelay={1000}>
+                            <IconButton
+                                size="small"
+                                sx={{
+                                    "&:hover": {
+                                        color: theme.palette.error.light,
+                                    },
+                                }}
+                                onClick={deleteDraft}
+                            >
+                                <DeleteIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                    <Tooltip arrow placement="bottom" title="Speichern & Schließen" enterDelay={1000}>
+                        <IconButton
+                            size="small"
+                            onClick={abort}
+                            sx={{
+                                "&:hover": {
+                                    color: theme.palette.success.main,
+                                },
+                            }}
+                        >
+                            <CloseIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
                 </Stack>
             </DialogTitle>
 

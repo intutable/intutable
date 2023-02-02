@@ -1,37 +1,59 @@
 import AddIcon from "@mui/icons-material/TableRows"
-import { Button } from "@mui/material"
+import { LoadingButton } from "@mui/lab"
+import { useRowMask } from "context/RowMaskContext"
+import { useRecordDraftSession } from "hooks/useRecordDraftSession"
 import { useRow } from "hooks/useRow"
+import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
-import { useSnackbar } from "notistack"
-import React from "react"
+import React, { useEffect, useState } from "react"
 
 /**
  * Toolbar Item for adding rows to the data grid.
  */
 const AddRow: React.FC<{ text?: string }> = ({ text }) => {
-    const { enqueueSnackbar } = useSnackbar()
+    const { snackError, snackInfo } = useSnacki()
 
     const { createRow } = useRow()
     const { data } = useView()
+    const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
+    const isInputMask = selectedInputMask != null
+    const { addDraft } = useRecordDraftSession()
+
+    const [pendingRow, setPendingRow] = useState<null | { _id: number }>(null)
+    // open row if it was created
+    useEffect(() => {
+        if (pendingRow) {
+            const includes = data?.rows.find(row => row._id === pendingRow._id)
+            if (includes && rowMaskState.mode === "edit" && rowMaskState.row._id !== pendingRow._id) {
+                setRowMaskState({ mode: "edit", row: pendingRow })
+                setPendingRow(null)
+            }
+        }
+    }, [data, pendingRow, rowMaskState, setRowMaskState])
 
     const handleCreateRow = async () => {
         try {
+            snackInfo("Ein neuer Eintrag wird angelegt!")
             const response = await createRow()
-            const row = data?.rows.find(row => row._id === response._id)
-            // BUG: data is not yet updated here after row creation
-            // TODO: forward to the new row
+            if (isInputMask) {
+                addDraft(response)
+            }
+            setPendingRow(response)
         } catch (error) {
-            enqueueSnackbar("Die Zeile konnte nicht erstellt werden!", {
-                variant: "error",
-            })
+            snackError("Die Zeile konnte nicht erstellt werden!")
         }
     }
 
     return (
         <>
-            <Button startIcon={<AddIcon />} onClick={handleCreateRow}>
+            <LoadingButton
+                loading={pendingRow != null}
+                loadingIndicator={"Wird erstellt ..."}
+                startIcon={<AddIcon />}
+                onClick={handleCreateRow}
+            >
                 {text || "Neuer Eintrag"}
-            </Button>
+            </LoadingButton>
         </>
     )
 }

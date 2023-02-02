@@ -12,6 +12,7 @@ const mask: InputMask = {
     lastEdited: new Date(2023, 0, 15),
     addRecordButtonText: "Person hinzufügen",
     addRecordButtonIcon: "person_add",
+    draftsCanBeDeleted: true,
     comments: [
         {
             text: "Nachstehend die Änderungen, die dieser Eingabemaske hinzugefügt wurden!",

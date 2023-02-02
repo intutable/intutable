@@ -76,6 +76,7 @@ export type InputMask = {
     // -- actual specification --
     addRecordButtonText?: string
     addRecordButtonIcon?: string
+    draftsCanBeDeleted?: boolean
     groups: ColumnGroup[]
     columnProps: InputMaskColumn[]
     components: InputMaskComponents[]
