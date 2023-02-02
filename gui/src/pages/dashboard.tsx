@@ -178,7 +178,7 @@ export const getServerSideProps = withSSRCatch(
                 if (viewDescriptor == null) throw new Error("View descriptor not found for input mask: " + mask.id)
                 return {
                     inputMask: mask,
-                    url: `/project/${project.id}/table/${tableDescriptor.id}`,
+                    url: `/project/${project.id}/table/${tableDescriptor.id}?inputMask=${mask.id}&newRecord=true`,
                     originType: "table",
                     source: {
                         project: project,
@@ -195,7 +195,7 @@ export const getServerSideProps = withSSRCatch(
 
                 return {
                     inputMask: mask,
-                    url: `/project/${project.id}/table/${table.id}`,
+                    url: `/project/${project.id}/table/${table.id}?view=${viewDescriptor.id}&inputMask=${mask.id}&newRecord=true}`,
                     originType: "view",
                     source: {
                         project,

@@ -8,6 +8,7 @@ import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Box, Button, Grid, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
+import { InputMask } from "@shared/input-masks/types"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Link from "components/Link"
@@ -16,10 +17,11 @@ import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
 import { APIContextProvider, HeaderSearchFieldProvider, useAPI, useHeaderSearchField } from "context"
 import { ConstraintsProvider } from "context/ConstraintsContext"
-import { RowMaskProvider } from "context/RowMaskContext"
+import { RowMaskProvider, useRowMask } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { useCellNavigation } from "hooks/useCellNavigation"
+import { usePendingRow } from "hooks/usePendingRow"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
@@ -31,34 +33,58 @@ import DataGrid, { RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
-import { DynamicRouteQuery } from "types/DynamicRouteQuery"
+import { DynamicRouteParams, DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 
-const TablePage: React.FC = () => {
+const TablePage: React.FC<{ actions: PageAction[] }> = ({ actions }) => {
     const theme = useTheme()
     const { getTheme } = useThemeToggler()
     const { snackWarning, closeSnackbar, snackError, snack } = useSnacki()
     const { isChrome } = useBrowserInfo()
+    const { setView } = useAPI()
+    const { setInputMask, setRowMaskState } = useRowMask()
     const { selectedRows, setSelectedRows } = useSelectedRows()
     const { cellNavigationMode } = useCellNavigation()
+    const { createPendingRow } = usePendingRow()
 
-    // warn if browser is not chrome
     useEffect(() => {
-        if (isChrome === false)
-            snackWarning("Zzt. wird für Tabellen nur Google Chrome (für Browser) unterstützt!", {
-                persist: true,
-                action: key => (
-                    <Button onClick={() => closeSnackbar(key)} sx={{ color: "white" }}>
-                        Ich verstehe
-                    </Button>
-                ),
-                preventDuplicate: true,
-            })
+        actions.forEach(async action => {
+            switch (action.type) {
+                case "selectView":
+                    setView(action.view) // BUG: does not work
+                    break
+                case "selectInputMask":
+                    setInputMask(action.inputMaskId)
+                    break
+                case "openRow":
+                    setRowMaskState({ mode: "edit", row: action.row }) // BUG: cannot close row mask afterwards
+                    break
+                case "createRow":
+                    // await createPendingRow() // BUG: causes loop
+                    break
+                default:
+                    throw new Error("Unknown page action")
+            }
+        })
+    }, [actions, createPendingRow, setInputMask, setRowMaskState, setView])
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isChrome])
+    // // warn if browser is not chrome
+    // useEffect(() => {
+    //     if (isChrome === false)
+    //         snackWarning("Zzt. wird für Tabellen nur Google Chrome (für Browser) unterstützt!", {
+    //             persist: true,
+    //             action: key => (
+    //                 <Button onClick={() => closeSnackbar(key)} sx={{ color: "white" }}>
+    //                     Ich verstehe
+    //                 </Button>
+    //             ),
+    //             preventDuplicate: true,
+    //         })
+
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [isChrome])
 
     // #################### states ####################
 
@@ -188,6 +214,12 @@ const TablePage: React.FC = () => {
     )
 }
 
+type PageAction =
+    | { type: "selectView"; view: ViewDescriptor }
+    | { type: "selectInputMask"; inputMaskId: InputMask["id"] }
+    | { type: "openRow"; row: { _id: number } }
+    | { type: "createRow" }
+
 type PageProps = {
     project: ProjectDescriptor
     /**
@@ -202,20 +234,21 @@ type PageProps = {
      * {@link table}
      */
     view: ViewDescriptor
+    actions: PageAction[]
     viewList: ViewDescriptor[]
     // fallback: {
     //     [cacheKey: string]: ViewData
     // }
 }
 
-const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ project, table, view }) => {
+const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (props: PageProps) => {
     return (
-        <APIContextProvider project={project} table={table} view={view}>
+        <APIContextProvider project={props.project} table={props.table} view={props.view}>
             <SelectedRowsContextProvider>
                 <HeaderSearchFieldProvider>
                     <RowMaskProvider>
                         <ConstraintsProvider>
-                            <TablePage />
+                            <TablePage actions={props.actions} />
                         </ConstraintsProvider>
                     </RowMaskProvider>
                 </HeaderSearchFieldProvider>
@@ -227,21 +260,11 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
 export const getServerSideProps = withSSRCatch(
     withSessionSsr<PageProps>(async context => {
         const queryParameters = context.query as DynamicRouteQuery<typeof context.query, "tableId" | "projectId">
-        // const routeParameters = context.query as DynamicRouteQuery<typeof context.params>
-
-        // /project/:projectId/table/:tableId?viewId=:viewId&inputMask=:inputMaskId&rowId=:rowId
-
-        /**
-         * Query Parameters (required)
-         * :projectId
-         * :tableId
-         *
-         * Route Parameters (optional)
-         * :viewId -> selects a specific view
-         * :inputMaskId -> opens a specific input mask and creates a new
-         * :rowId -> opens a specific row in the input mask
-         *
-         */
+        const routeParameters = context.query as DynamicRouteParams<
+            typeof context.query,
+            "view" | "inputMask" | "row" | "newRecord"
+        >
+        console.log("routeParameters", routeParameters)
 
         const user = context.req.session.user
 
@@ -295,6 +318,42 @@ export const getServerSideProps = withSSRCatch(
             headers: context.req.headers as HeadersInit,
         })
 
+        /**
+         * // /project/:projectId/table/:tableId?view=viewId&inputMask=inputMaskId&row=rowId&newRecord=true
+         *
+         * Query Parameters (required)
+         * :projectId
+         * :tableId
+         *
+         * Route Parameters (optional)
+         * ?view=viewId -> selects a specific view
+         * ?inputMask=inputMaskId -> select a specific input mask
+         * ?row=rowId -> opens a specific row in the input mask
+         * ?newRecord=true -> creates a new row and opens it in the input mask
+         */
+        const actions: PageAction[] = Object.entries(routeParameters)
+            .map(([param, value]) => {
+                switch (param) {
+                    case "view":
+                        return {
+                            type: "selectView",
+                            view: viewList.find(view => view.id === Number.parseInt(value as string))!,
+                        }
+                    case "inputMask":
+                        return {
+                            type: "selectInputMask",
+                            inputMaskId: value as string,
+                        }
+                    case "row":
+                        return { type: "openRow", row: { _id: Number.parseInt(value as string) } }
+                    case "newRecord":
+                        return { type: "createRow" }
+                    default:
+                        return null
+                }
+            })
+            .filter(e => e != null) as PageAction[]
+
         return {
             props: {
                 project,
@@ -302,6 +361,7 @@ export const getServerSideProps = withSSRCatch(
                 tableList,
                 view: data.descriptor,
                 viewList,
+                actions,
                 // fallback: {
                 //     [unstable_serialize({
                 //         url: `/api/table/${tableId}`,

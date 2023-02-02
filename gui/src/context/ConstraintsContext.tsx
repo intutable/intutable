@@ -41,7 +41,7 @@ type ConstraintsProviderProps = {
 
 export const ConstraintsProvider: React.FC<ConstraintsProviderProps> = props => {
     const { snackError, snackWarning, closeSnackbar } = useSnacki()
-
+    // TODO: maybe use a hook instead
     const {
         constraintMismatches,
         addConstraintMismatch,
@@ -60,18 +60,18 @@ export const ConstraintsProvider: React.FC<ConstraintsProviderProps> = props => 
         setError(null)
     }
 
-    const { missingInputs } = useCheckRequiredInputs()
-    useEffect(() => {
-        if (missingInputs.length > 0) {
-            const mismatches = missingInputs.map<ConstraintMismatch>(columnName => ({
-                key: `Eingabe fehlt – ${columnName}`,
-                title: `Eingabe fehlt`,
-                description: `Die Eingabe für das Feld "${columnName}" fehlt.`,
-                conflict: [{ field: columnName, value: "" }],
-            }))
-            addConstraintMismatch(...mismatches)
-        }
-    }, [addConstraintMismatch, missingInputs])
+    // const { missingInputs } = useCheckRequiredInputs()
+    // useEffect(() => {
+    //     if (missingInputs.length > 0) {
+    //         const mismatches = missingInputs.map<ConstraintMismatch>(columnName => ({
+    //             key: `Eingabe fehlt – ${columnName}`,
+    //             title: `Eingabe fehlt`,
+    //             description: `Die Eingabe für das Feld "${columnName}" fehlt.`,
+    //             conflict: [{ field: columnName, value: "" }],
+    //         }))
+    //         addConstraintMismatch(...mismatches)
+    //     }
+    // }, [addConstraintMismatch, missingInputs])
 
     // snack errors & mismatches
     // useEffect(() => {

@@ -1,11 +1,8 @@
 import AddIcon from "@mui/icons-material/TableRows"
 import { LoadingButton } from "@mui/lab"
-import { useRowMask } from "context/RowMaskContext"
-import { useRecordDraftSession } from "hooks/useRecordDraftSession"
-import { useRow } from "hooks/useRow"
+import { usePendingRow } from "hooks/usePendingRow"
 import { useSnacki } from "hooks/useSnacki"
-import { useView } from "hooks/useView"
-import React, { useEffect, useState } from "react"
+import React from "react"
 
 /**
  * Toolbar Item for adding rows to the data grid.
@@ -13,32 +10,12 @@ import React, { useEffect, useState } from "react"
 const AddRow: React.FC<{ text?: string }> = ({ text }) => {
     const { snackError, snackInfo } = useSnacki()
 
-    const { createRow } = useRow()
-    const { data } = useView()
-    const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
-    const isInputMask = selectedInputMask != null
-    const { addDraft } = useRecordDraftSession()
-
-    const [pendingRow, setPendingRow] = useState<null | { _id: number }>(null)
-    // open row if it was created
-    useEffect(() => {
-        if (pendingRow) {
-            const includes = data?.rows.find(row => row._id === pendingRow._id)
-            if (includes && rowMaskState.mode === "edit" && rowMaskState.row._id !== pendingRow._id) {
-                setRowMaskState({ mode: "edit", row: pendingRow })
-                setPendingRow(null)
-            }
-        }
-    }, [data, pendingRow, rowMaskState, setRowMaskState])
+    const { createPendingRow, pending } = usePendingRow()
 
     const handleCreateRow = async () => {
         try {
             snackInfo("Ein neuer Eintrag wird angelegt!")
-            const response = await createRow()
-            if (isInputMask) {
-                addDraft(response)
-            }
-            setPendingRow(response)
+            await createPendingRow()
         } catch (error) {
             snackError("Die Zeile konnte nicht erstellt werden!")
         }
@@ -47,7 +24,7 @@ const AddRow: React.FC<{ text?: string }> = ({ text }) => {
     return (
         <>
             <LoadingButton
-                loading={pendingRow != null}
+                loading={pending}
                 loadingIndicator={"Wird erstellt ..."}
                 startIcon={<AddIcon />}
                 onClick={handleCreateRow}
