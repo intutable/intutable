@@ -10,7 +10,7 @@ export type Comment = {
 
 export type FlexboxSizing = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12"
 export type ColumnGroup = {
-    label?: string
+    label: string
     tooltip?: string
     /** What index to use for the group. Can be a duplicate of any column, than it will override that index. */
     index: number
@@ -65,8 +65,8 @@ export type InputMask = {
     origin:
         | { viewId: number }
         | { tableId: number }
-        | { viewName: string; viewsTableName: string }
-        | { tableName: string }
+        | { projectId: number; viewName: string; viewsTableName: string }
+        | { projectId: number; tableName: string }
     name: string
     description: string
     created: Date
@@ -75,6 +75,7 @@ export type InputMask = {
     active: boolean
     // -- actual specification --
     addRecordButtonText?: string
+    addRecordButtonIcon?: string
     groups: ColumnGroup[]
     columnProps: InputMaskColumn[]
     components: InputMaskComponents[]

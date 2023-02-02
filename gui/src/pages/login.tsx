@@ -32,7 +32,7 @@ const Login: NextPage = () => {
     const error = useMemo(() => (router.query.error ? makeError(router.query.error) : null), [router.query.error])
 
     const { mutateUser } = useUser({
-        redirectTo: "/projects",
+        redirectTo: "/dashboard",
         redirectIfFound: true,
     })
 

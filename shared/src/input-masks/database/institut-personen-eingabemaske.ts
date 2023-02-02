@@ -3,6 +3,7 @@ import { InputMask } from "../types"
 const mask: InputMask = {
     id: "BFAA3C31-4C6C-41AD-BD2C-5845C8051CAE",
     origin: {
+        projectId: 1,
         viewsTableName: "Personen",
         viewName: "ABC-Institut",
     },

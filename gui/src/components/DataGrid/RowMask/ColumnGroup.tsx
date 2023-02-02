@@ -1,12 +1,12 @@
 import { cellMap } from "@datagrid/Cells"
-import { Accordion, Box, Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material"
+import { Accordion, Badge, Box, Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import type { ColumnGroup, FlexboxSizing, InputMaskColumnOrigin } from "@shared/input-masks/types"
 import { isColumnIdOrigin } from "@shared/input-masks/utils"
 
 import { useRowMask } from "context/RowMaskContext"
 import { useInputMask } from "hooks/useInputMask"
-import React from "react"
+import React, { useMemo } from "react"
 import { useState } from "react"
 import { Column } from "types/tables/rdg"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
@@ -16,6 +16,7 @@ import { merge, MergedColumn } from "./merge"
 import { useView } from "hooks/useView"
 
 import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown"
+import { checkRequiredInputs } from "hooks/useCheckRequiredInputs"
 
 export type ColumnGroupComponent = {
     group: ColumnGroup
@@ -31,6 +32,15 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
 
     const collapsable = group.collapsable ?? false
     const [collapsed, setCollapsed] = useState<boolean>(group.collapsed ?? false)
+
+    const missingRequiredInputsInGroup = useMemo(() => {
+        if (view == null || rowMaskState.mode !== "edit" || currentInputMask == null) return null
+        const row = view?.rows.find(row => row._id === rowMaskState.row._id)
+        if (row == null) return null
+
+        const missing = checkRequiredInputs(currentInputMask, row, columns)
+        return missing
+    }, [columns, currentInputMask, rowMaskState, view])
 
     if (rowMaskState.mode !== "edit" || !currentInputMask) return null
 
@@ -50,46 +60,55 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
                 boxSizing: "border-box",
             }}
         >
-            {(group.label || collapsable) && (
-                <Stack
-                    direction="row"
-                    sx={{
-                        alignItems: "center",
-                        width: "100%",
-                        mb: collapsed ? 0 : 3,
-                    }}
+            <Stack
+                direction="row"
+                sx={{
+                    alignItems: "center",
+                    width: "100%",
+                    mb: collapsed ? 0 : 3,
+                }}
+            >
+                <Badge
+                    badgeContent={missingRequiredInputsInGroup?.length}
+                    color="error"
+                    invisible={collapsed === false || missingRequiredInputsInGroup?.length === 0}
                 >
                     <Typography
                         variant="subtitle1"
                         sx={{
                             mr: 0.5,
                         }}
+                        color={
+                            missingRequiredInputsInGroup && missingRequiredInputsInGroup.length > 0
+                                ? "error"
+                                : "text.primary"
+                        }
                     >
                         {group.label}
                     </Typography>
-                    {group.tooltip && (
-                        <Tooltip title={group.tooltip} arrow placement="right">
-                            <InfoIcon
-                                sx={{
-                                    fontSize: "80%",
-                                }}
-                                color="disabled"
-                            />
-                        </Tooltip>
-                    )}
-                    <Box flexGrow={1} />
-                    {collapsable && (
-                        <IconButton size="small" onClick={() => setCollapsed(prev => !prev)}>
-                            <ExpandCircleDownIcon
-                                fontSize="small"
-                                sx={{
-                                    transform: collapsed ? undefined : "rotate(180deg)",
-                                }}
-                            />
-                        </IconButton>
-                    )}
-                </Stack>
-            )}
+                </Badge>
+                {group.tooltip && (
+                    <Tooltip title={group.tooltip} arrow placement="right">
+                        <InfoIcon
+                            sx={{
+                                fontSize: "80%",
+                            }}
+                            color="disabled"
+                        />
+                    </Tooltip>
+                )}
+                <Box flexGrow={1} />
+                {collapsable && (
+                    <IconButton size="small" onClick={() => setCollapsed(prev => !prev)}>
+                        <ExpandCircleDownIcon
+                            fontSize="small"
+                            sx={{
+                                transform: collapsed ? undefined : "rotate(180deg)",
+                            }}
+                        />
+                    </IconButton>
+                )}
+            </Stack>
 
             {(collapsed === false || collapsable === false) && (
                 <Grid container spacing={1}>

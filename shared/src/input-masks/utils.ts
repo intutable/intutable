@@ -1,11 +1,11 @@
 import { ColumnGroup, InputMaskComponents } from "./types"
 
 export type TableIdOrigin = { tableId: number }
-export type TableNameOrigin = { tableName: string }
+export type TableNameOrigin = { projectId: number; tableName: string }
 export type TableOrigin = TableIdOrigin | TableNameOrigin
 
 export type ViewIdOrigin = { viewId: number }
-export type ViewNameOrigin = { viewName: string; viewsTableName: string }
+export type ViewNameOrigin = { projectId: number; viewName: string; viewsTableName: string }
 export type ViewOrigin = ViewIdOrigin | ViewNameOrigin
 
 export type Origin = TableOrigin | ViewOrigin

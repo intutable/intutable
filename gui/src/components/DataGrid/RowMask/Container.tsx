@@ -33,6 +33,7 @@ import RuleIcon from "@mui/icons-material/Rule"
 import { ConstraintsValid } from "./ConstraintsValid"
 import { ConstraintMismatches } from "./ConstraintMismatches"
 import { useConstraints } from "context/ConstraintsContext"
+import { useCheckRequiredInputs } from "hooks/useCheckRequiredInputs"
 
 export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
@@ -40,6 +41,7 @@ export const RowMaskContainer: React.FC = () => {
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
     const isInputMask = selectedInputMask != null
+    const { isValid } = useConstraints()
 
     const [commentsVisible, setCommentsVisible] = useState<boolean>(false)
     useEffect(() => {
@@ -47,14 +49,13 @@ export const RowMaskContainer: React.FC = () => {
         if (isInputMask === false) setCommentsVisible(false)
     }, [isInputMask])
 
+    const { ...state } = useCheckRequiredInputs()
+    // console.log(state)
+
     const [mismatchingConstraintsVisible, setMismatchingConstraintsVisible] = useState<boolean>(false)
 
     const abort = () => {
-        // if (isInputMask) {
-        //     const allRequiredInputsFilled = true
-        //     const confirmClose = confirm("Nicht alle Pflichtfelder sind ausgefüllt. Wollen Sie wirklich beenden?")
-        //     if (confirmClose === false) return
-        // }
+        if (isValid === false) alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
         setRowMaskState({ mode: "closed" })
     }
 
