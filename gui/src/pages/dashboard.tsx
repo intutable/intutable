@@ -1,6 +1,6 @@
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Box, Card, CardContent, darken, Divider, Stack, Typography } from "@mui/material"
+import { Box, Button, Card, CardContent, darken, Divider, Stack, Tooltip, Typography } from "@mui/material"
 import { InputMask } from "@shared/input-masks/types"
 import { fetcher } from "api/fetcher"
 import { withSessionSsr } from "auth/withSessionSSR"
@@ -28,10 +28,13 @@ import AddRecordIcon from "@mui/icons-material/PlaylistAddCircle"
 import Icon from "@mui/material/Icon"
 import Head from "next/head"
 import { useRouter } from "next/router"
+import TableIcon from "@mui/icons-material/TableRows"
+import ViewIcon from "@mui/icons-material/TableView"
 
 type InputMaskCallToActionCard = {
     inputMask: InputMask
     url: string
+    callToActionUrl: string
     originType: "table" | "view"
     source: {
         project: ProjectDescriptor
@@ -57,61 +60,74 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
             <Typography variant={"h4"}>Dashboard</Typography>
             <Divider />
 
-            <CollapsableSection title={"Titel"}>
+            <CollapsableSection title="Eingabemasken">
                 <Stack direction="row" sx={{ width: "100%" }} gap={4}>
                     {props.cards.map(card => (
-                        <Card
+                        <Tooltip
+                            arrow
+                            placement="top"
+                            enterDelay={2000}
+                            title={card.inputMask.description}
                             key={card.inputMask.id}
-                            onClick={() => router.push(card.url)}
-                            sx={{
-                                cursor: "pointer",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                bgcolor: theme.colorScheme.ochsenblut,
-                                "&:hover": {
-                                    bgcolor: darken(theme.colorScheme.ochsenblut, 0.2),
-                                },
-                            }}
                         >
-                            <CardContent>
-                                <Stack direction="row">
-                                    {card.inputMask.addRecordButtonIcon ? (
-                                        <Icon
-                                            sx={{
-                                                color: theme.palette.getContrastText(theme.colorScheme.ochsenblut),
-                                            }}
+                            <Card
+                                onClick={() => router.push(card.url)}
+                                sx={{
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    "&:hover": {
+                                        bgcolor: theme.palette.action.hover,
+                                    },
+                                }}
+                            >
+                                <CardContent>
+                                    <Stack direction="row" alignItems="center">
+                                        <Tooltip
+                                            arrow
+                                            placement="right"
+                                            title={`${card.source.project.name} > ${card.source.table.name} > ${card.source.view.name}`}
+                                            sx={{ mr: 2 }}
                                         >
-                                            {card.inputMask.addRecordButtonIcon}
-                                        </Icon>
-                                    ) : (
-                                        <AddRecordIcon
-                                            sx={{
-                                                color: theme.palette.getContrastText(theme.colorScheme.ochsenblut),
-                                            }}
-                                        />
-                                    )}
-                                    <Stack direction="column">
-                                        <Typography
-                                            sx={{
-                                                color: theme.palette.getContrastText(theme.colorScheme.ochsenblut),
-                                            }}
-                                        >
-                                            {card.originType === "table"
-                                                ? card.source.table.name
-                                                : `${card.source.view.name} in ${card.source.table.name}`}
-                                        </Typography>
-                                        <Typography
-                                            sx={{
-                                                color: theme.palette.getContrastText(theme.colorScheme.ochsenblut),
-                                            }}
-                                        >
-                                            {card.inputMask.addRecordButtonText}
-                                        </Typography>
+                                            {card.originType === "table" ? (
+                                                <TableIcon fontSize="large" />
+                                            ) : (
+                                                <ViewIcon fontSize="large" />
+                                            )}
+                                        </Tooltip>
+                                        <Stack direction="column">
+                                            <Typography variant="h6">
+                                                {card.originType === "table"
+                                                    ? card.source.table.name
+                                                    : `${card.source.view.name} in ${card.source.table.name}`}
+                                            </Typography>
+                                            <Button
+                                                onClick={e => {
+                                                    e.stopPropagation()
+                                                    router.push(card.callToActionUrl)
+                                                }}
+                                                variant="contained"
+                                                size="small"
+                                                sx={{
+                                                    bgcolor: theme.palette.primary.light,
+                                                    mt: 3,
+                                                }}
+                                                startIcon={
+                                                    card.inputMask.addRecordButtonIcon ? (
+                                                        <Icon>{card.inputMask.addRecordButtonIcon}</Icon>
+                                                    ) : (
+                                                        <AddRecordIcon />
+                                                    )
+                                                }
+                                            >
+                                                {card.inputMask.addRecordButtonText ?? "Neuer Eintrag"}
+                                            </Button>
+                                        </Stack>
                                     </Stack>
-                                </Stack>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </Tooltip>
                     ))}
                 </Stack>
             </CollapsableSection>
@@ -178,7 +194,8 @@ export const getServerSideProps = withSSRCatch(
                 if (viewDescriptor == null) throw new Error("View descriptor not found for input mask: " + mask.id)
                 return {
                     inputMask: mask,
-                    url: `/project/${project.id}/table/${tableDescriptor.id}?inputMask=${mask.id}&newRecord=true`,
+                    url: `/project/${project.id}/table/${tableDescriptor.id}?inputMask=${mask.id}`,
+                    callToActionUrl: `/project/${project.id}/table/${tableDescriptor.id}?inputMask=${mask.id}&newRecord=true`,
                     originType: "table",
                     source: {
                         project: project,
@@ -195,7 +212,8 @@ export const getServerSideProps = withSSRCatch(
 
                 return {
                     inputMask: mask,
-                    url: `/project/${project.id}/table/${table.id}?view=${viewDescriptor.id}&inputMask=${mask.id}&newRecord=true}`,
+                    url: `/project/${project.id}/table/${table.id}?view=${viewDescriptor.id}&inputMask=${mask.id}`,
+                    callToActionUrl: `/project/${project.id}/table/${table.id}?view=${viewDescriptor.id}&inputMask=${mask.id}&newRecord=true}`,
                     originType: "view",
                     source: {
                         project,

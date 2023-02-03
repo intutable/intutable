@@ -16,6 +16,9 @@ export const COLOR_SCHEME = {
 export const lightTheme = createTheme({
     colorScheme: { ...COLOR_SCHEME },
     palette: {
+        // primary: {
+        //     main: COLOR_SCHEME.ochsenblut,
+        // },
         text: {
             primary: "#333",
             secondary: "#555",
