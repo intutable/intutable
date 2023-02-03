@@ -17,7 +17,7 @@ import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
 import { APIContextProvider, HeaderSearchFieldProvider, useAPI, useHeaderSearchField } from "context"
 import { ConstraintsProvider } from "context/ConstraintsContext"
-import { RowMaskProvider, useRowMask } from "context/RowMaskContext"
+import { RowMaskProvider, RowMaskState, useRowMask } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { useCellNavigation } from "hooks/useCellNavigation"
@@ -26,7 +26,8 @@ import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
 import { useView } from "hooks/useView"
-import { InferGetServerSidePropsType, NextPage } from "next"
+import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
+import { useRouter } from "next/router"
 import { useThemeToggler } from "pages/_app"
 import React, { useEffect, useState } from "react"
 import DataGrid, { RowsChangeData } from "react-data-grid"
@@ -35,10 +36,11 @@ import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
 import { DynamicRouteParams, DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
+import { PageActionUtil } from "utils/PageAction"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 
-const TablePage: React.FC<{ actions: PageAction[] }> = ({ actions }) => {
+const TablePage: React.FC<> = () => {
     const theme = useTheme()
     const { getTheme } = useThemeToggler()
     const { snackWarning, closeSnackbar, snackError, snack } = useSnacki()
@@ -47,44 +49,7 @@ const TablePage: React.FC<{ actions: PageAction[] }> = ({ actions }) => {
     const { setInputMask, setRowMaskState } = useRowMask()
     const { selectedRows, setSelectedRows } = useSelectedRows()
     const { cellNavigationMode } = useCellNavigation()
-    const { createPendingRow } = usePendingRow()
-
-    useEffect(() => {
-        actions.forEach(async action => {
-            switch (action.type) {
-                case "selectView":
-                    setView(action.view) // BUG: does not work
-                    break
-                case "selectInputMask":
-                    setInputMask(action.inputMaskId)
-                    break
-                case "openRow":
-                    setRowMaskState({ mode: "edit", row: action.row }) // BUG: cannot close row mask afterwards
-                    break
-                case "createRow":
-                    // await createPendingRow() // BUG: causes loop
-                    break
-                default:
-                    throw new Error("Unknown page action")
-            }
-        })
-    }, [actions, createPendingRow, setInputMask, setRowMaskState, setView])
-
-    // // warn if browser is not chrome
-    // useEffect(() => {
-    //     if (isChrome === false)
-    //         snackWarning("Zzt. wird für Tabellen nur Google Chrome (für Browser) unterstützt!", {
-    //             persist: true,
-    //             action: key => (
-    //                 <Button onClick={() => closeSnackbar(key)} sx={{ color: "white" }}>
-    //                     Ich verstehe
-    //                 </Button>
-    //             ),
-    //             preventDuplicate: true,
-    //         })
-
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [isChrome])
+    // const { createPendingRow } = usePendingRow()
 
     // #################### states ####################
 
@@ -214,28 +179,15 @@ const TablePage: React.FC<{ actions: PageAction[] }> = ({ actions }) => {
     )
 }
 
-type PageAction =
-    | { type: "selectView"; view: ViewDescriptor }
-    | { type: "selectInputMask"; inputMaskId: InputMask["id"] }
-    | { type: "openRow"; row: { _id: number } }
-    | { type: "createRow" }
-
 type PageProps = {
     project: ProjectDescriptor
-    /**
-     * In order to allow links/joins, tables are actually implemented using
-     * views. The user-facing views (filtering, hiding columns, etc.) are
-     * implemented as views on views, so be careful not to get confused.
-     */
     table: ViewDescriptor
     tableList: ViewDescriptor[]
-    /**
-     * The current filter view, which selects from the table view
-     * {@link table}
-     */
     view: ViewDescriptor
     actions: PageAction[]
     viewList: ViewDescriptor[]
+    inputMask?: InputMask["id"]
+    openRow?: Row["_id"]
     // fallback: {
     //     [cacheKey: string]: ViewData
     // }
@@ -246,9 +198,12 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
         <APIContextProvider project={props.project} table={props.table} view={props.view}>
             <SelectedRowsContextProvider>
                 <HeaderSearchFieldProvider>
-                    <RowMaskProvider>
+                    <RowMaskProvider
+                        initialRowMaskState={props.openRow ? { mode: "edit", row: { _id: props.openRow } } : undefined}
+                        initialAppliedInputMask={props.inputMask}
+                    >
                         <ConstraintsProvider>
-                            <TablePage actions={props.actions} />
+                            <TablePage />
                         </ConstraintsProvider>
                     </RowMaskProvider>
                 </HeaderSearchFieldProvider>
@@ -260,11 +215,24 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
 export const getServerSideProps = withSSRCatch(
     withSessionSsr<PageProps>(async context => {
         const queryParameters = context.query as DynamicRouteQuery<typeof context.query, "tableId" | "projectId">
-        const routeParameters = context.query as DynamicRouteParams<
-            typeof context.query,
-            "view" | "inputMask" | "row" | "newRecord"
-        >
-        console.log("routeParameters", routeParameters)
+
+        const pageActionUtil = PageActionUtil.fromQuery(context.query)
+        const inputMask = pageActionUtil.use<string>("selectInputMask")?.payload ?? null
+        const openRow = pageActionUtil.use<number>("openRow")?.payload ?? null
+
+        // TODO: check if the action 'createRow' would be executed again, if the user would reload the page
+        // if so, push the action into 'completedActions' and use the uid to guarantee that the same action
+        // does not get executed twice
+        // if that does not work – save it to a session storage and do not execute actions twice
+
+        // TODO: maybe remove the url parameter `newRecord` once executed
+        // https://nextjs.org/docs/api-reference/next/router#routerpush
+        // router.push({ shallow: boolean }) <-- this could help ?
+        // if true, it wont re-run ssgr/ssr methods again
+        // i think this is what we want: actions build from the url wouldn't be dispatches twice
+
+        // TODO: if setting an inputMask, it must be guaranteed that it matches especially its source (but also / project / table / view)
+        const createRow = pageActionUtil.use<number>("createRow") // TODO: show a dialog that asks "Neuen Eintrag erstellen" and then opens it
 
         const user = context.req.session.user
 
@@ -281,7 +249,6 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
-        // workaround until PM exposes a "get project" method
         const projects = await fetcher<ProjectDescriptor[]>({
             url: `/api/projects`,
             method: "GET",
@@ -307,52 +274,15 @@ export const getServerSideProps = withSSRCatch(
             headers: context.req.headers as HeadersInit,
         })
 
-        if (viewList.length === 0) {
-            return { notFound: true }
-        }
-        const view: ViewDescriptor = viewList[0]
+        const selectView = pageActionUtil.use<ViewDescriptor["id"]>("selectView")
+        const view = selectView != null ? viewList.find(view => view.id === selectView.payload) : viewList[0]
+        if (view == null) throw new Error("Could not find view")
 
         const data = await fetcher<ViewData.Serialized>({
             url: `/api/view/${view.id}`,
             method: "GET",
             headers: context.req.headers as HeadersInit,
         })
-
-        /**
-         * // /project/:projectId/table/:tableId?view=viewId&inputMask=inputMaskId&row=rowId&newRecord=true
-         *
-         * Query Parameters (required)
-         * :projectId
-         * :tableId
-         *
-         * Route Parameters (optional)
-         * ?view=viewId -> selects a specific view
-         * ?inputMask=inputMaskId -> select a specific input mask
-         * ?row=rowId -> opens a specific row in the input mask
-         * ?newRecord=true -> creates a new row and opens it in the input mask
-         */
-        const actions: PageAction[] = Object.entries(routeParameters)
-            .map(([param, value]) => {
-                switch (param) {
-                    case "view":
-                        return {
-                            type: "selectView",
-                            view: viewList.find(view => view.id === Number.parseInt(value as string))!,
-                        }
-                    case "inputMask":
-                        return {
-                            type: "selectInputMask",
-                            inputMaskId: value as string,
-                        }
-                    case "row":
-                        return { type: "openRow", row: { _id: Number.parseInt(value as string) } }
-                    case "newRecord":
-                        return { type: "createRow" }
-                    default:
-                        return null
-                }
-            })
-            .filter(e => e != null) as PageAction[]
 
         return {
             props: {
@@ -361,13 +291,9 @@ export const getServerSideProps = withSSRCatch(
                 tableList,
                 view: data.descriptor,
                 viewList,
-                actions,
-                // fallback: {
-                //     [unstable_serialize({
-                //         url: `/api/table/${tableId}`,
-                //         method: "GET",
-                //     })]: data,
-                // },
+                actions: pageActionUtil.actions,
+                inputMask,
+                openRow,
             },
         }
     })

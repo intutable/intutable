@@ -30,11 +30,12 @@ import Head from "next/head"
 import { useRouter } from "next/router"
 import TableIcon from "@mui/icons-material/TableRows"
 import ViewIcon from "@mui/icons-material/TableView"
+import { UrlObject } from "url"
 
 type InputMaskCallToActionCard = {
     inputMask: InputMask
-    url: string
-    callToActionUrl: string
+    url: string | UrlObject
+    callToActionUrl: string | UrlObject
     originType: "table" | "view"
     source: {
         project: ProjectDescriptor
@@ -71,7 +72,9 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                             key={card.inputMask.id}
                         >
                             <Card
-                                onClick={() => router.push(card.url)}
+                                onClick={() =>
+                                    router.push(card.url, typeof card.url === "string" ? card.url : card.url.pathname!)
+                                }
                                 sx={{
                                     cursor: "pointer",
                                     display: "flex",
@@ -105,7 +108,10 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                                             <Button
                                                 onClick={e => {
                                                     e.stopPropagation()
-                                                    router.push(card.callToActionUrl)
+                                                    router.push(
+                                                        card.callToActionUrl,
+                                                        typeof card.url === "string" ? card.url : card.url.pathname!
+                                                    )
                                                 }}
                                                 variant="contained"
                                                 size="small"
@@ -194,8 +200,19 @@ export const getServerSideProps = withSSRCatch(
                 if (viewDescriptor == null) throw new Error("View descriptor not found for input mask: " + mask.id)
                 return {
                     inputMask: mask,
-                    url: `/project/${project.id}/table/${tableDescriptor.id}?inputMask=${mask.id}`,
-                    callToActionUrl: `/project/${project.id}/table/${tableDescriptor.id}?inputMask=${mask.id}&newRecord=true`,
+                    url: {
+                        pathname: `/project/${project.id}/table/${tableDescriptor.id}`,
+                        query: {
+                            inputMask: mask.id,
+                        },
+                    },
+                    callToActionUrl: {
+                        pathname: `/project/${project.id}/table/${tableDescriptor.id}`,
+                        query: {
+                            inputMask: mask.id,
+                            newRecord: Date.now().toString(),
+                        },
+                    },
                     originType: "table",
                     source: {
                         project: project,
@@ -212,8 +229,21 @@ export const getServerSideProps = withSSRCatch(
 
                 return {
                     inputMask: mask,
-                    url: `/project/${project.id}/table/${table.id}?view=${viewDescriptor.id}&inputMask=${mask.id}`,
-                    callToActionUrl: `/project/${project.id}/table/${table.id}?view=${viewDescriptor.id}&inputMask=${mask.id}&newRecord=true}`,
+                    url: {
+                        pathname: `/project/${project.id}/table/${table.id}`,
+                        query: {
+                            view: viewDescriptor.id,
+                            inputMask: mask.id,
+                        },
+                    },
+                    callToActionUrl: {
+                        pathname: `/project/${project.id}/table/${table.id}`,
+                        query: {
+                            view: viewDescriptor.id,
+                            inputMask: mask.id,
+                            newRecord: Date.now().toString(),
+                        },
+                    },
                     originType: "view",
                     source: {
                         project,

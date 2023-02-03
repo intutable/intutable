@@ -35,13 +35,11 @@ export const APIContextProvider: React.FC<APIContextProviderProps> = props => {
     // TODO: instead of providing the set methods from the useState hook (setTable and setProject) provide a reducer
     // this helps preventing conflicts.
     // If a projects gets set to null, the table must be set to null equally
-    const [project, setProject] = useState<ProjectDescriptor | null>(props.project || null)
+    const [project, setProject] = useState<ProjectDescriptor | null>(props.project ?? null)
+    const [table, setTable] = useState<ViewDescriptor | null>(props.table ?? null)
+    const [view, setView] = useState<ViewDescriptor | null>(props.view ?? null)
 
-    const [table, setTable] = useState<ViewDescriptor | null>(props.table || null)
-
-    const [view, setView] = useState<ViewDescriptor | null>(props.view || null)
-
-    // BUG: the props change, but the state does not change
+    // BUG: the props change, but the state does not change, possible cause: https://nextjs.org/docs/api-reference/next/router#resetting-state-after-navigation
     // TODO: use a better solution
     useEffect(() => {
         setProject(props.project || null)

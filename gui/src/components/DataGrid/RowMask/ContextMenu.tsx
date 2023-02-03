@@ -9,7 +9,9 @@ import { HiddenColumnsMenuItem } from "@datagrid/Toolbar/ToolbarItems/HiddenColu
 import CheckIcon from "@mui/icons-material/Check"
 import { useView } from "hooks/useView"
 import { useInputMask } from "hooks/useInputMask"
-
+import ShareIcon from "@mui/icons-material/Share"
+import { useAPI } from "context"
+import { isViewIdOrigin, isViewNameOrigin } from "@shared/input-masks/utils"
 export type RowMaskContextMenuProps = {
     commentsVisible: boolean
     toggleCommentsVisible: () => void
@@ -17,11 +19,12 @@ export type RowMaskContextMenuProps = {
 
 export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const theme = useTheme()
-    const { snackError } = useSnacki()
+    const { snackError, snackSuccess } = useSnacki()
     const { deleteRow: _deleteRow } = useRow()
     const { data: view } = useView()
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
+    const { project, table } = useAPI()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -38,6 +41,28 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
             await _deleteRow(selectedRow)
         } catch (error) {
             snackError("Der Eintrag konnte nicht gelöscht werden.")
+        } finally {
+            closeContextMenu()
+        }
+    }
+
+    const createShareLink = () => {
+        try {
+            if (!project || !table || !currentInputMask || rowMaskState.mode === "closed" || !view) throw new Error()
+            // TODO: this might be not appropriate
+            const viewParam =
+                isViewIdOrigin(currentInputMask.origin) || isViewNameOrigin(currentInputMask.origin)
+                    ? `&view=${view.descriptor.id}`
+                    : ""
+            const link =
+                `${window.location.origin}/project/${project.id}/table/${table.id}?inputMask=${currentInputMask.id}&record=${rowMaskState.row._id}` +
+                viewParam
+            navigator.clipboard.writeText(link)
+            snackSuccess("Link in die Zwischenablage kopiert!")
+        } catch (error) {
+            snackError("Es konnte kein Link zum Teilen erstellt werden!")
+        } finally {
+            closeContextMenu()
         }
     }
 
@@ -62,13 +87,23 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                     {selectedInputMask == null && <HiddenColumnsMenuItem />}
 
                     {selectedInputMask != null && currentInputMask && currentInputMask.comments.length > 0 && (
-                        <MenuItem onClick={props.toggleCommentsVisible}>
-                            {props.commentsVisible && (
-                                <ListItemIcon>
-                                    <CheckIcon fontSize="small" />
-                                </ListItemIcon>
-                            )}
-                            <ListItemText>Kommentare</ListItemText>
+                        <>
+                            <MenuItem onClick={props.toggleCommentsVisible}>
+                                {props.commentsVisible && (
+                                    <ListItemIcon>
+                                        <CheckIcon fontSize="small" />
+                                    </ListItemIcon>
+                                )}
+                                <ListItemText>Kommentare</ListItemText>
+                            </MenuItem>
+                        </>
+                    )}
+                    {selectedInputMask != null && (
+                        <MenuItem onClick={createShareLink}>
+                            <ListItemIcon>
+                                <ShareIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>Permalink</ListItemText>
                         </MenuItem>
                     )}
 
