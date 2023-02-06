@@ -1,151 +1,150 @@
-import { Core, PluginLoader } from "@intutable/core"
-import { insert } from "@intutable/database/dist/requests"
+import { CoreRequest } from "@intutable/core"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { createProject } from "@intutable/project-management/dist/requests"
+
 import {
-    ProjectDescriptor,
     TableDescriptor,
-    TableInfo,
-    ColumnDescriptor,
-} from "@intutable/project-management/dist/types"
-import {
-    createProject,
-    createTableInProject,
-    getTableInfo,
-    createColumnInTable,
-} from "@intutable/project-management/dist/requests"
-import { requests as v_req } from "@intutable/lazy-views/"
-import { types as v_types } from "@intutable/lazy-views"
-import { tableId, viewId } from "@intutable/lazy-views"
+    TableData,
+    SerializedColumn,
+    LinkKind,
+    LinkDescriptor,
+    ForwardLinkDescriptor,
+} from "shared/dist/types/tables"
 
-import { emptyRowOptions, defaultRowOptions } from "shared/dist/api"
+import * as dap from "dekanat-app-plugin/dist/requests"
+import { StandardColumnSpecifier } from "dekanat-app-plugin/dist/types/requests"
 
+import { getCore } from "../core"
 import {
+    DEFAULT_COLUMNS,
     TableSpec,
-    JoinSpec,
     Table,
+    PERSONEN_SPEC,
     PERSONEN,
     PERSONEN_DATA,
+    ORGANE_SPEC,
     ORGANE,
     ORGANE_DATA,
+    ROLLEN_SPEC,
     ROLLEN,
     ROLLEN_DATA,
 } from "./schema"
 
-let personen: Table
-let organe: Table
-let simpleTables: Table[]
-let rollen: Table
+function coreRequest<T = unknown>(req: CoreRequest): Promise<T> {
+    return getCore().events.request(req)
+}
 
-export async function createExampleSchema(
-    core: Core | PluginLoader,
-    sessionID: string,
-    adminId: number
-): Promise<void> {
-    const project: ProjectDescriptor = (await core.events.request(
-        createProject(sessionID, adminId, "Fakultät MathInf")
+export async function createExampleSchema(connectionId: string, adminId: number): Promise<void> {
+    const project: ProjectDescriptor = (await getCore().events.request(
+        createProject(connectionId, adminId, "Fakultät MathInf")
     )) as ProjectDescriptor
-    personen = await createTable(core, sessionID, adminId, project.id, PERSONEN)
-    organe = await createTable(core, sessionID, adminId, project.id, ORGANE)
-    simpleTables = [personen, organe]
-    rollen = await createTable(core, sessionID, adminId, project.id, ROLLEN)
+    await createTable(connectionId, adminId, project.id, PERSONEN_SPEC, PERSONEN)
+    await createTable(connectionId, adminId, project.id, ORGANE_SPEC, ORGANE)
+    await createTable(connectionId, adminId, project.id, ROLLEN_SPEC, ROLLEN)
 }
 async function createTable(
-    core: Core | PluginLoader,
-    sessionID: string,
-    userId: number,
+    connectionId: string,
+    roleId: number,
     projectId: number,
-    table: TableSpec
-): Promise<Table> {
-    const baseTable: TableDescriptor = (await core.events.request(
-        createTableInProject(
-            sessionID,
-            userId,
-            projectId,
-            table.name,
-            table.columns.map(c => c.baseColumn)
-        )
-    )) as TableDescriptor
-    const tableInfo = (await core.events.request(
-        getTableInfo(sessionID, baseTable.id)
-    )) as TableInfo
-    const viewColumns: v_types.ColumnSpecifier[] = table.columns.map(c => {
-        const baseColumn = tableInfo.columns.find(parent => parent.name === c.baseColumn.name)!
-        return {
-            parentColumnId: baseColumn.id,
-            attributes: c.attributes,
-        }
-    })
-    const tableView = (await core.events.request(
-        v_req.createView(
-            sessionID,
-            tableId(baseTable.id),
-            table.name,
-            { columns: viewColumns, joins: [] },
-            emptyRowOptions(),
-            userId
-        )
-    )) as v_types.ViewDescriptor
-    // add joins
-    await Promise.all(table.joins.map(j => addJoin(core, sessionID, baseTable, tableView, j)))
-
-    const tableViewInfo = (await core.events.request(
-        v_req.getViewInfo(sessionID, tableView.id)
-    )) as v_types.ViewInfo
-    const filterView = await core.events.request(
-        v_req.createView(
-            sessionID,
-            viewId(tableView.id),
-            "Standard",
-            { columns: [], joins: [] },
-            defaultRowOptions(tableViewInfo.columns),
-            userId
-        )
+    tableSpec: TableSpec,
+    slotToSave: Table
+): Promise<void> {
+    const descriptor = await coreRequest<TableDescriptor>(
+        dap.createTable(connectionId, roleId, projectId, tableSpec.name)
     )
-    const tableDescriptors = { baseTable, tableView, filterView }
-    return tableDescriptors
+    for (const column of tableSpec.columns) {
+        await coreRequest<SerializedColumn>(
+            dap.createStandardColumn(connectionId, descriptor.id, column)
+        )
+    }
+    if (tableSpec.links.some(table => !table.descriptor))
+        throw Error("Not all link tables initialized: " + tableSpec.links)
+    for (const linkTable of tableSpec.links) {
+        await coreRequest<SerializedColumn>(
+            dap.createLinkColumn(connectionId, descriptor.id, {
+                foreignTable: linkTable.descriptor.id,
+            })
+        )
+    }
+    const tableData = await coreRequest<TableData>(dap.getTableData(connectionId, descriptor.id))
+    const columnMappings = getColumnMappings(tableSpec.columns, tableData.columns)
+    const linkMappings = getLinkMappings(tableSpec.links, tableData.links)
+    slotToSave.spec = tableSpec
+    slotToSave.descriptor = descriptor
+    slotToSave.columnMappings = columnMappings
+    slotToSave.linkMappings = linkMappings
+    slotToSave.rowMappings = {}
 }
 
-async function addJoin(
-    core: Core | PluginLoader,
-    sessionID: string,
-    baseTable: TableDescriptor,
-    tableView: v_types.ViewDescriptor,
-    join: JoinSpec
-): Promise<void> {
-    const fk = (await core.events.request(
-        createColumnInTable(sessionID, baseTable.id, join.fkColumn.name, join.fkColumn.type)
-    )) as ColumnDescriptor
-    const foreignTable = simpleTables.find(t => t.tableView.name === join.table)!
-    const info = (await core.events.request(
-        v_req.getViewInfo(sessionID, foreignTable.tableView.id)
-    )) as TableInfo
-    const pk = info.columns.find(c => c.name === join.pkColumn)!
-    const foreignColumns = join.linkColumns.map(l => {
-        const parentColumn = info.columns.find(c => c.name === l.name)!
-        return {
-            parentColumnId: parentColumn.id,
-            attributes: l.attributes,
-        }
-    })
-    await core.events.request(
-        v_req.addJoinToView(sessionID, tableView.id, {
-            foreignSource: viewId(foreignTable.tableView.id),
-            on: [fk.id, "=", pk.id],
-            columns: foreignColumns,
-        })
-    )
+function getColumnMappings(
+    columnSpecs: StandardColumnSpecifier[],
+    columns: SerializedColumn[]
+): Record<string, number> {
+    const mappings: Record<string, number> = {}
+    const columnNames = DEFAULT_COLUMNS.concat(columnSpecs.map(c => c.name))
+    for (const columnSpec of columnNames) {
+        const column = columns.find(c => c.name === columnSpec)
+        if (!column) throw Error(`no column with name ${columnSpec} found`)
+        mappings[columnSpec] = column.id
+    }
+    return mappings
 }
 
-export async function insertExampleData(
-    core: Core | PluginLoader,
-    sessionID: string
-): Promise<void> {
-    await Promise.all(
-        PERSONEN_DATA.map(r => core.events.request(insert(sessionID, personen.baseTable.key, r)))
-    )
-    await Promise.all(
-        ORGANE_DATA.map(r => core.events.request(insert(sessionID, organe.baseTable.key, r)))
-    )
-    await Promise.all(
-        ROLLEN_DATA.map(r => core.events.request(insert(sessionID, rollen.baseTable.key, r)))
-    )
+function getLinkMappings(
+    linkSpecs: Table[],
+    links: LinkDescriptor[]
+): Record<string, ForwardLinkDescriptor> {
+    const mappings: Record<string, ForwardLinkDescriptor> = {}
+    for (const foreignTable of linkSpecs) {
+        const tableId = foreignTable.descriptor.id
+        const link = links.find(
+            link => link.kind === LinkKind.Forward && link.foreignTable === tableId
+        ) as ForwardLinkDescriptor
+        if (!link) throw Error(`no link with kind "forward" and table ID ${tableId}`)
+        mappings[foreignTable.spec.name] = link
+    }
+    return mappings
+}
+
+export async function insertExampleData(connectionId: string): Promise<void> {
+    await insertExampleColumnData(connectionId, PERSONEN, PERSONEN_DATA.rows)
+    await insertExampleColumnData(connectionId, ORGANE, ORGANE_DATA.rows)
+    await insertExampleColumnData(connectionId, ROLLEN, ROLLEN_DATA.rows)
+}
+
+async function insertExampleColumnData(
+    connectionId: string,
+    table: Table,
+    data: Record<string, unknown>[]
+) {
+    for (const row of data) {
+        const numberRow = mapStringKeysToIDs(table, row)
+        const { _id } = await coreRequest<{ _id: number }>(
+            dap.createRow(connectionId, table.descriptor.id, { values: numberRow })
+        )
+        table.rowMappings[row["Name"] as string] = _id
+    }
+}
+
+function mapStringKeysToIDs(table: Table, row: Record<string, unknown>): Record<number, unknown> {
+    const newRow: Record<number, unknown> = {}
+    for (const columnName of Object.keys(row)) {
+        if (typeof table.columnMappings[columnName] === "number") {
+            const id = table.columnMappings[columnName]
+            newRow[id] = row[columnName]
+        } else if (typeof table.linkMappings[columnName] === "object") {
+            const id = table.linkMappings[columnName].forwardLinkColumn
+            const targetRowId = getTargetRow(table, columnName, row[columnName] as string)
+            newRow[id] = targetRowId
+        } else throw Error(`No column with name ${columnName} found in table ${table.descriptor}`)
+    }
+    return newRow
+}
+
+function getTargetRow(homeTable: Table, foreignTableName: string, value: string): number {
+    const foreignTable = homeTable.spec.links.find(table => table.spec.name === foreignTableName)
+    if (!foreignTable)
+        throw Error(`no foreign table ${foreignTableName} found linked from table ${homeTable}`)
+    const rowId = foreignTable.rowMappings[value]
+    return rowId
 }
