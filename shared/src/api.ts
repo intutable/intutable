@@ -4,7 +4,9 @@
 import { Column, ColumnType } from "@intutable/database/dist/types"
 import { ParentColumnDescriptor, RowOptions, SortOrder } from "@intutable/lazy-views/dist/types"
 
-import { ImmutableColumnAttributes, DB } from "./types"
+import { DB } from "./types"
+
+export { immutableColumnAttributes } from "./types"
 
 /**
  * The two basic columns that every table must have (in addition to _id, but
@@ -32,23 +34,6 @@ export function defaultViewName() {
 export function userPrimaryColumnName() {
     return "Name"
 }
-
-/**
- * Subset of a column's props (note: these are metadata: "id" and
- * "index" (column index) are totally distinct from the ID and index
- * (row index) _columns_ that exist in object tables)
- * They cannot be changed by the back-ends "change column attributes" method.
- */
-export const immutableColumnAttributes: ImmutableColumnAttributes[] = [
-    "id",
-    "parentColumnId",
-    "linkId",
-    "inverseLinkColumnId",
-    "key",
-    "kind",
-    "index",
-    "isUserPrimaryKey",
-]
 
 export function standardColumnAttributes(
     name: string,
