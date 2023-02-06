@@ -529,7 +529,12 @@ async function removeColumnFromTable(
             await removeStandardColumn(connectionId, tableId, column)
             break
         case "link":
-            await removeLinkColumn(connectionId, tableId, column)
+            await removeLinkColumn(connectionId, tableId, column).then(deletedJoin =>
+                shiftColumnIndicesAfterDelete(
+                    connectionId,
+                    selectable.getId(deletedJoin.foreignSource)
+                )
+            )
             break
         case "lookup":
             await removeLookupColumn(connectionId, tableId, columnId)
@@ -537,8 +542,6 @@ async function removeColumnFromTable(
         default:
             return error("removeColumnFromTable", `column #${columnId} has unknown kind ${kind}`)
     }
-
-    // shift indices on remaining columns
     await shiftColumnIndicesAfterDelete(connectionId, tableId)
     return { message: `removed ${kind} column #${columnId}` }
 }
@@ -547,7 +550,7 @@ async function removeLinkColumn(
     connectionId: string,
     tableId: number,
     column: RawViewColumnInfo
-): Promise<void> {
+): Promise<JoinDescriptor> {
     const info = (await core.events.request(lvr.getViewInfo(connectionId, tableId))) as RawViewInfo
     const join = info.joins.find(j => j.id === column.joinId)
 
@@ -556,23 +559,10 @@ async function removeLinkColumn(
             "removeColumnFromTable",
             `no join with ID ${column.joinId}, in table ${tableId}`
         )
-    // remove lookup columns
-    const lookupColumns = info.columns.filter(
-        c => c.joinId === join.id && c.attributes.kind === "lookup"
-    )
-
-    await Promise.all(
-        lookupColumns.map(async c => removeColumnFromTable(connectionId, tableId, c.id))
-    )
-    // remove link column
-    await removeColumnFromViews(connectionId, tableId, column.id)
-    await core.events.request(lvr.removeColumnFromView(connectionId, column.id))
-    // remove join and FK column
-    await core.events.request(lvr.removeJoinFromView(connectionId, join.id))
     const fkColumnId = join.on[0]
     await core.events.request(pm.removeColumn(connectionId, fkColumnId))
+    return join
 }
-
 async function removeStandardColumn(
     connectionId: string,
     tableId: number,
