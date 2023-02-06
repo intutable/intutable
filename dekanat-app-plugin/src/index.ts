@@ -536,6 +536,14 @@ async function removeColumnFromTable(
                 )
             )
             break
+        case "backwardLink":
+            await removeBackwardLinkColumn(connectionId, tableId, column).then(deletedJoin =>
+                shiftColumnIndicesAfterDelete(
+                    connectionId,
+                    selectable.getId(deletedJoin.foreignSource)
+                )
+            )
+            break
         case "lookup":
             await removeLookupColumn(connectionId, tableId, columnId)
             break
@@ -546,12 +554,22 @@ async function removeColumnFromTable(
     return { message: `removed ${kind} column #${columnId}` }
 }
 
+async function removeStandardColumn(
+    connectionId: string,
+    tableId: number,
+    column: RawViewColumnInfo
+): Promise<void> {
+    await removeColumnFromViews(connectionId, tableId, column.id)
+    await core.events.request(lvr.removeColumnFromView(connectionId, column.id))
+    await core.events.request(pm.removeColumn(connectionId, column.parentColumnId))
+}
+
 async function removeLinkColumn(
     connectionId: string,
     tableId: number,
     column: RawViewColumnInfo
 ): Promise<JoinDescriptor> {
-    const info = (await core.events.request(lvr.getViewInfo(connectionId, tableId))) as RawViewInfo
+    const info = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
     const join = info.joins.find(j => j.id === column.joinId)
 
     if (!join)
@@ -563,16 +581,26 @@ async function removeLinkColumn(
     await core.events.request(pm.removeColumn(connectionId, fkColumnId))
     return join
 }
-async function removeStandardColumn(
+
+async function removeBackwardLinkColumn(
     connectionId: string,
     tableId: number,
     column: RawViewColumnInfo
-): Promise<void> {
-    await removeColumnFromViews(connectionId, tableId, column.id)
-    await core.events.request(lvr.removeColumnFromView(connectionId, column.id))
-    await core.events.request(pm.removeColumn(connectionId, column.parentColumnId))
-}
+): Promise<JoinDescriptor> {
+    const info = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const join = info.joins.find(j => j.id === column.joinId)
+    const forwardLinkColumn = await coreRequest<RawViewColumnInfo>(
+        lvr.getColumnInfo(connectionId, column.attributes.inverseLinkColumnId)
+    )
 
+    if (!join)
+        return error(
+            "removeColumnFromTable",
+            `no join with ID ${column.joinId}, in table ${tableId}`
+        )
+    await removeLinkColumn(connectionId, asView(join.foreignSource).id, forwardLinkColumn)
+    return join
+}
 async function removeLookupColumn(
     connectionId: string,
     tableId: number,
