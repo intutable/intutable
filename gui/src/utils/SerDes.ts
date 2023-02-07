@@ -43,7 +43,7 @@ export default class SerDes {
                 // index columns are not editable
                 if (column.kind === "index") return false
                 // lookups are always editable
-                if (column.kind === "lookup") return true
+                if (column.kind === "lookup" || column.kind === "backwardLookup") return true
                 // some types don't have an editor and should not be editable
                 if (cell.editor == null) return false
                 // TODO: further checking here, e.g. should link and lookup columns be editable??

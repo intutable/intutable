@@ -98,8 +98,21 @@ export function lookupColumnAttributes(
         kind: "lookup",
         displayName: name,
         index: columnIndex,
-        editable: 1,
+        editable: 0,
         cellType: contentType,
+    }
+}
+export function backwardLookupColumnAttributes(
+    name: string,
+    contentType: string,
+    columnIndex: number
+): Partial<DB.Column> {
+    return {
+        kind: "backwardLookup",
+        displayName: name,
+        index: columnIndex,
+        editable: 0,
+        cellType: "multiselect",
     }
 }
 
@@ -174,13 +187,24 @@ export function defaultViewRowOptions(
 export function doNotAggregate(): ColumnSpecifier["outputFunc"] {
     return "??"
 }
+
+/**
+ * For backward links, we have to aggregate multiple values into an array. Unfortunately,
+ * PostgreSQL's `ARRAY_AGG` does not work nicely with nested arrays: The sub-arrays all have to
+ * be the same length. We have to use `JSONB_AGG` instead.
+ */
+export function jsonbArrayAggregate(): ColumnSpecifier["outputFunc"] {
+    return "JSONB_AGG(??)"
+}
 /**
  * Since forward link columns are grouped on the foreign table's (unique) ID, there will be
  * no duplicates in link/lookup columns. But, unlike with the ID of the home table, PG cannot
  * figure this out and forces us to aggregate them into singleton arrays. This aggregate function
  * gets the first element out of the array. The best part: if there are no rows to be aggregated,
- * PG returns a singleton array with null, so we don't even have to worry about empty arrays.
+ * PG returns a singleton array with a null, so we don't even have to worry about empty arrays.
+ * We use `JSONB_AGG` instead of `ARRAY_AGG`, because `ARRAY_AGG` does not play nice with nesting,
+ * and nesting is what we are aaaaaall about.
  */
 export function firstAggregate(): ColumnSpecifier["outputFunc"] {
-    return "(ARRAY_AGG(??))[1]"
+    return "(JSONB_AGG(??))->0"
 }

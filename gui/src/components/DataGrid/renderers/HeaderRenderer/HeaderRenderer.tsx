@@ -94,7 +94,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
 
                 {/* Prefix Icon Lookup Column */}
                 <PrefixIcon
-                    open={column.kind === "lookup"}
+                    open={column.kind === "lookup" || column.kind === "backwardLookup"}
                     title={`Lookup aus '${foreignTable?.name}'. (readonly)`}
                 >
                     <LookupIcon

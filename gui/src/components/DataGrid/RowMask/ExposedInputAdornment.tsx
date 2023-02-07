@@ -22,6 +22,8 @@ export const ExposedInputIcon: React.FC<{ column: Column.Deserialized | Column.S
         <KeyIcon fontSize="small" />
     ) : column.kind === "lookup" ? (
         <LookupIcon fontSize="small" />
+    ) : column.kind === "backwardLookup" ? (
+        <LookupIcon fontSize="small" />
     ) : column.kind === "link" ? (
         <LinkIcon fontSize="small" />
     ) : column.kind === "backwardLink" ? (

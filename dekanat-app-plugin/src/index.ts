@@ -46,12 +46,14 @@ import {
     standardColumnAttributes,
     linkColumnAttributes,
     backwardLinkColumnAttributes,
+    backwardLookupColumnAttributes,
     foreignKeyColumnAttributes,
     lookupColumnAttributes,
     defaultTableRowOptions,
     defaultViewRowOptions,
     COLUMN_INDEX_KEY,
     doNotAggregate,
+    jsonbArrayAggregate,
     firstAggregate,
 } from "shared/dist/api"
 
@@ -78,6 +80,7 @@ import {
     DB,
     CustomColumnAttributes,
     Row,
+    LinkKind,
 } from "./types"
 import {
     RowData,
@@ -385,7 +388,7 @@ async function createBackwardLinkColumn(
     const linkColumn = await addColumnToTableView(
         connectionId,
         foreignTableInfo.descriptor.id,
-        { parentColumnId: homeUserPrimaryColumn.id, attributes },
+        { parentColumnId: homeUserPrimaryColumn.id, attributes, outputFunc: jsonbArrayAggregate() },
         join.id,
         addToViews
     )
@@ -407,39 +410,45 @@ async function createLookupColumn(
     column: LookupColumnSpecifier,
     addToViews?: ViewId[]
 ): Promise<SerializedColumn> {
-    const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
-    const join = homeTableInfo.joins.find(j => j.id === column.linkId)!
+    const tableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const join = tableInfo.joins.find(j => j.id === column.linkId)!
     if (!join)
         return error(
             "createLookupColumn",
             `home table ${tableId} has no link with ID ${column.linkId}`
         )
-
-    const foreignTableId = asView(join.foreignSource).id
-    const foreignTableInfo = await coreRequest<RawViewInfo>(
-        lvr.getViewInfo(connectionId, foreignTableId)
+    const linkColumn = tableInfo.columns.find(
+        c => ["link", "backwardLink"].includes(c.attributes.kind) && c.joinId === column.linkId
     )
-    const foreignColumn = foreignTableInfo.columns.find(c => c.id === column.foreignColumn)
-    if (!foreignColumn)
+    if (!linkColumn)
         return error(
             "createLookupColumn",
-            `foreign table ${foreignTableId} has no column with ID ${column.foreignColumn}`
+            `table ${tableId} has no link column with link ID ${column.linkId}`
         )
 
-    // determine meta attributes
-    const displayName = foreignColumn.attributes.displayName || foreignColumn.name
-    const contentType = foreignColumn.attributes.cellType || "string"
+    const otherTableId = asView(join.foreignSource).id
+    const otherTableInfo = await coreRequest<RawViewInfo>(
+        lvr.getViewInfo(connectionId, otherTableId)
+    )
+    const parentColumn = otherTableInfo.columns.find(c => c.id === column.foreignColumn)
+    if (!parentColumn)
+        return error(
+            "createLookupColumn",
+            `other table ${otherTableId} has no column with ID ${column.foreignColumn}`
+        )
+
+    const linkKind = linkColumn.attributes.kind === "link" ? LinkKind.Forward : LinkKind.Backward
     const columnIndex =
         Math.max(
-            ...homeTableInfo.columns
+            ...tableInfo.columns
                 .filter(c => c.joinId === join.id)
                 .map(c => c.attributes[COLUMN_INDEX_KEY])
         ) + 1
-    const attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
+    const specifier = createRawSpecifierForLookupColumn(linkKind, parentColumn, columnIndex)
     const lookupColumn = await addColumnToTableView(
         connectionId,
         tableId,
-        { parentColumnId: foreignColumn.id, attributes, outputFunc: firstAggregate() },
+        specifier,
         join.id,
         addToViews
     )
@@ -447,7 +456,7 @@ async function createLookupColumn(
     // and shift the column index of all columns that come after the position where it was inserted
     const idxKey = COLUMN_INDEX_KEY
     await Promise.all(
-        homeTableInfo.columns
+        tableInfo.columns
             .filter(c => c.attributes[idxKey] >= columnIndex)
             .map(c =>
                 changeTableColumnAttributes(connectionId, tableId, c.id, {
@@ -456,6 +465,31 @@ async function createLookupColumn(
             )
     )
     return newColumn
+}
+
+function createRawSpecifierForLookupColumn(
+    kind: LinkKind,
+    parentColumn: RawViewColumnInfo,
+    columnIndex: number
+): ColumnSpecifier {
+    // determine meta attributes
+    const displayName = parentColumn.attributes.displayName || parentColumn.name
+    let contentType: string
+    let attributes: Partial<DB.Column>
+    let aggregateFunction: ColumnSpecifier["outputFunc"]
+    switch (kind) {
+        case LinkKind.Forward:
+            contentType = parentColumn.attributes.displayName || "string"
+            attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
+            aggregateFunction = firstAggregate()
+            break
+        case LinkKind.Backward:
+            contentType = parentColumn.attributes.displayName || "string"
+            attributes = backwardLookupColumnAttributes(displayName, contentType, columnIndex)
+            aggregateFunction = jsonbArrayAggregate()
+            break
+    }
+    return { parentColumnId: parentColumn.id, attributes, outputFunc: aggregateFunction }
 }
 
 async function addColumnToTableView(
@@ -542,6 +576,7 @@ async function removeColumnFromTable(
             )
             break
         case "lookup":
+        case "backwardLookup":
             await removeLookupColumn(connectionId, tableId, columnId)
             break
         default:
