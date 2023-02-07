@@ -48,9 +48,11 @@ import {
     backwardLinkColumnAttributes,
     foreignKeyColumnAttributes,
     lookupColumnAttributes,
-    emptyRowOptions,
-    defaultRowOptions,
+    defaultTableRowOptions,
+    defaultViewRowOptions,
     COLUMN_INDEX_KEY,
+    doNotAggregate,
+    firstAggregate,
 } from "shared/dist/api"
 
 import sanitizeName from "shared/dist/utils/sanitizeName"
@@ -154,10 +156,15 @@ async function createTable(
     const nameColumn = pmColumns.find(c => c.name === "name")!
     const columnSpecs = [
         { parentColumnId: idColumn.id, attributes: idColumnAttributes(0) },
-        { parentColumnId: idxColumn.id, attributes: indexColumnAttributes(1) },
+        {
+            parentColumnId: idxColumn.id,
+            attributes: indexColumnAttributes(1),
+            outputFunc: doNotAggregate(),
+        },
         {
             parentColumnId: nameColumn.id,
             attributes: standardColumnAttributes("Name", "string", 2, true),
+            outputFunc: doNotAggregate(),
         },
     ]
     const tableView = (await core.events.request(
@@ -167,25 +174,13 @@ async function createTable(
             /* Doesn't need to be sanitized, as it's not used as an SQL name */
             name,
             { columns: columnSpecs, joins: [] },
-            emptyRowOptions(),
+            defaultTableRowOptions(idColumn.id),
             roleId
         )
     )) as RawViewDescriptor
 
     // create default filter view
-    const tableViewColumns = (await core.events
-        .request(lvr.getViewInfo(connectionId, tableView.id))
-        .then(info => info.columns)) as RawViewColumnInfo[]
-    await core.events.request(
-        lvr.createView(
-            connectionId,
-            selectable.viewId(tableView.id),
-            defaultViewName(),
-            { columns: [], /* [] means all columns */ joins: [] },
-            defaultRowOptions(tableViewColumns),
-            roleId
-        )
-    )
+    await createView(connectionId, tableView.id, defaultViewName())
     return tableView
 }
 async function deleteTable_({ connectionId, id }: CoreRequest): Promise<CoreResponse> {
@@ -237,6 +232,7 @@ async function createStandardColumn(
         {
             parentColumnId: tableColumn.id,
             attributes: allAttributes,
+            outputFunc: doNotAggregate(),
         },
         null,
         addToViews
@@ -345,7 +341,7 @@ async function createForwardLinkColumn(
     const linkColumn = await addColumnToTableView(
         connectionId,
         homeTableInfo.descriptor.id,
-        { parentColumnId: foreignUserPrimaryColumn.id, attributes },
+        { parentColumnId: foreignUserPrimaryColumn.id, attributes, outputFunc: firstAggregate() },
         join.id,
         addToViews
     )
@@ -368,6 +364,7 @@ async function createBackwardLinkColumn(
             parentColumnId: foreignKeyColumn.id,
             // the forward link column gets the next index, we just add 1 here to keep it short.
             attributes: foreignKeyColumnAttributes(forwardLinkColumnIndex + 1),
+            outputFunc: doNotAggregate(),
         })
     )
     const join = await coreRequest<JoinDescriptor>(
@@ -442,7 +439,7 @@ async function createLookupColumn(
     const lookupColumn = await addColumnToTableView(
         connectionId,
         tableId,
-        { parentColumnId: foreignColumn.id, attributes },
+        { parentColumnId: foreignColumn.id, attributes, outputFunc: firstAggregate() },
         join.id,
         addToViews
     )
@@ -744,7 +741,7 @@ async function createView(
             selectable.viewId(tableId),
             name,
             { columns: [], joins: [] },
-            defaultRowOptions(tableInfo.columns)
+            defaultViewRowOptions(tableInfo.columns)
         )
     )
 }

@@ -144,17 +144,20 @@ export class MultiSelect extends Cell {
                                 }}
                             >
                                 {isEmpty === false &&
-                                    content.map(chip => (
-                                        <ChipItem
-                                            label={chip}
-                                            key={chip}
-                                            onDelete={
-                                                this.column.editable
-                                                    ? () => removeChip(chip)
-                                                    : undefined
-                                            }
-                                        />
-                                    ))}
+                                    content.map(
+                                        chip =>
+                                            chip && (
+                                                <ChipItem
+                                                    label={chip}
+                                                    key={chip}
+                                                    onDelete={
+                                                        this.column.editable
+                                                            ? () => removeChip(chip)
+                                                            : undefined
+                                                    }
+                                                />
+                                            )
+                                    )}
                             </Box>
                             {hovering &&
                                 this.column.editable &&
@@ -238,15 +241,20 @@ export class MultiSelect extends Cell {
                     }}
                 >
                     {props.content &&
-                        props.content.map(option => (
-                            <ChipItem
-                                label={option}
-                                key={option}
-                                onDelete={
-                                    this.column.editable ? () => removeChip(option) : undefined
-                                }
-                            />
-                        ))}
+                        props.content.map(
+                            option =>
+                                option && (
+                                    <ChipItem
+                                        label={option}
+                                        key={option}
+                                        onDelete={
+                                            this.column.editable
+                                                ? () => removeChip(option)
+                                                : undefined
+                                        }
+                                    />
+                                )
+                        )}
 
                     {props.hoveringOnParent &&
                         props.column.editable &&

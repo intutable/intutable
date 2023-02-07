@@ -2,7 +2,12 @@
  * Helper functions and constants for the `dekanat-app-plugin`'s API.
  */
 import { Column, ColumnType } from "@intutable/database/dist/types"
-import { ParentColumnDescriptor, RowOptions, SortOrder } from "@intutable/lazy-views/dist/types"
+import {
+    ColumnSpecifier,
+    ParentColumnDescriptor,
+    RowOptions,
+    SortOrder,
+} from "@intutable/lazy-views/dist/types"
 
 import { DB } from "./types"
 
@@ -11,8 +16,6 @@ export { immutableColumnAttributes } from "./types"
 /**
  * The two basic columns that every table must have (in addition to _id, but
  * the project-management plugin creates that automatically)
- * These are columns in the underlying table, while {@link isAppColumn}
- * refers to columns of the view on top of it.
  */
 export const APP_TABLE_COLUMNS: Column[] = [
     { name: "index", type: ColumnType.integer, options: [] },
@@ -29,12 +32,15 @@ export function defaultViewName() {
 /**
  * Each table is automatically created with a "name" column right off the bat. It cannot be deleted
  * and _should_ (but does not strictly have to) have a unique value, this is what the term
- * "user primary" or "user primary key" refers to. This function returns that column's name.
+ * "user primary" or "user primary key" refers to. This function determines that column's name.
  */
 export function userPrimaryColumnName() {
     return "Name"
 }
 
+/**
+ * Default attributes for a standard column.
+ */
 export function standardColumnAttributes(
     name: string,
     contentType: string,
@@ -71,7 +77,7 @@ export function backwardLinkColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 1,
-        cellType: "string",
+        cellType: "multiselect",
     }
 }
 export function foreignKeyColumnAttributes(columnIndex: number): Partial<DB.Column> {
@@ -122,12 +128,14 @@ export const ROW_INDEX_KEY = "index"
 export const COLUMN_INDEX_KEY = "index"
 
 /**
- * Blank row options - no filters, no grouping, no sorting.
+ * Standard `RowOptions` for a table. The rows are grouped by ID. All columns in the home table
+ * can stay ungrouped, since the ID is a primary key and PG understands that it will thus be
+ * unique.
  */
-export function emptyRowOptions(): RowOptions {
+export function defaultTableRowOptions(idColumnId: number): RowOptions {
     return {
         conditions: [],
-        groupColumns: [],
+        groupColumns: [{ parentColumnId: idColumnId, joinId: null }],
         sortColumns: [],
     }
 }
@@ -136,7 +144,7 @@ export function emptyRowOptions(): RowOptions {
  * Default row options: obviously no filtering or grouping. Only order by
  * index, to keep rows from jumping around when you edit them.
  */
-export function defaultRowOptions(
+export function defaultViewRowOptions(
     /**
      * To order by the index column, we need to have access to that column's
      * ID, so you unfortunately have to pass the source table's columns in.
@@ -154,4 +162,25 @@ export function defaultRowOptions(
             },
         ],
     }
+}
+
+/**
+ * All tables' rows are grouped by ID (to avoid duplicates caused by joins). Now, PG can tell
+ * that the ID is unique and that other columns from the same table do not have to be aggregated.
+ * Unfortunately, the LV plugin just automatically ARRAY_AGGs all non-grouping columns. Unless
+ * this is overridden with an `outputFunc` prop. Here, we are setting this to a trivial
+ * non-aggregation to work around this.
+ */
+export function doNotAggregate(): ColumnSpecifier["outputFunc"] {
+    return "??"
+}
+/**
+ * Since forward link columns are grouped on the foreign table's (unique) ID, there will be
+ * no duplicates in link/lookup columns. But, unlike with the ID of the home table, PG cannot
+ * figure this out and forces us to aggregate them into singleton arrays. This aggregate function
+ * gets the first element out of the array. The best part: if there are no rows to be aggregated,
+ * PG returns a singleton array with null, so we don't even have to worry about empty arrays.
+ */
+export function firstAggregate(): ColumnSpecifier["outputFunc"] {
+    return "(ARRAY_AGG(??))[1]"
 }
