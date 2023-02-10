@@ -58,6 +58,7 @@ export class Text extends Cell {
                         handleBlur()
                     }
                 }}
+                fullWidth
                 value={value}
                 disabled={this.column.editable === false}
                 label={props.label}

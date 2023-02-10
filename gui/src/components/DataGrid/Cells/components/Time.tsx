@@ -59,64 +59,57 @@ export class Time extends TempusCell {
         }
 
         return (
-            <Box
-                sx={{
-                    width: "100%",
-                    height: "100%",
+            <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={deLocale}
+                localeText={{
+                    openPreviousView: "Stunde setzen",
+                    openNextView: "Minuten setzen",
+                    clearButtonLabel: "Löschen",
+                    cancelButtonLabel: "Abbrechen",
+                    okButtonLabel: "OK",
+                    todayButtonLabel: "Jetzt",
+                    // start: "Start",
+                    // end: "Ende",
                 }}
             >
-                <LocalizationProvider
-                    dateAdapter={AdapterDateFns}
-                    adapterLocale={deLocale}
-                    localeText={{
-                        openPreviousView: "Stunde setzen",
-                        openNextView: "Minuten setzen",
-                        clearButtonLabel: "Löschen",
-                        cancelButtonLabel: "Abbrechen",
-                        okButtonLabel: "OK",
-                        todayButtonLabel: "Jetzt",
-                        // start: "Start",
-                        // end: "Ende",
+                <TimePicker
+                    showToolbar
+                    value={content}
+                    onChange={date => setContent(date)} // only update the state, but do not update the actual db (only on blur – see below)
+                    onAccept={handleChange} // update the db
+                    ampm={false}
+                    disabled={this.column.editable === false}
+                    readOnly={this.isReadonlyComponent}
+                    renderInput={params => (
+                        <TextField
+                            {...params}
+                            onBlur={() => handleChange(content)} // now actually update the db
+                            size="small"
+                            variant="standard"
+                            fullWidth
+                            disabled={this.column.editable === false}
+                            sx={{
+                                m: 0,
+                                mt: 0.5,
+                                p: 0,
+                                height: "100%",
+                                maxHeight: "100%",
+                            }}
+                            InputProps={{
+                                disableUnderline: true,
+                                readOnly: this.isReadonlyComponent,
+                                ...params.InputProps,
+                            }}
+                        />
+                    )}
+                    componentsProps={{
+                        actionBar: {
+                            actions: ["clear", "today", "accept"],
+                        },
                     }}
-                >
-                    <TimePicker
-                        showToolbar
-                        value={content}
-                        onChange={date => setContent(date)} // only update the state, but do not update the actual db (only on blur – see below)
-                        onAccept={handleChange} // update the db
-                        ampm={false}
-                        disabled={this.column.editable === false}
-                        readOnly={this.isReadonlyComponent}
-                        renderInput={params => (
-                            <TextField
-                                {...params}
-                                onBlur={() => handleChange(content)} // now actually update the db
-                                size="small"
-                                variant="standard"
-                                fullWidth
-                                disabled={this.column.editable === false}
-                                sx={{
-                                    m: 0,
-                                    mt: 0.5,
-                                    p: 0,
-                                    height: "100%",
-                                    maxHeight: "100%",
-                                }}
-                                InputProps={{
-                                    disableUnderline: true,
-                                    readOnly: this.isReadonlyComponent,
-                                    ...params.InputProps,
-                                }}
-                            />
-                        )}
-                        componentsProps={{
-                            actionBar: {
-                                actions: ["clear", "today", "accept"],
-                            },
-                        }}
-                    />
-                </LocalizationProvider>
-            </Box>
+                />
+            </LocalizationProvider>
         )
     }
 

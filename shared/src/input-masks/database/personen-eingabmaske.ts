@@ -33,8 +33,8 @@ const mask: InputMask = {
             index: 0,
             tooltip: "Ich bin ein Hinweis!",
             columns: [
-                { name: "Titel", size: "2" },
-                { name: "Vorname", size: "5" },
+                { name: "Titel", size: "3" },
+                { name: "Vorname", size: "4" },
                 { name: "Nachname", size: "5" },
             ],
         },
@@ -124,13 +124,13 @@ const mask: InputMask = {
             index: 4,
             inputRequired: true,
             inputPlaceholderText: "Hausnummer",
-            suppressInputLabel: true,
+            // suppressInputLabel: true,
         },
         {
             origin: { name: "Raum" },
             index: 5,
             inputPlaceholderText: "Raum",
-            suppressInputLabel: true,
+            // suppressInputLabel: true,
         },
         // andere
         {

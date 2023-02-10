@@ -36,7 +36,7 @@ import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
 import { DynamicRouteParams, DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
-import { PageActionUtil } from "utils/PageAction"
+import { PageAction, PageActionUtil } from "utils/PageAction"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 
@@ -202,9 +202,9 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
                         initialRowMaskState={props.openRow ? { mode: "edit", row: { _id: props.openRow } } : undefined}
                         initialAppliedInputMask={props.inputMask}
                     >
-                        <ConstraintsProvider>
-                            <TablePage />
-                        </ConstraintsProvider>
+                        {/* <ConstraintsProvider> */}
+                        <TablePage />
+                        {/* </ConstraintsProvider> */}
                     </RowMaskProvider>
                 </HeaderSearchFieldProvider>
             </SelectedRowsContextProvider>

@@ -126,7 +126,14 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
                         if (selectedRow == null) return null
 
                         return (
-                            <Grid item xs={parseInt(groupCol.size)} key={column.id}>
+                            <Grid
+                                item
+                                xs={parseInt(groupCol.size)}
+                                key={column.id}
+                                sx={{
+                                    overflow: "hidden",
+                                }}
+                            >
                                 <Input
                                     content={selectedRow[column.key]}
                                     row={selectedRow}

@@ -58,6 +58,7 @@ export class Num extends NumericCell {
                         handleBlur()
                     }
                 }}
+                fullWidth
                 value={value}
                 disabled={this.column.editable === false}
                 label={props.label}

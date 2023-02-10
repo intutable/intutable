@@ -249,7 +249,7 @@ export class Select extends Cell {
 
         const changeOption = async (value: string) => {
             try {
-                await updateRow(props.column, props.row, value)
+                await updateRow(props.column, props.row, value === "" ? null : value)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
             }
@@ -268,13 +268,12 @@ export class Select extends Cell {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const disallowNewSelectValues = (props.column as any).disallowNewSelectValues ?? false
 
-        // TODO: Select und MultiSelect zu Dropdown mit Chips umbauen
-
         return (
             <FormControl
                 size="small"
                 disabled={this.column.editable === false}
                 error={props.required && isEmpty}
+                fullWidth
                 // required={props.required} // <- forces a '*' to appear within in the label or placeholder
             >
                 <InputLabel id="Select-InputLabel">{props.label}</InputLabel>
@@ -282,7 +281,7 @@ export class Select extends Cell {
                     labelId="Select-InputLabel"
                     label={props.label}
                     value={props.content ?? ""}
-                    onChange={e => changeOption(e.target.value ?? "")}
+                    onChange={e => changeOption(e.target.value)}
                     displayEmpty={noLabel}
                     renderValue={value => {
                         if (isEmpty)
@@ -313,32 +312,26 @@ export class Select extends Cell {
                     required={props.required}
                     disabled={this.column.editable === false}
                     endAdornment={<HelperTooltip text={props.tooltip} />}
-                    variant="standard"
-                    disableUnderline
+
+                    // variant="standard" // causes annoying css
+                    // disableUnderline
                 >
+                    <MenuItem value="">
+                        <em>Keine Auswahl</em>
+                    </MenuItem>
                     {[props.content as string, ...list]
                         .filter(i => i !== null)
                         .map(option => (
                             <MenuItem key={option} value={option}>
-                                <ListItemText>
-                                    <Chip
-                                        label={option}
-                                        size="small"
-                                        sx={{
-                                            color: theme.palette.getContrastText(stringToColor(option)),
-                                            bgcolor: stringToColor(option),
-                                            mr: 0.5,
-                                        }}
-                                    />
-                                </ListItemText>
-                                {option === props.content && (
-                                    <IconButton
-                                        size="small"
-                                        onClick={this.column.editable ? () => changeOption("") : undefined}
-                                    >
-                                        <ClearIcon fontSize="small" />
-                                    </IconButton>
-                                )}
+                                <Chip
+                                    label={option}
+                                    size="small"
+                                    sx={{
+                                        color: theme.palette.getContrastText(stringToColor(option)),
+                                        bgcolor: stringToColor(option),
+                                        mr: 0.5,
+                                    }}
+                                />
                             </MenuItem>
                         ))}
                     {disallowNewSelectValues === false && [
@@ -349,13 +342,23 @@ export class Select extends Cell {
                                 value={input}
                                 onChange={e => setInput(e.target.value)}
                                 size="small"
+                                fullWidth
                                 onKeyDown={e => {
                                     e.stopPropagation()
                                     if (e.key === "Enter") changeOption(input)
                                 }}
                             />
-                            <IconButton size="small" sx={{ ml: 1 }} onClick={() => changeOption(input)}>
-                                <AddOptionIcon fontSize="small" color="primary" />
+                            <IconButton
+                                size="small"
+                                sx={{ ml: 1 }}
+                                onClick={e => {
+                                    e.stopPropagation()
+                                    if (input === "") return
+                                    changeOption(input)
+                                }}
+                                disabled={input === ""}
+                            >
+                                <AddOptionIcon fontSize="small" color={input === "" ? "disabled" : "primary"} />
                             </IconButton>
                         </MenuItem>,
                     ]}

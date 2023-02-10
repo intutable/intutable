@@ -100,6 +100,7 @@ export class EMail extends Cell {
                 value={value}
                 disabled={this.column.editable === false}
                 label={props.label}
+                fullWidth
                 required={props.required}
                 InputProps={{
                     endAdornment: (

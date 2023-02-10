@@ -158,6 +158,7 @@ export class Percentage extends NumericCell {
                         handleBlur()
                     }
                 }}
+                fullWidth
                 value={percentage ?? ""}
                 disabled={this.column.editable === false}
                 label={props.label}
