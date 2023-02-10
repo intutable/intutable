@@ -14,6 +14,7 @@ import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import { TimePickerProps } from "@mui/lab"
+import { HelperTooltip } from "./Text"
 
 export class Time extends TempusCell {
     public brand = "time"
@@ -118,6 +119,7 @@ export class Time extends TempusCell {
         const { snackError } = useSnacki()
 
         const [content, setContent] = useState(props.content)
+        const isEmpty = content == null
 
         const handleChange = async (value: number | null) => {
             if (Time.isValid(value)) setContent(value)
@@ -127,6 +129,13 @@ export class Time extends TempusCell {
                 snackError("Der Wert konnte nicht geändert werden")
             }
         }
+
+        /**
+         * required
+         * tooltip
+         * placeholder
+         * suppressed label
+         */
 
         return (
             <LocalizationProvider
@@ -147,7 +156,21 @@ export class Time extends TempusCell {
                     showToolbar
                     value={content}
                     onChange={handleChange}
-                    renderInput={props => <TextField size="small" {...props} />}
+                    label={props.label}
+                    renderInput={renderProps => (
+                        <TextField
+                            size="small"
+                            fullWidth
+                            required={props.required}
+                            label={props.label}
+                            placeholder={
+                                props.label == null && props.required ? props.placeholder + "*" : props.placeholder
+                            }
+                            error={props.required && isEmpty}
+                            helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
+                            {...renderProps}
+                        />
+                    )}
                     disabled={this.column.editable === false}
                     componentsProps={{
                         actionBar: {
@@ -156,8 +179,11 @@ export class Time extends TempusCell {
                     }}
                     readOnly={this.isReadonlyComponent}
                     InputProps={{
+                        readOnly: this.isReadonlyComponent,
                         startAdornment: <ExposedInputAdornment column={this.column} />,
+                        endAdornment: <HelperTooltip text={props.tooltip} />,
                     }}
+
                     // sx={props.forwardSX}
                     // {...props.forwardProps}
                 />

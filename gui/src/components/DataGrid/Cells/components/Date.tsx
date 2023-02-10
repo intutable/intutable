@@ -14,6 +14,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputProps } from "../abstract/protocols"
 import { DatePickerProps } from "@mui/lab"
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
+import { HelperTooltip } from "./Text"
 
 export class DateCell extends TempusCell {
     public brand = "date"
@@ -125,6 +126,7 @@ export class DateCell extends TempusCell {
         const { snackError } = useSnacki()
 
         const [content, setContent] = useState(props.content)
+        const isEmpty = content == null
 
         const handleChange = async (value: number | null) => {
             if (DateCell.isValid(value)) setContent(value)
@@ -155,7 +157,21 @@ export class DateCell extends TempusCell {
                     value={content}
                     disabled={this.column.editable === false}
                     onChange={handleChange}
-                    renderInput={props => <TextField size="small" fullWidth {...props} />}
+                    label={props.label}
+                    renderInput={props => (
+                        <TextField
+                            size="small"
+                            fullWidth
+                            required={props.required}
+                            label={props.label}
+                            placeholder={
+                                props.label == null && props.required ? props.placeholder + "*" : props.placeholder
+                            }
+                            error={props.required && isEmpty}
+                            helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
+                            {...props}
+                        />
+                    )}
                     componentsProps={{
                         actionBar: {
                             actions: ["clear", "today", "accept"],
@@ -163,7 +179,9 @@ export class DateCell extends TempusCell {
                     }}
                     readOnly={this.isReadonlyComponent}
                     InputProps={{
+                        readOnly: this.isReadonlyComponent,
                         startAdornment: <ExposedInputAdornment column={this.column} />,
+                        endAdornment: <HelperTooltip text={props.tooltip} />,
                     }}
                     // sx={props.forwardSX}
                     // {...props.forwardProps}
