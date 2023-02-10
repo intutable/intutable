@@ -37,7 +37,6 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     const { tables } = useTables()
     const { data, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
-    const { getRowId } = useRow()
 
     const metaColumn = useMemo(() => (data ? getTableColumn(column) : null), [column, data, getTableColumn])
 
@@ -65,7 +64,7 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                     url: `/api/join/${join!.id}`,
                     body: {
                         tableId: data!.metadata.descriptor.id,
-                        rowId: getRowId(row),
+                        rowId: row._id,
                         value: null,
                     },
                 })

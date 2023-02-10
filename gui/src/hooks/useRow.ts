@@ -30,18 +30,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     const { getColumnInfo: getTableColumn } = useColumn(tableOptions, viewOptions)
 
     /**
-     * Get the (backend, primary key) ID of a row from its RDG counterpart.
-     * Uses the view supplied given by {@link useView} to determine the
-     * correct key. The table can be overridden with {@link viewOptions}.
-     *
-     * @deprecated Now you can just do `row._id` instead.
-     */
-    const getRowId = (row: Row): number => {
-        const uidColumn = view!.metaColumns.find(c => c.name === "_id")!
-        return row[uidColumn.key] as number
-    }
-
-    /**
      * Used for row reordering / drag n drop
      * // TODO: implement
      */
@@ -136,7 +124,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     }
 
     return {
-        getRowId,
         onRowReorder,
         createRow,
         deleteRow,
