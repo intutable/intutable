@@ -40,7 +40,7 @@ import { PageAction, PageActionUtil } from "utils/PageAction"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 
-const TablePage: React.FC<> = () => {
+const TablePage: React.FC = () => {
     const theme = useTheme()
     const { getTheme } = useThemeToggler()
     const { snackWarning, closeSnackbar, snackError, snack } = useSnacki()
@@ -294,7 +294,7 @@ export const getServerSideProps = withSSRCatch(
                 actions: pageActionUtil.actions,
                 inputMask,
                 openRow,
-            },
+            } as PageProps,
         }
     })
 )

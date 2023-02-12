@@ -9,7 +9,7 @@ const mask: InputMask = {
     },
     name: "ABC-Institut-Personen-Eingabemaske",
     description:
-        "Mit dieser Eingabemaske können beliebige Einträge dem View 'ABC-Institut' in der Tabelle 'Personen' hinzugefügt werden.",
+        "In der View 'ABC-Institut' (in der Tabelle 'Personen') sind alle Mitglieder der des ABC-Instituts gelistet. Mit dieser Eingabemaske können beliebige Einträge der View 'ABC-Institut' hinzugefügt werden. Die Eingabemaske kann nur auf diese View angewandt werden!",
     created: new Date(2022, 11, 15),
     lastEdited: new Date(2023, 0, 15),
     comments: [],

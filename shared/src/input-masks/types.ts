@@ -73,6 +73,8 @@ export type InputMask = {
     lastEdited: Date
     comments: Comment[]
     active: boolean
+    /** @default false */
+    disabled?: boolean
     // -- actual specification --
     addRecordButtonText?: string
     addRecordButtonIcon?: string

@@ -1,36 +1,18 @@
 import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Box, Button, Card, CardContent, darken, Divider, Stack, Tooltip, Typography } from "@mui/material"
+import { Divider, Stack, Typography } from "@mui/material"
 import { InputMask } from "@shared/input-masks/types"
+import { isViewIdOrigin, isViewNameOrigin, TableOrigin, ViewOrigin } from "@shared/input-masks/utils"
 import { fetcher } from "api/fetcher"
 import { withSessionSsr } from "auth/withSessionSSR"
 import { CollapsableSection } from "components/CollapsableSection"
+import { InputMaskCTACard } from "components/InputMaskCTACard"
 import MetaTitle from "components/MetaTitle"
-import type { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import { TableData, ViewData } from "types"
-import { DynamicRouteQuery } from "types/DynamicRouteQuery"
-import { withSSRCatch } from "utils/withSSRCatch"
-import { useTheme } from "@mui/material/styles"
-import {
-    isTableIdOrigin,
-    isTableNameOrigin,
-    isViewIdOrigin,
-    isViewNameOrigin,
-    TableIdOrigin,
-    TableNameOrigin,
-    TableOrigin,
-    ViewIdOrigin,
-    ViewNameOrigin,
-    ViewOrigin,
-} from "@shared/input-masks/utils"
-import { FindSource } from "utils/FindSource"
-import AddRecordIcon from "@mui/icons-material/PlaylistAddCircle"
-import Icon from "@mui/material/Icon"
+import type { InferGetServerSidePropsType, NextPage } from "next"
 import Head from "next/head"
-import { useRouter } from "next/router"
-import TableIcon from "@mui/icons-material/TableRows"
-import ViewIcon from "@mui/icons-material/TableView"
 import { UrlObject } from "url"
+import { FindSource } from "utils/FindSource"
+import { withSSRCatch } from "utils/withSSRCatch"
 
 type InputMaskCallToActionCard = {
     inputMask: InputMask
@@ -49,9 +31,6 @@ type DashboardProps = {
 }
 
 const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (props: DashboardProps) => {
-    const theme = useTheme()
-    const router = useRouter()
-
     return (
         <>
             <MetaTitle title="Dashboard" />
@@ -64,76 +43,7 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
             <CollapsableSection title="Eingabemasken">
                 <Stack direction="row" sx={{ width: "100%" }} gap={4}>
                     {props.cards.map(card => (
-                        <Tooltip
-                            arrow
-                            placement="top"
-                            enterDelay={2000}
-                            title={card.inputMask.description}
-                            key={card.inputMask.id}
-                        >
-                            <Card
-                                onClick={() =>
-                                    router.push(card.url, typeof card.url === "string" ? card.url : card.url.pathname!)
-                                }
-                                sx={{
-                                    cursor: "pointer",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    "&:hover": {
-                                        bgcolor: theme.palette.action.hover,
-                                    },
-                                }}
-                            >
-                                <CardContent>
-                                    <Stack direction="row" alignItems="center">
-                                        <Tooltip
-                                            arrow
-                                            placement="right"
-                                            title={`${card.source.project.name} > ${card.source.table.name} > ${card.source.view.name}`}
-                                            sx={{ mr: 2 }}
-                                        >
-                                            {card.originType === "table" ? (
-                                                <TableIcon fontSize="large" />
-                                            ) : (
-                                                <ViewIcon fontSize="large" />
-                                            )}
-                                        </Tooltip>
-                                        <Stack direction="column">
-                                            <Typography variant="h6">
-                                                {card.originType === "table"
-                                                    ? card.source.table.name
-                                                    : `${card.source.view.name} in ${card.source.table.name}`}
-                                            </Typography>
-                                            <Button
-                                                onClick={e => {
-                                                    e.stopPropagation()
-                                                    router.push(
-                                                        card.callToActionUrl,
-                                                        typeof card.url === "string" ? card.url : card.url.pathname!
-                                                    )
-                                                }}
-                                                variant="contained"
-                                                size="small"
-                                                sx={{
-                                                    bgcolor: theme.palette.primary.light,
-                                                    mt: 3,
-                                                }}
-                                                startIcon={
-                                                    card.inputMask.addRecordButtonIcon ? (
-                                                        <Icon>{card.inputMask.addRecordButtonIcon}</Icon>
-                                                    ) : (
-                                                        <AddRecordIcon />
-                                                    )
-                                                }
-                                            >
-                                                {card.inputMask.addRecordButtonText ?? "Neuer Eintrag"}
-                                            </Button>
-                                        </Stack>
-                                    </Stack>
-                                </CardContent>
-                            </Card>
-                        </Tooltip>
+                        <InputMaskCTACard key={card.inputMask.id} card={card} />
                     ))}
                 </Stack>
             </CollapsableSection>
