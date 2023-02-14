@@ -78,16 +78,17 @@ export function createStandardColumn(
  * choose a row from the foreign table to set the value of a foreign key column, causing
  * the row containing the cell and the row selected to be displayed next to each other.
  * This is how we make foreign keys and joins accessible to users who do not know SQL.
- * To keep things intuitive, the link column is equivalent to the link - any operations
+ * To keep things intuitive, the link column is equivalent to the link - any user functions
  * on the link, such as deleting it or adding more columns from the
  * foreign table, are done via the link column's context menu.
  * The link column itself displays the "Name" field of the linked row, or whichever column is
- * marked by the `isUserPrimary` attribute. More columns, up to the whole table, can be added
- * with {@link createLookupColumn}.
+ * marked by the `isUserPrimary` attribute, with the table's name in parentheses.
+ * More columns, up to the whole table, can be added with {@link createLookupColumn}.
  * Creating a link column also creates a similar link column in the target table. However, since
  * the link is a partial functional relation, this "backward" link column will give rise to
- * a 1:n relationship. It can not be edited; one must link rows via the forward link colum
- * (for now)
+ * a 1:n relationship. For now, all linked values are aggregated into an array.
+ * The backward link can not be edited; one must link rows via the forward link column (for now).
+ *
  * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn} the newly created column.
  * @param {ViewId[]} addToHomeViews The column created in a table may or may not also be added
  * to all views. This parameter specifies which views to add the forward link column to.
@@ -126,7 +127,8 @@ export function createLinkColumn(
  * to a table which has a column whose ID is `column.foreignColumn`.
  * Post: The table `tableId` has a new column whose data are taken from the other table's column
  * `column.foreignColumn`. Its index is such that it is directly to the right of the other
- * columns from the link.
+ * columns from the link. Its name is the name of `column.foreignColumn`, with the table name
+ * in parentheses.
  */
 export function createLookupColumn(
     connectionId: string,

@@ -337,8 +337,9 @@ async function createForwardLinkColumn(
     const foreignUserPrimaryColumn = foreignTableInfo.columns.find(
         c => c.attributes.isUserPrimaryKey! === 1
     )!
-    const displayName = (foreignUserPrimaryColumn.attributes.displayName ||
-        foreignUserPrimaryColumn.name) as string
+    const displayName =
+        ((foreignUserPrimaryColumn.attributes.displayName ||
+            foreignUserPrimaryColumn.name) as string) + `(${foreignTableInfo.descriptor.name})`
     const columnIndex = homeTableInfo.columns.length
     const attributes = linkColumnAttributes(displayName, columnIndex)
     const linkColumn = await addColumnToTableView(
@@ -381,8 +382,9 @@ async function createBackwardLinkColumn(
     const homeUserPrimaryColumn = homeTableInfo.columns.find(
         c => c.attributes.isUserPrimaryKey! === 1
     )!
-    const displayName = (homeUserPrimaryColumn.attributes.displayName ||
-        homeUserPrimaryColumn.name) as string
+    const displayName =
+        ((homeUserPrimaryColumn.attributes.displayName || homeUserPrimaryColumn.name) as string) +
+        `(${homeTableInfo.descriptor.name})`
     const columnIndex = foreignTableInfo.columns.length
     const attributes = backwardLinkColumnAttributes(displayName, columnIndex)
     const linkColumn = await addColumnToTableView(
@@ -444,7 +446,12 @@ async function createLookupColumn(
                 .filter(c => c.joinId === join.id)
                 .map(c => c.attributes[COLUMN_INDEX_KEY])
         ) + 1
-    const specifier = createRawSpecifierForLookupColumn(linkKind, parentColumn, columnIndex)
+    const specifier = createRawSpecifierForLookupColumn(
+        linkKind,
+        otherTableInfo.descriptor,
+        parentColumn,
+        columnIndex
+    )
     const lookupColumn = await addColumnToTableView(
         connectionId,
         tableId,
@@ -469,11 +476,14 @@ async function createLookupColumn(
 
 function createRawSpecifierForLookupColumn(
     kind: LinkKind,
+    otherTableDescriptor: TableDescriptor,
     parentColumn: RawViewColumnInfo,
     columnIndex: number
 ): ColumnSpecifier {
     // determine meta attributes
-    const displayName = parentColumn.attributes.displayName || parentColumn.name
+    const displayName =
+        (parentColumn.attributes.displayName || parentColumn.name) +
+        `(${otherTableDescriptor.name})`
     let contentType: string
     let attributes: Partial<DB.Column>
     let aggregateFunction: ColumnSpecifier["outputFunc"]
