@@ -1,4 +1,11 @@
-import { TableId, ViewId, Filter, RawViewDescriptor, RawViewColumnInfo } from "./types"
+import {
+    TableId,
+    ViewId,
+    Filter,
+    RawViewDescriptor,
+    RawViewColumnInfo,
+    SerializedColumn,
+} from "./types"
 import {
     RowData,
     StandardColumnSpecifier,
@@ -185,6 +192,33 @@ export function changeTableColumnAttributes(
         columnId,
         update,
         changeInViews,
+    }
+}
+
+/**
+ * Change the display name of a table column.
+ * Rules:
+ * R1 Column names are table-wide: Each column only has one name, across all views.
+ * R2 Column names are table-specific: Renaming a column will not affect anything in other
+ * tables, such as lookup columns.
+ * The SQL column and all affected queries will not change, only the display name in the GUI.
+ * Exceptions:
+ * E1 there already exists a column with the same name => reject with error
+ * Response: { message: string } A report that the column was renamed.
+ */
+export function renameTableColumn(
+    connectionId: string,
+    tableId: TableId,
+    columnId: SerializedColumn["id"],
+    newName: string
+) {
+    return {
+        channel: CHANNEL,
+        method: renameTableColumn.name,
+        connectionId,
+        tableId,
+        columnId,
+        newName,
     }
 }
 

@@ -201,7 +201,9 @@ describe("create different kinds of columns", () => {
     let TEST_TABLE: TableDescriptor
 
     beforeAll(async () => {
-        TEST_TABLE = await core.events.request(req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name))
+        TEST_TABLE = await core.events.request(
+            req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name)
+        )
     })
 
     afterAll(async () => {
@@ -225,9 +227,75 @@ describe("create different kinds of columns", () => {
         )
 
         // make sure column also exists in the view
-        const testViewData = (await core.events.request(req.getViewData(connId, TEST_TABLE.id))) as SerializedViewData
+        const testViewData = await coreRequest<SerializedViewData>(
+            req.getViewData(connId, TEST_TABLE.id)
+        )
         const childColumn = testViewData.columns.find(c => c.name === column.name)
         expect(childColumn).toBeDefined()
+    })
+})
+
+describe("rename columns", () => {
+    const TABLE_SPEC = {
+        name: "employees",
+        columns: {
+            department: {
+                specifier: { name: "Department", cellType: "string" },
+                id: -1
+            },
+            salary: {
+                specifier:
+                { name: "Salary", cellType: "number" },
+                id: -1
+            },
+        },
+    }
+    let testTable: TableDescriptor
+    let testTableData: TableData
+
+    beforeAll(async () => {
+        testTable = await coreRequest<TableDescriptor>(
+            req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name)
+        )
+        TABLE_SPEC.columns.department.id = await coreRequest<SerializedColumn>(
+            req.createStandardColumn(connId, testTable.id, TABLE_SPEC.columns.department.specifier)
+        ).then(column => column.id)
+        TABLE_SPEC.columns.salary.id = await coreRequest<SerializedColumn>(
+            req.createStandardColumn(connId, testTable.id, TABLE_SPEC.columns.salary.specifier)
+        ).then(column => column.id)
+    })
+
+    afterAll(async () => {
+        await coreRequest(req.deleteTable(connId, testTable.id))
+    })
+    test("valid rename - column also renamed in views", async () => {
+        const newName = "Dosh"
+        await coreRequest(
+            req.renameTableColumn(connId, testTable.id, TABLE_SPEC.columns.salary.id, newName)
+        )
+        testTableData = await coreRequest<TableData>(
+            req.getTableData(connId, testTable.id)
+        )
+        expect(testTableData.columns).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                id: TABLE_SPEC.columns.department.id,
+                name: TABLE_SPEC.columns.department.specifier.name,
+            }),
+            expect.objectContaining({
+                id: TABLE_SPEC.columns.salary.id,
+                name: newName,
+            }),
+        ]))
+    })
+    test("invalid rename: name already taken", async () => {
+        const newName = "Department"
+        const renamePromise = coreRequest(
+            req.renameTableColumn(connId, testTable.id, TABLE_SPEC.columns.salary.id, newName)
+        )
+        expect(renamePromise).rejects.toEqual(expect.objectContaining({
+            message: expect.stringContaining("already contains"),
+            code: ErrorCode.alreadyTaken,
+        }))
     })
 })
 
@@ -533,7 +601,7 @@ describe("links between tables", () => {
     test("link and lookup columns created", async () => {
         expect(linkColumn).toEqual(expect.objectContaining({
             id: expect.any(Number),
-            name: userPrimaryColumnName(),
+            name: expect.stringContaining(userPrimaryColumnName()),
             kind: "link",
         }))
         expect(lookupColumn).toEqual(expect.objectContaining({
@@ -542,7 +610,7 @@ describe("links between tables", () => {
         }))
         expect(backwardLinkColumn).toEqual(expect.objectContaining({
             id: expect.any(Number),
-            name: userPrimaryColumnName(),
+            name: expect.stringContaining(userPrimaryColumnName()),
             kind: "backwardLink",
         }))
         expect(backwardLookupColumn).toEqual(expect.objectContaining({

@@ -106,6 +106,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.createLookupColumn.name, createLookupColumn_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
+        .on(req.renameTableColumn.name, renameTableColumn)
         .on(req.getTableData.name, getTableData_)
         .on(req.createView.name, createView_)
         .on(req.renameView.name, renameView_)
@@ -751,6 +752,24 @@ async function changeColumnAttributesInViews(
                     .then(c => parser.parseColumn(c))
             )
     )
+}
+
+async function renameTableColumn({
+    connectionId,
+    tableId,
+    columnId,
+    newName,
+}): Promise<CoreResponse> {
+    const tableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    if (tableInfo.columns.some(c => c.attributes.displayName === newName))
+        return error(
+            "renameTableColumn",
+            `table ${tableId} already contains a column named ${columnId}`,
+            ErrorCode.alreadyTaken
+        )
+    const update = { name: newName }
+    await changeTableColumnAttributes(connectionId, tableId, columnId, update)
+    return { message: `column ${columnId} renamed to "${newName}"` }
 }
 
 async function getTableData_({ connectionId, tableId }: CoreRequest): Promise<CoreResponse> {
