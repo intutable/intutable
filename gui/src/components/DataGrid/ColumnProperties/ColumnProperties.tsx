@@ -31,7 +31,6 @@ export const Name: React.FC<{ column: Column.Serialized }> = props => {
             type="text"
             value={props.column.name}
             onChange={changeName}
-            disabled={props.column.kind !== "standard"}
         />
     )
 }
