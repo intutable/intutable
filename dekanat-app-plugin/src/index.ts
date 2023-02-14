@@ -479,12 +479,12 @@ function createRawSpecifierForLookupColumn(
     let aggregateFunction: ColumnSpecifier["outputFunc"]
     switch (kind) {
         case LinkKind.Forward:
-            contentType = parentColumn.attributes.displayName || "string"
+            contentType = parentColumn.attributes.cellType || "string"
             attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
             aggregateFunction = firstAggregate()
             break
         case LinkKind.Backward:
-            contentType = parentColumn.attributes.displayName || "string"
+            contentType = parentColumn.attributes.cellType || "string"
             attributes = backwardLookupColumnAttributes(displayName, contentType, columnIndex)
             aggregateFunction = jsonbArrayAggregate()
             break
