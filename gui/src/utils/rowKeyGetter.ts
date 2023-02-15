@@ -1,5 +1,4 @@
 import type { Row } from "types"
-import React from "react"
 
 /**
  * Returns the id of a row, which DataGrid needs for indexing.

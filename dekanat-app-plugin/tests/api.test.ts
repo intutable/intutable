@@ -201,7 +201,9 @@ describe("create different kinds of columns", () => {
     let TEST_TABLE: TableDescriptor
 
     beforeAll(async () => {
-        TEST_TABLE = await core.events.request(req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name))
+        TEST_TABLE = await core.events.request(
+            req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name)
+        )
     })
 
     afterAll(async () => {
@@ -225,9 +227,75 @@ describe("create different kinds of columns", () => {
         )
 
         // make sure column also exists in the view
-        const testViewData = (await core.events.request(req.getViewData(connId, TEST_TABLE.id))) as SerializedViewData
+        const testViewData = await coreRequest<SerializedViewData>(
+            req.getViewData(connId, TEST_TABLE.id)
+        )
         const childColumn = testViewData.columns.find(c => c.name === column.name)
         expect(childColumn).toBeDefined()
+    })
+})
+
+describe("rename columns", () => {
+    const TABLE_SPEC = {
+        name: "employees",
+        columns: {
+            department: {
+                specifier: { name: "Department", cellType: "string" },
+                id: -1
+            },
+            salary: {
+                specifier:
+                { name: "Salary", cellType: "number" },
+                id: -1
+            },
+        },
+    }
+    let testTable: TableDescriptor
+    let testTableData: TableData
+
+    beforeAll(async () => {
+        testTable = await coreRequest<TableDescriptor>(
+            req.createTable(connId, ADMIN_ID, PROJECT_ID, TABLE_SPEC.name)
+        )
+        TABLE_SPEC.columns.department.id = await coreRequest<SerializedColumn>(
+            req.createStandardColumn(connId, testTable.id, TABLE_SPEC.columns.department.specifier)
+        ).then(column => column.id)
+        TABLE_SPEC.columns.salary.id = await coreRequest<SerializedColumn>(
+            req.createStandardColumn(connId, testTable.id, TABLE_SPEC.columns.salary.specifier)
+        ).then(column => column.id)
+    })
+
+    afterAll(async () => {
+        await coreRequest(req.deleteTable(connId, testTable.id))
+    })
+    test("valid rename - column also renamed in views", async () => {
+        const newName = "Dosh"
+        await coreRequest(
+            req.renameTableColumn(connId, testTable.id, TABLE_SPEC.columns.salary.id, newName)
+        )
+        testTableData = await coreRequest<TableData>(
+            req.getTableData(connId, testTable.id)
+        )
+        expect(testTableData.columns).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                id: TABLE_SPEC.columns.department.id,
+                name: TABLE_SPEC.columns.department.specifier.name,
+            }),
+            expect.objectContaining({
+                id: TABLE_SPEC.columns.salary.id,
+                name: newName,
+            }),
+        ]))
+    })
+    test("invalid rename: name already taken", async () => {
+        const newName = "Department"
+        const renamePromise = coreRequest(
+            req.renameTableColumn(connId, testTable.id, TABLE_SPEC.columns.salary.id, newName)
+        )
+        expect(renamePromise).rejects.toEqual(expect.objectContaining({
+            message: expect.stringContaining("already contains"),
+            code: ErrorCode.alreadyTaken,
+        }))
     })
 })
 
@@ -413,16 +481,23 @@ describe("row handling", () => {
     })
 })
 
+/**
+ * To test link functionality, we create a table "employees" and a table "supervisors", and
+ * a link employees -> supervisors. We ensure that the linked data are present in the respective
+ * other table. We create a lookup column for both the forward and the backward link.
+ */
 describe("links between tables", () => {
     const homeTableName = "employees"
     let homeTable: TableDescriptor
     let homeTableData: TableData
     let homeNameColumn: SerializedColumn
-    let homeRow1 = { _id: -1, name: "John Doe" }
-    let homeRow2 = { _id: -1, name: "Jane Stag" }
+    let homeFirstNameColumn: SerializedColumn
+    let homeRow1 = { _id: -1, name: "Doe", firstName: "John" }
+    let homeRow2 = { _id: -1, name: "Stag", firstName: "Jane" }
 
     let foreignTableName = "supervisors"
     let foreignTable: TableDescriptor
+    let foreignTableData: TableData
     let foreignNameColumn: SerializedColumn
     let foreignLevelColumn: SerializedColumn
     let foreignRow1 = { _id: -1, name: "Bill Lumbergh", authorityLevel: "total" }
@@ -430,24 +505,39 @@ describe("links between tables", () => {
     let linkColumn: SerializedColumn
     let lookupColumn: SerializedColumn
 
+    let backwardLinkColumn: SerializedColumn
+    let backwardLookupColumn: SerializedColumn
+
     beforeAll(async () => {
-        // set up a table with the default column and two rows
+        // set up a table with the default column, an extra column, and two rows
         homeTable = await coreRequest<TableDescriptor>(
             req.createTable(connId, ADMIN_ID, PROJECT_ID, homeTableName)
         )
 
         homeTableData = await coreRequest<TableData>(req.getTableData(connId, homeTable.id))
         homeNameColumn = homeTableData.columns.find(c => c.name === userPrimaryColumnName())!
+        homeFirstNameColumn = await coreRequest<SerializedColumn>(
+            req.createStandardColumn(connId, homeTable.id, {
+                name: "First Name",
+                cellType: "string"
+            })
+        )
 
         const { _id: id1 } = await coreRequest<{ _id: number }>(
             req.createRow(connId, homeTable.id, {
-                values: { [homeNameColumn.id]: homeRow1.name }
+                values: {
+                    [homeNameColumn.id]: homeRow1.name,
+                    [homeFirstNameColumn.id]: homeRow1.firstName,
+                }
             })
         )
         homeRow1._id = id1
         const { _id: id2 } = await coreRequest<{ _id: number }>(
             req.createRow(connId, homeTable.id, {
-                values: { [homeNameColumn.id]: homeRow2.name }
+                values: {
+                    [homeNameColumn.id]: homeRow2.name,
+                    [homeFirstNameColumn.id]: homeRow2.firstName,
+                }
             })
         )
         homeRow2._id = id2
@@ -463,7 +553,7 @@ describe("links between tables", () => {
             })
         )
 
-        const foreignTableData = await coreRequest<TableData>(
+        foreignTableData = await coreRequest<TableData>(
             req.getTableData(connId, foreignTable.id)
         )
         foreignNameColumn = foreignTableData.columns.find(c => c.name === userPrimaryColumnName())!
@@ -482,10 +572,23 @@ describe("links between tables", () => {
         linkColumn = await coreRequest<SerializedColumn>(
             req.createLinkColumn(connId, homeTable.id, { foreignTable: foreignTable.id })
         )
+
         lookupColumn = await coreRequest<SerializedColumn>(
             req.createLookupColumn(connId, homeTable.id, {
                 linkId: linkColumn.linkId,
                 foreignColumn: foreignLevelColumn.id,
+            })
+        )
+        foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        ).catch(e => { console.dir(e); return Promise.reject(e) })
+        backwardLinkColumn = foreignTableData.columns.find(
+            c => c.inverseLinkColumnId === linkColumn.id
+        )!
+        backwardLookupColumn = await coreRequest<SerializedColumn>(
+            req.createLookupColumn(connId, foreignTable.id, {
+                linkId: backwardLinkColumn.linkId,
+                foreignColumn: homeFirstNameColumn.id,
             })
         )
     })
@@ -498,12 +601,21 @@ describe("links between tables", () => {
     test("link and lookup columns created", async () => {
         expect(linkColumn).toEqual(expect.objectContaining({
             id: expect.any(Number),
-            name: userPrimaryColumnName(),
+            name: expect.stringContaining(userPrimaryColumnName()),
             kind: "link",
         }))
         expect(lookupColumn).toEqual(expect.objectContaining({
             id: expect.any(Number),
             kind: "lookup",
+        }))
+        expect(backwardLinkColumn).toEqual(expect.objectContaining({
+            id: expect.any(Number),
+            name: expect.stringContaining(userPrimaryColumnName()),
+            kind: "backwardLink",
+        }))
+        expect(backwardLookupColumn).toEqual(expect.objectContaining({
+            id: expect.any(Number),
+            kind: "backwardLookup",
         }))
     })
 
@@ -530,5 +642,45 @@ describe("links between tables", () => {
                 [lookupColumn.key]: foreignRow1.authorityLevel,
             }),
         ]))
+        foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        )
+        // The rows from the home table are aggregated.
+        expect(foreignTableData.rows).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                _id: foreignRow1._id,
+                [foreignNameColumn.key]: foreignRow1.name,
+                [foreignLevelColumn.key]: foreignRow1.authorityLevel,
+                [backwardLinkColumn.key]: expect.arrayContaining([
+                    homeRow1.name,
+                    homeRow2.name,
+                ]),
+                [backwardLookupColumn.key]: expect.arrayContaining([
+                    homeRow1.firstName,
+                    homeRow2.firstName
+                ]),
+            })
+        ]))
+    })
+
+    test("automatically cleans up all artifacts of forward and backward links", async () => {
+        const linkColumn2 = await coreRequest<SerializedColumn>(
+            req.createLinkColumn(connId, homeTable.id, { foreignTable: foreignTable.id })
+        )
+        foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        )
+        let backwardLinkColumn2 = foreignTableData.columns.find(
+            c => c.id === linkColumn2.inverseLinkColumnId
+        )
+        expect(backwardLinkColumn2).toBeDefined()
+        await coreRequest(req.removeColumnFromTable(connId, homeTable.id, linkColumn2.id))
+        foreignTableData = await coreRequest<TableData>(
+            req.getTableData(connId, foreignTable.id)
+        )        
+        backwardLinkColumn2 = foreignTableData.columns.find(
+            c => c.id === linkColumn2.inverseLinkColumnId
+        )
+        expect(backwardLinkColumn2).not.toBeDefined()
     })
 })

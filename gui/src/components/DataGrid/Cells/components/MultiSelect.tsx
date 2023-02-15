@@ -1,6 +1,5 @@
 import AddIcon from "@mui/icons-material/Add"
 import BookmarksIcon from "@mui/icons-material/Bookmarks"
-import ClearIcon from "@mui/icons-material/Clear"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import AddOptionIcon from "@mui/icons-material/PlaylistAdd"
 import {
@@ -11,7 +10,6 @@ import {
     FormHelperText,
     IconButton,
     InputLabel,
-    ListItemText,
     MenuItem,
     Select as MuiSelect,
     TextField,
@@ -164,17 +162,21 @@ export class MultiSelect extends Cell {
                                 }}
                             >
                                 {isEmpty === false &&
-                                    content.map(chip => (
-                                        <ChipItem
-                                            label={chip}
-                                            key={chip}
-                                            onDelete={
-                                                this.column.editable
-                                                    ? () => removeChip(chip)
-                                                    : undefined
-                                            }
-                                        />
-                                    ))}
+                                    content.map(chip =>
+                                        chip ? (
+                                            <ChipItem
+                                                label={chip.toString()}
+                                                key={chip}
+                                                onDelete={
+                                                    this.column.editable
+                                                        ? () => removeChip(chip)
+                                                        : undefined
+                                                }
+                                            />
+                                        ) : (
+                                            <></>
+                                        )
+                                    )}
                             </Box>
                             {showSelectMenuButton && (
                                 <IconButton size="small" onClick={openModal} ref={modalRef}>

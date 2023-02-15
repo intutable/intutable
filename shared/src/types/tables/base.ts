@@ -7,22 +7,57 @@
  * for this application.
  */
 
-import type {
-    ColumnInfo,
-    ParentColumnSpecifier as GroupColumn,
-    SortColumn,
-    JoinDescriptor,
-} from "@intutable/lazy-views"
+import type { ParentColumnSpecifier as GroupColumn, SortColumn } from "@intutable/lazy-views"
 import type { TableDescriptor as RawTableDescriptor } from "@intutable/project-management/dist/types"
 import type { ViewDescriptor, TableDescriptor } from "."
 import type { Filter } from "../filter"
 // #################################################################
 //       Table
 // #################################################################
+export enum LinkKind {
+    Forward,
+    Backward,
+}
 /**
- * Placeholder alias for now. Will eventually be its own type.
+ * A link between tables. Each link has a [_backward link_]{@link BackwardLinkDescriptor}
+ * in the foreign table associated with it, that connects rows by the same matching columns.
+ *
+ * @prop {number} id the internal ID. Needed for stuff like adding more columns to the link.
+ * @prop {number} foreignTable the ID of the other table that is being linked to.
+ * @prop {number} forwardLinkColumn A column that represents the link in the GUI. Options like
+ * deleting the link and adding more columns can be accessed through its context menu.
+ * @prop {number} backwardLinkColumn The link column that represents the backward link.
+ * Its [descriptor]{@link BackwardLinkDescriptor} can be found by getting
+ * `find(backwardLinkColumn).linkId` and searching `foreignTable.links` for the matching ID.
  */
-export type LinkDescriptor = JoinDescriptor
+export type ForwardLinkDescriptor = {
+    kind: LinkKind.Forward
+    id: number
+    foreignTable: number
+    forwardLinkColumn: number
+    backwardLinkColumn: number
+}
+
+/**
+ * Describes the inverse of a {@LinkDescriptor}.
+ * @prop {number} id the internal ID. Needed for stuff like adding extra columns to the link.
+ * @prop {number} homeTable the ID of the table that is linked to this one. Since the link is
+ * a partial functional relation, we continue the practice of referring to the table containing
+ * the forward link as the "home table", even from the perspective of the foreign table.
+ * @prop {number} backwardLinkColumn the ID of the backward link column that represents this
+ * link.
+ * @prop {number} forwardLinkColumn the ID of the forward link column that represents this
+ * link's corresponding forward link.
+ */
+export type BackwardLinkDescriptor = {
+    kind: LinkKind.Backward
+    id: number
+    homeTable: number
+    backwardLinkColumn: number
+    forwardLinkColumn: number
+}
+
+export type LinkDescriptor = ForwardLinkDescriptor | BackwardLinkDescriptor
 
 export type Table<COL, ROW> = {
     descriptor: TableDescriptor
@@ -72,6 +107,14 @@ export type Row = {
 //       Column
 // #################################################################
 
+export type ColumnKind =
+    | "standard"
+    | "link"
+    | "backwardLink"
+    | "lookup"
+    | "backwardLookup"
+    | "index"
+    | "foreignKey"
 /**
  * @description General, app-relevant properties for a column - these are
  * (usually) relevant to both serialized and deserialized columns.
@@ -105,6 +148,11 @@ export type MetaColumnProps = {
      */
     readonly linkId: number | null
     /**
+     * If `kind` is `"link"` or `"backwardLink"`, this property points to the associated backward/forward
+     * link.
+     */
+    readonly inverseLinkColumnId: number | null
+    /**
      * @property {(standard | link | lookup)} kind meta type of a column.
      *
      * ---
@@ -119,7 +167,7 @@ export type MetaColumnProps = {
      * - `index`
      *
      */
-    kind: "standard" | "link" | "lookup" | "index"
+    kind: ColumnKind
     /**
      * In addition to {@link SerializedColumn.editor} and {@link SerializedColumn.formatter},
      * this explicitly sets the type.

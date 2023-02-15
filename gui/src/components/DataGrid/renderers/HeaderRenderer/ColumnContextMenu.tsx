@@ -76,7 +76,7 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
                     },
                 }}
             >
-                {headerRendererProps.column.kind === "link" && (
+                {["link", "backwardLink"].includes(headerRendererProps.column.kind) && (
                     <AddLookup headerRendererProps={headerRendererProps} />
                 )}
 
