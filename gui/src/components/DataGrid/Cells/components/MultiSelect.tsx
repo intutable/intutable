@@ -144,19 +144,20 @@ export class MultiSelect extends Cell {
                                 }}
                             >
                                 {isEmpty === false &&
-                                    content.map(
-                                        chip =>
-                                            chip && (
-                                                <ChipItem
-                                                    label={chip}
-                                                    key={chip}
-                                                    onDelete={
-                                                        this.column.editable
-                                                            ? () => removeChip(chip)
-                                                            : undefined
-                                                    }
-                                                />
-                                            )
+                                    content.map(chip =>
+                                        chip ? (
+                                            <ChipItem
+                                                label={chip.toString()}
+                                                key={chip}
+                                                onDelete={
+                                                    this.column.editable
+                                                        ? () => removeChip(chip)
+                                                        : undefined
+                                                }
+                                            />
+                                        ) : (
+                                            <></>
+                                        )
                                     )}
                             </Box>
                             {hovering &&
