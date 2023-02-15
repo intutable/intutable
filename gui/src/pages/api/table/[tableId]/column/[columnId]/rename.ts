@@ -1,11 +1,12 @@
-import { ColumnInfo, getViewInfo, ViewDescriptor, ViewInfo } from "@intutable/lazy-views"
+import { SerializedColumn, TableId } from "@shared/types"
+import { renameTableColumn } from "@backend/requests"
+import { ErrorCode } from "@backend/error"
+
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
-
-import { changeTableColumnAttributes } from "@backend/requests"
 
 /**
  * Rename a column.
@@ -17,27 +18,18 @@ import { changeTableColumnAttributes } from "@backend/requests"
  * ```
  */
 const PATCH = withCatchingAPIRoute(
-    async (req, res, tableId: ViewDescriptor["id"], columnId: ColumnInfo["id"]) => {
+    async (req, res, tableId: TableId, columnId: SerializedColumn["id"]) => {
         const { newName } = req.body as { newName: string }
         const user = req.session.user!
 
-        await withReadWriteConnection(user, async sessionID => {
-            const tableInfo = await coreRequest<ViewInfo>(
-                getViewInfo(sessionID, tableId),
+        await withReadWriteConnection(user, async connectionId =>
+            coreRequest(
+                renameTableColumn(connectionId, tableId, columnId, newName),
                 user.authCookie
             )
-
-            // check if the name is already taken
-            if (tableInfo.columns.some(c => c.attributes.displayName === newName))
-                throw Error("alreadyTaken")
-            else {
-                const update = { name: newName }
-                await coreRequest<void>(
-                    changeTableColumnAttributes(sessionID, tableId, columnId, update),
-                    user.authCookie
-                )
-            }
-        })
+        ).catch(e =>
+            e.code === ErrorCode.alreadyTaken ? Promise.reject("alreadyTaken") : Promise.reject(e)
+        )
 
         res.status(200).json({})
     }

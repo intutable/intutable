@@ -79,6 +79,10 @@ CREATE TABLE view_columns(
     -- kinds of columns: plain data (text, date, ...), link to another table,
     -- non-editable row index column ...
     kind TEXT NOT NULL DEFAULT 'standard',
+    -- link columns always have an associated "backward" link that aggregates all linked rows.
+    -- The backwards link, in turn, has a reference to the "forward" link.
+    -- in non-link columns, this is null.
+    "inverseLinkColumnId" INTEGER NULL,
     -- type of the content of a column (string, date, currency, ...)
     "cellType" TEXT NOT NULL,
     "hidden" INTEGER NOT NULL DEFAULT 0,

@@ -45,10 +45,16 @@ import {
     indexColumnAttributes,
     standardColumnAttributes,
     linkColumnAttributes,
+    backwardLinkColumnAttributes,
+    backwardLookupColumnAttributes,
+    foreignKeyColumnAttributes,
     lookupColumnAttributes,
-    emptyRowOptions,
-    defaultRowOptions,
+    defaultTableRowOptions,
+    defaultViewRowOptions,
     COLUMN_INDEX_KEY,
+    doNotAggregate,
+    jsonbArrayAggregate,
+    firstAggregate,
 } from "shared/dist/api"
 
 import sanitizeName from "shared/dist/utils/sanitizeName"
@@ -74,6 +80,7 @@ import {
     DB,
     CustomColumnAttributes,
     Row,
+    LinkKind,
 } from "./types"
 import {
     RowData,
@@ -99,6 +106,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.createLookupColumn.name, createLookupColumn_)
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
+        .on(req.renameTableColumn.name, renameTableColumn)
         .on(req.getTableData.name, getTableData_)
         .on(req.createView.name, createView_)
         .on(req.renameView.name, renameView_)
@@ -152,10 +160,15 @@ async function createTable(
     const nameColumn = pmColumns.find(c => c.name === "name")!
     const columnSpecs = [
         { parentColumnId: idColumn.id, attributes: idColumnAttributes(0) },
-        { parentColumnId: idxColumn.id, attributes: indexColumnAttributes(1) },
+        {
+            parentColumnId: idxColumn.id,
+            attributes: indexColumnAttributes(1),
+            outputFunc: doNotAggregate(),
+        },
         {
             parentColumnId: nameColumn.id,
             attributes: standardColumnAttributes("Name", "string", 2, true),
+            outputFunc: doNotAggregate(),
         },
     ]
     const tableView = (await core.events.request(
@@ -165,31 +178,26 @@ async function createTable(
             /* Doesn't need to be sanitized, as it's not used as an SQL name */
             name,
             { columns: columnSpecs, joins: [] },
-            emptyRowOptions(),
+            defaultTableRowOptions(idColumn.id),
             roleId
         )
     )) as RawViewDescriptor
 
     // create default filter view
-    const tableViewColumns = (await core.events
-        .request(lvr.getViewInfo(connectionId, tableView.id))
-        .then(info => info.columns)) as RawViewColumnInfo[]
-    await core.events.request(
-        lvr.createView(
-            connectionId,
-            selectable.viewId(tableView.id),
-            defaultViewName(),
-            { columns: [], /* [] means all columns */ joins: [] },
-            defaultRowOptions(tableViewColumns),
-            roleId
-        )
-    )
+    await createView(connectionId, tableView.id, defaultViewName())
     return tableView
 }
 async function deleteTable_({ connectionId, id }: CoreRequest): Promise<CoreResponse> {
     return deleteTable(connectionId, id)
 }
 async function deleteTable(connectionId: string, id: TableId) {
+    // unfortunate workaround: our makeshift foreign key columns are not detected by
+    // lazy-views' auto-cleanup, so we have to get rid of them ourselves.
+    const backwardLinks = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, id)).then(
+        info => info.columns.filter(column => column.attributes.kind === "backwardLink")
+    )
+    for (const column of backwardLinks) await removeColumnFromTable(connectionId, id, column.id)
+    // remove views
     const filterViews = await listViews(connectionId, id)
     Promise.all(filterViews.map(v => core.events.request(lvr.deleteView(connectionId, v.id))))
     const tableViewOptions = (await core.events.request(
@@ -235,6 +243,7 @@ async function createStandardColumn(
         {
             parentColumnId: tableColumn.id,
             attributes: allAttributes,
+            outputFunc: doNotAggregate(),
         },
         null,
         addToViews
@@ -243,28 +252,27 @@ async function createStandardColumn(
     const parsedColumn = parser.parseColumn(tableViewColumn)
     return parsedColumn
 }
-function getNextColumnIndex(options: lvt.ColumnOptions | RawViewInfo): number {
+function getNextColumnIndex(options: lvt.ColumnOptions): number {
     const baseColumns = options.columns.length
-    return (options.joins as lvt.JoinSpecifier[]).reduce(
-        (acc, j) => acc + j.columns.length,
-        baseColumns
-    )
+    return options.joins.reduce((acc, j) => acc + j.columns.length, baseColumns)
 }
 
 async function createLinkColumn_({
     connectionId,
     tableId,
     column,
-    addToViews,
+    addToHomeViews,
+    addToForeignViews,
 }: CoreRequest): Promise<CoreResponse> {
-    return createLinkColumn(connectionId, tableId, column, addToViews)
+    return createLinkColumn(connectionId, tableId, column, addToHomeViews, addToForeignViews)
 }
 
 async function createLinkColumn(
     connectionId: string,
     tableId: TableId,
     column: LinkColumnSpecifier,
-    addToViews?: ViewId[]
+    addToHomeViews?: ViewId[],
+    addToForeignViews?: ViewId[]
 ): Promise<SerializedColumn> {
     const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
     const foreignTableInfo = await coreRequest<RawViewInfo>(
@@ -279,11 +287,56 @@ async function createLinkColumn(
             ColumnType.integer
         )
     )
+    let forwardLinkColumn = await createForwardLinkColumn(
+        connectionId,
+        homeTableInfo,
+        foreignTableInfo,
+        foreignKeyColumn,
+        addToHomeViews
+    )
+    const backwardLinkColumn = await createBackwardLinkColumn(
+        connectionId,
+        homeTableInfo,
+        foreignTableInfo,
+        foreignKeyColumn,
+        addToForeignViews
+    )
+    // connect the two columns, so we can find one from the other later.
+    // our handy `changeTableColumnAttributes` function is not available for this, since it
+    // blocks editing sacred internal column attributes, of which `inverseLinkColumnId` is one.
+    await coreRequest<RawViewColumnInfo>(
+        lvr.changeColumnAttributes(connectionId, backwardLinkColumn.id, {
+            inverseLinkColumnId: forwardLinkColumn.id,
+        })
+    )
+    forwardLinkColumn = await coreRequest<RawViewColumnInfo>(
+        lvr.changeColumnAttributes(connectionId, forwardLinkColumn.id, {
+            inverseLinkColumnId: backwardLinkColumn.id,
+        })
+    )
+    return parser.parseColumn(forwardLinkColumn)
+}
+
+function makeForeignKeyName(viewInfo: RawViewInfo) {
+    // We pick a number greater than any join so far's ID...
+    const nextJoinIndex = Math.max(0, ...viewInfo.joins.map(j => j.id)) + 1
+    // and add a special character so that there can't be clashes with
+    // user-added columns (see ./sanitizeName)
+    const fkColumnName = `j#${nextJoinIndex}_fk`
+    return fkColumnName
+}
+async function createForwardLinkColumn(
+    connectionId: string,
+    homeTableInfo: RawViewInfo,
+    foreignTableInfo: RawViewInfo,
+    foreignKeyColumn: RawTableColumnDescriptor,
+    addToViews?: ViewId[]
+): Promise<RawViewColumnInfo> {
     // add join to the home table's table-view
     const foreignIdColumn = foreignTableInfo.columns.find(c => c.name === "_id")!
     const join = await coreRequest<JoinDescriptor>(
-        lvr.addJoinToView(connectionId, tableId, {
-            foreignSource: selectable.viewId(column.foreignTable),
+        lvr.addJoinToView(connectionId, homeTableInfo.descriptor.id, {
+            foreignSource: selectable.viewId(foreignTableInfo.descriptor.id),
             on: [foreignKeyColumn.id, "=", foreignIdColumn.id],
             columns: [],
         })
@@ -292,26 +345,64 @@ async function createLinkColumn(
     const foreignUserPrimaryColumn = foreignTableInfo.columns.find(
         c => c.attributes.isUserPrimaryKey! === 1
     )!
-    const displayName = (foreignUserPrimaryColumn.attributes.displayName ||
-        foreignUserPrimaryColumn.name) as string
-    const columnIndex = getNextColumnIndex(homeTableInfo)
+    const displayName =
+        ((foreignUserPrimaryColumn.attributes.displayName ||
+            foreignUserPrimaryColumn.name) as string) + `(${foreignTableInfo.descriptor.name})`
+    const columnIndex = homeTableInfo.columns.length
     const attributes = linkColumnAttributes(displayName, columnIndex)
     const linkColumn = await addColumnToTableView(
         connectionId,
-        tableId,
-        { parentColumnId: foreignUserPrimaryColumn.id, attributes },
+        homeTableInfo.descriptor.id,
+        { parentColumnId: foreignUserPrimaryColumn.id, attributes, outputFunc: firstAggregate() },
         join.id,
         addToViews
     )
-    return parser.parseColumn(linkColumn)
+    return linkColumn
 }
-function makeForeignKeyName(viewInfo: RawViewInfo) {
-    // We pick a number greater than any join so far's ID...
-    const nextJoinIndex = Math.max(0, ...viewInfo.joins.map(j => j.id)) + 1
-    // and add a special character so that there can't be clashes with
-    // user-added columns (see ./sanitizeName)
-    const fkColumnName = `j#${nextJoinIndex}_fk`
-    return fkColumnName
+async function createBackwardLinkColumn(
+    connectionId: string,
+    homeTableInfo: RawViewInfo,
+    foreignTableInfo: RawViewInfo,
+    foreignKeyColumn: RawTableColumnDescriptor,
+    addToViews?: ViewId[]
+): Promise<RawViewColumnInfo> {
+    // since our join links the foreign table's raw table to the home table's table view,
+    // we must create an extra view column over the foreign key, and get the raw table column
+    // of the foreign table's ID column
+    const foreignIdColumn = foreignTableInfo.columns.find(c => c.name === "_id")!
+    const forwardLinkColumnIndex = homeTableInfo.columns.length
+    const foreignKeyViewColumn = await coreRequest<RawViewColumnInfo>(
+        lvr.addColumnToView(connectionId, homeTableInfo.descriptor.id, {
+            parentColumnId: foreignKeyColumn.id,
+            // the forward link column gets the next index, we just add 1 here to keep it short.
+            attributes: foreignKeyColumnAttributes(forwardLinkColumnIndex + 1),
+            outputFunc: doNotAggregate(),
+        })
+    )
+    const join = await coreRequest<JoinDescriptor>(
+        lvr.addJoinToView(connectionId, foreignTableInfo.descriptor.id, {
+            foreignSource: selectable.viewId(homeTableInfo.descriptor.id),
+            on: [foreignIdColumn.parentColumnId, "=", foreignKeyViewColumn.id],
+            columns: [],
+        })
+    )
+    // add and return link column
+    const homeUserPrimaryColumn = homeTableInfo.columns.find(
+        c => c.attributes.isUserPrimaryKey! === 1
+    )!
+    const displayName =
+        ((homeUserPrimaryColumn.attributes.displayName || homeUserPrimaryColumn.name) as string) +
+        `(${homeTableInfo.descriptor.name})`
+    const columnIndex = foreignTableInfo.columns.length
+    const attributes = backwardLinkColumnAttributes(displayName, columnIndex)
+    const linkColumn = await addColumnToTableView(
+        connectionId,
+        foreignTableInfo.descriptor.id,
+        { parentColumnId: homeUserPrimaryColumn.id, attributes, outputFunc: jsonbArrayAggregate() },
+        join.id,
+        addToViews
+    )
+    return linkColumn
 }
 
 async function createLookupColumn_({
@@ -329,39 +420,50 @@ async function createLookupColumn(
     column: LookupColumnSpecifier,
     addToViews?: ViewId[]
 ): Promise<SerializedColumn> {
-    const homeTableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
-    const join = homeTableInfo.joins.find(j => j.id === column.linkId)!
+    const tableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const join = tableInfo.joins.find(j => j.id === column.linkId)!
     if (!join)
         return error(
             "createLookupColumn",
             `home table ${tableId} has no link with ID ${column.linkId}`
         )
-
-    const foreignTableId = asView(join.foreignSource).id
-    const foreignTableInfo = await coreRequest<RawViewInfo>(
-        lvr.getViewInfo(connectionId, foreignTableId)
+    const linkColumn = tableInfo.columns.find(
+        c => ["link", "backwardLink"].includes(c.attributes.kind) && c.joinId === column.linkId
     )
-    const foreignColumn = foreignTableInfo.columns.find(c => c.id === column.foreignColumn)
-    if (!foreignColumn)
+    if (!linkColumn)
         return error(
             "createLookupColumn",
-            `foreign table ${foreignTableId} has no column with ID ${column.foreignColumn}`
+            `table ${tableId} has no link column with link ID ${column.linkId}`
         )
 
-    // determine meta attributes
-    const displayName = foreignColumn.attributes.displayName || foreignColumn.name
-    const contentType = foreignColumn.attributes.cellType || "string"
+    const otherTableId = asView(join.foreignSource).id
+    const otherTableInfo = await coreRequest<RawViewInfo>(
+        lvr.getViewInfo(connectionId, otherTableId)
+    )
+    const parentColumn = otherTableInfo.columns.find(c => c.id === column.foreignColumn)
+    if (!parentColumn)
+        return error(
+            "createLookupColumn",
+            `other table ${otherTableId} has no column with ID ${column.foreignColumn}`
+        )
+
+    const linkKind = linkColumn.attributes.kind === "link" ? LinkKind.Forward : LinkKind.Backward
     const columnIndex =
         Math.max(
-            ...homeTableInfo.columns
+            ...tableInfo.columns
                 .filter(c => c.joinId === join.id)
                 .map(c => c.attributes[COLUMN_INDEX_KEY])
         ) + 1
-    const attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
+    const specifier = createRawSpecifierForLookupColumn(
+        linkKind,
+        otherTableInfo.descriptor,
+        parentColumn,
+        columnIndex
+    )
     const lookupColumn = await addColumnToTableView(
         connectionId,
         tableId,
-        { parentColumnId: foreignColumn.id, attributes },
+        specifier,
         join.id,
         addToViews
     )
@@ -369,7 +471,7 @@ async function createLookupColumn(
     // and shift the column index of all columns that come after the position where it was inserted
     const idxKey = COLUMN_INDEX_KEY
     await Promise.all(
-        homeTableInfo.columns
+        tableInfo.columns
             .filter(c => c.attributes[idxKey] >= columnIndex)
             .map(c =>
                 changeTableColumnAttributes(connectionId, tableId, c.id, {
@@ -378,6 +480,34 @@ async function createLookupColumn(
             )
     )
     return newColumn
+}
+
+function createRawSpecifierForLookupColumn(
+    kind: LinkKind,
+    otherTableDescriptor: TableDescriptor,
+    parentColumn: RawViewColumnInfo,
+    columnIndex: number
+): ColumnSpecifier {
+    // determine meta attributes
+    const displayName =
+        (parentColumn.attributes.displayName || parentColumn.name) +
+        `(${otherTableDescriptor.name})`
+    let contentType: string
+    let attributes: Partial<DB.Column>
+    let aggregateFunction: ColumnSpecifier["outputFunc"]
+    switch (kind) {
+        case LinkKind.Forward:
+            contentType = parentColumn.attributes.cellType || "string"
+            attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
+            aggregateFunction = firstAggregate()
+            break
+        case LinkKind.Backward:
+            contentType = parentColumn.attributes.cellType || "string"
+            attributes = backwardLookupColumnAttributes(displayName, contentType, columnIndex)
+            aggregateFunction = jsonbArrayAggregate()
+            break
+    }
+    return { parentColumnId: parentColumn.id, attributes, outputFunc: aggregateFunction }
 }
 
 async function addColumnToTableView(
@@ -448,48 +578,30 @@ async function removeColumnFromTable(
             await removeStandardColumn(connectionId, tableId, column)
             break
         case "link":
-            await removeLinkColumn(connectionId, tableId, column)
+            await removeLinkColumn(connectionId, tableId, column).then(deletedJoin =>
+                shiftColumnIndicesAfterDelete(
+                    connectionId,
+                    selectable.getId(deletedJoin.foreignSource)
+                )
+            )
+            break
+        case "backwardLink":
+            await removeBackwardLinkColumn(connectionId, tableId, column).then(deletedJoin =>
+                shiftColumnIndicesAfterDelete(
+                    connectionId,
+                    selectable.getId(deletedJoin.foreignSource)
+                )
+            )
             break
         case "lookup":
+        case "backwardLookup":
             await removeLookupColumn(connectionId, tableId, columnId)
             break
         default:
             return error("removeColumnFromTable", `column #${columnId} has unknown kind ${kind}`)
     }
-
-    // shift indices on remaining columns
     await shiftColumnIndicesAfterDelete(connectionId, tableId)
     return { message: `removed ${kind} column #${columnId}` }
-}
-
-async function removeLinkColumn(
-    connectionId: string,
-    tableId: number,
-    column: RawViewColumnInfo
-): Promise<void> {
-    const info = (await core.events.request(lvr.getViewInfo(connectionId, tableId))) as RawViewInfo
-    const join = info.joins.find(j => j.id === column.joinId)
-
-    if (!join)
-        return error(
-            "removeColumnFromTable",
-            `no join with ID ${column.joinId}, in table ${tableId}`
-        )
-    // remove lookup columns
-    const lookupColumns = info.columns.filter(
-        c => c.joinId === join.id && c.attributes.kind === "lookup"
-    )
-
-    await Promise.all(
-        lookupColumns.map(async c => removeColumnFromTable(connectionId, tableId, c.id))
-    )
-    // remove link column
-    await removeColumnFromViews(connectionId, tableId, column.id)
-    await core.events.request(lvr.removeColumnFromView(connectionId, column.id))
-    // remove join and FK column
-    await core.events.request(lvr.removeJoinFromView(connectionId, join.id))
-    const fkColumnId = join.on[0]
-    await core.events.request(pm.removeColumn(connectionId, fkColumnId))
 }
 
 async function removeStandardColumn(
@@ -502,6 +614,43 @@ async function removeStandardColumn(
     await core.events.request(pm.removeColumn(connectionId, column.parentColumnId))
 }
 
+async function removeLinkColumn(
+    connectionId: string,
+    tableId: number,
+    column: RawViewColumnInfo
+): Promise<JoinDescriptor> {
+    const info = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const join = info.joins.find(j => j.id === column.joinId)
+
+    if (!join)
+        return error(
+            "removeColumnFromTable",
+            `no join with ID ${column.joinId}, in table ${tableId}`
+        )
+    const fkColumnId = join.on[0]
+    await core.events.request(pm.removeColumn(connectionId, fkColumnId))
+    return join
+}
+
+async function removeBackwardLinkColumn(
+    connectionId: string,
+    tableId: number,
+    column: RawViewColumnInfo
+): Promise<JoinDescriptor> {
+    const info = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const join = info.joins.find(j => j.id === column.joinId)
+    const forwardLinkColumn = await coreRequest<RawViewColumnInfo>(
+        lvr.getColumnInfo(connectionId, column.attributes.inverseLinkColumnId)
+    )
+
+    if (!join)
+        return error(
+            "removeColumnFromTable",
+            `no join with ID ${column.joinId}, in table ${tableId}`
+        )
+    await removeLinkColumn(connectionId, asView(join.foreignSource).id, forwardLinkColumn)
+    return join
+}
 async function removeLookupColumn(
     connectionId: string,
     tableId: number,
@@ -612,6 +761,24 @@ async function changeColumnAttributesInViews(
     )
 }
 
+async function renameTableColumn({
+    connectionId,
+    tableId,
+    columnId,
+    newName,
+}): Promise<CoreResponse> {
+    const tableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    if (tableInfo.columns.some(c => c.attributes.displayName === newName))
+        return error(
+            "renameTableColumn",
+            `table ${tableId} already contains a column named ${columnId}`,
+            ErrorCode.alreadyTaken
+        )
+    const update = { name: newName }
+    await changeTableColumnAttributes(connectionId, tableId, columnId, update)
+    return { message: `column ${columnId} renamed to "${newName}"` }
+}
+
 async function getTableData_({ connectionId, tableId }: CoreRequest): Promise<CoreResponse> {
     return getTableData(connectionId, tableId)
 }
@@ -645,7 +812,7 @@ async function createView(
             selectable.viewId(tableId),
             name,
             { columns: [], joins: [] },
-            defaultRowOptions(tableInfo.columns)
+            defaultViewRowOptions(tableInfo.columns)
         )
     )
 }

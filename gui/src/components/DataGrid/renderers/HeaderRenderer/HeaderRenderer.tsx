@@ -62,6 +62,23 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         }}
                     />
                 </PrefixIcon>
+                {/* Prefix Icon Backward Link Column */}
+                <PrefixIcon
+                    open={column.kind === "backwardLink"}
+                    title={`Verlinkte Spalte. (Ursprung: Primärspalte aus Tabelle '${
+                        foreignTable ? foreignTable.name : "Lädt..."
+                    }'.)`}
+                    iconButtonProps={{
+                        onClick: navigateToTable,
+                        disabled: foreignTable == null,
+                    }}
+                >
+                    <LinkIcon
+                        sx={{
+                            fontSize: "90%",
+                        }}
+                    />
+                </PrefixIcon>
 
                 {/* Prefix Icon Primary Column */}
                 <PrefixIcon
@@ -77,7 +94,7 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
 
                 {/* Prefix Icon Lookup Column */}
                 <PrefixIcon
-                    open={column.kind === "lookup"}
+                    open={column.kind === "lookup" || column.kind === "backwardLookup"}
                     title={`Lookup aus '${foreignTable?.name}'. (readonly)`}
                 >
                     <LookupIcon
@@ -109,13 +126,13 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                 <Box>
                     {/* <Tooltip title="Filter">
                         <IconButton size="small" edge="end" disabled>
-                            <FilterAltIcon
-                                sx={{
-                                    fontSize: "80%",
-                                }}
-                            />
+                        <FilterAltIcon
+                        sx={{
+                        fontSize: "80%",
+                        }}
+                        />
                         </IconButton>
-                    </Tooltip> */}
+                        </Tooltip> */}
 
                     <ColumnContextMenu headerRendererProps={props} />
                 </Box>

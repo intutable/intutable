@@ -1,7 +1,6 @@
 import { cellMap } from "@datagrid/Cells"
 import { CopyEvent, FillEvent, PasteEvent } from "react-data-grid"
 import { Column, Row } from "types"
-import { ProxyColumn } from "./column utils/ColumnProxy"
 
 type Column = Column.Deserialized
 

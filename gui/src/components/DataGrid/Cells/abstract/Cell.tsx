@@ -76,9 +76,9 @@ export type CellStatic = {
 @static_implements<CellStatic>()
 export class Cell {
     constructor(public readonly column: Column.Serialized) {
-        this.isReadonlyComponent =
-            column.kind === "lookup" ||
-            column.kind === "link" /** // TODO: column.kind === "backdrop" <- does the magic */
+        this.isReadonlyComponent = ["link", "lookup", "backwardLink", "backwardLookup"].includes(
+            column.kind
+        )
         this.useLinkFormatter = column.kind === "link"
 
         if (this.useLinkFormatter && this.canBeUserPrimaryKey === false)

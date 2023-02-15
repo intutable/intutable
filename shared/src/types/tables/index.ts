@@ -14,7 +14,14 @@
  * "Deserialized": the types used to display data in the GUI. They are kept
  * in the GUI's own workspace.
  */
-export type { LinkDescriptor, Row, MetaColumnProps } from "./base"
+export type {
+    LinkDescriptor,
+    ForwardLinkDescriptor,
+    BackwardLinkDescriptor,
+    Row,
+    MetaColumnProps,
+} from "./base"
+export { LinkKind } from "./base"
 import { ViewDescriptor as RawViewDescriptor, ColumnInfo } from "@intutable/lazy-views/dist/types"
 
 export * from "./serialized"

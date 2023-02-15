@@ -18,6 +18,7 @@ export namespace DB {
         isUserPrimaryKey: DB.Boolean
         hidden: DB.Boolean
         kind: string
+        inverseLinkColumnId: number | null
         cellType: string
         displayName: string
         index: number

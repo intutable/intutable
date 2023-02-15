@@ -23,7 +23,6 @@ export type StandardColumnSpecifier = {
  */
 export type LinkColumnSpecifier = {
     foreignTable: TableId
-    attributes?: CustomColumnAttributes
 }
 
 /**
@@ -37,5 +36,4 @@ export type LinkColumnSpecifier = {
 export type LookupColumnSpecifier = {
     linkId: number
     foreignColumn: SerializedColumn["id"]
-    attributes?: CustomColumnAttributes
 }

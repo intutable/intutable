@@ -8,7 +8,6 @@ import {
     TableOrigin,
     ViewOrigin,
 } from "@shared/input-masks/utils"
-import { ViewData } from "types/tables/rdg"
 
 export type FindSourceTree = Array<{
     project: ProjectDescriptor
