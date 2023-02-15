@@ -43,7 +43,10 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     const createRow = async (atIndex?: number): Promise<{ _id: number }> => {
-        const row: { _id: number } = await fetcher({
+        // BUG: the endpoint is supposed to return data like `{ _id: 0}`
+        // but somehow `row` is just a number
+        // watch out for this bug
+        const row: number = await fetcher({
             url: "/api/row",
             body: {
                 viewId: view!.descriptor.id,
@@ -53,7 +56,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         })
         await mutateTable()
         await mutateView()
-        return row
+        return { _id: row }
     }
 
     // TODO: the cache should be mutated differently

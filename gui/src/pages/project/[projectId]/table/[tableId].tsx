@@ -4,11 +4,11 @@ import { RowRenderer } from "@datagrid/renderers"
 import RowMaskContainer from "@datagrid/RowMask/Container"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { TableDescriptor, ViewDescriptor } from "@shared/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Box, Button, Grid, Typography } from "@mui/material"
+import { Box, Grid, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { InputMask } from "@shared/input-masks/types"
+import { TableDescriptor, ViewDescriptor } from "@shared/types"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Link from "components/Link"
@@ -22,24 +22,21 @@ import {
     useHeaderSearchField,
 } from "context"
 import { ConstraintsProvider } from "context/ConstraintsContext"
-import { RowMaskProvider, RowMaskState, useRowMask } from "context/RowMaskContext"
+import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
-import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { useCellNavigation } from "hooks/useCellNavigation"
-import { usePendingRow } from "hooks/usePendingRow"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
 import { useView } from "hooks/useView"
-import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next"
-import { useRouter } from "next/router"
+import { InferGetServerSidePropsType, NextPage } from "next"
 import { useThemeToggler } from "pages/_app"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import DataGrid, { RowsChangeData } from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { Row, TableData, ViewData } from "types"
-import { DynamicRouteParams, DynamicRouteQuery } from "types/DynamicRouteQuery"
+import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import { PageAction, PageActionUtil } from "utils/PageAction"
 import { rowKeyGetter } from "utils/rowKeyGetter"
@@ -48,10 +45,8 @@ import { withSSRCatch } from "utils/withSSRCatch"
 const TablePage: React.FC = () => {
     const theme = useTheme()
     const { getTheme } = useThemeToggler()
-    const { snackWarning, closeSnackbar, snackError, snack } = useSnacki()
-    const { isChrome } = useBrowserInfo()
-    const { setView } = useAPI()
-    const { setInputMask, setRowMaskState } = useRowMask()
+    const { snackError, snack } = useSnacki()
+
     const { selectedRows, setSelectedRows } = useSelectedRows()
     const { cellNavigationMode } = useCellNavigation()
     // const { createPendingRow } = usePendingRow()
@@ -219,9 +214,9 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
                         }
                         initialAppliedInputMask={props.inputMask}
                     >
-                        <ConstraintsProvider>
-                            <TablePage />
-                        </ConstraintsProvider>
+                        {/* <ConstraintsProvider> */}
+                        <TablePage />
+                        {/* </ConstraintsProvider> */}
                     </RowMaskProvider>
                 </HeaderSearchFieldProvider>
             </SelectedRowsContextProvider>

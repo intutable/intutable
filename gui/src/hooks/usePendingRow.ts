@@ -8,11 +8,11 @@ import { useEffect, useState } from "react"
 export const usePendingRow = () => {
     const { createRow } = useRow()
     const { data } = useView()
-    const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
-    const isInputMask = selectedInputMask != null
+    const { rowMaskState, setRowMaskState } = useRowMask()
     const { addDraft } = useRecordDraftSession()
 
     const [pendingRow, setPendingRow] = useState<null | { _id: number }>(null)
+
     // open row if it was created
     useEffect(() => {
         if (pendingRow) {
@@ -30,9 +30,7 @@ export const usePendingRow = () => {
 
     const createPendingRow = async () => {
         const response = await createRow()
-        if (isInputMask) {
-            addDraft(response)
-        }
+        addDraft(response)
         setPendingRow(response)
     }
 

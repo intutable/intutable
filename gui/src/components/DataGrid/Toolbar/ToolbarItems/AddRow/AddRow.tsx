@@ -1,38 +1,29 @@
 import AddIcon from "@mui/icons-material/TableRows"
-import { LoadingButton } from "@mui/lab"
-import { usePendingRow } from "hooks/usePendingRow"
+import { Button } from "@mui/material"
+import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import React from "react"
 
 /**
  * Toolbar Item for adding rows to the data grid.
  */
-const AddRow: React.FC<{ text?: string }> = ({ text }) => {
-    const { snackError, snackInfo } = useSnacki()
+export const AddRow: React.FC = () => {
+    const { snackError, snackSuccess } = useSnacki()
 
-    const { createPendingRow, pending } = usePendingRow()
+    const { createRow } = useRow()
 
     const handleCreateRow = async () => {
         try {
-            snackInfo("Ein neuer Eintrag wird angelegt!")
-            await createPendingRow()
+            await createRow()
+            snackSuccess("Zeile hinzugefügt")
         } catch (error) {
             snackError("Die Zeile konnte nicht erstellt werden!")
         }
     }
 
     return (
-        <>
-            <LoadingButton
-                loading={pending}
-                loadingIndicator={"Wird erstellt ..."}
-                startIcon={<AddIcon />}
-                onClick={handleCreateRow}
-            >
-                {text || "Neuer Eintrag"}
-            </LoadingButton>
-        </>
+        <Button startIcon={<AddIcon />} onClick={handleCreateRow}>
+            Zeile hinzufügen
+        </Button>
     )
 }
-
-export default AddRow

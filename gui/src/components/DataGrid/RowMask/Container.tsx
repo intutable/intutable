@@ -25,7 +25,7 @@ import { RowNavigator } from "./RowNavigator"
 import { useInputMask } from "hooks/useInputMask"
 import { CommentSection } from "./Comments"
 import { useTheme } from "@mui/material/styles"
-import { AddRow } from "@datagrid/Toolbar/ToolbarItems"
+import { AddPendingRow } from "@datagrid/Toolbar/ToolbarItems/AddRow/AddPendingRow"
 import { Column } from "types/tables/rdg"
 import { ColumnGroup } from "@shared/input-masks/types"
 import { MakeInputMaskColumns } from "./InputMask"
@@ -224,7 +224,9 @@ export const RowMaskContainer: React.FC = () => {
                     justifyContent: "space-evenly",
                 }}
             >
-                <AddRow text={isInputMask ? currentInputMask?.addRecordButtonText : undefined} />
+                <AddPendingRow
+                    text={isInputMask ? currentInputMask?.addRecordButtonText : undefined}
+                />
                 {isInputMask === false && (
                     <>
                         <Divider flexItem variant="middle" orientation="vertical" />
