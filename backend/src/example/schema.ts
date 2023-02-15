@@ -18,7 +18,14 @@ export type TableSpec = {
      * demo data, they have to be unique, even though the app itself does not require this!
      */
     links: Table[]
+    /**
+     * Create some views on the table. They are semantically identical to "Standard", just
+     * new names, because the input masks resolve views by name so there has to be a view
+     * of the correct name for them to work.
+     */
+    views: ViewSpec[]
 }
+export type ViewSpec = string
 export type Table = {
     spec: TableSpec
     descriptor: TableDescriptor
@@ -64,6 +71,7 @@ export const PERSONEN_SPEC: TableSpec = {
         },
     ],
     links: [],
+    views: ["ABC-Institut"],
 }
 export const PERSONEN = {} as Table
 
@@ -149,6 +157,7 @@ export const ORGANE_SPEC: TableSpec = {
         },
     ],
     links: [],
+    views: [],
 }
 export const ORGANE = {} as Table
 
@@ -245,6 +254,7 @@ export const ROLLEN_SPEC = {
     name: "Rollen",
     columns: [],
     links: [PERSONEN, ORGANE],
+    views: [],
 }
 export const ROLLEN = {} as Table
 

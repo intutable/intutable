@@ -66,6 +66,8 @@ async function createTable(
             })
         )
     }
+    for (const viewName of tableSpec.views)
+        await coreRequest(dap.createView(connectionId, descriptor.id, viewName))
     const tableData = await coreRequest<TableData>(dap.getTableData(connectionId, descriptor.id))
     const columnMappings = getColumnMappings(tableSpec.columns, tableData.columns)
     const linkMappings = getLinkMappings(tableSpec.links, tableData.links)
