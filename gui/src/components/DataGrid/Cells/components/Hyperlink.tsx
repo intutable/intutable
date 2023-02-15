@@ -8,6 +8,7 @@ import { EditorProps, FormatterProps } from "react-data-grid"
 import { Row } from "types"
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
+import { HelperTooltip } from "./Text"
 
 export class Hyperlink extends Cell {
     public brand = "hyperlink"
@@ -85,6 +86,7 @@ export class Hyperlink extends Cell {
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content ?? "")
+        const isEmpty = value == null || value === ""
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
@@ -99,29 +101,53 @@ export class Hyperlink extends Cell {
 
         return (
             <TextField
-                error={Hyperlink.isValid(value) === false}
                 size="small"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                onKeyDown={e => {
+                    if (e.key === "Enter") {
+                        e.preventDefault()
+                        handleBlur()
+                    }
+                }}
                 value={value}
                 disabled={this.column.editable === false}
+                label={props.label}
+                fullWidth
+                required={props.required}
                 InputProps={{
                     endAdornment: (
-                        <InputAdornment
-                            position="end"
-                            onClick={() => props.content && open(props.content)}
-                            sx={{
-                                cursor: "pointer",
-                            }}
-                        >
-                            <this.icon fontSize="small" color="success" />
-                        </InputAdornment>
+                        <>
+                            <InputAdornment
+                                position="end"
+                                onClick={() => props.content && open(props.content)}
+                                sx={{
+                                    cursor: "pointer",
+                                }}
+                            >
+                                <this.icon fontSize="small" color="success" />
+                            </InputAdornment>
+                            <HelperTooltip text={props.tooltip} />
+                        </>
                     ),
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
-                {...props.forwardProps}
+                placeholder={
+                    props.label == null && props.required
+                        ? props.placeholder + "*"
+                        : props.placeholder
+                }
+                error={Hyperlink.isValid(value) === false || (props.required && isEmpty)}
+                helperText={
+                    Hyperlink.isValid(value) === false
+                        ? "Keine valide URI!"
+                        : props.required && isEmpty
+                        ? "Pflichtfeld"
+                        : undefined
+                }
                 sx={props.forwardSX}
+                {...props.forwardProps}
             />
         )
     }

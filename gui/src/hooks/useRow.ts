@@ -3,6 +3,7 @@ import { TableHookOptions, useTable } from "hooks/useTable"
 import { ViewHookOptions, useView } from "hooks/useView"
 import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
+import { useColumn } from "./useColumn"
 
 import { useSnacki } from "./useSnacki"
 
@@ -41,9 +42,11 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     }
 
     // TODO: the cache should be mutated differently
-    // TODO: the state should be updated differently
-    const createRow = async (atIndex?: number): Promise<void> => {
-        await fetcher({
+    const createRow = async (atIndex?: number): Promise<{ _id: number }> => {
+        // BUG: the endpoint is supposed to return data like `{ _id: 0}`
+        // but somehow `row` is just a number
+        // watch out for this bug
+        const row: number = await fetcher({
             url: "/api/row",
             body: {
                 viewId: view!.descriptor.id,
@@ -51,14 +54,14 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
                 atIndex,
             },
         })
-
         await mutateTable()
         await mutateView()
+        return { _id: row }
     }
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    const deleteRow = async (row: Row): Promise<void> => {
+    const deleteRow = async (row: { _id: number }): Promise<void> => {
         await fetcher({
             url: "/api/row",
             body: {
@@ -75,7 +78,11 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: `value` needs a (better) type
-    const updateRow = async (column: Column, row: Row, updatedValue: unknown): Promise<void> => {
+    const updateRow = async (
+        column: Column,
+        row: { _id: number },
+        updatedValue: unknown
+    ): Promise<void> => {
         const serializedValue = SerDes.serializeRowValue(updatedValue, column)
 
         // TODO: put this in the api route

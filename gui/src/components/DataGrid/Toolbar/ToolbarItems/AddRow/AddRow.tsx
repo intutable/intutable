@@ -1,34 +1,29 @@
 import AddIcon from "@mui/icons-material/TableRows"
 import { Button } from "@mui/material"
 import { useRow } from "hooks/useRow"
-import { useSnackbar } from "notistack"
+import { useSnacki } from "hooks/useSnacki"
 import React from "react"
 
 /**
  * Toolbar Item for adding rows to the data grid.
  */
-const AddRow: React.FC = () => {
-    const { enqueueSnackbar } = useSnackbar()
+export const AddRow: React.FC = () => {
+    const { snackError, snackSuccess } = useSnacki()
 
     const { createRow } = useRow()
 
     const handleCreateRow = async () => {
         try {
             await createRow()
+            snackSuccess("Zeile hinzugefügt")
         } catch (error) {
-            enqueueSnackbar("Die Zeile konnte nicht erstellt werden!", {
-                variant: "error",
-            })
+            snackError("Die Zeile konnte nicht erstellt werden!")
         }
     }
 
     return (
-        <>
-            <Button startIcon={<AddIcon />} onClick={handleCreateRow}>
-                Add Row
-            </Button>
-        </>
+        <Button startIcon={<AddIcon />} onClick={handleCreateRow}>
+            Zeile hinzufügen
+        </Button>
     )
 }
-
-export default AddRow

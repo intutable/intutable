@@ -23,7 +23,7 @@ const SelectFormatter = (props: { isCellSelected: any; row: any }) => {
     const expandRow = () => {
         setRowMaskState({
             mode: "edit",
-            row: props.row as Row,
+            row: { _id: props.row._id },
         })
     }
 

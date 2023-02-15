@@ -14,6 +14,7 @@ import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import { TimePickerProps } from "@mui/lab"
+import { HelperTooltip } from "./Text"
 
 export class Time extends TempusCell {
     public brand = "time"
@@ -59,83 +60,6 @@ export class Time extends TempusCell {
         }
 
         return (
-            <Box
-                sx={{
-                    width: "100%",
-                    height: "100%",
-                }}
-            >
-                <LocalizationProvider
-                    dateAdapter={AdapterDateFns}
-                    adapterLocale={deLocale}
-                    localeText={{
-                        openPreviousView: "Stunde setzen",
-                        openNextView: "Minuten setzen",
-                        clearButtonLabel: "Löschen",
-                        cancelButtonLabel: "Abbrechen",
-                        okButtonLabel: "OK",
-                        todayButtonLabel: "Jetzt",
-                        // start: "Start",
-                        // end: "Ende",
-                    }}
-                >
-                    <TimePicker
-                        showToolbar
-                        value={content}
-                        onChange={date => setContent(date)} // only update the state, but do not update the actual db (only on blur – see below)
-                        onAccept={handleChange} // update the db
-                        ampm={false}
-                        disabled={this.column.editable === false}
-                        readOnly={this.isReadonlyComponent}
-                        renderInput={params => (
-                            <TextField
-                                {...params}
-                                onBlur={() => handleChange(content)} // now actually update the db
-                                size="small"
-                                variant="standard"
-                                fullWidth
-                                disabled={this.column.editable === false}
-                                sx={{
-                                    m: 0,
-                                    mt: 0.5,
-                                    p: 0,
-                                    height: "100%",
-                                    maxHeight: "100%",
-                                }}
-                                InputProps={{
-                                    disableUnderline: true,
-                                    readOnly: this.isReadonlyComponent,
-                                    ...params.InputProps,
-                                }}
-                            />
-                        )}
-                        componentsProps={{
-                            actionBar: {
-                                actions: ["clear", "today", "accept"],
-                            },
-                        }}
-                    />
-                </LocalizationProvider>
-            </Box>
-        )
-    }
-
-    public ExposedInput: React.FC<ExposedInputProps<number | null, TimePickerProps>> = props => {
-        const { updateRow } = useRow()
-        const { snackError } = useSnacki()
-
-        const [content, setContent] = useState(props.content)
-
-        const handleChange = async (value: number | null) => {
-            if (Time.isValid(value)) setContent(value)
-            try {
-                await updateRow(props.column, props.row, value)
-            } catch (e) {
-                snackError("Der Wert konnte nicht geändert werden")
-            }
-        }
-
-        return (
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={deLocale}
@@ -153,22 +77,120 @@ export class Time extends TempusCell {
                 <TimePicker
                     showToolbar
                     value={content}
-                    onChange={handleChange}
-                    renderInput={props => <TextField {...props} />}
+                    onChange={date => setContent(date)} // only update the state, but do not update the actual db (only on blur – see below)
+                    onAccept={handleChange} // update the db
+                    ampm={false}
                     disabled={this.column.editable === false}
+                    readOnly={this.isReadonlyComponent}
+                    renderInput={params => (
+                        <TextField
+                            {...params}
+                            onBlur={() => handleChange(content)} // now actually update the db
+                            size="small"
+                            variant="standard"
+                            fullWidth
+                            disabled={this.column.editable === false}
+                            sx={{
+                                m: 0,
+                                mt: 0.5,
+                                p: 0,
+                                height: "100%",
+                                maxHeight: "100%",
+                            }}
+                            InputProps={{
+                                disableUnderline: true,
+                                readOnly: this.isReadonlyComponent,
+                                ...params.InputProps,
+                            }}
+                        />
+                    )}
                     componentsProps={{
                         actionBar: {
                             actions: ["clear", "today", "accept"],
                         },
                     }}
-                    readOnly={this.isReadonlyComponent}
-                    InputProps={{
-                        startAdornment: <ExposedInputAdornment column={this.column} />,
-                    }}
-                    // sx={props.forwardSX}
-                    // {...props.forwardProps}
                 />
             </LocalizationProvider>
         )
     }
+
+    public ExposedInput: React.FC<ExposedInputProps<number | null, TimePickerProps<unknown>>> =
+        props => {
+            const { updateRow } = useRow()
+            const { snackError } = useSnacki()
+
+            const [content, setContent] = useState(props.content)
+            const isEmpty = content == null
+
+            const handleChange = async (value: number | null) => {
+                if (Time.isValid(value)) setContent(value)
+                try {
+                    await updateRow(props.column, props.row, value)
+                } catch (e) {
+                    snackError("Der Wert konnte nicht geändert werden")
+                }
+            }
+
+            /**
+             * required
+             * tooltip
+             * placeholder
+             * suppressed label
+             */
+
+            return (
+                <LocalizationProvider
+                    dateAdapter={AdapterDateFns}
+                    adapterLocale={deLocale}
+                    localeText={{
+                        openPreviousView: "Stunde setzen",
+                        openNextView: "Minuten setzen",
+                        clearButtonLabel: "Löschen",
+                        cancelButtonLabel: "Abbrechen",
+                        okButtonLabel: "OK",
+                        todayButtonLabel: "Jetzt",
+                        // start: "Start",
+                        // end: "Ende",
+                    }}
+                >
+                    <TimePicker
+                        showToolbar
+                        value={content}
+                        onChange={handleChange}
+                        label={props.label}
+                        renderInput={renderProps => (
+                            <TextField
+                                size="small"
+                                fullWidth
+                                required={props.required}
+                                label={props.label}
+                                placeholder={
+                                    props.label == null && props.required
+                                        ? props.placeholder + "*"
+                                        : props.placeholder
+                                }
+                                error={props.required && isEmpty}
+                                helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
+                                {...renderProps}
+                            />
+                        )}
+                        disabled={this.column.editable === false}
+                        componentsProps={{
+                            actionBar: {
+                                actions: ["clear", "today", "accept"],
+                            },
+                        }}
+                        readOnly={this.isReadonlyComponent}
+                        InputProps={{
+                            readOnly: this.isReadonlyComponent,
+                            startAdornment: <ExposedInputAdornment column={this.column} />,
+                            endAdornment: <HelperTooltip text={props.tooltip} />,
+                        }}
+
+                        // sx={props.forwardSX}
+                        // {...props.forwardProps}
+                    />
+                </LocalizationProvider>
+            )
+        }
 }

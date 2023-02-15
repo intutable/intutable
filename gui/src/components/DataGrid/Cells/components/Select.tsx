@@ -11,10 +11,16 @@ import {
     MenuList,
     Stack,
     TextField,
+    Select as MuiSelect,
+    ListItemText,
+    FormControl,
+    InputLabel,
+    FormHelperText,
+    Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
@@ -23,14 +29,19 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
+import ClearIcon from "@mui/icons-material/Clear"
+import AddOptionIcon from "@mui/icons-material/PlaylistAdd"
+import { HelperTooltip } from "./Text"
 
 export const ChipItem: React.FC<{
-    label: string
+    label?: string | null
     onDelete?: () => void
 }> = ({ label, onDelete }) => {
-    const color = stringToColor(label)
     const theme = useTheme()
     const [hovering, setHovering] = useState<boolean>(false)
+
+    if (label == null) return null
+    const color = stringToColor(label)
 
     return (
         <Chip
@@ -50,6 +61,8 @@ export const ChipItem: React.FC<{
 
 export type SelectMenuProps = {
     open: boolean
+    /** @default false */
+    disallowAddingValues?: boolean
     anchor: HTMLElement
     options: string[]
     addOption: (option: string) => void
@@ -58,10 +71,11 @@ export type SelectMenuProps = {
 export const SelectMenu: React.FC<SelectMenuProps> = props => {
     const [input, setInput] = useState<string>("")
 
+    const disallowAddingValues = props.disallowAddingValues ?? false
+
     return (
         <Menu
-            // elevation={0}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             transformOrigin={{
                 vertical: "top",
                 horizontal: "right",
@@ -75,20 +89,23 @@ export const SelectMenu: React.FC<SelectMenuProps> = props => {
                 },
             }}
         >
-            <MenuItem>
-                <TextField
-                    label="Option hinzufügen"
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => {
-                        if (e.key === "Enter") props.addOption(input)
-                    }}
-                />
-                <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
-                    <CheckIcon fontSize="small" color="primary" />
-                </IconButton>
-            </MenuItem>
-            <Divider />
+            {disallowAddingValues === false && [
+                <MenuItem key={"menu-439587394857239457"}>
+                    <TextField
+                        label="Option hinzufügen"
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        size="small"
+                        onKeyDown={e => {
+                            if (e.key === "Enter") props.addOption(input)
+                        }}
+                    />
+                    <IconButton size="small" sx={{ ml: 1 }} onClick={() => props.addOption(input)}>
+                        <CheckIcon fontSize="small" color="primary" />
+                    </IconButton>
+                </MenuItem>,
+                <Divider key={"divider-329847913456834"} />,
+            ]}
             <MenuList
                 sx={{
                     maxHeight: "200px",
@@ -124,18 +141,20 @@ export class Select extends Cell {
 
     public editor = () => null
 
-    private getOptions(column: Column.Deserialized, rows: Row[], self?: string | null): string[] {
+    /** Returns a list of all available options in this column (the values of other chips) */
+    private getAvailableOptions(
+        column: Column.Deserialized,
+        rows: Row[],
+        self?: string | null
+    ): string[] {
         const options = rows
             .map(row => row[column.key])
             .filter(option => Cell.isEmpty(option) === false) // remove empty values
-
         const optionsWithoutSelf = (
             self == null ? options : options.filter(option => self !== option)
-        ) as string[]
-
-        const uniqueOptions = new Set(optionsWithoutSelf)
-
-        return [...uniqueOptions]
+        ) as string[] // remove self from list
+        const uniqueOptions = new Set(optionsWithoutSelf) // remove duplicates from list
+        return [...uniqueOptions] // return sorted
     }
 
     public formatter = (props: FormatterProps<Row>) => {
@@ -153,19 +172,21 @@ export class Select extends Cell {
         const closeModal = () => setOpen(false)
 
         const changeOption = (value: string) => {
-            if (value)
-                props.onRowChange({
-                    ...row,
-                    [key]: value,
-                })
+            props.onRowChange({
+                ...row,
+                [key]: value,
+            })
             closeModal()
         }
 
         const { data } = useView()
         const list = useMemo(
-            () => (data ? this.getOptions(column, data.rows, content) : []),
+            () => (data ? this.getAvailableOptions(column, data.rows, content) : []),
             [data, column, content]
         )
+
+        const showSelectMenuButton =
+            (hovering || open) && this.column.editable && this.isReadonlyComponent === false
 
         return (
             <>
@@ -181,12 +202,11 @@ export class Select extends Cell {
                         alignItems: "center",
                         whiteSpace: "nowrap",
                     }}
-                    ref={modalRef}
                 >
                     {isEmpty ? (
                         <>
-                            {hovering && this.column.editable && this.isReadonlyComponent == false && (
-                                <IconButton size="small" onClick={openModal}>
+                            {showSelectMenuButton && (
+                                <IconButton size="small" onClick={openModal} ref={modalRef}>
                                     <AddIcon fontSize="small" />
                                 </IconButton>
                             )}
@@ -203,17 +223,17 @@ export class Select extends Cell {
                                 <ChipItem
                                     label={content}
                                     onDelete={
-                                        this.column.editable ? () => changeOption("") : undefined
+                                        this.column.editable && this.isReadonlyComponent === false
+                                            ? () => changeOption("")
+                                            : undefined
                                     }
                                 />
                             </Box>
-                            {hovering &&
-                                this.column.editable &&
-                                this.isReadonlyComponent === false && (
-                                    <IconButton size="small" onClick={openModal}>
-                                        <KeyboardArrowDownIcon fontSize="small" />
-                                    </IconButton>
-                                )}
+                            {showSelectMenuButton && (
+                                <IconButton size="small" onClick={openModal} ref={modalRef}>
+                                    <KeyboardArrowDownIcon fontSize="small" />
+                                </IconButton>
+                            )}
                         </>
                     )}
                 </Box>
@@ -234,72 +254,135 @@ export class Select extends Cell {
     public ExposedInput: React.FC<ExposedInputProps<string | null>> = props => {
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
-
-        const modalRef = useRef<HTMLElement | null>(null)
-
-        const [open, setOpen] = useState<boolean>(false)
-        const openModal = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setOpen(true)
-        }
-        const closeModal = () => setOpen(false)
+        const theme = useTheme()
 
         const changeOption = async (value: string) => {
             try {
-                await updateRow(props.column, props.row, value)
+                await updateRow(props.column, props.row, value === "" ? null : value)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
-            } finally {
-                closeModal()
             }
         }
 
         const { data } = useView()
         const list = useMemo(
-            () => (data ? this.getOptions(props.column, data.rows, props.content) : []),
+            () => (data ? this.getAvailableOptions(props.column, data.rows, props.content) : []),
             [data, props.column, props.content]
         )
 
+        const [input, setInput] = useState<string>("")
+        const isEmpty = props.content == null || props.content === ""
+        const noLabel = props.label == null || props.label === ""
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const disallowNewSelectValues = (props.column as any).disallowNewSelectValues ?? false
+
         return (
-            <>
-                <Stack
-                    ref={modalRef}
-                    direction="row"
-                    sx={{
-                        gap: "5px",
-                        maxWidth: "200px",
-                        flexWrap: "wrap",
-                        w: 1,
-                        h: 1,
+            <FormControl
+                size="small"
+                disabled={this.column.editable === false}
+                error={props.required && isEmpty}
+                fullWidth
+                // required={props.required} // <- forces a '*' to appear within in the label or placeholder
+            >
+                <InputLabel id="Select-InputLabel">{props.label}</InputLabel>
+                <MuiSelect
+                    labelId="Select-InputLabel"
+                    label={props.label}
+                    value={props.content ?? ""}
+                    onChange={e => changeOption(e.target.value)}
+                    displayEmpty={noLabel}
+                    renderValue={value => {
+                        if (isEmpty)
+                            return (
+                                <Typography>
+                                    {props.label == null && props.required
+                                        ? props.placeholder + "*"
+                                        : props.placeholder}
+                                </Typography>
+                            )
+
+                        return (
+                            <Chip
+                                label={value}
+                                size="small"
+                                sx={{
+                                    color: theme.palette.getContrastText(stringToColor(value)),
+                                    bgcolor: stringToColor(value),
+                                    mr: 0.5,
+                                }}
+                            />
+                        )
                     }}
+                    size="small"
+                    error={props.required && isEmpty} // BUG: https://github.com/mui/material-ui/issues/29821
+                    placeholder={
+                        props.label == null && props.required
+                            ? props.placeholder + "*"
+                            : props.placeholder
+                    }
+                    readOnly={this.isReadonlyComponent}
+                    required={props.required}
+                    disabled={this.column.editable === false}
+                    endAdornment={<HelperTooltip text={props.tooltip} />}
+
+                    // variant="standard" // causes annoying css
+                    // disableUnderline
                 >
-                    {props.content && (
-                        <ChipItem
-                            label={props.content}
-                            onDelete={this.column.editable ? () => changeOption("") : undefined}
-                        />
-                    )}
-
-                    {props.hoveringOnParent &&
-                        props.column.editable &&
-                        this.isReadonlyComponent === false && (
-                            <IconButton size="small" onClick={openModal}>
-                                <AddIcon fontSize="small" />
+                    <MenuItem value="">
+                        <em>Keine Auswahl</em>
+                    </MenuItem>
+                    {[props.content as string, ...list]
+                        .filter(i => i !== null)
+                        .map(option => (
+                            <MenuItem key={option} value={option}>
+                                <Chip
+                                    label={option}
+                                    size="small"
+                                    sx={{
+                                        color: theme.palette.getContrastText(stringToColor(option)),
+                                        bgcolor: stringToColor(option),
+                                        mr: 0.5,
+                                    }}
+                                />
+                            </MenuItem>
+                        ))}
+                    {disallowNewSelectValues === false && [
+                        <Divider key="Select-Menu-Divider" />,
+                        <MenuItem key="Select-Menu-Input">
+                            <TextField
+                                label="Option hinzufügen"
+                                value={input}
+                                onChange={e => setInput(e.target.value)}
+                                size="small"
+                                fullWidth
+                                onKeyDown={e => {
+                                    e.stopPropagation()
+                                    if (e.key === "Enter") changeOption(input)
+                                }}
+                            />
+                            <IconButton
+                                size="small"
+                                sx={{ ml: 1 }}
+                                onClick={e => {
+                                    e.stopPropagation()
+                                    if (input === "") return
+                                    changeOption(input)
+                                }}
+                                disabled={input === ""}
+                            >
+                                <AddOptionIcon
+                                    fontSize="small"
+                                    color={input === "" ? "disabled" : "primary"}
+                                />
                             </IconButton>
-                        )}
-                </Stack>
-
-                {modalRef.current !== null && (
-                    <SelectMenu
-                        open={open}
-                        anchor={modalRef.current}
-                        options={list}
-                        addOption={changeOption}
-                        onClose={closeModal}
-                    />
-                )}
-            </>
+                        </MenuItem>,
+                    ]}
+                </MuiSelect>
+                <FormHelperText>
+                    {props.required && isEmpty ? "Pflichtfeld" : undefined}
+                </FormHelperText>
+            </FormControl>
         )
     }
 }
