@@ -8,6 +8,7 @@ import { EditorProps } from "react-data-grid"
 import { Row } from "types"
 import { NumericCell } from "../abstract/NumericCell"
 import { ExposedInputProps } from "../abstract/protocols"
+import { HelperTooltip } from "./Text"
 
 export class Num extends NumericCell {
     public brand = "number"
@@ -38,6 +39,7 @@ export class Num extends NumericCell {
         const { snackError } = useSnacki()
 
         const [value, setValue] = useState(props.content ?? "")
+        const isEmpty = value == null || value === ""
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             if (Num.isValid(e.target.value)) setValue(e.target.value)
@@ -57,12 +59,29 @@ export class Num extends NumericCell {
                 type="number"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                onKeyDown={e => {
+                    if (e.key === "Enter") {
+                        e.preventDefault()
+                        handleBlur()
+                    }
+                }}
+                fullWidth
                 value={value}
                 disabled={this.column.editable === false}
+                label={props.label}
+                required={props.required}
                 InputProps={{
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,
+                    endAdornment: <HelperTooltip text={props.tooltip} />,
                 }}
+                placeholder={
+                    props.label == null && props.required
+                        ? props.placeholder + "*"
+                        : props.placeholder
+                }
+                error={props.required && isEmpty}
+                helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
                 sx={props.forwardSX}
                 {...props.forwardProps}
             />

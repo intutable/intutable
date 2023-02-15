@@ -108,6 +108,7 @@ const TextInput: React.FC<ColumnPropertyInputProps<"text">> = props => {
             value={value}
             onChange={e => setValue(e.target.value)}
             onKeyDown={e => {
+                e.stopPropagation()
                 if (e.key === "Enter") props.onChange(value)
             }}
             disabled={props.disabled}

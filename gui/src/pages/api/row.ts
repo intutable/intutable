@@ -36,7 +36,7 @@ const POST = withCatchingAPIRoute(async (req, res) => {
         )
     })
 
-    res.status(200).send(rowWithId["_id"])
+    res.status(200).json(rowWithId["_id"])
 })
 
 /**

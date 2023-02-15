@@ -36,13 +36,13 @@ export const AddLink: React.FC = () => {
 
     return (
         <>
-            <Tooltip title="Add link to another table">
+            <Tooltip title="Mit einer anderen Tabelle verknüpfen">
                 <LoadingButton
                     loadingIndicator="Lädt..."
                     startIcon={<AddIcon />}
                     onClick={handleOpenModal}
                 >
-                    Add Link
+                    Link-Spalte hinzufügen
                 </LoadingButton>
             </Tooltip>
 

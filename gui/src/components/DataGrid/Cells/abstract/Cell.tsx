@@ -55,7 +55,8 @@ export type CellInstanceImplements = {
     /**
      * Readonly Components (e.g. Lookups are editable indirectly ~ 'readonly' – as well as Links)
      * The difference between `editable` and `isReadonlyComponent` is that both inputs are readonly,
-     * but only `editable === false` is disabled. ReadOnly Inputs can be focused, but the value can not be changed.
+     * but only components with `editable === false` are disabled.
+     * ReadOnly Inputs can be focused etc., but the value can not be changed.
      */
     isReadonlyComponent: boolean
     /** Use the Link Formatter Component (for Links Columns, but not Lookups), does not matter wether it is readonly */
@@ -139,7 +140,10 @@ export class Cell {
             return (
                 // default Input component, used in editor/formatter components
                 <InputUnstyled
-                    components={{ Input: StyledInputElement }}
+                    // components={{ Input: StyledInputElement }}
+                    slots={{
+                        input: StyledInputElement,
+                    }}
                     ref={ref || inputRef}
                     onKeyDown={props.onKeyDown}
                     disabled={this.column.editable === false}

@@ -8,6 +8,7 @@ import { ExposedInputProps } from "../abstract/protocols"
 import { useSnacki } from "hooks/useSnacki"
 import { useRow } from "hooks/useRow"
 import { ExposedInputIcon } from "@datagrid/RowMask/ExposedInputAdornment"
+import { HelperTooltip } from "./Text"
 
 export class Bool extends Cell {
     public brand = "boolean"
@@ -106,14 +107,32 @@ export class Bool extends Cell {
             }
         }
 
+        /**
+         * not implemented
+         * • required (useless)
+         * • placeholder (useless)
+         * • error (useless)
+         */
+
         return (
             <>
                 <ExposedInputIcon column={this.column} />
-                <Checkbox
-                    checked={value}
-                    onChange={this.isReadonlyComponent ? undefined : handleChange}
-                    readOnly={this.isReadonlyComponent}
+                <FormControlLabel
                     disabled={this.column.editable === false || this.isReadonlyComponent}
+                    control={
+                        <Checkbox
+                            checked={value}
+                            onChange={this.isReadonlyComponent ? undefined : handleChange}
+                            readOnly={this.isReadonlyComponent}
+                            disabled={this.column.editable === false || this.isReadonlyComponent}
+                        />
+                    }
+                    label={
+                        <>
+                            {props.label}
+                            <HelperTooltip text={props.tooltip} />
+                        </>
+                    }
                 />
             </>
         )
