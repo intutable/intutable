@@ -27,7 +27,7 @@ import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
-import { ChipItem, SelectMenu as MultiSelectMenu } from "./Select"
+import { ChipItem, MenuAddItemTextField, SelectMenu as MultiSelectMenu } from "./Select"
 import { HelperTooltip } from "./Text"
 
 export class MultiSelect extends Cell {
@@ -218,7 +218,6 @@ export class MultiSelect extends Cell {
             [data, props.column, props.content]
         )
 
-        const [input, setInput] = useState<string>("")
         const isEmpty =
             props.content == null ||
             Array.isArray(props.content) === false ||
@@ -303,39 +302,10 @@ export class MultiSelect extends Cell {
                         ))}
                     {disallowNewSelectValues === false && [
                         <Divider key="Select-Menu-Divider" />,
-                        <MenuItem key="Select-Menu-Input">
-                            <TextField
-                                label="Option hinzufügen"
-                                value={input}
-                                onChange={e => setInput(e.target.value)}
-                                size="small"
-                                fullWidth
-                                onKeyDown={e => {
-                                    e.stopPropagation()
-                                    if (e.key === "Enter")
-                                        handleChange(
-                                            props.content ? [...props.content, input] : [input]
-                                        )
-                                }}
-                            />
-                            <IconButton
-                                size="small"
-                                sx={{ ml: 1 }}
-                                onClick={e => {
-                                    e.stopPropagation()
-                                    if (input === "") return
-                                    handleChange(
-                                        props.content ? [...props.content, input] : [input]
-                                    )
-                                }}
-                                disabled={input === ""}
-                            >
-                                <AddOptionIcon
-                                    fontSize="small"
-                                    color={input === "" ? "disabled" : "primary"}
-                                />
-                            </IconButton>
-                        </MenuItem>,
+                        <MenuAddItemTextField
+                            key="Select-Menu-Input"
+                            onAdd={value => (props.content ? [...props.content, value] : [value])}
+                        />,
                     ]}
                 </MuiSelect>
                 <FormHelperText>

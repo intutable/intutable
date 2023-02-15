@@ -11,6 +11,7 @@ import { Hyperlink } from "./components/Hyperlink"
 import { EMail } from "./components/EMail"
 import { Select } from "./components/Select"
 import { MultiSelect } from "./components/MultiSelect"
+import { UnorderedList } from "./components/UnorderedList"
 
 export const cellMap = new CellMap(
     Text,
@@ -23,7 +24,8 @@ export const cellMap = new CellMap(
     Hyperlink,
     EMail,
     Select,
-    MultiSelect
+    MultiSelect,
+    UnorderedList
 )
 
 export { Cell } from "./abstract/Cell"
