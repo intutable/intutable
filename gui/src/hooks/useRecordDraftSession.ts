@@ -14,12 +14,18 @@ export const useRecordDraftSession = () => {
 
     const isDraft = (record: { _id: number }) => {
         if (!window) throw new Error("session storage not available")
-        return window.sessionStorage.getItem(`${DRAFT_SESSION_STORAGE_KEY_PREFIX}${record._id}`) !== null
+        return (
+            window.sessionStorage.getItem(`${DRAFT_SESSION_STORAGE_KEY_PREFIX}${record._id}`) !==
+            null
+        )
     }
 
     const addDraft = (draft: { _id: number }) => {
         if (!window) throw new Error("session storage not available")
-        window.sessionStorage.setItem(`${DRAFT_SESSION_STORAGE_KEY_PREFIX}${draft._id}`, draft._id.toString())
+        window.sessionStorage.setItem(
+            `${DRAFT_SESSION_STORAGE_KEY_PREFIX}${draft._id}`,
+            draft._id.toString()
+        )
     }
 
     return {

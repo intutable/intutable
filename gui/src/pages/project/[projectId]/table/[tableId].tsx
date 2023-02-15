@@ -15,7 +15,12 @@ import Link from "components/Link"
 import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
-import { APIContextProvider, HeaderSearchFieldProvider, useAPI, useHeaderSearchField } from "context"
+import {
+    APIContextProvider,
+    HeaderSearchFieldProvider,
+    useAPI,
+    useHeaderSearchField,
+} from "context"
 import { ConstraintsProvider } from "context/ConstraintsContext"
 import { RowMaskProvider, RowMaskState, useRowMask } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
@@ -199,17 +204,23 @@ type PageProps = {
     // }
 }
 
-const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (props: PageProps) => {
+const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
+    props: PageProps
+) => {
     return (
         <APIContextProvider project={props.project} table={props.table} view={props.view}>
             <SelectedRowsContextProvider>
                 <HeaderSearchFieldProvider>
                     <RowMaskProvider
-                        initialRowMaskState={props.openRow ? { mode: "edit", row: { _id: props.openRow } } : undefined}
+                        initialRowMaskState={
+                            props.openRow
+                                ? { mode: "edit", row: { _id: props.openRow } }
+                                : undefined
+                        }
                         initialAppliedInputMask={props.inputMask}
                     >
                         <ConstraintsProvider>
-                        <TablePage />
+                            <TablePage />
                         </ConstraintsProvider>
                     </RowMaskProvider>
                 </HeaderSearchFieldProvider>
@@ -220,7 +231,10 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
 
 export const getServerSideProps = withSSRCatch(
     withSessionSsr<PageProps>(async context => {
-        const queryParameters = context.query as DynamicRouteQuery<typeof context.query, "tableId" | "projectId">
+        const queryParameters = context.query as DynamicRouteQuery<
+            typeof context.query,
+            "tableId" | "projectId"
+        >
 
         const pageActionUtil = PageActionUtil.fromQuery(context.query)
         const inputMask = pageActionUtil.use<string>("selectInputMask")?.payload ?? null
@@ -281,7 +295,8 @@ export const getServerSideProps = withSSRCatch(
         })
 
         const selectView = pageActionUtil.use<ViewDescriptor["id"]>("selectView")
-        const view = selectView != null ? viewList.find(view => view.id === selectView.payload) : viewList[0]
+        const view =
+            selectView != null ? viewList.find(view => view.id === selectView.payload) : viewList[0]
         if (view == null) throw new Error("Could not find view")
 
         const viewData = await fetcher<ViewData.Serialized>({

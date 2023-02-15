@@ -8,7 +8,8 @@ export const DevOverlay: React.FC = () => {
     const { appliedInputMask, setInputMask } = useRowMask()
     const { inputMasks } = useInputMask()
 
-    const handleChange = (inputMaskId: string) => setInputMask(inputMaskId === "none" ? null : inputMaskId)
+    const handleChange = (inputMaskId: string) =>
+        setInputMask(inputMaskId === "none" ? null : inputMaskId)
 
     return (
         <FormControl size="small" sx={{ mr: 2 }} color="warning">
@@ -27,7 +28,9 @@ export const DevOverlay: React.FC = () => {
                         {isTableIdOrigin(inputMask.origin) || isTableNameOrigin(inputMask.origin)
                             ? "Alle Views"
                             : `View ${
-                                  isViewIdOrigin(inputMask.origin) ? inputMask.origin.viewId : inputMask.origin.viewName
+                                  isViewIdOrigin(inputMask.origin)
+                                      ? inputMask.origin.viewId
+                                      : inputMask.origin.viewName
                               }`}
                         )
                     </MenuItem>

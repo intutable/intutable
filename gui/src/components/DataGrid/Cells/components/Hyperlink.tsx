@@ -133,7 +133,11 @@ export class Hyperlink extends Cell {
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
-                placeholder={props.label == null && props.required ? props.placeholder + "*" : props.placeholder}
+                placeholder={
+                    props.label == null && props.required
+                        ? props.placeholder + "*"
+                        : props.placeholder
+                }
                 error={Hyperlink.isValid(value) === false || (props.required && isEmpty)}
                 helperText={
                     Hyperlink.isValid(value) === false

@@ -16,7 +16,10 @@ export const useConstraintsCache = () => {
             cache.current.delete(key)
         })
 
-    const constraintMismatches: ConstraintMismatch[] = useMemo(() => Array.from(cache.current.values()), [cache])
+    const constraintMismatches: ConstraintMismatch[] = useMemo(
+        () => Array.from(cache.current.values()),
+        [cache]
+    )
 
     return {
         constraintMismatches,

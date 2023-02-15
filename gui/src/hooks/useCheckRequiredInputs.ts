@@ -10,14 +10,19 @@ import { useView } from "./useView"
 const getRequiredInputsInInputMask = (inputMask: InputMask, columns: Column[]): Column[] =>
     columns.filter(column => {
         const columnSpecification = inputMask.columnProps.find(spec =>
-            isColumnIdOrigin(spec.origin) ? spec.origin.id === column.id : spec.origin.name === column.name
+            isColumnIdOrigin(spec.origin)
+                ? spec.origin.id === column.id
+                : spec.origin.name === column.name
         )
         if (columnSpecification == null) return false
 
         return columnSpecification.inputRequired === true
     })
 
-const getValuesOfColumns = (columns: Column[], row: Row): { columnName: string; value: unknown }[] => {
+const getValuesOfColumns = (
+    columns: Column[],
+    row: Row
+): { columnName: string; value: unknown }[] => {
     const values: { columnName: string; value: unknown }[] = []
     columns.forEach(column => {
         const value = row[column.key]
@@ -29,10 +34,16 @@ const getValuesOfColumns = (columns: Column[], row: Row): { columnName: string; 
 const isEmptyValue = (value: unknown): boolean => value == null || value === ""
 
 // use this if you don't want to or can't use the hook
-export const checkRequiredInputs = (inputMask: InputMask, row: Row, columns: Column[]): string[] => {
+export const checkRequiredInputs = (
+    inputMask: InputMask,
+    row: Row,
+    columns: Column[]
+): string[] => {
     const requiredInputs = getRequiredInputsInInputMask(inputMask, columns)
     const valuesOfRequiredInputs = getValuesOfColumns(requiredInputs, row)
-    return valuesOfRequiredInputs.filter(({ value }) => isEmptyValue(value)).map(({ columnName }) => columnName)
+    return valuesOfRequiredInputs
+        .filter(({ value }) => isEmptyValue(value))
+        .map(({ columnName }) => columnName)
 }
 
 export const useCheckRequiredInputs = () => {

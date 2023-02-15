@@ -2,7 +2,12 @@ import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Divider, Stack, Typography } from "@mui/material"
 import { InputMask } from "@shared/input-masks/types"
-import { isViewIdOrigin, isViewNameOrigin, TableOrigin, ViewOrigin } from "@shared/input-masks/utils"
+import {
+    isViewIdOrigin,
+    isViewNameOrigin,
+    TableOrigin,
+    ViewOrigin,
+} from "@shared/input-masks/utils"
 import { fetcher } from "api/fetcher"
 import { withSessionSsr } from "auth/withSessionSSR"
 import { CollapsableSection } from "components/CollapsableSection"
@@ -30,12 +35,17 @@ type DashboardProps = {
     cards: InputMaskCallToActionCard[]
 }
 
-const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (props: DashboardProps) => {
+const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
+    props: DashboardProps
+) => {
     return (
         <>
             <MetaTitle title="Dashboard" />
             <Head>
-                <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+                />
             </Head>
             <Typography variant={"h4"}>Dashboard</Typography>
             <Divider />
@@ -89,7 +99,8 @@ export const getServerSideProps = withSSRCatch(
         const DEFAULT_VIEW_NAME = "Standard" as const
 
         const cards: InputMaskCallToActionCard[] = inputMasks.map(mask => {
-            const originType = isViewIdOrigin(mask.origin) || isViewNameOrigin(mask.origin) ? "view" : "table"
+            const originType =
+                isViewIdOrigin(mask.origin) || isViewNameOrigin(mask.origin) ? "view" : "table"
             const source =
                 originType === "view"
                     ? tree.sourceOfView(mask.origin as ViewOrigin)
@@ -101,13 +112,15 @@ export const getServerSideProps = withSSRCatch(
                 const project = source as ProjectDescriptor
                 const origin = mask.origin as TableOrigin
                 const tableDescriptor = tree.descriptorForTableOrigin(origin)
-                if (tableDescriptor == null) throw new Error("Table descriptor not found for input mask: " + mask.id)
+                if (tableDescriptor == null)
+                    throw new Error("Table descriptor not found for input mask: " + mask.id)
                 const viewDescriptor = tree.descriptorForViewOrigin({
                     projectId: project.id,
                     viewName: DEFAULT_VIEW_NAME,
                     viewsTableName: tableDescriptor.name,
                 })
-                if (viewDescriptor == null) throw new Error("View descriptor not found for input mask: " + mask.id)
+                if (viewDescriptor == null)
+                    throw new Error("View descriptor not found for input mask: " + mask.id)
                 return {
                     inputMask: mask,
                     url: {
@@ -133,9 +146,13 @@ export const getServerSideProps = withSSRCatch(
             }
 
             if (originType === "view") {
-                const { project, table } = source as { project: ProjectDescriptor; table: ViewDescriptor }
+                const { project, table } = source as {
+                    project: ProjectDescriptor
+                    table: ViewDescriptor
+                }
                 const viewDescriptor = tree.descriptorForViewOrigin(mask.origin as ViewOrigin)
-                if (viewDescriptor == null) throw new Error("View descriptor not found for input mask: " + mask.id)
+                if (viewDescriptor == null)
+                    throw new Error("View descriptor not found for input mask: " + mask.id)
 
                 return {
                     inputMask: mask,

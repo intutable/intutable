@@ -3,7 +3,8 @@ import { useTheme } from "@mui/material/styles"
 import { Comment } from "@shared/input-masks/types"
 import { useInputMask } from "hooks/useInputMask"
 
-const sortCommentsByDate = (a: Comment, b: Comment) => new Date(a.created).getTime() - new Date(b.created).getTime()
+const sortCommentsByDate = (a: Comment, b: Comment) =>
+    new Date(a.created).getTime() - new Date(b.created).getTime()
 const createDateGroupMap = (comments: Comment[]): DateGroupMap =>
     comments.reduce((group: DateGroupMap, comment) => {
         const date = new Date(comment.created).toLocaleDateString()
@@ -40,7 +41,9 @@ const Comment: React.FC<{ comment: Comment }> = ({ comment }) => {
         <Box
             sx={{
                 borderRadius: theme.shape.borderRadius,
-                bgcolor: comment.highlighted ? theme.palette.warning.light : theme.palette.grey[200],
+                bgcolor: comment.highlighted
+                    ? theme.palette.warning.light
+                    : theme.palette.grey[200],
                 py: 0.8,
                 px: 1.5,
                 mb: 0.5,
@@ -75,7 +78,9 @@ export const CommentSection: React.FC = () => {
                 overflowY: "scroll",
             }}
         >
-            {currentInputMask.comments.length === 0 && <Typography>Keine Kommentare vorhanden</Typography>}
+            {currentInputMask.comments.length === 0 && (
+                <Typography>Keine Kommentare vorhanden</Typography>
+            )}
             <Stack direction="column">
                 {groupAndSortComments(currentInputMask.comments).map(group => (
                     <DateGroup

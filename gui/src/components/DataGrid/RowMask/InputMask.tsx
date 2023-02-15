@@ -10,7 +10,9 @@ import Components from "./Input Mask Components"
 const columnIsInGroup = (column: Column, groups: ColumnGroup[]) =>
     groups.some(group =>
         group.columns.some(groupColumn =>
-            isColumnIdOrigin(groupColumn) ? groupColumn.id === column.id : groupColumn.name === column.name
+            isColumnIdOrigin(groupColumn)
+                ? groupColumn.id === column.id
+                : groupColumn.name === column.name
         )
     )
 
@@ -36,7 +38,8 @@ const OrderedInputMaskItemSort = (a: InputMaskItem, b: InputMaskItem) => {
     if (a.index === b.index && isColumnItem(a) !== isColumnItem(b)) {
         if (isColumnGroup(a) || isColumnGroup(b)) return isColumnGroup(a) ? 1 : -1
 
-        if (isInputMaskComponent(a) || isInputMaskComponent(b)) return isInputMaskComponent(a) ? 1 : -1
+        if (isInputMaskComponent(a) || isInputMaskComponent(b))
+            return isInputMaskComponent(a) ? 1 : -1
 
         throw new Error("Failed implementing prioritized ordering for input mask items.") // dev error
     }
@@ -71,7 +74,11 @@ export const MakeInputMaskColumns: React.FC<{ columns: Column[] }> = ({ columns 
     if (currentInputMask == null) return null
 
     const mergedColumns = merge(columns, currentInputMask.columnProps)
-    const orderedColumns = orderInputMaskItems(mergedColumns, currentInputMask.groups, currentInputMask.components)
+    const orderedColumns = orderInputMaskItems(
+        mergedColumns,
+        currentInputMask.groups,
+        currentInputMask.components
+    )
 
     return (
         <>

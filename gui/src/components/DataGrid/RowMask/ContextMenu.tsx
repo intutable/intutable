@@ -48,7 +48,8 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
 
     const createShareLink = () => {
         try {
-            if (!project || !table || !currentInputMask || rowMaskState.mode === "closed" || !view) throw new Error()
+            if (!project || !table || !currentInputMask || rowMaskState.mode === "closed" || !view)
+                throw new Error()
             // TODO: this might be not appropriate
             const viewParam =
                 isViewIdOrigin(currentInputMask.origin) || isViewNameOrigin(currentInputMask.origin)
@@ -86,18 +87,20 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                 <MenuList>
                     {selectedInputMask == null && <HiddenColumnsMenuItem />}
 
-                    {selectedInputMask != null && currentInputMask && currentInputMask.comments.length > 0 && (
-                        <>
-                            <MenuItem onClick={props.toggleCommentsVisible}>
-                                {props.commentsVisible && (
-                                    <ListItemIcon>
-                                        <CheckIcon fontSize="small" />
-                                    </ListItemIcon>
-                                )}
-                                <ListItemText>Kommentare</ListItemText>
-                            </MenuItem>
-                        </>
-                    )}
+                    {selectedInputMask != null &&
+                        currentInputMask &&
+                        currentInputMask.comments.length > 0 && (
+                            <>
+                                <MenuItem onClick={props.toggleCommentsVisible}>
+                                    {props.commentsVisible && (
+                                        <ListItemIcon>
+                                            <CheckIcon fontSize="small" />
+                                        </ListItemIcon>
+                                    )}
+                                    <ListItemText>Kommentare</ListItemText>
+                                </MenuItem>
+                            </>
+                        )}
                     {selectedInputMask != null && (
                         <MenuItem onClick={createShareLink}>
                             <ListItemIcon>

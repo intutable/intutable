@@ -40,8 +40,9 @@ export class FindSource {
     public sourceOfTable(table: ViewDescriptor | TableOrigin): ProjectDescriptor | null {
         if (FindSource.isViewDescriptor(table))
             return (
-                this.tree.find(project => project.tables.find(tableWithViews => tableWithViews.table.id === table.id))
-                    ?.project ?? null
+                this.tree.find(project =>
+                    project.tables.find(tableWithViews => tableWithViews.table.id === table.id)
+                )?.project ?? null
             )
 
         if (isTableIdOrigin(table))
@@ -53,7 +54,9 @@ export class FindSource {
 
         if (isTableNameOrigin(table))
             return (
-                this.tree.find(projectWithTables => projectWithTables.project.id === table.projectId)?.project ?? null
+                this.tree.find(
+                    projectWithTables => projectWithTables.project.id === table.projectId
+                )?.project ?? null
             )
 
         throw new Error("Could not read parameter 'table'!")
@@ -68,7 +71,10 @@ export class FindSource {
                 projectWithTables.tables.find(tableWithViews =>
                     tableWithViews.views.find(v => {
                         if (v.id === view.id) {
-                            found = { project: projectWithTables.project, table: tableWithViews.table }
+                            found = {
+                                project: projectWithTables.project,
+                                table: tableWithViews.table,
+                            }
                             return true
                         }
                         return false
@@ -84,7 +90,10 @@ export class FindSource {
                 projectWithTables.tables.find(tableWithViews =>
                     tableWithViews.views.find(v => {
                         if (v.id === view.viewId) {
-                            found = { project: projectWithTables.project, table: tableWithViews.table }
+                            found = {
+                                project: projectWithTables.project,
+                                table: tableWithViews.table,
+                            }
                             return true
                         }
                         return false
@@ -127,8 +136,9 @@ export class FindSource {
                 projectWithTables => projectWithTables.project.id === origin.projectId
             )
             return (
-                projectWithTables?.tables.find(tableWithViews => tableWithViews.table.name === origin.tableName)
-                    ?.table ?? null
+                projectWithTables?.tables.find(
+                    tableWithViews => tableWithViews.table.name === origin.tableName
+                )?.table ?? null
             )
         }
 
@@ -202,6 +212,9 @@ export class FindSource {
 
     /** Type Guard for ViewDescriptor type */
     static isViewDescriptor(value: unknown): value is ViewDescriptor {
-        return Object.prototype.hasOwnProperty.call(value, "id") && Object.prototype.hasOwnProperty.call(value, "name")
+        return (
+            Object.prototype.hasOwnProperty.call(value, "id") &&
+            Object.prototype.hasOwnProperty.call(value, "name")
+        )
     }
 }

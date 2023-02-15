@@ -120,7 +120,8 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
                         const groupCol = group.columns.find(col =>
                             isColumnIdOrigin(col) ? col.id === column.id : col.name === column.name
                         )
-                        if (groupCol === undefined) throw new Error("Could not find the column in the group!")
+                        if (groupCol === undefined)
+                            throw new Error("Could not find the column in the group!")
 
                         const selectedRow = view?.rows.find(row => row._id === rowMaskState.row._id)
                         if (selectedRow == null) return null
@@ -139,7 +140,11 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
                                     row={selectedRow}
                                     column={column}
                                     placeholder={column.inputPlaceholderText}
-                                    label={column.suppressInputLabel !== true ? (column.name as string) : undefined}
+                                    label={
+                                        column.suppressInputLabel !== true
+                                            ? (column.name as string)
+                                            : undefined
+                                    }
                                     hoveringOnParent={isHovering}
                                     required={column.inputRequired}
                                 />

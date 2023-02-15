@@ -114,80 +114,83 @@ export class Time extends TempusCell {
         )
     }
 
-    public ExposedInput: React.FC<ExposedInputProps<number | null, TimePickerProps<unknown>>> = props => {
-        const { updateRow } = useRow()
-        const { snackError } = useSnacki()
+    public ExposedInput: React.FC<ExposedInputProps<number | null, TimePickerProps<unknown>>> =
+        props => {
+            const { updateRow } = useRow()
+            const { snackError } = useSnacki()
 
-        const [content, setContent] = useState(props.content)
-        const isEmpty = content == null
+            const [content, setContent] = useState(props.content)
+            const isEmpty = content == null
 
-        const handleChange = async (value: number | null) => {
-            if (Time.isValid(value)) setContent(value)
-            try {
-                await updateRow(props.column, props.row, value)
-            } catch (e) {
-                snackError("Der Wert konnte nicht geändert werden")
+            const handleChange = async (value: number | null) => {
+                if (Time.isValid(value)) setContent(value)
+                try {
+                    await updateRow(props.column, props.row, value)
+                } catch (e) {
+                    snackError("Der Wert konnte nicht geändert werden")
+                }
             }
+
+            /**
+             * required
+             * tooltip
+             * placeholder
+             * suppressed label
+             */
+
+            return (
+                <LocalizationProvider
+                    dateAdapter={AdapterDateFns}
+                    adapterLocale={deLocale}
+                    localeText={{
+                        openPreviousView: "Stunde setzen",
+                        openNextView: "Minuten setzen",
+                        clearButtonLabel: "Löschen",
+                        cancelButtonLabel: "Abbrechen",
+                        okButtonLabel: "OK",
+                        todayButtonLabel: "Jetzt",
+                        // start: "Start",
+                        // end: "Ende",
+                    }}
+                >
+                    <TimePicker
+                        showToolbar
+                        value={content}
+                        onChange={handleChange}
+                        label={props.label}
+                        renderInput={renderProps => (
+                            <TextField
+                                size="small"
+                                fullWidth
+                                required={props.required}
+                                label={props.label}
+                                placeholder={
+                                    props.label == null && props.required
+                                        ? props.placeholder + "*"
+                                        : props.placeholder
+                                }
+                                error={props.required && isEmpty}
+                                helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
+                                {...renderProps}
+                            />
+                        )}
+                        disabled={this.column.editable === false}
+                        componentsProps={{
+                            actionBar: {
+                                actions: ["clear", "today", "accept"],
+                            },
+                        }}
+                        readOnly={this.isReadonlyComponent}
+                        InputProps={{
+                            readOnly: this.isReadonlyComponent,
+                            startAdornment: <ExposedInputAdornment column={this.column} />,
+                            endAdornment: <HelperTooltip text={props.tooltip} />,
+                        }}
+
+                        // sx={props.forwardSX}
+                        // {...props.forwardProps}
+                    />
+                </LocalizationProvider>
+            )
         }
-
-        /**
-         * required
-         * tooltip
-         * placeholder
-         * suppressed label
-         */
-
-        return (
-            <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={deLocale}
-                localeText={{
-                    openPreviousView: "Stunde setzen",
-                    openNextView: "Minuten setzen",
-                    clearButtonLabel: "Löschen",
-                    cancelButtonLabel: "Abbrechen",
-                    okButtonLabel: "OK",
-                    todayButtonLabel: "Jetzt",
-                    // start: "Start",
-                    // end: "Ende",
-                }}
-            >
-                <TimePicker
-                    showToolbar
-                    value={content}
-                    onChange={handleChange}
-                    label={props.label}
-                    renderInput={renderProps => (
-                        <TextField
-                            size="small"
-                            fullWidth
-                            required={props.required}
-                            label={props.label}
-                            placeholder={
-                                props.label == null && props.required ? props.placeholder + "*" : props.placeholder
-                            }
-                            error={props.required && isEmpty}
-                            helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
-                            {...renderProps}
-                        />
-                    )}
-                    disabled={this.column.editable === false}
-                    componentsProps={{
-                        actionBar: {
-                            actions: ["clear", "today", "accept"],
-                        },
-                    }}
-                    readOnly={this.isReadonlyComponent}
-                    InputProps={{
-                        readOnly: this.isReadonlyComponent,
-                        startAdornment: <ExposedInputAdornment column={this.column} />,
-                        endAdornment: <HelperTooltip text={props.tooltip} />,
-                    }}
-
-                    // sx={props.forwardSX}
-                    // {...props.forwardProps}
-                />
-            </LocalizationProvider>
-        )
-    }
 }

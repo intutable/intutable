@@ -54,12 +54,11 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         await mutateTable()
         await mutateView()
         return row
-        
     }
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    const deleteRow = async (row: {_id: number}): Promise<void> => {
+    const deleteRow = async (row: { _id: number }): Promise<void> => {
         await fetcher({
             url: "/api/row",
             body: {
@@ -76,7 +75,11 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: `value` needs a (better) type
-    const updateRow = async (column: Column, row: {_id: number}, updatedValue: unknown): Promise<void> => {
+    const updateRow = async (
+        column: Column,
+        row: { _id: number },
+        updatedValue: unknown
+    ): Promise<void> => {
         const serializedValue = SerDes.serializeRowValue(updatedValue, column)
 
         // TODO: put this in the api route

@@ -26,7 +26,8 @@ const RUNTIME_ROUTE_PARAMETERS_MAP: {
 }
 
 const isParser = (value: unknown): value is { type: PageAction["type"]; parser: CallbackParser } =>
-    Object.prototype.hasOwnProperty.call(value, "type") && Object.prototype.hasOwnProperty.call(value, "parser")
+    Object.prototype.hasOwnProperty.call(value, "type") &&
+    Object.prototype.hasOwnProperty.call(value, "parser")
 
 /**
  * ### Page Action Util
@@ -66,7 +67,8 @@ export class PageActionUtil {
         const parsed: PageAction[] = []
         Object.entries(query).forEach(([key, value]) => {
             if (Object.keys(RUNTIME_ROUTE_PARAMETERS_MAP).includes(key)) {
-                const param = RUNTIME_ROUTE_PARAMETERS_MAP[key as keyof typeof RUNTIME_ROUTE_PARAMETERS_MAP]
+                const param =
+                    RUNTIME_ROUTE_PARAMETERS_MAP[key as keyof typeof RUNTIME_ROUTE_PARAMETERS_MAP]
                 const type = isParser(param) ? param.type : param
                 const payload = isParser(param) ? param.parser(value as string) : value
                 parsed.push({ type, payload })

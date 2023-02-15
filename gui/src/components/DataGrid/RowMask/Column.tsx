@@ -25,7 +25,11 @@ export const ColumnAttributesWindowButton: React.FC<{
             <IconButton onClick={openContextMenu} size="small" color="primary" edge="end">
                 <EditIcon fontSize="small" />
             </IconButton>
-            <ColumnAttributesWindow open={anchorEL != null} onClose={closeContextMenu} column={column} />
+            <ColumnAttributesWindow
+                open={anchorEL != null}
+                onClose={closeContextMenu}
+                column={column}
+            />
         </>
     )
 }
@@ -115,7 +119,9 @@ export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) =>
                         column={column}
                         hoveringOnParent={isHovering}
                         placeholder={column.inputPlaceholderText}
-                        label={column.suppressInputLabel !== true ? (column.name as string) : undefined}
+                        label={
+                            column.suppressInputLabel !== true ? (column.name as string) : undefined
+                        }
                         required={column.inputRequired}
                     />
 
@@ -126,7 +132,9 @@ export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) =>
                             {isHovering && (
                                 <>
                                     {/* {column.kind === "link" && <AddLookupButton />} */}
-                                    <ColumnAttributesWindowButton column={column as Column.Serialized} />
+                                    <ColumnAttributesWindowButton
+                                        column={column as Column.Serialized}
+                                    />
                                 </>
                             )}
                         </>

@@ -126,7 +126,11 @@ export class EMail extends Cell {
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,
                 }}
-                placeholder={props.label == null && props.required ? props.placeholder + "*" : props.placeholder}
+                placeholder={
+                    props.label == null && props.required
+                        ? props.placeholder + "*"
+                        : props.placeholder
+                }
                 error={EMail.isValid(value) === false || (props.required && isEmpty)}
                 helperText={
                     EMail.isValid(value) === false

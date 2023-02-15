@@ -17,7 +17,11 @@ export const usePendingRow = () => {
     useEffect(() => {
         if (pendingRow) {
             const includes = data?.rows.find(row => row._id === pendingRow._id)
-            if (includes && rowMaskState.mode === "edit" && rowMaskState.row._id !== pendingRow._id) {
+            if (
+                includes &&
+                rowMaskState.mode === "edit" &&
+                rowMaskState.row._id !== pendingRow._id
+            ) {
                 setRowMaskState({ mode: "edit", row: pendingRow })
                 setPendingRow(null)
             }

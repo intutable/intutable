@@ -42,7 +42,9 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     )
 
     /** if not traceable or not specified, it will use no one and display the default row mask  */
-    const [appliedInputMask, setInputMask] = useState<InputMask["id"] | null>(props.initialAppliedInputMask ?? null)
+    const [appliedInputMask, setInputMask] = useState<InputMask["id"] | null>(
+        props.initialAppliedInputMask ?? null
+    )
 
     // BUG: reset selectedInputMask to default if table changes
 

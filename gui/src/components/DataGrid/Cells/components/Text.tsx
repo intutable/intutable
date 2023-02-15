@@ -68,7 +68,11 @@ export class Text extends Cell {
                     startAdornment: <ExposedInputAdornment column={this.column} />,
                     endAdornment: <HelperTooltip text={props.tooltip} />,
                 }}
-                placeholder={props.label == null && props.required ? props.placeholder + "*" : props.placeholder}
+                placeholder={
+                    props.label == null && props.required
+                        ? props.placeholder + "*"
+                        : props.placeholder
+                }
                 error={props.required && isEmpty}
                 helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
                 sx={props.forwardSX}

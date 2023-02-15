@@ -20,11 +20,16 @@ const _RowNavigator: React.FC = () => {
         const nextIndex = selectedRow.index + 1 > maxIndex ? 0 : selectedRow.index + 1
         const previousIndex = selectedRow.index - 1 < 0 ? maxIndex : selectedRow.index - 1
 
-        if (isValid === false) alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
+        if (isValid === false)
+            alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
 
         setRowMaskState({
             mode: "edit",
-            row: { _id: data.rows.find(row => row.index === (action === "next" ? nextIndex : previousIndex))!._id },
+            row: {
+                _id: data.rows.find(
+                    row => row.index === (action === "next" ? nextIndex : previousIndex)
+                )!._id,
+            },
         })
     }
 

@@ -72,10 +72,12 @@ export const RowMaskContainer: React.FC = () => {
     // const { ...state } = useCheckRequiredInputs()
     // console.log(state)
 
-    const [mismatchingConstraintsVisible, setMismatchingConstraintsVisible] = useState<boolean>(false)
+    const [mismatchingConstraintsVisible, setMismatchingConstraintsVisible] =
+        useState<boolean>(false)
 
     const abort = () => {
-        if (isValid === false) alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
+        if (isValid === false)
+            alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
         setRowMaskState({ mode: "closed" })
     }
 
@@ -105,22 +107,34 @@ export const RowMaskContainer: React.FC = () => {
                         toggleCommentsVisible={() => setCommentsVisible(prev => !prev)}
                     />
                     <Divider orientation="vertical" flexItem sx={{ mx: 2 }} variant="middle" />
-                    {isInputMask && currentInputMask?.draftsCanBeDeleted && isDraft(selectedRow) && (
-                        <Tooltip arrow placement="bottom" title="Entwurf löschen" enterDelay={1000}>
-                            <IconButton
-                                size="small"
-                                sx={{
-                                    "&:hover": {
-                                        color: theme.palette.error.light,
-                                    },
-                                }}
-                                onClick={deleteDraft}
+                    {isInputMask &&
+                        currentInputMask?.draftsCanBeDeleted &&
+                        isDraft(selectedRow) && (
+                            <Tooltip
+                                arrow
+                                placement="bottom"
+                                title="Entwurf löschen"
+                                enterDelay={1000}
                             >
-                                <DeleteIcon fontSize="small" />
-                            </IconButton>
-                        </Tooltip>
-                    )}
-                    <Tooltip arrow placement="bottom" title="Speichern & Schließen" enterDelay={1000}>
+                                <IconButton
+                                    size="small"
+                                    sx={{
+                                        "&:hover": {
+                                            color: theme.palette.error.light,
+                                        },
+                                    }}
+                                    onClick={deleteDraft}
+                                >
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                    <Tooltip
+                        arrow
+                        placement="bottom"
+                        title="Speichern & Schließen"
+                        enterDelay={1000}
+                    >
                         <IconButton
                             size="small"
                             onClick={abort}
@@ -143,14 +157,22 @@ export const RowMaskContainer: React.FC = () => {
                     {/* columns */}
                     <Grid item xs={commentsVisible ? 8 : 12}>
                         <Box
-                            sx={{ overflowY: "scroll", maxHeight: "70vh", minHeight: "70vh", height: "70vh", width: 1 }}
+                            sx={{
+                                overflowY: "scroll",
+                                maxHeight: "70vh",
+                                minHeight: "70vh",
+                                height: "70vh",
+                                width: 1,
+                            }}
                         >
                             {isInputMask ? (
                                 <MakeInputMaskColumns columns={columns} />
                             ) : (
                                 columns
                                     .sort(ColumnUtility.sortByIndex)
-                                    .map(column => <RowMaskColumn column={column} key={column.id} />)
+                                    .map(column => (
+                                        <RowMaskColumn column={column} key={column.id} />
+                                    ))
                             )}
                         </Box>
                     </Grid>
@@ -168,7 +190,9 @@ export const RowMaskContainer: React.FC = () => {
                                 direction="row"
                             >
                                 <Divider orientation="vertical" sx={{ mx: 2 }} />
-                                <ConstraintMismatches onClose={() => setMismatchingConstraintsVisible(false)} />
+                                <ConstraintMismatches
+                                    onClose={() => setMismatchingConstraintsVisible(false)}
+                                />
                             </Stack>
                         </Grid>
                     )}
@@ -216,7 +240,9 @@ export const RowMaskContainer: React.FC = () => {
                             right: 10,
                         }}
                     >
-                        <ConstraintsValid onShowInvalidConstraints={() => setMismatchingConstraintsVisible(true)} />
+                        <ConstraintsValid
+                            onShowInvalidConstraints={() => setMismatchingConstraintsVisible(true)}
+                        />
                     </Box>
                 )}
             </DialogActions>

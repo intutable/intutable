@@ -3,7 +3,17 @@ import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddRecordIcon from "@mui/icons-material/PlaylistAddCircle"
 import TableIcon from "@mui/icons-material/TableRows"
 import ViewIcon from "@mui/icons-material/TableView"
-import { Avatar, Box, Button, Card, CardActions, CardContent, Stack, Tooltip, Typography } from "@mui/material"
+import {
+    Avatar,
+    Box,
+    Button,
+    Card,
+    CardActions,
+    CardContent,
+    Stack,
+    Tooltip,
+    Typography,
+} from "@mui/material"
 import Icon from "@mui/material/Icon"
 import { useTheme } from "@mui/material/styles"
 import { InputMask } from "@shared/input-masks/types"
@@ -30,7 +40,9 @@ export const InputMaskCTACard: React.FC<{ card: InputMaskCallToActionCard }> = (
         <Card
             sx={{
                 "&:hover": {
-                    bgcolor: card.inputMask.disabled ? theme.palette.action.disabled : theme.palette.action.hover,
+                    bgcolor: card.inputMask.disabled
+                        ? theme.palette.action.disabled
+                        : theme.palette.action.hover,
                 },
                 bgcolor: card.inputMask.disabled ? theme.palette.action.disabled : "inherit",
                 maxWidth: "500px",
@@ -48,7 +60,11 @@ export const InputMaskCTACard: React.FC<{ card: InputMaskCallToActionCard }> = (
                             sx={{ mr: 2 }}
                         >
                             <Avatar
-                                sx={{ bgcolor: card.inputMask.disabled ? theme.palette.action.disabled : "tomato" }}
+                                sx={{
+                                    bgcolor: card.inputMask.disabled
+                                        ? theme.palette.action.disabled
+                                        : "tomato",
+                                }}
                                 variant="rounded"
                             >
                                 {card.originType === "table" ? <TableIcon /> : <ViewIcon />}
@@ -87,7 +103,12 @@ export const InputMaskCTACard: React.FC<{ card: InputMaskCallToActionCard }> = (
             <CardActions sx={{ justifyContent: "flex-end" }}>
                 <Button
                     size="small"
-                    onClick={() => router.push(card.url, typeof card.url === "string" ? card.url : card.url.pathname!)}
+                    onClick={() =>
+                        router.push(
+                            card.url,
+                            typeof card.url === "string" ? card.url : card.url.pathname!
+                        )
+                    }
                     disabled={card.inputMask.disabled}
                 >
                     Einträge ansehen
@@ -95,7 +116,10 @@ export const InputMaskCTACard: React.FC<{ card: InputMaskCallToActionCard }> = (
                 <Button
                     onClick={e => {
                         e.stopPropagation()
-                        router.push(card.callToActionUrl, typeof card.url === "string" ? card.url : card.url.pathname!)
+                        router.push(
+                            card.callToActionUrl,
+                            typeof card.url === "string" ? card.url : card.url.pathname!
+                        )
                     }}
                     size="small"
                     disabled={card.inputMask.disabled}
