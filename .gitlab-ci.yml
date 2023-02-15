@@ -1,5 +1,11 @@
 image: node:16.8.0
 
+cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+        - node_modules/
+        - .next/cache/
+
 stages:
     - lint
     - lint-production

@@ -1,12 +1,25 @@
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import AbcIcon from "@mui/icons-material/Abc"
-import { TextField, TextFieldProps } from "@mui/material"
+import { TextField, TextFieldProps, Tooltip } from "@mui/material"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Column } from "types"
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
+import InfoIcon from "@mui/icons-material/Info"
+
+export const HelperTooltip: React.FC<{ text?: string }> = props =>
+    props.text == null ? null : (
+        <Tooltip title={props.text} arrow placement="right">
+            <InfoIcon
+                sx={{
+                    fontSize: "80%",
+                }}
+                color="disabled"
+            />
+        </Tooltip>
+    )
 
 export class Text extends Cell {
     constructor(column: Column.Serialized) {
@@ -21,7 +34,8 @@ export class Text extends Cell {
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
 
-        const [value, setValue] = useState(props.content)
+        const [value, setValue] = useState(props.content ?? "")
+        const isEmpty = value == null || value === ""
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
@@ -38,12 +52,29 @@ export class Text extends Cell {
                 size="small"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                onKeyDown={e => {
+                    if (e.key === "Enter") {
+                        e.preventDefault()
+                        handleBlur()
+                    }
+                }}
+                fullWidth
                 value={value}
                 disabled={this.column.editable === false}
+                label={props.label}
+                required={props.required}
                 InputProps={{
                     readOnly: this.isReadonlyComponent,
                     startAdornment: <ExposedInputAdornment column={this.column} />,
+                    endAdornment: <HelperTooltip text={props.tooltip} />,
                 }}
+                placeholder={
+                    props.label == null && props.required
+                        ? props.placeholder + "*"
+                        : props.placeholder
+                }
+                error={props.required && isEmpty}
+                helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
                 sx={props.forwardSX}
                 {...props.forwardProps}
             />

@@ -6,7 +6,9 @@ import createTheme from "./utils"
  * `COLOR_SCHEME` is added to the theme via module augmentation in `./utils.ts`.
  * You can access added colors by `theme.colorScheme[STRING]`.
  */
-export const COLOR_SCHEME = {} as const
+export const COLOR_SCHEME = {
+    ochsenblut: "#c61826",
+} as const
 
 /**
  * Light Theme for the App
@@ -14,6 +16,9 @@ export const COLOR_SCHEME = {} as const
 export const lightTheme = createTheme({
     colorScheme: { ...COLOR_SCHEME },
     palette: {
+        // primary: {
+        //     main: COLOR_SCHEME.ochsenblut,
+        // },
         text: {
             primary: "#333",
             secondary: "#555",
