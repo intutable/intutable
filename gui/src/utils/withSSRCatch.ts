@@ -1,6 +1,5 @@
-import { withIronSessionSsr } from "iron-session/next"
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next"
-import { ErrorLike, isErrorLike } from "./error-handling/ErrorLike"
+import { isErrorLike } from "./error-handling/ErrorLike"
 /**
  * {@link fetcher} is mostly used client-side. Errors get catches by swr automatically.
  * But in case of a server-side error, the error is thrown and crashes the app

@@ -19,6 +19,6 @@ export const immutableColumnAttributes = [
     "isUserPrimaryKey",
 ] as const
 
-export type ImmutableColumnAttributes = typeof immutableColumnAttributes[number]
+export type ImmutableColumnAttributes = (typeof immutableColumnAttributes)[number]
 
 export type CustomColumnAttributes = Partial<SerializedColumn>

@@ -1,4 +1,4 @@
-import { Cell, cellMap } from "@datagrid/Cells"
+import { cellMap } from "@datagrid/Cells"
 import LinkColumnFormatter from "@datagrid/Cells/components/LinkColumn/LinkColumnFormatter"
 import { HeaderRenderer } from "@datagrid/renderers"
 
