@@ -6,9 +6,14 @@ import { User } from "types/User"
 /**
  * Check if logged into core by using the session cookie.
  */
-export const getCurrentUser = async (authCookie: string): Promise<Omit<User, "isLoggedIn"> | null> => {
+export const getCurrentUser = async (
+    authCookie: string
+): Promise<Omit<User, "isLoggedIn"> | null> => {
     try {
-        const user = (await coreRequest(getCurrentUserRequest(), authCookie)) as Omit<User, "authCookie" | "isLoggedIn">
+        const user = (await coreRequest(getCurrentUserRequest(), authCookie)) as Omit<
+            User,
+            "authCookie" | "isLoggedIn"
+        >
         return Promise.resolve({
             ...user,
             authCookie,
@@ -17,7 +22,9 @@ export const getCurrentUser = async (authCookie: string): Promise<Omit<User, "is
     } catch (err) {
         if (typeof err === "object" && err != null && "status" in err) {
             const { status } = err as { status: number }
-            return [301, 302].includes(status) ? Promise.resolve(null) : Promise.reject(err as unknown)
+            return [301, 302].includes(status)
+                ? Promise.resolve(null)
+                : Promise.reject(err as unknown)
         }
         return Promise.reject(new Error("could not reach core"))
     }

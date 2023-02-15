@@ -1,15 +1,14 @@
-import { TableDescriptor } from "@intutable/lazy-views"
+import { TableDescriptor } from "@shared/types"
 import { useAPI } from "context"
 import useSWR, { unstable_serialize } from "swr"
 import { TableData } from "types"
-import { ViewDescriptor } from "@intutable/lazy-views"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 
 type TableData = TableData.Serialized
 
 export type TableHookOptions = {
-    table?: ViewDescriptor | null
+    table?: TableDescriptor | null
     swrOptions?: Partial<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         PublicConfiguration<TableData, any, BareFetcher<TableData>>
@@ -26,13 +25,16 @@ export type TableHookOptions = {
  *
  * @param {Partial<PublicConfiguration<TableData, any, BareFetcher<TableData>>>} [options.swrOptions] Options for the underlying {@link useSWR} hook.
  *
- * @param {ViewDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
+ * @param {TableDescriptor} [options.table] If you want to fetch a diffrent table than specified in the api context, you can use this option.
  */
 export const useTable = (options?: TableHookOptions) => {
     const { table: api_table } = useAPI()
 
     // if the table param is specified, use that over the api context
-    const tableToFetch = useMemo(() => (options?.table ? options.table : api_table), [api_table, options?.table])
+    const tableToFetch = useMemo(
+        () => (options?.table ? options.table : api_table),
+        [api_table, options?.table]
+    )
 
     const { data, error, mutate, isValidating } = useSWR<TableData>(
         tableToFetch

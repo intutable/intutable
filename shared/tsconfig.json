@@ -1,7 +1,6 @@
 {
     "include": [
-        "./src/**/*.ts",
-        "../dekanat-app-plugin/src/transform/Numeric.ts"
+        "./src/**/*.ts"
     ],
     "compilerOptions": {
         "moduleResolution": "node",

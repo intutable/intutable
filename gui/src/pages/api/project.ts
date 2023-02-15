@@ -27,13 +27,19 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 
     const project = await withReadWriteConnection(user, async sessionID => {
         // check if already exists
-        const projects = await coreRequest<ProjectDescriptor[]>(getProjects(sessionID, roleId), user.authCookie)
+        const projects = await coreRequest<ProjectDescriptor[]>(
+            getProjects(sessionID, roleId),
+            user.authCookie
+        )
         if (projects.some(p => p.name === name)) {
             throw Error("alreadyTaken")
         }
 
         // create project in project-management
-        return coreRequest<ProjectDescriptor>(createProject(sessionID, roleId, name), user.authCookie)
+        return coreRequest<ProjectDescriptor>(
+            createProject(sessionID, roleId, name),
+            user.authCookie
+        )
     })
 
     res.status(200).json(project)

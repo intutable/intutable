@@ -40,8 +40,8 @@ const ServiceDesk: NextPage = () => {
                         <a href="mailto:contact-project+intutable-dekanat-app-30881788-issue-@incoming.gitlab.com">
                             E-Mail
                         </a>{" "}
-                        gesendet werden. Die Entwickler erhalten eine Nachricht und werden das Problem so schnell wie
-                        möglich lösen.
+                        gesendet werden. Die Entwickler erhalten eine Nachricht und werden das
+                        Problem so schnell wie möglich lösen.
                     </Typography>
                 </li>
             </ul>
@@ -58,8 +58,8 @@ const ServiceDesk: NextPage = () => {
                             color: theme.palette.text.secondary,
                         }}
                     >
-                        Einige Browser (u.a. Safari) werden zzt. nicht vollständig unterstützt. Wir empfehlen Google
-                        Chrome.
+                        Einige Browser (u.a. Safari) werden zzt. nicht vollständig unterstützt. Wir
+                        empfehlen Google Chrome.
                     </Typography>
                 </li>
                 <li>
@@ -77,8 +77,8 @@ const ServiceDesk: NextPage = () => {
                             color: theme.palette.text.secondary,
                         }}
                     >
-                        Einige Kontext-Menüs können nicht zuverlässig mit der Maus bedient werden. Dann kann trotzdem
-                        die Tastatur zum Navigieren verwendet werden.
+                        Einige Kontext-Menüs können nicht zuverlässig mit der Maus bedient werden.
+                        Dann kann trotzdem die Tastatur zum Navigieren verwendet werden.
                     </Typography>
                 </li>
             </ul>

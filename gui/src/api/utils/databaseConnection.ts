@@ -8,7 +8,10 @@ import { coreRequest } from "./coreRequest"
  * Reject with an { error: message } if the credentials are not found or
  * if the login fails.
  */
-export const withReadWriteConnection = async <T>(user: User, callback: (connId: string) => Promise<T>): Promise<T> => {
+export const withReadWriteConnection = async <T>(
+    user: User,
+    callback: (connId: string) => Promise<T>
+): Promise<T> => {
     const username = process.env.DB_RW_USERNAME
     const password = process.env.DB_RW_PASSWORD
     if (!username || !password)
@@ -35,7 +38,10 @@ export const withReadWriteConnection = async <T>(user: User, callback: (connId: 
  * Reject with an { error: message } if the credentials are not found or
  * if the login fails.
  */
-export const withReadOnlyConnection = async <T>(user: User, callback: (connId: string) => Promise<T>): Promise<T> => {
+export const withReadOnlyConnection = async <T>(
+    user: User,
+    callback: (connId: string) => Promise<T>
+): Promise<T> => {
     const username = process.env.DB_RDONLY_USERNAME
     const password = process.env.DB_RDONLY_PASSWORD
     if (!username || !password) throw Error("username or password not found in env")

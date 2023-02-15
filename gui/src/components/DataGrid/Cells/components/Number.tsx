@@ -24,7 +24,14 @@ export class Num extends NumericCell {
                 [key]: e.target.value,
             })
 
-        return <this.Input onChange={handleChange} type="number" onBlur={() => props.onClose(true)} value={content} />
+        return (
+            <this.Input
+                onChange={handleChange}
+                type="number"
+                onBlur={() => props.onClose(true)}
+                value={content}
+            />
+        )
     }
 
     public ExposedInput: React.FC<ExposedInputProps<number | null, TextFieldProps>> = props => {

@@ -84,7 +84,11 @@ export const SupportedFeatures: React.FC<SupportedFeaturesProps> = props => {
                                 </Stack>
                             </TableCell>
                             <TableCell>
-                                <Tooltip arrow placement="right" title={getIconTooltip(feature.support)}>
+                                <Tooltip
+                                    arrow
+                                    placement="right"
+                                    title={getIconTooltip(feature.support)}
+                                >
                                     {getIcon(feature.support)}
                                 </Tooltip>
                             </TableCell>

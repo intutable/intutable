@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { TableDescriptor } from "@shared/types"
 import AddIcon from "@mui/icons-material/AddLink"
 import LoadingButton from "@mui/lab/LoadingButton"
 import {
@@ -37,7 +37,11 @@ export const AddLink: React.FC = () => {
     return (
         <>
             <Tooltip title="Add link to another table">
-                <LoadingButton loadingIndicator="Lädt..." startIcon={<AddIcon />} onClick={handleOpenModal}>
+                <LoadingButton
+                    loadingIndicator="Lädt..."
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenModal}
+                >
                     Add Link
                 </LoadingButton>
             </Tooltip>
@@ -61,7 +65,7 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
     const { data: currentTable, mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 
-    const [selection, setSelection] = useState<ViewDescriptor | null>(null)
+    const [selection, setSelection] = useState<TableDescriptor | null>(null)
 
     useEffect(() => {
         if (error) {
@@ -70,17 +74,14 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    const onClickHandler = (table: ViewDescriptor) => setSelection(table)
+    const onClickHandler = (table: TableDescriptor) => setSelection(table)
 
-    const handleAddLink = async (table: ViewDescriptor) => {
+    const handleAddLink = async (table: TableDescriptor) => {
         try {
             if (currentTable == null) throw new Error()
             await fetcher({
-                url: "/api/join",
-                body: {
-                    tableId: currentTable.metadata.descriptor.id,
-                    foreignTableId: table.id,
-                },
+                url: `/api/table/${currentTable.descriptor.id}/linkColumn`,
+                body: { column: { foreignTable: table.id } },
             })
             await mutateTable()
             await mutateView()
@@ -108,7 +109,10 @@ export const AddLinkModal: React.FC<AddLinkModalProps> = props => {
                                     key={i}
                                     disablePadding
                                     sx={{
-                                        bgcolor: selection?.id === tbl.id ? theme.palette.action.selected : undefined,
+                                        bgcolor:
+                                            selection?.id === tbl.id
+                                                ? theme.palette.action.selected
+                                                : undefined,
                                     }}
                                 >
                                     <ListItemButton onClick={onClickHandler.bind(null, tbl)}>

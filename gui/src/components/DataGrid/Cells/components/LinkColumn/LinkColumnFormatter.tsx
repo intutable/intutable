@@ -1,14 +1,11 @@
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
-import { getId } from "@intutable/lazy-views/dist/selectable"
 import { Box, Stack, Tooltip } from "@mui/material"
-import { fetcher } from "api"
-import { useColumn } from "hooks/useColumn"
-import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import { useTables } from "hooks/useTables"
 import { useTable } from "hooks/useTable"
 import { useView } from "hooks/useView"
-import React, { useCallback, useMemo, useState } from "react"
+import { useForeignTable } from "hooks/useForeignTable"
+import { useLink } from "hooks/useLink"
+import React, { useCallback, useState } from "react"
 import { Row } from "types"
 import { DeleteButton } from "./DeleteButton"
 import { RowSelector } from "./RowSelector"
@@ -33,22 +30,11 @@ const _LinkColumnFormatter: FormatterComponent = props => {
     }
     const handleCloseModal = () => setAnchorEL(null)
 
-    const { getColumnInfo: getTableColumn } = useColumn()
-    const { tables } = useTables()
-    const { data, mutate: mutateTable } = useTable()
+    const { mutate: mutateTable } = useTable()
     const { mutate: mutateView } = useView()
 
-    const metaColumn = useMemo(() => (data ? getTableColumn(column) : null), [column, data, getTableColumn])
-
-    const join = useMemo(() => {
-        if (metaColumn == null) return null
-        return data!.metadata.joins.find(j => j.id === metaColumn!.joinId)!
-    }, [data, metaColumn])
-
-    const foreignTable = useMemo(() => {
-        if (join == null || tables == null) return
-        return tables.find(tbl => tbl.id === getId(join.foreignSource))!
-    }, [join, tables])
+    const { foreignTable } = useForeignTable(column)
+    const { setLinkValue } = useLink(column)
 
     const key = column.key as keyof Row
     const content = row[key] as string | null | undefined
@@ -60,25 +46,17 @@ const _LinkColumnFormatter: FormatterComponent = props => {
         async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             try {
                 event.stopPropagation()
-                await fetcher({
-                    url: `/api/join/${join!.id}`,
-                    body: {
-                        tableId: data!.metadata.descriptor.id,
-                        rowId: row._id,
-                        value: null,
-                    },
-                })
+                await setLinkValue(row, null)
                 await mutateTable()
                 await mutateView()
             } catch (error) {
                 snackError("Der Inhalt konnte nicht gelöscht werden")
             }
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [data, join, mutateTable, row]
+        [mutateTable, mutateView, setLinkValue, row, snackError]
     )
 
-    if (join == null || foreignTable == null) return null
+    if (foreignTable == null) return null
 
     return (
         <>
@@ -95,13 +73,14 @@ const _LinkColumnFormatter: FormatterComponent = props => {
                 >
                     <Stack direction="row">
                         <Box flexGrow="1">{content}</Box>
-                        {deleteIconVisible && hasContent && <DeleteButton onDelete={handleDeleteContent} />}
+                        {deleteIconVisible && hasContent && (
+                            <DeleteButton onDelete={handleDeleteContent} />
+                        )}
                     </Stack>
                 </Box>
             </Tooltip>
             <RowSelector
                 row={row}
-                join={join}
                 foreignTable={foreignTable}
                 open={anchorEL != null}
                 onClose={handleCloseModal}

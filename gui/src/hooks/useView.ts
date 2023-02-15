@@ -4,7 +4,7 @@ import { ViewData } from "types"
 import { useMemo } from "react"
 import { BareFetcher, PublicConfiguration } from "swr/dist/types"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@shared/types"
 import { Filter } from "types/filter"
 import { fetcher } from "api/fetcher"
 
@@ -35,7 +35,10 @@ export const useView = (options?: ViewHookOptions) => {
     const { view: currentView } = useAPI()
 
     // if the table param is specified, use that over the api context
-    const viewToFetch = useMemo(() => (options?.view ? options.view : currentView), [currentView, options?.view])
+    const viewToFetch = useMemo(
+        () => (options?.view ? options.view : currentView),
+        [currentView, options?.view]
+    )
 
     const { data, error, mutate, isValidating } = useSWR<ViewData>(
         viewToFetch

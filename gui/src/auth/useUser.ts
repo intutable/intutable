@@ -52,7 +52,10 @@ export const useUser = (options: UseUserOptions = UseUserDefaultOptions) => {
 
     useEffect(() => {
         if (error) console.error("auth error:", error)
-        if (error instanceof AuthenticationError || (isErrorLike(error) && error.name === "AuthenticationError")) {
+        if (
+            error instanceof AuthenticationError ||
+            (isErrorLike(error) && error.name === "AuthenticationError")
+        ) {
             console.error("AuthenticationError")
             Router.push("/login")
         }

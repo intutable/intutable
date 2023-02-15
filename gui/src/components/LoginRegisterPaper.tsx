@@ -142,7 +142,11 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                                     justifyContent: "right",
                                 }}
                             >
-                                <Button variant="contained" disabled={props.disabled} onClick={props.handleAction}>
+                                <Button
+                                    variant="contained"
+                                    disabled={props.disabled}
+                                    onClick={props.handleAction}
+                                >
                                     {props.mode === "login" ? "Login" : "Registrieren"}
                                 </Button>
                             </Box>
@@ -163,7 +167,8 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                                     mb: 2,
                                 }}
                             >
-                                {props.mode === "login" ? "Login" : "Registrieren"} mit Universitäts-Account
+                                {props.mode === "login" ? "Login" : "Registrieren"} mit
+                                Universitäts-Account
                             </Typography>
                             <Button variant="contained" onClick={() => {}} disabled>
                                 Uni-Zugang

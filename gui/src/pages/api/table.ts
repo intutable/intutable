@@ -34,7 +34,10 @@ const POST = withCatchingAPIRoute(async (req, res) => {
     const roleId = parseInt(process.env.PROJECT_MANAGEMENT_ROLE!)
 
     const tableView = await withReadWriteConnection(user, async sessionID =>
-        coreRequest<TableDescriptor>(createTable(sessionID, roleId, projectId, name), user.authCookie)
+        coreRequest<TableDescriptor>(
+            createTable(sessionID, roleId, projectId, name),
+            user.authCookie
+        )
     )
 
     res.status(200).json(tableView)

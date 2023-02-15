@@ -11,4 +11,5 @@ export type PartialFilter = MkFilter<PartialSimpleFilter>
  * filter that exists during editing in the GUI.
  * note: TSC may not recognize that this is a supertype of {@link Filter}
  */
-export type PartialSimpleFilter = Omit<SimpleFilter, "left" | "right"> & Partial<Pick<SimpleFilter, "left" | "right">>
+export type PartialSimpleFilter = Omit<SimpleFilter, "left" | "right"> &
+    Partial<Pick<SimpleFilter, "left" | "right">>

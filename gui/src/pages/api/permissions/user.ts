@@ -24,7 +24,10 @@ const POST = withCatchingAPIRoute(async (req, res) => {
 
     if (currentUser.role.roleKind !== RoleKind.Admin) throw Error("accessDenied")
 
-    const response = await coreRequest<{ message: string }>(createUser(user, password), currentUser.authCookie)
+    const response = await coreRequest<{ message: string }>(
+        createUser(user, password),
+        currentUser.authCookie
+    )
 
     res.status(200).json(response)
 })

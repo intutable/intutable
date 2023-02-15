@@ -1,6 +1,13 @@
-import { types as lv } from "@intutable/lazy-views"
-import { StandardColumnSpecifier, CustomColumnAttributes, Filter } from "shared/dist/types"
-import { TableId, ViewId } from "./types"
+import { TableId, ViewId, Filter, RawViewDescriptor, RawViewColumnInfo } from "./types"
+import {
+    RowData,
+    StandardColumnSpecifier,
+    LinkColumnSpecifier,
+    LookupColumnSpecifier,
+    CustomColumnAttributes,
+} from "./types/requests"
+
+export * from "./types/requests"
 
 export const CHANNEL = "dekanat-app-plugin"
 
@@ -18,11 +25,11 @@ export const CHANNEL = "dekanat-app-plugin"
  * Response: {@link types.TableDescriptor} name and ID of the newly
  * created table.
  */
-export function createTable(sessionID: string, roleId: number, projectId: number, name: string) {
+export function createTable(connectionId: string, roleId: number, projectId: number, name: string) {
     return {
         channel: CHANNEL,
         method: createTable.name,
-        sessionID,
+        connectionId,
         roleId,
         projectId,
         name,
@@ -33,8 +40,8 @@ export function createTable(sessionID: string, roleId: number, projectId: number
  * Delete a table (along with all its views)
  * Response: { message: string } a report that the table was deleted.
  */
-export function deleteTable(sessionID: string, id: TableId) {
-    return { channel: CHANNEL, method: deleteTable.name, sessionID, id }
+export function deleteTable(connectionId: string, id: TableId) {
+    return { channel: CHANNEL, method: deleteTable.name, connectionId, id }
 }
 
 /**
@@ -42,15 +49,15 @@ export function deleteTable(sessionID: string, id: TableId) {
  * just a plain data column that the user can populate with whatever data
  * match its type.
  * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn}
- * @param {lv.ViewDescriptor["id"]} addToViews which views to also add
+ * @param {RawViewDescriptor["id"]} addToViews which views to also add
  * the new column to. If no argument is given, the column is added to all
  * views. The attributes are simply inherited from the table column. They
- * are separate copies of the data, so they will not update automatically -
+ * are separate copies of the original attributes, so they will not update automatically -
  * be sure to use {@link changeTableColumnAttributes} to change attributes
- * and ensure that the change cascades to views as well.
+ * and ensure that the change cascades to views as well, and not use any lower-level methods for it.
  */
 export function createStandardColumn(
-    sessionID: string,
+    connectionId: string,
     tableId: TableId,
     column: StandardColumnSpecifier,
     addToViews?: ViewId[]
@@ -58,7 +65,7 @@ export function createStandardColumn(
     return {
         channel: CHANNEL,
         method: createStandardColumn.name,
-        sessionID,
+        connectionId,
         tableId,
         column,
         addToViews,
@@ -66,35 +73,62 @@ export function createStandardColumn(
 }
 
 /**
- * Create a column in a table view, optionally (default is yes) adding it
- * to all of the table's filter views.
- * PM column must already be present.
- * @deprecated we will soon expose only dedicated {@link createStandardColumn},
- ` createLinkColumn` and `createLookupColumn` methods and this will be
- * purely internal.
-n */
-export function addColumnToTable(
-    sessionID: string,
+ * Create a _Link Column_, which links the data of the affected table (_home table_ from here on)
+ * to another table, the _foreign table_. The user can click on a cell of the link column and
+ * choose a row from the foreign table to set the value of a foreign key column, causing
+ * the row containing the cell and the row selected to be displayed next to each other.
+ * This is how we make foreign keys and joins accessible to users who do not know SQL.
+ * To keep things intuitive, the link column is equivalent to the link - any operations
+ * on the link, such as deleting it or adding more columns from the
+ * foreign table, are done via the link column's context menu.
+ * The link column itself displays the "Name" field of the linked row, or whichever column is
+ * marked by the `isUserPrimary` attribute. More columns, up to the whole table, can be added
+ * with {@link createLookupColumn}.
+ * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn} the newly created column.
+ */
+export function createLinkColumn(
+    connectionId: string,
     tableId: TableId,
-    /**
-     * Uses serialized attributes for now because there are still next
-     * endpoints that use it.
-     */
-    column: lv.ColumnSpecifier,
-    joinId: number | null = null,
-    /**
-     * @param {ViewId[] | undefined} addToViews which views to also
-     * corresponding column in. If undefined, add the column to all views
-     */
+    column: LinkColumnSpecifier,
     addToViews?: ViewId[]
 ) {
     return {
         channel: CHANNEL,
-        method: addColumnToTable.name,
-        sessionID,
+        method: createLinkColumn.name,
+        connectionId,
         tableId,
         column,
-        joinId,
+        addToViews,
+    }
+}
+
+/**
+ * Create a _Lookup Column_, which adds another column to a link. For example, one could create
+ * a link from a table "Employees" to a table "Departments", which would allow assigning each
+ * employee a department. The link column itself would show the name of the department. To
+ * also show the address alongside the name and the employee's remaining data, one would add a
+ * lookup column to the link, specifying the home table, link, and ID of the additional column
+ * that the lookup column should be based on.
+ * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn} the newly created
+ * lookup column.
+ * Pre: The table `tableId` has a link with ID `column.linkId`, which points
+ * to a table which has a column whose ID is `column.foreignColumn`.
+ * Post: The table `tableId` has a new column whose data are taken from the other table's column
+ * `column.foreignColumn`. Its index is such that it is directly to the right of the other
+ * columns from the link.
+ */
+export function createLookupColumn(
+    connectionId: string,
+    tableId: TableId,
+    column: LookupColumnSpecifier,
+    addToViews?: ViewId[]
+) {
+    return {
+        channel: CHANNEL,
+        method: createLookupColumn.name,
+        connectionId,
+        tableId,
+        column,
         addToViews,
     }
 }
@@ -103,14 +137,14 @@ export function addColumnToTable(
  * Remove a column from a table view and all its filter views.
  */
 export function removeColumnFromTable(
-    sessionID: string,
-    tableId: lv.ViewDescriptor["id"],
-    columnId: lv.ColumnInfo["id"]
+    connectionId: string,
+    tableId: RawViewDescriptor["id"],
+    columnId: RawViewColumnInfo["id"]
 ) {
     return {
         channel: CHANNEL,
         method: removeColumnFromTable.name,
-        sessionID,
+        connectionId,
         tableId,
         columnId,
     }
@@ -124,16 +158,16 @@ export function removeColumnFromTable(
  * An array of all columns that were changed.
  */
 export function changeTableColumnAttributes(
-    sessionID: string,
-    tableId: lv.ViewDescriptor["id"],
-    columnId: lv.ColumnInfo["id"],
+    connectionId: string,
+    tableId: RawViewDescriptor["id"],
+    columnId: RawViewColumnInfo["id"],
     update: CustomColumnAttributes,
     changeInViews = true
 ) {
     return {
         channel: CHANNEL,
         method: changeTableColumnAttributes.name,
-        sessionID,
+        connectionId,
         tableId,
         columnId,
         update,
@@ -145,8 +179,8 @@ export function changeTableColumnAttributes(
  * Get all data of a given table, both object and metadata.
  * Response: [TableData]{@link shared.types.TableData}
  */
-export function getTableData(sessionID: string, tableId: TableId) {
-    return { channel: CHANNEL, method: getTableData.name, sessionID, tableId }
+export function getTableData(connectionId: string, tableId: TableId) {
+    return { channel: CHANNEL, method: getTableData.name, connectionId, tableId }
 }
 
 /**
@@ -155,11 +189,11 @@ export function getTableData(sessionID: string, tableId: TableId) {
  * Filters can be added with {@link changeViewFilters}, while
  * hiding columns, sorting, and grouping are not yet implemented at all.
  */
-export function createView(sessionID: string, tableId: TableId, name: string) {
+export function createView(connectionId: string, tableId: TableId, name: string) {
     return {
         channel: CHANNEL,
         method: createView.name,
-        sessionID,
+        connectionId,
         tableId,
         name,
     }
@@ -169,11 +203,11 @@ export function createView(sessionID: string, tableId: TableId, name: string) {
  * Rename a view. The default view cannot be renamed.
  * Response: {@link ViewDescriptor} the descriptor of the updated view.
  */
-export function renameView(sessionID: string, viewId: ViewId, newName: string) {
+export function renameView(connectionId: string, viewId: ViewId, newName: string) {
     return {
         channel: CHANNEL,
         method: renameView.name,
-        sessionID,
+        connectionId,
         viewId,
         newName,
     }
@@ -183,23 +217,23 @@ export function renameView(sessionID: string, viewId: ViewId, newName: string) {
  * Delete a view. The default view cannot be deleted.
  * Response: { message: string } a report that the view was deleted.
  */
-export function deleteView(sessionID: string, viewId: ViewId) {
-    return { channel: CHANNEL, method: deleteView.name, sessionID, viewId }
+export function deleteView(connectionId: string, viewId: ViewId) {
+    return { channel: CHANNEL, method: deleteView.name, connectionId, viewId }
 }
 /**
  * List views on a table.
  * Response: {@link types.ViewDescriptor}[]
  */
-export function listViews(sessionID: string, id: TableId) {
-    return { channel: CHANNEL, method: listViews.name, sessionID, id }
+export function listViews(connectionId: string, id: TableId) {
+    return { channel: CHANNEL, method: listViews.name, connectionId, id }
 }
 
 /**
  * Get all data of a given view, both object and metadata.
  * Response: [SerializedViewData]{@link shared.types.SerializedViewData}
  */
-export function getViewData(sessionID: string, viewId: ViewId) {
-    return { channel: CHANNEL, method: getViewData.name, sessionID, viewId }
+export function getViewData(connectionId: string, viewId: ViewId) {
+    return { channel: CHANNEL, method: getViewData.name, connectionId, viewId }
 }
 
 /**
@@ -208,12 +242,81 @@ export function getViewData(sessionID: string, viewId: ViewId) {
  * Response: Filter[] the newly updated filters; they may be simplified or
  * re-ordered, but are semantically the same.
  */
-export function changeViewFilters(sessionID: string, viewId: ViewId, newFilters: Filter[]) {
+export function changeViewFilters(connectionId: string, viewId: ViewId, newFilters: Filter[]) {
     return {
         channel: CHANNEL,
         method: changeViewFilters.name,
-        sessionID,
+        connectionId,
         viewId,
         newFilters,
     }
+}
+
+/**
+ * Create a new row in a given view's underlying table. The reason for letting data be inserted
+ * through the view instead of the table is that the data displayed in the front-end are those
+ * of a view, so the view's ID and column IDs will be available, and the work of mapping
+ * these to the actual table is more appropriate in the back-end than the front-end.
+ * You can also pass in the ID of the table itself. The column IDs have to match up, of course.
+ * Response: { _id: number } the ID of the row that was created.
+ * Preconditions:
+ * - the `index` properties of the rows go from 0 to `rows.length - 1`
+ * Exceptions:
+ * - any specified column is not editable.
+ * - any specified column is not of kind standard.
+ */
+export function createRow(
+    connectionId: string,
+    viewId: ViewId | TableId,
+    options?: { atIndex?: number; values?: RowData }
+) {
+    return {
+        channel: CHANNEL,
+        method: createRow.name,
+        connectionId,
+        viewId,
+        atIndex: options?.atIndex,
+        values: options?.values,
+    }
+}
+
+/**
+ * Update a row or set of rows, setting the values according to `values`.
+ * `condition` can be either the ID of a row or a list of IDs, in which case each of the affected
+ * rows is updated with the same data.
+ * You can reference either a table or a view, in which case the plugin will find the view's
+ * underlying table. However, columns have different IDs at each layer, so they must match up:
+ * you can do
+ * `updateRows(..., view1.id, {[view1.column1.id]: <value>, ...)` or
+ * `updateRows(..., table1.id, {[table1.column1.id]: <value>, ...)`, but not
+ * `updateRows(..., view1.table.id, {[view1.column1.id]: <value>, ...)`.
+ *                      ^ table, but the column ^ is a view column
+ * Response: { rowsUpdated: number } The number of rows changed.
+ * Exceptions:
+ * - any specified column is not editable.
+ * - any specified column is not of kind standard.
+ */
+export function updateRows(
+    connectionId: string,
+    viewId: ViewId | TableId,
+    condition: number[] | number,
+    values: RowData
+) {
+    return { channel: CHANNEL, method: updateRows.name, connectionId, viewId, condition, values }
+}
+
+/**
+ * Delete one or many rows from a table.
+ * `viewId` can be either the ID of a table or of a view, in the latter case the underlying table
+ * is automatically found and the rows deleted appropriately.
+ * Response: { rowsDeleted: number } the number of rows deleted.
+ * Preconditions:
+ * - the `index` properties of the rows go from 0 to `rows.length - 1`
+ */
+export function deleteRows(
+    connectionId: string,
+    viewId: ViewId | TableId,
+    condition: number[] | number
+) {
+    return { channel: CHANNEL, method: deleteRows.name, connectionId, viewId, condition }
 }

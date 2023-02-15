@@ -1,4 +1,10 @@
-import { listViews, renameView, TableDescriptor, tableId as makeTableId, ViewDescriptor } from "@intutable/lazy-views"
+import {
+    listViews,
+    renameView,
+    TableDescriptor,
+    tableId as makeTableId,
+    ViewDescriptor,
+} from "@intutable/lazy-views"
 import { getTablesFromProject } from "@intutable/project-management/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { TableData } from "@shared/types"
@@ -56,7 +62,10 @@ const PATCH = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"
         )
         const tables = await Promise.all(
             baseTables.map(tbl =>
-                coreRequest<ViewDescriptor[]>(listViews(sessionID, makeTableId(tbl.id)), user.authCookie)
+                coreRequest<ViewDescriptor[]>(
+                    listViews(sessionID, makeTableId(tbl.id)),
+                    user.authCookie
+                )
             )
         ).then(tableLists => tableLists.flat())
 
@@ -65,7 +74,10 @@ const PATCH = withCatchingAPIRoute(async (req, res, tableId: ViewDescriptor["id"
 
         // rename only view, underlying table's name does not matter.
         // TODO: uh, does it? oh man...
-        const updatedTable = await coreRequest<ViewDescriptor>(renameView(sessionID, tableId, newName), user.authCookie)
+        const updatedTable = await coreRequest<ViewDescriptor>(
+            renameView(sessionID, tableId, newName),
+            user.authCookie
+        )
         return updatedTable
     })
 

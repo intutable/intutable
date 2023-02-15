@@ -105,7 +105,13 @@ export const Avatar: React.FC = () => {
                     <PersonIcon />
                 </MUIAvatar>
             </Stack>
-            {anchorEL && <ContextMenu anchorEL={anchorEL} open={anchorEL != null} onClose={handleCloseContextMenu} />}
+            {anchorEL && (
+                <ContextMenu
+                    anchorEL={anchorEL}
+                    open={anchorEL != null}
+                    onClose={handleCloseContextMenu}
+                />
+            )}
         </>
     )
 }

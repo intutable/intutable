@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@intutable/lazy-views"
+import { ViewDescriptor } from "@shared/types"
 import useSWR, { unstable_serialize } from "swr"
 import { fetcher } from "api"
 import { useAPI } from "context/APIContext"
@@ -14,13 +14,18 @@ export const useViews = (options?: TableHookOptions) => {
     const { view: currentView, setView, table: api_table } = useAPI()
 
     // if the table param is specified, use that over the api context
-    const tableToFetch = useMemo(() => (options?.table ? options.table : api_table), [api_table, options?.table])
+    const tableToFetch = useMemo(
+        () => (options?.table ? options.table : api_table),
+        [api_table, options?.table]
+    )
 
     const {
         data: views,
         error,
         mutate,
-    } = useSWR<ViewDescriptor[]>(tableToFetch ? { url: `/api/views/${tableToFetch.id}`, method: "GET" } : null)
+    } = useSWR<ViewDescriptor[]>(
+        tableToFetch ? { url: `/api/views/${tableToFetch.id}`, method: "GET" } : null
+    )
 
     /**
      * Create a new view with a given name, returning its descriptor.

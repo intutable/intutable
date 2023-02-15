@@ -4,7 +4,7 @@ import { RowRenderer } from "@datagrid/renderers"
 import RowMaskContainer from "@datagrid/RowMask/Container"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
+import { TableDescriptor, ViewDescriptor } from "@shared/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { Box, Button, Grid, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
@@ -63,7 +63,10 @@ const TablePage: React.FC = () => {
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
 
     // TODO: this should not be here and does not work as intended in this way
-    const partialRowUpdate = async (rows: Row[], changeData: RowsChangeData<Row>): Promise<void> => {
+    const partialRowUpdate = async (
+        rows: Row[],
+        changeData: RowsChangeData<Row>
+    ): Promise<void> => {
         const changedRow = rows[changeData.indexes[0]]
         const col = changeData.column
         const update = changedRow[col.key]
@@ -130,7 +133,10 @@ const TablePage: React.FC = () => {
                                 <DataGrid
                                     className={"rdg-" + getTheme() + " fill-grid"}
                                     rows={data.rows}
-                                    columns={[SelectColumn, ...data.columns.filter(column => column.hidden !== true)]}
+                                    columns={[
+                                        SelectColumn,
+                                        ...data.columns.filter(column => column.hidden !== true),
+                                    ]}
                                     components={{
                                         // noRowsFallback: <NoRowsFallback />, // BUG: does not work with columns but no rows bc css
                                         rowRenderer: RowRenderer,
@@ -181,8 +187,8 @@ const TablePage: React.FC = () => {
 
 type PageProps = {
     project: ProjectDescriptor
-    table: ViewDescriptor
-    tableList: ViewDescriptor[]
+    table: TableDescriptor
+    tableList: TableDescriptor[]
     view: ViewDescriptor
     actions: PageAction[]
     viewList: ViewDescriptor[]
@@ -202,9 +208,9 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
                         initialRowMaskState={props.openRow ? { mode: "edit", row: { _id: props.openRow } } : undefined}
                         initialAppliedInputMask={props.inputMask}
                     >
-                        {/* <ConstraintsProvider> */}
+                        <ConstraintsProvider>
                         <TablePage />
-                        {/* </ConstraintsProvider> */}
+                        </ConstraintsProvider>
                     </RowMaskProvider>
                 </HeaderSearchFieldProvider>
             </SelectedRowsContextProvider>
@@ -278,7 +284,7 @@ export const getServerSideProps = withSSRCatch(
         const view = selectView != null ? viewList.find(view => view.id === selectView.payload) : viewList[0]
         if (view == null) throw new Error("Could not find view")
 
-        const data = await fetcher<ViewData.Serialized>({
+        const viewData = await fetcher<ViewData.Serialized>({
             url: `/api/view/${view.id}`,
             method: "GET",
             headers: context.req.headers as HeadersInit,
@@ -287,9 +293,9 @@ export const getServerSideProps = withSSRCatch(
         return {
             props: {
                 project,
-                table: tableData.metadata.descriptor,
+                table: tableData.descriptor,
                 tableList,
-                view: data.descriptor,
+                view: viewData.descriptor,
                 viewList,
                 actions: pageActionUtil.actions,
                 inputMask,

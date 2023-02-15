@@ -46,7 +46,11 @@ export const fetcher = async <T>(args: FetcherOptions): Promise<T> => {
         },
         credentials: "include",
         redirect: "manual",
-        body: args.body ? (typeof args.body === "string" ? args.body : JSON.stringify(args.body)) : undefined,
+        body: args.body
+            ? typeof args.body === "string"
+                ? args.body
+                : JSON.stringify(args.body)
+            : undefined,
     })
 
     if (args.isReadstream) {

@@ -1,4 +1,6 @@
-import type { ColumnInfo, Condition, ViewData as RawViewData } from "@intutable/lazy-views"
+import type { Condition } from "@intutable/lazy-views/dist/types"
+import { asTable } from "@intutable/lazy-views/dist/selectable"
+import type { RawViewColumnInfo, RawViewData } from "../types/raw"
 import { DB, SerializedColumn, SerializedViewData, TableData } from "shared/dist/types"
 import { Filter } from "../types/filter"
 import { cast } from "./cast"
@@ -13,7 +15,7 @@ import * as InputMask from "shared/dist/input-masks"
  *
  * The `Parser` combines multiple operations on multiple data structures.
  *
- * #### Restrcuturing
+ * #### Restructuring
  *
  * Some data structures need to be restructured when they come out ot the database.
  * This includes renaming properties and merging objects into a single one.
@@ -42,22 +44,35 @@ export class ParserClass {
             ...serializedProps,
             isUserPrimaryKey: cast.toBoolean(column.isUserPrimaryKey),
             hidden: cast.toBoolean(column.hidden),
-            width: cast.orEmpty(cast.or.bind(cast.toNumber.bind(cast), cast.toString.bind(cast)), column.width),
+            width: cast.orEmpty(
+                cast.or.bind(cast.toNumber.bind(cast), cast.toString.bind(cast)),
+                column.width
+            ),
             minWidth: cast.orEmpty(cast.toNumber.bind(cast), column.minWidth),
             maxWidth: cast.orEmpty(cast.toNumber.bind(cast), column.maxWidth),
             editable: cast.orEmpty(cast.toBoolean.bind(cast), column.editable),
             frozen: cast.orEmpty(cast.toBoolean.bind(cast), column.frozen),
             resizable: cast.orEmpty(cast.toBoolean.bind(cast), column.resizable),
             sortable: cast.orEmpty(cast.toBoolean.bind(cast), column.sortable),
-            sortDescendingFirst: cast.orEmpty(cast.toBoolean.bind(cast), column.sortDescendingFirst),
+            sortDescendingFirst: cast.orEmpty(
+                cast.toBoolean.bind(cast),
+                column.sortDescendingFirst
+            ),
         }
         return casted
     }
 
-    public parseColumn(column: ColumnInfo): SerializedColumn {
+    public parseColumn(column: RawViewColumnInfo): SerializedColumn {
         const restructured = restructure.column(column)
         return this.castColumn(restructured)
     }
+    /**
+     * It does not inherently make sense to send an entire front-end column to the back-end, but
+     * it is convenient for updating columns' props if we can just use
+     * `Partial<SerializedColumn>` instead of defining a new type. In light of this purpose,
+     * this method does not fully convert the column, but leaves out the properties defined in
+     * {@link shared.dist.types.MetaColumnProps}
+     */
     public deparseColumn(column: Partial<SerializedColumn>): Partial<DB.Column> {
         /* This method included restructuring and casting */
         const keys = Object.keys(column) as (keyof SerializedColumn)[]
@@ -118,10 +133,15 @@ export class ParserClass {
                 columns: restructuredColumns,
                 rows: view.rows,
             })
-        const castedColumns = internalProcessedColumns.map(this.castColumn)
+        const castedColumns = internalProcessedColumns.map(column => ({
+            ...this.castColumn(column),
+            parentColumnId: null,
+        }))
 
         return {
-            metadata: { ...view },
+            descriptor: view.descriptor,
+            links: view.joins,
+            rawTable: asTable(view.source).table,
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
         }
@@ -139,7 +159,6 @@ export class ParserClass {
 
         const viewData = {
             descriptor: view.descriptor,
-            metaColumns: view.columns,
             filters: view.rowOptions.conditions.map(ParserClass.parseFilter),
             sortColumns: view.rowOptions.sortColumns,
             groupColumns: view.rowOptions.groupColumns,

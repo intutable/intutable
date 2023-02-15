@@ -1,124 +1,90 @@
-import { deleteRow, insert, update } from "@intutable/database/dist/requests"
-import { getTableData } from "@intutable/project-management/dist/requests"
-import { TableDescriptor, TableData } from "@intutable/project-management/dist/types"
 import { coreRequest } from "api/utils"
 import { withCatchingAPIRoute } from "api/utils/withCatchingAPIRoute"
 import { withUserCheck } from "api/utils/withUserCheck"
 import { withSessionRoute } from "auth"
 import { withReadWriteConnection } from "api/utils/databaseConnection"
-import { Row } from "types"
-import Obj from "types/Obj"
-
-// Intermediate type representing a row whose index is to be changed.
-type IndexChange = {
-    _id: number
-    index: number
-    oldIndex: number
-}
-
-// compare two rows by index
-const byIndex = (a: Obj, b: Obj) => ((a.index as number) > (b.index as number) ? 1 : -1)
+import { ViewId, TableId } from "types"
+import { RowData } from "@backend/types/requests"
+import { createRow, updateRows, deleteRows } from "@backend/requests"
 
 /**
- * Create a new row with some starting values. Ensuring that the types of
- * `values` match up with what the table can take is up to the user.
+ * Create a new row. All user-side values will be initialized empty, unless values are
+ * supplied in the form of body.values - these are a dictionary where the keys are the IDs of
+ * the columns in the view indicated by body.viewId. An index to insert the row at can be
+ * supplied with body.atIndex.
  * @tutorial
  * ```
  * Body: {
- *    table: {@type {TableDescriptor}}
- *    values: {@type {Record<string, unknown>}}
+ *    view: {@type {ViewId}}
+ *    values: {@type {RowInsertData}}
+ *    atIndex: number
  * }
  * ```
  */
 const POST = withCatchingAPIRoute(async (req, res) => {
-    const {
-        table,
-        values: rowToInsert,
-        atIndex,
-    } = req.body as {
-        table: TableDescriptor
-        values: Obj
+    const { viewId, values, atIndex } = req.body as {
+        viewId: ViewId | TableId
+        values: RowData
         atIndex?: number
     }
     const user = req.session.user!
 
-    const row: { _id: number } = await withReadWriteConnection(user, async sessionID => {
-        const oldData = await coreRequest<TableData<unknown>>(getTableData(sessionID, table.id), user.authCookie)
-
-        // mind-bending "insert at certain index" logic... good lord!
-        let newRow: Obj
-        if (atIndex == null || atIndex === oldData.rows.length) newRow = { ...rowToInsert, index: oldData.rows.length }
-        else {
-            newRow = { ...rowToInsert, index: atIndex }
-            const shiftedRows = (oldData.rows as Row[])
-                .sort(byIndex)
-                .slice(atIndex)
-                .map((row: Row) => ({
-                    _id: row._id as number,
-                    oldIndex: row.index as number,
-                    index: (row.index as number) + 1,
-                }))
-
-            await Promise.all(
-                shiftedRows.map(
-                    async (row: Obj) =>
-                        await coreRequest(
-                            update(sessionID, table.key, {
-                                condition: ["_id", row._id],
-                                update: { index: row.index },
-                            }),
-                            user.authCookie
-                        )
-                )
-            )
-        }
-
-        // create row in database
-        return coreRequest<{ _id: number }>(insert(sessionID, table.key, newRow, ["_id"]), user.authCookie)
-    })
-
-    res.status(200).send(row)
-})
-
-/**
- * Update a row, identified by `condition`. Ensuring that the types of
- * `values` match up with what the table can take is up to the user.
- * @tutorial
- * ```
- * Body: {
- *    table: {@type {TableDescriptor}}
- *    condition: {@type {Array<unknown>}}
- *    values: {@type {Record<string, unknown>}}
- * }
- * ```
- */
-const PATCH = withCatchingAPIRoute(async (req, res) => {
-    const {
-        table,
-        condition,
-        update: rowUpdate,
-    } = req.body as {
-        table: TableDescriptor
-        condition: unknown[]
-        update: { [index: string]: unknown }
-    }
-
-    const user = req.session.user!
-    const updatedRow = await withReadWriteConnection(user, async sessionID => {
-        return coreRequest<Row>(
-            update(sessionID, table.key, {
-                condition,
-                update: rowUpdate,
-            }),
+    const rowWithId = await withReadWriteConnection(user, async connectionId => {
+        return coreRequest<{ _id: number }>(
+            createRow(connectionId, viewId, { atIndex, values }),
             user.authCookie
         )
     })
 
-    res.status(200).json(updatedRow)
+    res.status(200).send(rowWithId["_id"])
+})
+
+/**
+ * Update a row, identified by `rowsToUpdate`. 
+`* @param {TableId | ViewId} viewId - can refer to either a table or a view.
+ * Beware, however, as one column will have its own metadata entity in a table, and another
+ * in every view on that table, each with different IDs.
+ * So the column IDs used as keys in the {@link RowData} must match the IDs of the columns
+ * in the table or view that is referenced by `viewId`. This should normally be pretty hard to
+ * get wrong, but it will be quite hard to debug if you do.
+ * This sounds weird, but the old set-up actually required the front-end to look into a view's
+ * backend-side metadata columns and figure out the right SQL column name so it could
+ * manually construct an update that would be passed directly to SQL. We also eventually want
+ * to introduce n-tier views (like view -> ... -> view -> table) which are now already supported
+ * by this update method.
+ * @param {number | number[]} rowsToUpdate - pass in either the ID of a row to update
+ * or an array of IDs to update multiple rows.
+ * @return {{ rowsUpdated: number }} how many rows were updated.
+ * @tutorial
+ * ```
+ * Body: {
+ *    viewId: {@type {TableId | ViewId}}
+ *    condition: {@type {number | number[]}}
+ *    values: {@type {RowData}}
+ * }
+ * ```
+ */
+const PATCH = withCatchingAPIRoute(async (req, res) => {
+    const { viewId, rowsToUpdate, values } = req.body as {
+        viewId: TableId | ViewId
+        rowsToUpdate: number | number[]
+        values: RowData
+    }
+
+    const user = req.session.user!
+    const { rowsUpdated } = await withReadWriteConnection(user, async connectionId => {
+        return coreRequest<{ rowsUpdated: number }>(
+            updateRows(connectionId, viewId, rowsToUpdate, values),
+            user.authCookie
+        )
+    })
+
+    res.status(200).json({ rowsUpdated })
 })
 
 /**
  * Delete a row, identified by `condition`.
+ * @return { rowsDeleted: number } how many rows were deleted.
  * @tutorial
  * ```
  * Body: {
@@ -128,41 +94,20 @@ const PATCH = withCatchingAPIRoute(async (req, res) => {
  * ```
  */
 const DELETE = withCatchingAPIRoute(async (req, res) => {
-    const { table, condition } = req.body as {
-        table: TableDescriptor
-        condition: unknown[]
+    const { viewId, rowsToDelete } = req.body as {
+        viewId: ViewId | TableId
+        rowsToDelete: number | number[]
     }
     const user = req.session.user!
 
-    await withReadWriteConnection(user, async sessionID => {
-        await coreRequest(deleteRow(sessionID, table.key, condition), user.authCookie)
-        // shift indices
-        const newData = await coreRequest<TableData<unknown>>(getTableData(sessionID, table.id), user.authCookie)
-
-        const rows = newData.rows as Row[]
-        const newIndices: IndexChange[] = rows
-            .sort(byIndex)
-            .map((row: Row, newIndex: number) => ({
-                _id: row._id as number,
-                oldIndex: row.index as number,
-                index: newIndex,
-            }))
-            .filter(row => row.oldIndex !== row.index)
-
-        await Promise.all(
-            newIndices.map(async ({ _id, index }) =>
-                coreRequest(
-                    update(sessionID, table.key, {
-                        update: { index: index },
-                        condition: ["_id", _id],
-                    }),
-                    user.authCookie
-                )
-            )
+    const { rowsDeleted } = await withReadWriteConnection(user, async connectionId => {
+        return coreRequest<{ rowsDeleted: number }>(
+            deleteRows(connectionId, viewId, rowsToDelete),
+            user.authCookie
         )
     })
 
-    res.status(200).json({})
+    res.status(200).json({ rowsDeleted })
 })
 
 export default withSessionRoute(
@@ -178,7 +123,9 @@ export default withSessionRoute(
                 await DELETE(req, res)
                 break
             default:
-                res.status(["HEAD", "GET"].includes(req.method!) ? 500 : 501).send("This method is not supported!")
+                res.status(["HEAD", "GET"].includes(req.method!) ? 500 : 501).send(
+                    "This method is not supported!"
+                )
         }
     })
 )

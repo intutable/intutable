@@ -6,4 +6,6 @@ type PrereleaseTags = `-alpha` | `-beta` | `-rc`
  *
  * @param PRE prerelease tag
  */
-export type VersionTag = `v${number}.${number}.${number}${`${PrereleaseTags}${PrereleaseTagVersion}` | ""}`
+export type VersionTag = `v${number}.${number}.${number}${
+    | `${PrereleaseTags}${PrereleaseTagVersion}`
+    | ""}`

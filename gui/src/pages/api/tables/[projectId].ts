@@ -24,7 +24,9 @@ const GET = withCatchingAPIRoute(async (req, res, projectId: ProjectDescriptor["
         )
 
         const tables = await Promise.all(
-            baseTables.map(t => coreRequest<ViewDescriptor[]>(listViews(sessionID, tableId(t.id)), user.authCookie))
+            baseTables.map(t =>
+                coreRequest<ViewDescriptor[]>(listViews(sessionID, tableId(t.id)), user.authCookie)
+            )
         ).then(tableLists => tableLists.flat())
         return tables
     })

@@ -1,6 +1,15 @@
 import CheckIcon from "@mui/icons-material/Check"
 import InfoIcon from "@mui/icons-material/Info"
-import { FormControlLabel, MenuItem, Select, Stack, Switch, TextField, Tooltip, Typography } from "@mui/material"
+import {
+    FormControlLabel,
+    MenuItem,
+    Select,
+    Stack,
+    Switch,
+    TextField,
+    Tooltip,
+    Typography,
+} from "@mui/material"
 import IconButton from "@mui/material/IconButton"
 import InputAdornment from "@mui/material/InputAdornment"
 import { useTheme } from "@mui/material/styles"
@@ -36,7 +45,9 @@ export type ColumnPropertyInputProps<TYPE extends ColumnPropertyInputType> = {
     disabled?: boolean
 }
 
-export const ColumnPropertyInput = <T extends ColumnPropertyInputType>(props: ColumnPropertyInputProps<T>) => {
+export const ColumnPropertyInput = <T extends ColumnPropertyInputType>(
+    props: ColumnPropertyInputProps<T>
+) => {
     const theme = useTheme()
 
     return (

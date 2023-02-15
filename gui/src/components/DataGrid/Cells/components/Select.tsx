@@ -142,9 +142,17 @@ export class Select extends Cell {
     public editor = () => null
 
     /** Returns a list of all available options in this column (the values of other chips) */
-    private getAvailableOptions(column: Column.Deserialized, rows: Row[], self?: string | null): string[] {
-        const options = rows.map(row => row[column.key]).filter(option => Cell.isEmpty(option) === false) // remove empty values
-        const optionsWithoutSelf = (self == null ? options : options.filter(option => self !== option)) as string[] // remove self from list
+    private getAvailableOptions(
+        column: Column.Deserialized,
+        rows: Row[],
+        self?: string | null
+    ): string[] {
+        const options = rows
+            .map(row => row[column.key])
+            .filter(option => Cell.isEmpty(option) === false) // remove empty values
+        const optionsWithoutSelf = (
+            self == null ? options : options.filter(option => self !== option)
+        ) as string[] // remove self from list
         const uniqueOptions = new Set(optionsWithoutSelf) // remove duplicates from list
         return [...uniqueOptions] // return sorted
     }
@@ -177,7 +185,8 @@ export class Select extends Cell {
             [data, column, content]
         )
 
-        const showSelectMenuButton = (hovering || open) && this.column.editable && this.isReadonlyComponent === false
+        const showSelectMenuButton =
+            (hovering || open) && this.column.editable && this.isReadonlyComponent === false
 
         return (
             <>
@@ -307,7 +316,11 @@ export class Select extends Cell {
                     }}
                     size="small"
                     error={props.required && isEmpty} // BUG: https://github.com/mui/material-ui/issues/29821
-                    placeholder={props.label == null && props.required ? props.placeholder + "*" : props.placeholder}
+                    placeholder={
+                        props.label == null && props.required
+                            ? props.placeholder + "*"
+                            : props.placeholder
+                    }
                     readOnly={this.isReadonlyComponent}
                     required={props.required}
                     disabled={this.column.editable === false}
@@ -358,12 +371,17 @@ export class Select extends Cell {
                                 }}
                                 disabled={input === ""}
                             >
-                                <AddOptionIcon fontSize="small" color={input === "" ? "disabled" : "primary"} />
+                                <AddOptionIcon
+                                    fontSize="small"
+                                    color={input === "" ? "disabled" : "primary"}
+                                />
                             </IconButton>
                         </MenuItem>,
                     ]}
                 </MuiSelect>
-                <FormHelperText>{props.required && isEmpty ? "Pflichtfeld" : undefined}</FormHelperText>
+                <FormHelperText>
+                    {props.required && isEmpty ? "Pflichtfeld" : undefined}
+                </FormHelperText>
             </FormControl>
         )
     }

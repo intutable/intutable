@@ -36,7 +36,13 @@ export class EMail extends Cell {
             }
         }, [input, key, props, row])
 
-        return <this.Input onChange={e => setInput(e.target.value)} onBlur={() => props.onClose(true)} value={input} />
+        return (
+            <this.Input
+                onChange={e => setInput(e.target.value)}
+                onBlur={() => props.onClose(true)}
+                value={input}
+            />
+        )
     }
 
     public formatter = (props: FormatterProps<Row>) => {

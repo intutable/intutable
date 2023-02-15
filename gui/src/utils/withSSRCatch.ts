@@ -22,7 +22,8 @@ export const withSSRCatch =
             console.log("withSSRCatch error:", error)
             // atm only auth errors will differ from the default behaviour (overlay in dev mode, error page in prod).
             // but other errors could be handled differently here, if needed.
-            if (isErrorLike(error) && error.name === "AuthenticationError") return { notFound: true }
+            if (isErrorLike(error) && error.name === "AuthenticationError")
+                return { notFound: true }
 
             throw error
         }

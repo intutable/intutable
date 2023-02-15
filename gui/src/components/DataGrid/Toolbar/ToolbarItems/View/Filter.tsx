@@ -237,7 +237,9 @@ type HasOnlyLeafChildren =
     | c.MkAndCondition<PartialSimpleFilter>
     | c.MkOrCondition<PartialSimpleFilter>
 
-const hasOnlyLeafChildren = (filter: Exclude<PartialFilter, PartialSimpleFilter>): filter is HasOnlyLeafChildren =>
+const hasOnlyLeafChildren = (
+    filter: Exclude<PartialFilter, PartialSimpleFilter>
+): filter is HasOnlyLeafChildren =>
     (filter.kind === Not && filter.condition.kind === Infix) ||
     (filter.kind !== Not && filter.left.kind === Infix && filter.right.kind === Infix)
 

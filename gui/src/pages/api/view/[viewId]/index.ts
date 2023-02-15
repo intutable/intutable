@@ -1,8 +1,5 @@
 import { ViewData } from "types/tables"
-
-// import { ViewDescriptor } from "@backend/types"
-import { ViewDescriptor } from "@intutable/lazy-views/dist/types"
-
+import { ViewDescriptor } from "@shared/types"
 import { getViewData, deleteView, renameView } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"
@@ -20,15 +17,17 @@ import { withUserCheck } from "api/utils/withUserCheck"
  * - Body: {}
  * ```
  */
-const GET = withCatchingAPIRoute(async (req: NextApiRequest, res: NextApiResponse, viewId: ViewDescriptor["id"]) => {
-    const user = req.session.user!
+const GET = withCatchingAPIRoute(
+    async (req: NextApiRequest, res: NextApiResponse, viewId: ViewDescriptor["id"]) => {
+        const user = req.session.user!
 
-    const data = await withReadOnlyConnection(user, async sessionID =>
-        coreRequest<ViewData.Serialized>(getViewData(sessionID, viewId), user.authCookie)
-    )
+        const data = await withReadOnlyConnection(user, async sessionID =>
+            coreRequest<ViewData.Serialized>(getViewData(sessionID, viewId), user.authCookie)
+        )
 
-    res.status(200).json(data)
-})
+        res.status(200).json(data)
+    }
+)
 
 /**
  * PATCH/update the name of a single view.
@@ -41,17 +40,19 @@ const GET = withCatchingAPIRoute(async (req: NextApiRequest, res: NextApiRespons
  *   }
  * ```
  */
-const PATCH = withCatchingAPIRoute(async (req: NextApiRequest, res: NextApiResponse, viewId: ViewDescriptor["id"]) => {
-    const { newName } = req.body as {
-        newName: ViewDescriptor["name"]
-    }
-    const user = req.session.user!
+const PATCH = withCatchingAPIRoute(
+    async (req: NextApiRequest, res: NextApiResponse, viewId: ViewDescriptor["id"]) => {
+        const { newName } = req.body as {
+            newName: ViewDescriptor["name"]
+        }
+        const user = req.session.user!
 
-    const updatedView = await withReadWriteConnection(user, async sessionID =>
-        coreRequest<ViewDescriptor>(renameView(sessionID, viewId, newName), user.authCookie)
-    )
-    res.status(200).json(updatedView)
-})
+        const updatedView = await withReadWriteConnection(user, async sessionID =>
+            coreRequest<ViewDescriptor>(renameView(sessionID, viewId, newName), user.authCookie)
+        )
+        res.status(200).json(updatedView)
+    }
+)
 
 /**
  * DELETE a view. Returns an empty object.
@@ -62,14 +63,16 @@ const PATCH = withCatchingAPIRoute(async (req: NextApiRequest, res: NextApiRespo
  * - Body: {}
  * ```
  */
-const DELETE = withCatchingAPIRoute(async (req: NextApiRequest, res: NextApiResponse, viewId: ViewDescriptor["id"]) => {
-    const user = req.session.user!
+const DELETE = withCatchingAPIRoute(
+    async (req: NextApiRequest, res: NextApiResponse, viewId: ViewDescriptor["id"]) => {
+        const user = req.session.user!
 
-    await withReadWriteConnection(user, async sessionID =>
-        coreRequest<void>(deleteView(sessionID, viewId), user.authCookie)
-    )
-    res.status(200).send({})
-})
+        await withReadWriteConnection(user, async sessionID =>
+            coreRequest<void>(deleteView(sessionID, viewId), user.authCookie)
+        )
+        res.status(200).send({})
+    }
+)
 
 export default withSessionRoute(
     withUserCheck(async (req: NextApiRequest, res: NextApiResponse) => {

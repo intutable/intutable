@@ -28,7 +28,10 @@ export const useBrowserInfo = () => {
         const isIEEdge = window.navigator.userAgent.indexOf("Edg") > -1
 
         const isChrome =
-            isChromium != null && window.navigator.vendor === "Google Inc." && isOpera === false && isIEEdge === false
+            isChromium != null &&
+            window.navigator.vendor === "Google Inc." &&
+            isOpera === false &&
+            isIEEdge === false
 
         setInfo({
             isChromium,

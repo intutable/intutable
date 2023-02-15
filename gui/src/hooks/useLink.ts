@@ -1,7 +1,7 @@
-import { useMemo, useCallback } from "react"
-import { ColumnInfo } from "@intutable/lazy-views/dist/types"
-import { TableHookOptions, useTable } from "hooks/useTable"
-import { TableRow, TableColumn, Row, Column } from "types"
+import { fetcher } from "api"
+import { useView } from "hooks/useView"
+import { useTable } from "hooks/useTable"
+import { Row, Column } from "types"
 import { useForeignTable } from "./useForeignTable"
 
 export type RowPreview = Pick<Row, "_id" | "index"> & {
@@ -13,11 +13,13 @@ export type RowPreview = Pick<Row, "_id" | "index"> & {
  * are loaded with this hook.
  */
 export const useLink = (forColumn: Column.Deserialized) => {
+    const { data: homeView } = useView()
     const { foreignTable } = useForeignTable(forColumn)
     const { data: linkTableData, error, mutate } = useTable({ table: foreignTable })
 
     /** user defined primary key column in the foreign table */
-    const userPrimaryKeyColumn = linkTableData?.columns.find(column => column.isUserPrimaryKey) ?? null
+    const userPrimaryKeyColumn =
+        linkTableData?.columns.find(column => column.isUserPrimaryKey) ?? null
 
     /** a preview of linkable rows from the foreign table */
     const rowPreviews: RowPreview[] =
@@ -29,8 +31,20 @@ export const useLink = (forColumn: Column.Deserialized) => {
             }))) ??
         []
 
-    const getColumnInfo = (column: TableColumn): ColumnInfo | null => {
-        return linkTableData?.metadata.columns.find(c => c.key === column.key) ?? null
+    /**
+     * Link a row in the current table to a row in the foreign table.
+     */
+    const setLinkValue = async (row: Row, target: RowPreview | null) => {
+        if (!homeView) return null
+        return fetcher({
+            url: "/api/row",
+            body: {
+                viewId: homeView!.descriptor.id,
+                rowsToUpdate: row._id,
+                values: { [forColumn.id]: target?._id ?? null },
+            },
+            method: "PATCH",
+        })
     }
 
     return {
@@ -38,6 +52,6 @@ export const useLink = (forColumn: Column.Deserialized) => {
         mutate,
         linkTableData,
         rowPreviews,
-        getColumnInfo,
+        setLinkValue,
     }
 }

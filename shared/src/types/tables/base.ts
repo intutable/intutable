@@ -2,22 +2,32 @@
  * @module types.tables.base
  * Parameterized types to be used by the other table-relevant modules
  * (compare `types.tables.serialized` and `types.tables.rdg` for context)
+ * This is the core of an abstraction layer built on top of `@intutable/lazy-views`, because its
+ * types turned out not to be flexible enough after all, even though they were made specifically
+ * for this application.
  */
 
 import type {
     ColumnInfo,
     ParentColumnSpecifier as GroupColumn,
     SortColumn,
-    ViewDescriptor,
-    ViewInfo,
+    JoinDescriptor,
 } from "@intutable/lazy-views"
+import type { TableDescriptor as RawTableDescriptor } from "@intutable/project-management/dist/types"
+import type { ViewDescriptor, TableDescriptor } from "."
 import type { Filter } from "../filter"
-
 // #################################################################
 //       Table
 // #################################################################
+/**
+ * Placeholder alias for now. Will eventually be its own type.
+ */
+export type LinkDescriptor = JoinDescriptor
+
 export type Table<COL, ROW> = {
-    metadata: Omit<ViewInfo, "rowOptions">
+    descriptor: TableDescriptor
+    rawTable: RawTableDescriptor
+    links: LinkDescriptor[]
     columns: COL[]
     rows: ROW[]
 }
@@ -28,15 +38,6 @@ export type Table<COL, ROW> = {
 
 export type View<COL, ROW> = {
     descriptor: ViewDescriptor
-    /**
-     * Since {@link columns} only contains direct display-relevant data and
-     * not backend-side metadata like IDs, we we also keep the original
-     * ColumnInfos around so we have access e.g. to the column's ID when it
-     * is to be deleted.
-     * TODO: we are gradually expanding the display columns to contain
-     * everything needed, hopefully making this prop obsolete soon.
-     */
-    metaColumns: ColumnInfo[]
     /** Filters for the displayed data. */
     filters: Filter[]
     /**
@@ -80,17 +81,29 @@ export type Row = {
  *
  * __Note__: in many rdg handlers you want get a column of type {@link Column}.
  * You will receive a column of type {@link CalculatedColumn}.
- * Then you need to provide this loss of information by a context e.g.
+ * Then you need to provide this loss of information by a context.
  *
  * __Note__: These properties must be add to {@link Column} __and__ {@link SerializedColumn}.
  *
  */
 export type MetaColumnProps = {
     /**
-     * core/plugion unique id
-     * used for columns, rows, tables etc.
+     * unique ID
      */
     readonly id: number
+    /**
+     * The ID of the column that a (view) column is based on. If a table has a column named
+     * "Name" and ID 10, then a view on that table will have a column of the same name, and
+     * the view column's `parentColumnId` will be 10.
+     * In table columns, `parentColumnId` is null.
+     */
+    readonly parentColumnId: number | null
+    /**
+     * If the column is taken from another table via a link, then that link is a separate entity
+     * and this is its ID. If the column is from the home table, equivalent to its `kind` not
+     * being link or lookup, then `linkId` is null.
+     */
+    readonly linkId: number | null
     /**
      * @property {(standard | link | lookup)} kind meta type of a column.
      *
@@ -114,7 +127,8 @@ export type MetaColumnProps = {
     cellType: string
     /**
      * @property {number | null} index ordering position of the
-     * column.
+     * column. Starts from 0, includes both ID and index. ID is index 0, index is index 1.
+     * All other columns' indices can change.
      */
     index: number
     /**

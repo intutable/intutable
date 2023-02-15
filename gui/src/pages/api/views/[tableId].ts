@@ -1,4 +1,4 @@
-import { ViewDescriptor } from "@backend/types/index"
+import { ViewDescriptor } from "@shared/types"
 import { listViews } from "@backend/requests"
 import { coreRequest } from "api/utils"
 import { withSessionRoute } from "auth"

@@ -29,7 +29,10 @@ const textFieldStyle: SxProps<Theme> = {
 const Login: NextPage = () => {
     const router = useRouter()
     const { enqueueSnackbar } = useSnackbar()
-    const error = useMemo(() => (router.query.error ? makeError(router.query.error) : null), [router.query.error])
+    const error = useMemo(
+        () => (router.query.error ? makeError(router.query.error) : null),
+        [router.query.error]
+    )
 
     const { mutateUser } = useUser({
         redirectTo: "/dashboard",
@@ -114,7 +117,9 @@ const Login: NextPage = () => {
                         type="email"
                         required
                         error={usernameValid instanceof Error}
-                        helperText={usernameValid instanceof Error ? usernameValid.message : undefined}
+                        helperText={
+                            usernameValid instanceof Error ? usernameValid.message : undefined
+                        }
                         fullWidth
                         sx={textFieldStyle}
                         variant="standard"
@@ -127,7 +132,9 @@ const Login: NextPage = () => {
                         type="password"
                         required
                         error={passwordValid instanceof Error}
-                        helperText={passwordValid instanceof Error ? passwordValid.message : undefined}
+                        helperText={
+                            passwordValid instanceof Error ? passwordValid.message : undefined
+                        }
                         fullWidth
                         sx={textFieldStyle}
                         variant="standard"
