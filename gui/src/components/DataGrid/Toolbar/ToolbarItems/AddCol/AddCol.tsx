@@ -16,7 +16,7 @@ const AddCol: React.FC = () => {
     return (
         <>
             <Button startIcon={<AddIcon />} onClick={handleOpenModal}>
-                Add Col
+                Spalte hinzufügen
             </Button>
             <AddColumnModal open={anchorEL != null} onClose={handleCloseModal} />
         </>
