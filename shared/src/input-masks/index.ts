@@ -14,7 +14,8 @@ export const getInputMasksFor = (view: ViewInfo): InputMask[] => {
     // filter matching ids or names
     const match: InputMask[] = masks.filter(mask =>
         isViewNameOrigin(mask.origin)
-            ? mask.origin.viewName === view.descriptor.name && mask.origin.viewsTableName === viewsTable.name
+            ? mask.origin.viewName === view.descriptor.name &&
+              mask.origin.viewsTableName === viewsTable.name
             : isViewIdOrigin(mask.origin)
             ? mask.origin.viewId === view.descriptor.id
             : isTableIdOrigin(mask.origin)

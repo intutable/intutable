@@ -36,4 +36,5 @@ export const isColumnIdOrigin = (value: ColumnOrigin): value is ColumnIdOrigin =
     Object.prototype.hasOwnProperty.call(value, "id")
 
 export const isInputMaskComponent = (value: unknown): value is InputMaskComponents =>
-    Object.prototype.hasOwnProperty.call(value, "__component") && Object.prototype.hasOwnProperty.call(value, "index")
+    Object.prototype.hasOwnProperty.call(value, "__component") &&
+    Object.prototype.hasOwnProperty.call(value, "index")
