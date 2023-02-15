@@ -191,6 +191,13 @@ async function deleteTable_({ connectionId, id }: CoreRequest): Promise<CoreResp
     return deleteTable(connectionId, id)
 }
 async function deleteTable(connectionId: string, id: TableId) {
+    // unfortunate workaround: our makeshift foreign key columns are not detected by
+    // lazy-views' auto-cleanup, so we have to get rid of them ourselves.
+    const backwardLinks = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, id)).then(
+        info => info.columns.filter(column => column.attributes.kind === "backwardLink")
+    )
+    for (const column of backwardLinks) await removeColumnFromTable(connectionId, id, column.id)
+    // remove views
     const filterViews = await listViews(connectionId, id)
     Promise.all(filterViews.map(v => core.events.request(lvr.deleteView(connectionId, v.id))))
     const tableViewOptions = (await core.events.request(
