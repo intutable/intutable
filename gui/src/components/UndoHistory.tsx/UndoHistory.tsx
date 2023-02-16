@@ -92,7 +92,7 @@ export const UndoHistory: React.FC = () => {
                                 <TableCell>#</TableCell>
                                 <TableCell>Zeitpunkt</TableCell>
                                 <TableCell>Autor</TableCell>
-                                <TableCell>Ort</TableCell>
+                                <TableCell>Spalte / Zeile</TableCell>
                                 <TableCell>Typ</TableCell>
                                 <TableCell>Änderung</TableCell>
                                 <TableCell align="right">Aktion</TableCell>

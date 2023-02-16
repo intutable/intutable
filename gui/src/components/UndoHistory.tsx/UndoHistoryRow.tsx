@@ -6,7 +6,15 @@ import MoveUpIcon from "@mui/icons-material/MoveUp"
 import PlaceIcon from "@mui/icons-material/Place"
 import RedoIcon from "@mui/icons-material/Redo"
 import UndoIcon from "@mui/icons-material/Undo"
-import { Chip, IconButton, TableCell, TableRow, TableRowProps, Tooltip } from "@mui/material"
+import {
+    Chip,
+    IconButton,
+    TableCell,
+    TableRow,
+    TableRowProps,
+    Tooltip,
+    Typography,
+} from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
@@ -14,6 +22,10 @@ import { stringToColor } from "utils/stringToColor"
 import { getFormattedTimeString } from "./getFormattedTimeString"
 import { getListPosition } from "./getListPosition"
 import { isCurrentMemento } from "./isCurrentMemento"
+import KeyIcon from "@mui/icons-material/Key"
+import { format } from "./format"
+import { useRouter } from "next/router"
+import { UrlObject } from "url"
 
 export type MementoRowProps = {
     memento: Memento
@@ -25,6 +37,7 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
     const { userSettings } = useUserSettings()
     const theme = useTheme()
     const { memento, index } = props
+    const router = useRouter()
 
     if (undoManager?.history == null || userSettings == null) return <>Lädt...</>
     const { history } = undoManager
@@ -43,22 +56,55 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
             </TableCell>
             <TableCell>{getFormattedTimeString(memento.timestamp)}</TableCell>
             <TableCell>{userSettings.firstName + " " + userSettings.lastName} (Sie)</TableCell>
-            <TableCell>Projekt</TableCell>
-            {/* <TableCell>Tabelle</TableCell>
-            <TableCell>{memento.snapshot.viewId}</TableCell>
-            <TableCell>{memento.snapshot.columnId}</TableCell>
-            <TableCell>{memento.snapshot.rowId}</TableCell> */}
+            <TableCell>
+                <Typography
+                    onClick={() => {
+                        const project = props.memento.snapshot.project
+                        const table = props.memento.snapshot.table
+                        const view = props.memento.snapshot.view
+                        const url: UrlObject = {
+                            pathname: `/project/${project.id}/table/${table.id}`,
+                            query: {
+                                viewId: view.id,
+                            },
+                        }
+                        const as = `/project/${project.id}/table/${table.id}`
+                        router.push(url, as)
+                    }}
+                    display="inline-block"
+                    sx={{
+                        "&:hover": {
+                            textDecoration: "underline",
+                            color: theme.palette.primary.main,
+                        },
+                        cursor: "pointer",
+                    }}
+                >
+                    {memento.snapshot.column.name}
+                </Typography>{" "}
+                / {memento.snapshot.row.formattedPrimaryColumnValue} ({memento.snapshot.row.index}
+                <KeyIcon />)
+            </TableCell>
             <TableCell>
                 <Chip
                     size="small"
-                    label={"Zell-Wert"}
+                    label={memento.action === "cell-value-changed" ? "Zelle" : "#Aktion#"}
                     sx={{
-                        bgcolor: stringToColor("Zell-Wert"),
-                        color: theme.palette.getContrastText(stringToColor("Zell-Wert")),
+                        bgcolor: stringToColor(
+                            memento.action === "cell-value-changed" ? "Zelle" : "#Aktion#"
+                        ),
+                        color: theme.palette.getContrastText(
+                            stringToColor(
+                                memento.action === "cell-value-changed" ? "Zelle" : "#Aktion#"
+                            )
+                        ),
                     }}
                 />
             </TableCell>
-            <TableCell>{memento.snapshot.oldValue + " --> " + memento.snapshot.newValue}</TableCell>
+            <TableCell>
+                {format(memento.snapshot.oldValue, memento.snapshot.column.cellType)} zu{" "}
+                {format(memento.snapshot.newValue, memento.snapshot.column.cellType)}
+            </TableCell>
             <TableCell align="right">
                 <Tooltip
                     title="Diese Änderung rückgängig machen (undo)."
