@@ -7,6 +7,7 @@ import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
 
 import { useSnacki } from "./useSnacki"
+import { useSnapshot } from "./useSnapshot"
 
 type Column = Column.Deserialized
 
@@ -28,6 +29,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
     const { undoManager } = useUndo()
+    const { captureSnapshot } = useSnapshot()
 
     /**
      * Used for row reordering / drag n drop
@@ -106,13 +108,14 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         await mutateTable()
         await mutateView()
 
-        undoManager?.addMemento({
-            viewId: view!.descriptor.id,
-            rowId: row._id,
-            columnId: column.id,
+        const snapshot = captureSnapshot({
             oldValue: previousSerialized as string,
             newValue: serializedValue as string,
+            column,
+            row,
         })
+
+        undoManager?.addMemento(snapshot)
     }
 
     // TODO: the cache should be mutated differently
@@ -154,13 +157,14 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         await mutateTable()
         await mutateView()
 
-        undoManager?.addMemento({
-            viewId: view!.descriptor.id,
-            rowId: changedRow._id,
-            columnId: column.id,
+        const snapshot = captureSnapshot({
             oldValue: previousSerialized as string,
             newValue: serializedValue as string,
+            column,
+            row: previousRow!,
         })
+
+        undoManager?.addMemento(snapshot)
     }
 
     return {

@@ -1,6 +1,7 @@
 import { cellMap } from "@datagrid/Cells"
+import { Column } from "types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { useAPI } from "context"
+import { useAPI } from "hooks/useAPI"
 import { useView } from "hooks/useView"
 import { Row, TableDescriptor, ViewDescriptor } from "types"
 
@@ -24,12 +25,14 @@ export const useSnapshot = () => {
     const { data } = useView()
 
     return {
-        captureSnapshot: (
-            oldValue: string,
-            newValue: string,
-            column: SnapshotColumn,
+        captureSnapshot: (props: {
+            oldValue: string
+            newValue: string
+            column: Column.Deserialized
+            /** note that it must be the row before update */
             row: Row
-        ): Snapshot => {
+        }): Snapshot => {
+            const { oldValue, newValue, column, row } = props
             const primiaryColumn = data!.columns.find(c => c.isUserPrimaryKey)
             const exporter = cellMap.getCellCtor(primiaryColumn!.cellType).export
 
@@ -41,11 +44,19 @@ export const useSnapshot = () => {
                 formattedPrimaryColumnValue: exporter(unformattedPrimaryColumnValue) as string,
             }
 
+            if (!project || !table || !view) {
+                throw new Error("Missing project, table, or view")
+            }
+
             return {
-                project: project!,
-                table: table!,
-                view: view!,
-                column,
+                project: project,
+                table: table,
+                view: view,
+                column: {
+                    id: column.id,
+                    name: column.name as string,
+                    cellType: column.cellType,
+                },
                 row: rowSnapshot,
                 oldValue,
                 newValue,

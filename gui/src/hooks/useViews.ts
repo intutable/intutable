@@ -1,7 +1,7 @@
 import { ViewDescriptor } from "@shared/types"
 import useSWR, { unstable_serialize } from "swr"
 import { fetcher } from "api"
-import { useAPI } from "context/APIContext"
+import { useAPI } from "hooks/useAPI"
 import { TableHookOptions } from "./useTable"
 import { useMemo } from "react"
 

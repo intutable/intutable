@@ -4,8 +4,7 @@ import { RowRenderer } from "@datagrid/renderers"
 import RowMask from "@datagrid/RowMask/RowMask"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
-import { TableDescriptor, ViewDescriptor } from "@shared/types"
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { ViewDescriptor } from "@intutable/lazy-views"
 import { Box, Button, Grid, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
@@ -14,14 +13,10 @@ import Link from "components/Link"
 import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
-import {
-    APIContextProvider,
-    HeaderSearchFieldProvider,
-    useAPI,
-    useHeaderSearchField,
-} from "context"
+import { HeaderSearchFieldProvider, useHeaderSearchField } from "context"
 import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
+import { APIQueries, parseQuery, useAPI } from "hooks/useAPI"
 import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { useRow } from "hooks/useRow"
@@ -31,15 +26,12 @@ import { useView } from "hooks/useView"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import { useThemeToggler } from "pages/_app"
 import React, { useEffect, useState } from "react"
-import DataGrid, { RowsChangeData } from "react-data-grid"
+import DataGrid from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import type { Row, TableData, ViewData } from "types"
-import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
-import { UndoContextProvider } from "context/UndoContext"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -76,20 +68,11 @@ const TablePage: React.FC = () => {
     // views side panel
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
 
-    // TODO: this should not be here and does not work as intended in this way
-    // const partialRowUpdate = async (
-    //     rows: Row[],
-    //     changeData: RowsChangeData<Row>
-    // ): Promise<void> => {
-    //     const changedRow = rows[changeData.indexes[0]]
-    //     const col = changeData.column
-    //     const update = changedRow[col.key]
-    //     await updateRow(col, changedRow, update)
-    // }
-
     const tableSize = {
         xs: viewNavOpen ? 10 : 12,
     }
+
+    if (error) return <span>Die Tabelle konnte nicht geladen Werden</span>
     if (tableList == null || data == null) return <LoadingSkeleton />
 
     const clipboardUtil = new ClipboardUtil(data!.columns)
@@ -118,116 +101,85 @@ const TablePage: React.FC = () => {
 
             <TableNavigator />
 
-            {error ? (
-                <span>Die Tabelle konnte nicht geladen Werden</span>
-            ) : (
-                <Grid container spacing={2}>
-                    {viewNavOpen && (
-                        <Grid item xs={2}>
-                            <ViewNavigator open={viewNavOpen} />
-                        </Grid>
-                    )}
-
-                    <Grid item xs={tableSize.xs}>
-                        <Box>
-                            <Toolbar position="top">
-                                <ToolbarItem.Views
-                                    handleClick={() => setViewNavOpen(prev => !prev)}
-                                    open={viewNavOpen}
-                                />
-                                <ToolbarItem.AddCol />
-                                <ToolbarItem.AddLink />
-                                <ToolbarItem.AddRow />
-                                <ToolbarItem.EditFilters />
-                                <ToolbarItem.ExportView />
-                                <ToolbarItem.HiddenColumns />
-                            </Toolbar>
-
-                            <DndProvider backend={HTML5Backend}>
-                                <DataGrid
-                                    className={"rdg-" + getTheme() + " fill-grid"}
-                                    rows={data.rows}
-                                    columns={[
-                                        SelectColumn,
-                                        ...data.columns.filter(column => column.hidden !== true),
-                                    ]}
-                                    components={{
-                                        // noRowsFallback: <NoRowsFallback />, // BUG: does not work with columns but no rows bc css
-                                        rowRenderer: RowRenderer,
-                                        // checkboxFormatter: // TODO: adjust
-                                        // sortIcon: // TODO: adjust
-                                    }}
-                                    rowKeyGetter={rowKeyGetter}
-                                    onCopy={event =>
-                                        clipboardUtil.handleOnCopy(event, error => {
-                                            error ? snackError(error) : snack("1 Zelle kopiert")
-                                        })
-                                    }
-                                    // onFill={e =>
-                                    //     clipboardUtil.handleOnFill(e)
-                                    // }
-                                    onPaste={e =>
-                                        clipboardUtil.handleOnPaste(e, error => {
-                                            error ? snackError(error) : snack("1 Zelle eingefügt")
-                                        })
-                                    }
-                                    selectedRows={selectedRows}
-                                    onSelectedRowsChange={setSelectedRows}
-                                    onRowsChange={updateRow_RDG}
-                                    headerRowHeight={headerHeight}
-                                    // onRowClick={(row, column) =>
-                                    //     setRowMaskState({
-                                    //         mode: "edit",
-                                    //         row,
-                                    //         column,
-                                    //     })
-                                    // }
-                                    cellNavigationMode={cellNavigationMode}
-                                />
-                            </DndProvider>
-
-                            <Toolbar position="bottom">
-                                <ToolbarItem.Connection status="connected" />
-                            </Toolbar>
-                        </Box>
+            <Grid container spacing={2}>
+                {viewNavOpen && (
+                    <Grid item xs={2}>
+                        <ViewNavigator open={viewNavOpen} />
                     </Grid>
+                )}
 
-                    <RowMask />
+                <Grid item xs={tableSize.xs}>
+                    <Box>
+                        <Toolbar position="top">
+                            <ToolbarItem.Views
+                                handleClick={() => setViewNavOpen(prev => !prev)}
+                                open={viewNavOpen}
+                            />
+                            <ToolbarItem.AddCol />
+                            <ToolbarItem.AddLink />
+                            <ToolbarItem.AddRow />
+                            <ToolbarItem.EditFilters />
+                            <ToolbarItem.ExportView />
+                            <ToolbarItem.HiddenColumns />
+                        </Toolbar>
+
+                        <DndProvider backend={HTML5Backend}>
+                            <DataGrid
+                                className={"rdg-" + getTheme() + " fill-grid"}
+                                rows={data.rows}
+                                columns={[
+                                    SelectColumn,
+                                    ...data.columns.filter(column => column.hidden !== true),
+                                ]}
+                                components={{
+                                    // noRowsFallback: <NoRowsFallback />, // BUG: does not work with columns but no rows bc css
+                                    rowRenderer: RowRenderer,
+                                    // checkboxFormatter: // TODO: adjust
+                                    // sortIcon: // TODO: adjust
+                                }}
+                                rowKeyGetter={rowKeyGetter}
+                                onCopy={event =>
+                                    clipboardUtil.handleOnCopy(event, error => {
+                                        error ? snackError(error) : snack("1 Zelle kopiert")
+                                    })
+                                }
+                                // onFill={e =>
+                                //     clipboardUtil.handleOnFill(e)
+                                // }
+                                onPaste={e =>
+                                    clipboardUtil.handleOnPaste(e, error => {
+                                        error ? snackError(error) : snack("1 Zelle eingefügt")
+                                    })
+                                }
+                                selectedRows={selectedRows}
+                                onSelectedRowsChange={setSelectedRows}
+                                onRowsChange={updateRow_RDG}
+                                headerRowHeight={headerHeight}
+                                // onRowClick={(row, column) =>
+                                //     setRowMaskState({
+                                //         mode: "edit",
+                                //         row,
+                                //         column,
+                                //     })
+                                // }
+                                cellNavigationMode={cellNavigationMode}
+                            />
+                        </DndProvider>
+
+                        <Toolbar position="bottom">
+                            <ToolbarItem.Connection status="connected" />
+                        </Toolbar>
+                    </Box>
                 </Grid>
-            )}
+
+                <RowMask />
+            </Grid>
         </>
     )
 }
 
-type PageProps = {
-    project: ProjectDescriptor
-    /** The currently displayed table */
-    table: TableDescriptor
-    /** The list of all available tables in this project */
-    tableList: TableDescriptor[]
-    /** The currently displayed filter view */
-    view: ViewDescriptor
-    /** The list of all available views on this table */
-    viewList: ViewDescriptor[]
-    // fallback: {
-    //     [cacheKey: string]: ViewData
-    // }
-}
-
-const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({
-    project,
-    table,
-    view,
-}) => {
-    const { setProject, setTable, setView } = useAPI()
-
-    setProject(project)
-    setTable(table)
-    setView(view)
-
+const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => {
     return (
-        // <APIContextProvider project={project} table={table} view={view}>
-        //     <UndoContextProvider>
         <SelectedRowsContextProvider>
             <HeaderSearchFieldProvider>
                 <RowMaskProvider>
@@ -235,84 +187,46 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
                 </RowMaskProvider>
             </HeaderSearchFieldProvider>
         </SelectedRowsContextProvider>
-        //     </UndoContextProvider>
-        // </APIContextProvider>
     )
 }
 
 export const getServerSideProps = withSSRCatch(
-    withSessionSsr<PageProps>(async context => {
-        const query = context.query as DynamicRouteQuery<
-            typeof context.query,
-            "tableId" | "projectId"
-        >
+    withSessionSsr(async context => {
+        const { projectId, tableId, viewId } = parseQuery<APIQueries>(context.query, [
+            "projectId",
+            "tableId",
+            "viewId",
+        ])
+
+        if (projectId == null || tableId == null)
+            return {
+                notFound: true,
+            }
+
+        if (viewId == null) {
+            const viewList = await fetcher<ViewDescriptor[]>({
+                url: `/api/views/${tableId}`,
+                method: "GET",
+                headers: context.req.headers as HeadersInit,
+            })
+            const defaultViewId = viewList[0].id
+
+            return {
+                redirect: {
+                    destination: `/project/${projectId}/table/${tableId}?viewId=${defaultViewId}`,
+                    permanent: true,
+                },
+            }
+        }
 
         const user = context.req.session.user
-
         if (user == null || user.isLoggedIn === false)
             return {
                 notFound: true,
             }
 
-        const projectId: ProjectDescriptor["id"] = Number.parseInt(query.projectId)
-        const tableId: ViewDescriptor["id"] = Number.parseInt(query.tableId)
-
-        if (isNaN(projectId) || isNaN(tableId))
-            return {
-                notFound: true,
-            }
-
-        // workaround until PM exposes a "get project" method
-        const projects = await fetcher<ProjectDescriptor[]>({
-            url: `/api/projects`,
-            method: "GET",
-            headers: context.req.headers as HeadersInit,
-        })
-        const project = projects.find(p => p.id === projectId)
-
-        if (project == null) return { notFound: true }
-
-        const tableList = await fetcher<ViewDescriptor[]>({
-            url: `/api/tables/${projectId}`,
-            method: "GET",
-            headers: context.req.headers as HeadersInit,
-        })
-        const tableData = await fetcher<TableData.Serialized>({
-            url: `/api/table/${tableId}`,
-            method: "GET",
-            headers: context.req.headers as HeadersInit,
-        })
-        const viewList = await fetcher<ViewDescriptor[]>({
-            url: `/api/views/${tableId}`,
-            method: "GET",
-            headers: context.req.headers as HeadersInit,
-        })
-
-        if (viewList.length === 0) {
-            return { notFound: true }
-        }
-        const view: ViewDescriptor = viewList[0]
-
-        const viewData = await fetcher<ViewData.Serialized>({
-            url: `/api/view/${view.id}`,
-            method: "GET",
-            headers: context.req.headers as HeadersInit,
-        })
-
         return {
-            props: {
-                project,
-                table: tableData.descriptor,
-                tableList,
-                view: viewData.descriptor,
-                viewList,
-                // fallback: {
-                //     [unstable_serialize({
-                //         url: `/api/table/${tableId}`,
-                //         method: "GET",
-                //     })]: data,
-                // },
-            },
+            props: {},
         }
     })
 )

@@ -16,6 +16,7 @@ import {
     Drawer as MuiDrawer,
     IconButton,
     ListItem,
+    ListItemButton,
     ListItemIcon,
     ListItemText,
     Toolbar,
@@ -72,27 +73,25 @@ type DrawerListItemProps = {
     nonActiveIcon: React.ReactNode
     activeIcon: React.ReactNode
     text: string
-    href: string
+    url: string
 }
 
-const DrawerListItem: React.FC<DrawerListItemProps> = props => {
+const DrawerLink: React.FC<DrawerListItemProps> = props => {
     const router = useRouter()
     return (
-        <ListItem
-            button
-            onClick={() => router.push(props.href)}
+        <ListItemButton
+            onClick={() => router.push(props.url)}
             sx={{
-                ...(router.pathname === props.href && {
+                ...(router.pathname === props.url && {
                     bgcolor: "#dedede",
                 }),
-                "&:hover": {},
             }}
         >
             <ListItemIcon>
-                {router.pathname === props.href ? props.activeIcon : props.nonActiveIcon}
+                {router.pathname === props.url ? props.activeIcon : props.nonActiveIcon}
             </ListItemIcon>
             <ListItemText primary={props.text} />
-        </ListItem>
+        </ListItemButton>
     )
 }
 
@@ -123,32 +122,32 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     <ChevronLeftIcon />
                 </IconButton>
             </Toolbar>
-            <DrawerListItem
+            <DrawerLink
                 text="Startseite"
-                href="/"
+                url="/"
                 nonActiveIcon={<HomeIconOutlined />}
                 activeIcon={<HomeIcon />}
             />
             {user?.isLoggedIn && (
                 <>
-                    <DrawerListItem
+                    <DrawerLink
                         text="Dashboard"
-                        href="/dashboard"
+                        url="/dashboard"
                         nonActiveIcon={<DashboardOutlinedIcon />}
                         activeIcon={<DashboardIcon />}
                     />
-                    <DrawerListItem
+                    <DrawerLink
                         text="Projekte"
-                        href="/projects"
+                        url="/projects"
                         nonActiveIcon={<WorkspacesIconOutlined />}
                         activeIcon={<WorkspacesIcon />}
                     />
                 </>
             )}
             {user?.isLoggedIn && user?.role.roleKind === RoleKind.Admin && (
-                <DrawerListItem
+                <DrawerLink
                     text="Nutzerverwaltung"
-                    href="/users"
+                    url="/users"
                     nonActiveIcon={<PeopleIconOutlined />}
                     activeIcon={<PeopleIcon />}
                 />
@@ -159,22 +158,22 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                 }}
             />
             {user?.isLoggedIn && (
-                <DrawerListItem
+                <DrawerLink
                     text="Versionsverlauf"
-                    href="history"
+                    url="/history"
                     nonActiveIcon={<HistoryIcon />}
                     activeIcon={<HistoryIcon />}
                 />
             )}
-            <DrawerListItem
+            <DrawerLink
                 text="Service Desk"
-                href="/service-desk"
+                url="/service-desk"
                 nonActiveIcon={<SupportAgentIconOutlined />}
                 activeIcon={<SupportAgentIcon />}
             />
-            <DrawerListItem
+            <DrawerLink
                 text="Einstellungen"
-                href="/settings"
+                url="/settings"
                 nonActiveIcon={<SettingsIconOutlined />}
                 activeIcon={<SettingsIcon />}
             />

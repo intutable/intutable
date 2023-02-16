@@ -15,7 +15,7 @@ import {
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { useAPI } from "context/APIContext"
+import { useAPI } from "hooks/useAPI"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useViews } from "hooks/useViews"
@@ -83,7 +83,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     const handleCreateView = async (name: string): Promise<void> => {
         try {
             const newView = await createView(name)
-            setView(newView)
+            if (newView != null) setView(newView)
         } catch (error) {
             const err = makeError(error)
             if (err.message === "alreadyTaken")

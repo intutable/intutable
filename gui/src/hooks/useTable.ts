@@ -1,5 +1,5 @@
 import { TableDescriptor } from "@shared/types"
-import { useAPI } from "context"
+import { useAPI } from "hooks/useAPI"
 import useSWR, { unstable_serialize } from "swr"
 import { TableData } from "types"
 import { useMemo } from "react"
