@@ -33,7 +33,6 @@ export type UseApiHook = {
     project?: ProjectDescriptor | null
     table?: TableDescriptor | null
     view?: ViewDescriptor | null
-    setView: (view: ViewDescriptor) => void
 }
 
 // TODO: integrate page actions into this hook
@@ -65,16 +64,6 @@ export const useAPI = (): UseApiHook => {
     )
     const viewDescriptor = views?.find(v => v.id == viewId)
 
-    const setView = (view: ViewDescriptor) => {
-        router.push({
-            pathname: router.pathname,
-            query: {
-                ...router.query,
-                viewId: view.id,
-            },
-        })
-    }
-
     return {
         projectId,
         tableId,
@@ -82,6 +71,5 @@ export const useAPI = (): UseApiHook => {
         project: projectDescriptor,
         table: tableDescriptor as TableDescriptor | null | undefined,
         view: viewDescriptor as ViewDescriptor | null | undefined,
-        setView,
     }
 }

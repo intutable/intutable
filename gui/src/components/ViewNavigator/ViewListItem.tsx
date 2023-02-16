@@ -87,7 +87,7 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                     <ListItemButton onClick={() => props.onHandleSelectView(view)}>
                         {props.icon || <ChevronRightIcon />}
                         <ListItemText sx={{ ml: 1 }} primary={view.name} />
-                        {hovering && (
+                        {hovering && currentView?.id !== props.view.id && (
                             <IconButton size="small" onClick={handleDeleteViewButton}>
                                 <ClearIcon
                                     sx={{
