@@ -22,14 +22,10 @@ import {
 import { useTheme } from "@mui/material/styles"
 import { useUserSettings } from "hooks/useUserSettings"
 import { useEffect, useState } from "react"
-import { Memento, useUndoManager } from "utils/UndoManager"
-import { EnhancedHistory } from "./getEnhancedHistory"
+import { Memento } from "utils/UndoManager"
+import { useUndoManager } from "hooks/useUndoManager"
 import { sameCell, sameCellDistinctMemento } from "./sameCell"
 import { MementoRow } from "./UndoHistoryRow"
-
-export type UndoHistoryProps = {
-    enhancedHistory: EnhancedHistory
-}
 
 export type CellID = {
     mementoID: Memento["uid"]
@@ -38,7 +34,7 @@ export type CellID = {
     viewId: number
 }
 
-export const UndoHistory: React.FC<UndoHistoryProps> = () => {
+export const UndoHistory: React.FC = () => {
     const { undoManager } = useUndoManager()
     const { userSettings } = useUserSettings()
     const theme = useTheme()
@@ -122,9 +118,9 @@ export const UndoHistory: React.FC<UndoHistoryProps> = () => {
                                         onMouseEnter: () => {
                                             setHoveringOnCell({
                                                 mementoID: memento.uid,
-                                                rowId: memento.snapshot.rowId,
-                                                columnId: memento.snapshot.columnId,
-                                                viewId: memento.snapshot.viewId,
+                                                rowId: memento.snapshot.row._id,
+                                                columnId: memento.snapshot.column.id,
+                                                viewId: memento.snapshot.view.id,
                                             })
                                         },
                                         onMouseLeave: () => {

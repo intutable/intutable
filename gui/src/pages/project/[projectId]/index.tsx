@@ -105,8 +105,32 @@ const TableCard: React.FC<TableCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push("/project/" + props.project.id + "/table/" + props.table.id)
+        const viewId = 0 // TODO: add view parameter
+        const as = `/project/${props.project.id}/table/${props.table.id}`
+        const url = `/project/[projectId]/table/[tableId]?viewId=${viewId}`
+        router.push(url, as)
     }
+
+    // const renameTable = async (tableView: TableDescriptor) => {
+    //     try {
+    //         const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
+    //         if (!name) return
+    //         await fetcher({
+    //             url: `/api/table/${tableView.id}`,
+    //             body: {
+    //                 newName: name,
+    //                 project,
+    //             },
+    //             method: "PATCH",
+    //         })
+    //         await mutate()
+    //     } catch (error) {
+    //         const err = makeError(error)
+    //         if (err.message === "alreadyTaken")
+    //             snackError("Dieser Name wird bereits für eine deiner Tabellen verwendet!")
+    //         else snackError("Die Tabelle konnte nicht umbenannt werden!")
+    //     }
+    // }
 
     return (
         <>
@@ -129,29 +153,37 @@ const TableCard: React.FC<TableCardProps> = props => {
             </Card>
 
             {anchorEL && (
-                <TableContextMenu
-                    anchorEL={anchorEL}
-                    open={anchorEL != null}
+                <Menu
+                    elevation={0}
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                    // transformOrigin={{ vertical: "top", horizontal: "right" }}
+                    open={anchorEL !== null}
+                    anchorEl={anchorEL}
                     onClose={handleCloseContextMenu}
+                    PaperProps={{
+                        sx: {
+                            boxShadow: theme.shadows[1],
+                        },
+                    }}
                 >
-                    <Box
-                        onClick={async () => {
+                    <MenuItem
+                        onClick={() => {
                             handleCloseContextMenu()
-                            await props.handleRename(props.table)
+                            props.handleRename(props.table)
                         }}
                     >
                         Umbenennen
-                    </Box>
-                    <Box
-                        onClick={async () => {
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
                             handleCloseContextMenu()
-                            await props.handleDelete(props.table)
+                            props.handleDelete(props.table)
                         }}
                         sx={{ color: theme.palette.warning.main }}
                     >
                         Löschen
-                    </Box>
-                </TableContextMenu>
+                    </MenuItem>
+                </Menu>
             )}
         </>
     )
