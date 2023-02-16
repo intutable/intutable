@@ -39,6 +39,7 @@ import { DynamicRouteQuery } from "types/DynamicRouteQuery"
 import { ClipboardUtil } from "utils/ClipboardUtil"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
+import { UndoContextProvider } from "context/UndoContext"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
@@ -70,21 +71,21 @@ const TablePage: React.FC = () => {
     const { project } = useAPI()
     const { data, error } = useView()
     const { tables: tableList } = useTables()
-    const { updateRow } = useRow()
+    const { updateRow_RDG } = useRow()
 
     // views side panel
     const [viewNavOpen, setViewNavOpen] = useState<boolean>(false)
 
     // TODO: this should not be here and does not work as intended in this way
-    const partialRowUpdate = async (
-        rows: Row[],
-        changeData: RowsChangeData<Row>
-    ): Promise<void> => {
-        const changedRow = rows[changeData.indexes[0]]
-        const col = changeData.column
-        const update = changedRow[col.key]
-        await updateRow(col, changedRow, update)
-    }
+    // const partialRowUpdate = async (
+    //     rows: Row[],
+    //     changeData: RowsChangeData<Row>
+    // ): Promise<void> => {
+    //     const changedRow = rows[changeData.indexes[0]]
+    //     const col = changeData.column
+    //     const update = changedRow[col.key]
+    //     await updateRow(col, changedRow, update)
+    // }
 
     const tableSize = {
         xs: viewNavOpen ? 10 : 12,
@@ -172,7 +173,7 @@ const TablePage: React.FC = () => {
                                     }
                                     selectedRows={selectedRows}
                                     onSelectedRowsChange={setSelectedRows}
-                                    onRowsChange={partialRowUpdate}
+                                    onRowsChange={updateRow_RDG}
                                     headerRowHeight={headerHeight}
                                     // onRowClick={(row, column) =>
                                     //     setRowMaskState({
@@ -218,16 +219,24 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
     table,
     view,
 }) => {
+    const { setProject, setTable, setView } = useAPI()
+
+    setProject(project)
+    setTable(table)
+    setView(view)
+
     return (
-        <APIContextProvider project={project} table={table} view={view}>
-            <SelectedRowsContextProvider>
-                <HeaderSearchFieldProvider>
-                    <RowMaskProvider>
-                        <TablePage />
-                    </RowMaskProvider>
-                </HeaderSearchFieldProvider>
-            </SelectedRowsContextProvider>
-        </APIContextProvider>
+        // <APIContextProvider project={project} table={table} view={view}>
+        //     <UndoContextProvider>
+        <SelectedRowsContextProvider>
+            <HeaderSearchFieldProvider>
+                <RowMaskProvider>
+                    <TablePage />
+                </RowMaskProvider>
+            </HeaderSearchFieldProvider>
+        </SelectedRowsContextProvider>
+        //     </UndoContextProvider>
+        // </APIContextProvider>
     )
 }
 

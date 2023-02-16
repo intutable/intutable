@@ -11,6 +11,8 @@ import { SWRConfig } from "swr"
 import { getDesignToken } from "theme"
 import createTheme from "theme/utils"
 import ErrorIcon from "@mui/icons-material/Error"
+import { APIContextProvider } from "context"
+import { UndoContextProvider } from "context/UndoContext"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void
@@ -94,10 +96,14 @@ const MyApp = (props: AppProps) => {
                                 error: <ErrorIcon fontSize="small" sx={{ mr: 1 }} />,
                             }}
                         >
-                            <CssBaseline />
-                            <Layout>
-                                <Component {...pageProps} />
-                            </Layout>
+                            <APIContextProvider>
+                                <UndoContextProvider>
+                                    <CssBaseline />
+                                    <Layout>
+                                        <Component {...pageProps} />
+                                    </Layout>
+                                </UndoContextProvider>
+                            </APIContextProvider>
                         </SnackbarProvider>
                     </ThemeProvider>
                 </ThemeTogglerContext.Provider>

@@ -26,6 +26,7 @@ import { RoleKind } from "@backend/permissions/types"
 import { useUser } from "auth"
 import { useRouter } from "next/router"
 import React from "react"
+import HistoryIcon from "@mui/icons-material/History"
 
 const drawerWidth = 240
 
@@ -157,6 +158,14 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     flexGrow: 100,
                 }}
             />
+            {user?.isLoggedIn && (
+                <DrawerListItem
+                    text="Versionsverlauf"
+                    href="history"
+                    nonActiveIcon={<HistoryIcon />}
+                    activeIcon={<HistoryIcon />}
+                />
+            )}
             <DrawerListItem
                 text="Service Desk"
                 href="/service-desk"
