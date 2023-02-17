@@ -6,6 +6,7 @@ export const getListPosition = (
     history: History
 ): "before-pointer" | "after-pointer" | "equal-to-pointer" => {
     const { cache, state } = history
+    if (state === -1) return "after-pointer" // means everything has been undone
     if (state === null) throw new ImplementationError() // state is only null when cache is empty
 
     if (cache[state].uid === memento.uid) return "equal-to-pointer"

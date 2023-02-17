@@ -6,20 +6,19 @@ export const EmptyHistoryOverlay: React.FC = () => {
     const theme = useTheme()
     const { userSettings } = useUserSettings()
 
-    if (userSettings == null) return null
-
     return (
         <TableRow
             sx={{
-                bgcolor: userSettings.enableUndoCache
+                bgcolor: userSettings?.enableUndoCache
                     ? "inherit"
                     : theme.palette.action.disabledBackground,
             }}
         >
             <TableCell>0</TableCell>
             <TableCell>
-                <Typography>Keine Einträge im Änderungsverlauf vorhanden!</Typography>
+                <em>Keine Einträge im Änderungsverlauf vorhanden!</em>
             </TableCell>
+            <TableCell />
             <TableCell />
             <TableCell />
             <TableCell />

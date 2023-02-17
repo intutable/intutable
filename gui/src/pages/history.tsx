@@ -8,7 +8,7 @@ import { withSSRCatch } from "utils/withSSRCatch"
 const History: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => {
     return (
         <>
-            <MetaTitle title="Versionsverlauf" />
+            <MetaTitle title="Änderungsverlauf" />
             <Typography variant={"h4"}>Änderungsverlauf</Typography>
             <Divider />
 

@@ -5,6 +5,8 @@ export class UndoManagerStorageMismatch extends Error {}
 export class UndoManagerStorage {
     static StorageKeyMementoPrefix = "UndoManager_Memento--" as const
     static StatePointerStorageKey = "UndoManager_StatePointer" as const
+    static StatePointerEverythindUndone = "UndoManager_EverythingUndone" as const
+
     static sort(mementos: Memento[]): Memento[] {
         return mementos.sort((a, b) => a.timestamp - b.timestamp)
     }
@@ -16,11 +18,11 @@ export class UndoManagerStorage {
 
     /** Returns all mementos from cache */
     get mementos(): Memento[] {
-        const mementoKeys = Object.keys(window.sessionStorage).filter(item =>
+        const mementoKeys = Object.keys(sessionStorage).filter(item =>
             item.startsWith(UndoManagerStorage.StorageKeyMementoPrefix)
         )
         const mementos = mementoKeys
-            .map(key => window.sessionStorage.getItem(key))
+            .map(key => sessionStorage.getItem(key))
             .map(item => JSON.parse(item!) as Memento)
         return UndoManagerStorage.sort(mementos)
     }
@@ -30,23 +32,35 @@ export class UndoManagerStorage {
         return this.mementos.length
     }
 
-    /** Set the current memento in `mementos`. ('null' to reset) */
+    /** Set the current memento in `mementos`. ('null' to reset | '-1' for everything undone) */
     protected set state(index: number | null) {
         if (index === null) {
-            window.sessionStorage.removeItem(UndoManagerStorage.StatePointerStorageKey)
+            sessionStorage.removeItem(UndoManagerStorage.StatePointerStorageKey)
             return
         }
-        if (this.size === 0) throw new Error("UndoManager: cannot set state of empty cache!")
+        if (this.size === 0 && index >= 0)
+            throw new Error("UndoManager: cannot set state of empty cache!")
+        // when doing undo, the index can be -1 if no more undo is possible
+        if (index === -1) {
+            sessionStorage.setItem(
+                UndoManagerStorage.StatePointerStorageKey,
+                UndoManagerStorage.StatePointerEverythindUndone // set to a special value
+            )
+            return
+        }
         const memento = this.mementos[index]
         if (memento == null) throw new Error("UndoManager: cannot set state out of bounds!")
-        window.sessionStorage.setItem(UndoManagerStorage.StatePointerStorageKey, memento.uid)
+        sessionStorage.setItem(UndoManagerStorage.StatePointerStorageKey, memento.uid)
     }
 
-    /** Returns the index of the current memento in `mementos`. ('null' if the cache is empty) */
+    /** Returns the index of the current memento in `mementos`. ('null' if the cache is empty | `-1` if everything is undone) */
     get state(): number | null {
         if (this.size === 0) return null
-        const uid = window.sessionStorage.getItem(UndoManagerStorage.StatePointerStorageKey)
-        const indexOf = this.mementos.findIndex(item => item.uid === uid)
+        const stateValue = sessionStorage.getItem(UndoManagerStorage.StatePointerStorageKey)
+
+        if (stateValue === UndoManagerStorage.StatePointerEverythindUndone) return -1
+
+        const indexOf = this.mementos.findIndex(item => item.uid === stateValue)
         // mismatch
         if (indexOf === -1) {
             throw this.destroySelf()
@@ -65,7 +79,7 @@ export class UndoManagerStorage {
             snapshot,
         }
         // add memento
-        window.sessionStorage.setItem(key, JSON.stringify(memento))
+        sessionStorage.setItem(key, JSON.stringify(memento))
         // update pointer
         this.state = this.indexOf(memento)
         // clean up
@@ -76,7 +90,7 @@ export class UndoManagerStorage {
     remove(...mementos: Memento[]) {
         mementos.forEach(memento => {
             const key = UndoManagerStorage.StorageKeyMementoPrefix + memento.uid
-            window.sessionStorage.removeItem(key)
+            sessionStorage.removeItem(key)
         })
     }
 
@@ -97,17 +111,17 @@ export class UndoManagerStorage {
     /** Clears the cache with all mementos */
     clearCache() {
         // delete all mementos
-        Object.keys(window.sessionStorage)
+        Object.keys(sessionStorage)
             .filter(item => item.startsWith(UndoManagerStorage.StorageKeyMementoPrefix))
-            .forEach(key => window.sessionStorage.removeItem(key))
+            .forEach(key => sessionStorage.removeItem(key))
         // delete pointer
-        window.sessionStorage.removeItem(UndoManagerStorage.StatePointerStorageKey)
+        sessionStorage.removeItem(UndoManagerStorage.StatePointerStorageKey)
     }
 
     /** Returns the next element previous to the current state  */
     prev(): IteratorResult<Memento> {
         // Note: this is no iterator
-        if (this.state && this.state > 0) {
+        if (this.state && this.state > 0 && this.size > 0) {
             return {
                 done: false,
                 value: this.mementos[this.state - 1],
@@ -122,7 +136,7 @@ export class UndoManagerStorage {
     /** Returns the current state as a memento */
     current(): IteratorResult<Memento> {
         // Note: this is no iterator
-        if (this.state != null) {
+        if (this.state && this.state > 0 && this.size > 0) {
             return {
                 done: false,
                 value: this.mementos[this.state],
@@ -137,7 +151,7 @@ export class UndoManagerStorage {
     /** Returns the next element after the current state  */
     next(): IteratorResult<Memento> {
         // Note: this is no iterator
-        if (this.state && this.state < this.mementos.length) {
+        if (this.state !== null && this.size > 0) {
             return {
                 done: false,
                 value: this.mementos[this.state + 1],

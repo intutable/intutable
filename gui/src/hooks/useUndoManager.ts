@@ -11,6 +11,7 @@ export const useUndoManager = () => {
     const { mutate: mutateView } = useView()
 
     const [undoManager, setUndoManager] = useState<UndoManager | null>(null)
+    const [loading, setLoading] = useState(false)
 
     // BUG: useEffect does not update state correctly
     // BUG: but useMemo bugs because window is not defined
@@ -19,6 +20,7 @@ export const useUndoManager = () => {
         if (typeof window === undefined) return
         const instance = new UndoManager({
             updateRowCallback: async (snapshot, action) => {
+                setLoading(true)
                 await fetcher({
                     url: "/api/row",
                     body: {
@@ -33,6 +35,7 @@ export const useUndoManager = () => {
                 })
                 await mutateTable()
                 await mutateView()
+                setLoading(false)
             },
             maxCacheSize: userSettings?.undoCacheLimit ?? 20,
         })
@@ -67,5 +70,6 @@ export const useUndoManager = () => {
 
     return {
         undoManager,
+        loading: undoManager == null || loading,
     }
 }

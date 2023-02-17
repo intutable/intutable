@@ -52,8 +52,6 @@ export class UndoManagerNoMoreUndo extends Error {}
 export class UndoManagerNoMoreRedo extends Error {}
 export class UndoManagerEmptyCache extends Error {}
 
-// TODO: implement userSettings.enableUndoCache
-
 export class UndoManager extends UndoManagerStorage {
     private updateRowCallback: UpdateRowCallback
 
@@ -62,14 +60,18 @@ export class UndoManager extends UndoManagerStorage {
         this.updateRowCallback = props.updateRowCallback
     }
 
-    public get history() {
+    get history() {
         return {
             cache: this.mementos,
             state: this.state,
         }
     }
 
-    public addMemento(snapshot: Snapshot) {
+    get everythingUndone() {
+        return this.state === -1 && this.size > 0
+    }
+
+    addMemento(snapshot: Snapshot) {
         // cut history if not at the end
         // if (this.state !== this.mementos.length - 1) {
         //     this.remove(...this.mementos.slice(this.state + 1))
@@ -83,22 +85,23 @@ export class UndoManager extends UndoManagerStorage {
     // async redoCertain(memento: MementoID): Promise<Memento> { }
 
     async undoLast(): Promise<Memento> {
-        if (this.size === 0 || this.state === null) throw new UndoManagerEmptyCache()
-        if (this.prev().done) throw new UndoManagerNoMoreUndo()
+        // state === null AND size > 0 means that everything has been undone
+        if (this.everythingUndone) throw new UndoManagerNoMoreUndo()
+        if (this.size === 0) throw new UndoManagerEmptyCache()
 
-        const memento = this.mementos[this.state]
-        this.state -= 1
+        const memento = this.mementos[this.state!]
+        this.state! -= 1
 
         await this.updateRowCallback(memento.snapshot, "undo")
         return memento
     }
 
     async redoLast(): Promise<Memento> {
-        if (this.size === 0 || this.state === null) throw new UndoManagerEmptyCache()
+        if (this.size === 0) throw new UndoManagerEmptyCache()
         if (this.next().done) throw new UndoManagerNoMoreRedo()
 
         const next = this.next().value
-        this.state += 1
+        this.state! += 1
 
         await this.updateRowCallback(next.snapshot, "redo")
         return next

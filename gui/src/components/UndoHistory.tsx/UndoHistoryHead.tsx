@@ -40,49 +40,53 @@ export const UndoHistoryHead: React.FC = () => {
             </Stack>
             <Box flexGrow={1} />
 
-            <Tooltip
-                title="Die letzte Änderung rückgängig machen (undo)."
-                arrow
-                placement="top"
-                enterDelay={1000}
-            >
-                <IconButton
-                    size="small"
-                    sx={{
-                        "&:hover": {
-                            color: theme.palette.success.light,
-                        },
-                    }}
-                    // disabled={undoManager.prev().done}
-                    onClick={async () => {
-                        await undoManager.undoLast()
-                    }}
-                >
-                    <UndoIcon fontSize="small" />
-                </IconButton>
-            </Tooltip>
-            <Tooltip
-                title="Diese letzte Änderung wiederholen (redo)."
-                arrow
-                placement="top"
-                enterDelay={1000}
-            >
-                <IconButton
-                    size="small"
-                    sx={{
-                        "&:hover": {
-                            color: theme.palette.warning.light,
-                        },
-                    }}
-                    // disabled={undoManager.next().done}
-                    onClick={async () => {
-                        await undoManager.redoLast()
-                    }}
-                >
-                    <RedoIcon fontSize="small" />
-                </IconButton>
-            </Tooltip>
-            <VerticalDivider />
+            {userSettings.enableUndoCache && undoManager.size > 0 && (
+                <>
+                    <Tooltip
+                        title="Die letzte Änderung rückgängig machen (undo)."
+                        arrow
+                        placement="top"
+                        enterDelay={1000}
+                    >
+                        <IconButton
+                            size="small"
+                            sx={{
+                                "&:hover": {
+                                    color: theme.palette.success.light,
+                                },
+                            }}
+                            disabled={undoManager.everythingUndone}
+                            onClick={async () => {
+                                await undoManager.undoLast()
+                            }}
+                        >
+                            <UndoIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip
+                        title="Diese letzte Änderung wiederholen (redo)."
+                        arrow
+                        placement="top"
+                        enterDelay={1000}
+                    >
+                        <IconButton
+                            size="small"
+                            sx={{
+                                "&:hover": {
+                                    color: theme.palette.warning.light,
+                                },
+                            }}
+                            disabled={undoManager.state === undoManager.size - 1}
+                            onClick={async () => {
+                                await undoManager.redoLast()
+                            }}
+                        >
+                            <RedoIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <VerticalDivider />
+                </>
+            )}
 
             <FormControlLabel
                 checked={userSettings.enableUndoCache}

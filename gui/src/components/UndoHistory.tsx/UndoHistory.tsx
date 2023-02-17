@@ -1,5 +1,7 @@
 import {
+    Backdrop,
     Box,
+    CircularProgress,
     Paper,
     Stack,
     Table,
@@ -21,6 +23,8 @@ import { sameCellDistinctMemento } from "./sameCell"
 import { UndoHistoryHead } from "./UndoHistoryHead"
 import { MementoRow } from "./UndoHistoryRow"
 import KeyIcon from "@mui/icons-material/Key"
+import PersonIcon from "@mui/icons-material/Person"
+import { EverythingUndone } from "./EverythingUndone"
 
 export type CellID = {
     mementoID: Memento["uid"]
@@ -30,17 +34,11 @@ export type CellID = {
 }
 
 export const UndoHistory: React.FC = () => {
-    const { undoManager } = useUndoManager()
+    const { undoManager, loading } = useUndoManager()
     const { userSettings } = useUserSettings()
     const theme = useTheme()
 
     const [hoveringOnCell, setHoveringOnCell] = useState<CellID | null>(null)
-
-    const disabled = userSettings?.enableUndoCache === false
-
-    useEffect(() => {
-        console.log(userSettings)
-    }, [userSettings])
 
     if (undoManager == null || userSettings == null) return <>Lädt...</>
 
@@ -48,7 +46,6 @@ export const UndoHistory: React.FC = () => {
         <Box>
             <Paper sx={{ p: 2 }}>
                 <UndoHistoryHead />
-
                 <TableContainer>
                     <Table>
                         <TableHead>
@@ -62,6 +59,7 @@ export const UndoHistory: React.FC = () => {
                                 <TableCell>#</TableCell>
                                 <TableCell>Zeitpunkt</TableCell>
                                 <TableCell>Autor</TableCell>
+                                <TableCell>Ort</TableCell>
                                 <TableCell>
                                     <Stack direction="row" alignItems="center" gap={1}>
                                         Spalte /
@@ -82,6 +80,7 @@ export const UndoHistory: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
+                            {undoManager.everythingUndone && <EverythingUndone />}
                             {undoManager.mementos.length === 0 && <EmptyHistoryOverlay />}
                             {undoManager.mementos.map((memento, index) => (
                                 <MementoRow
@@ -89,7 +88,7 @@ export const UndoHistory: React.FC = () => {
                                     index={index}
                                     key={memento.uid}
                                     TableRowProps={{
-                                        hover: true,
+                                        hover: userSettings.enableUndoCache,
                                         selected: sameCellDistinctMemento(memento, hoveringOnCell),
                                         onMouseEnter: () => {
                                             setHoveringOnCell({
@@ -109,6 +108,9 @@ export const UndoHistory: React.FC = () => {
                     </Table>
                 </TableContainer>
             </Paper>
+            <Backdrop open={loading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </Box>
     )
 }

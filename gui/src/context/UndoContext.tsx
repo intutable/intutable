@@ -1,5 +1,7 @@
 import { useSnacki } from "hooks/useSnacki"
 import { useUndoManager } from "hooks/useUndoManager"
+import { useUserSettings } from "hooks/useUserSettings"
+import user from "pages/api/auth/user"
 import React, { useEffect } from "react"
 import {
     UndoManager,
@@ -30,11 +32,7 @@ const getOS = (): "macOS" | "windows" | "other" => "macOS" // TODO
 export const UndoContextProvider: React.FC<UndoContextProviderProps> = props => {
     const { snackError, snackWarning, snackInfo, snackSuccess } = useSnacki()
     const { undoManager } = useUndoManager()
-
-    useEffect(() => {
-        console.log("history", undoManager?.mementos)
-        console.log("pointer", undoManager?.state)
-    }, [undoManager?.mementos, undoManager?.state])
+    const { userSettings } = useUserSettings()
 
     useEffect(() => {
         if (window == null || undoManager == null) return
@@ -84,12 +82,15 @@ export const UndoContextProvider: React.FC<UndoContextProviderProps> = props => 
                 }
             }
         }
-        document.addEventListener("keydown", shortcutListener)
+
+        if (userSettings?.enableUndoCache) {
+            document.addEventListener("keydown", shortcutListener)
+        }
 
         return () => {
             document.removeEventListener("keydown", shortcutListener)
         }
-    }, [snackError, snackSuccess, snackWarning, undoManager])
+    }, [snackError, snackSuccess, snackWarning, undoManager, userSettings?.enableUndoCache])
 
     return (
         <UndoContext.Provider

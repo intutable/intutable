@@ -7,6 +7,7 @@ import PlaceIcon from "@mui/icons-material/Place"
 import RedoIcon from "@mui/icons-material/Redo"
 import UndoIcon from "@mui/icons-material/Undo"
 import {
+    alpha,
     Box,
     Chip,
     IconButton,
@@ -49,14 +50,17 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
         <TableRow
             {...props.TableRowProps}
             sx={{
-                bgcolor: userSettings.enableUndoCache
-                    ? "inherit"
-                    : theme.palette.action.disabledBackground,
+                bgcolor:
+                    userSettings.enableUndoCache === false
+                        ? theme.palette.action.disabledBackground
+                        : position === "after-pointer"
+                        ? alpha(theme.palette.error.light, 0.08)
+                        : "inherit",
             }}
         >
             <TableCell>
                 {isCurrentMemento(memento, history) ? (
-                    <Tooltip title="Letzte Änderung" arrow placement="top">
+                    <Tooltip title="Ihre letzte Änderung" arrow placement="top">
                         <ArrowRightAltIcon color="success" />
                     </Tooltip>
                 ) : (
@@ -65,6 +69,10 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
             </TableCell>
             <FormattedTimeStringCell timestamp={memento.timestamp} />
             <TableCell>{userSettings.firstName + " " + userSettings.lastName} (Sie)</TableCell>
+            <TableCell>
+                {memento.snapshot.project.name} &#8250; {memento.snapshot.table.name} &#8250;{" "}
+                {memento.snapshot.view.name}
+            </TableCell>
             <TableCell>
                 <Box
                     onClick={() => {
@@ -136,7 +144,7 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
                 />
             </TableCell>
             <TableCell>
-                {format(memento.snapshot.oldValue, memento.snapshot.column.cellType)} zu{" "}
+                {format(memento.snapshot.oldValue, memento.snapshot.column.cellType)} &#8594;{" "}
                 {format(memento.snapshot.newValue, memento.snapshot.column.cellType)}
             </TableCell>
             <TableCell align="right">
@@ -153,14 +161,15 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
                                 color: theme.palette.success.light,
                             },
                         }}
-                        disabled={position === "after-pointer"}
+                        disabled
+                        // disabled={position === "after-pointer"}
                     >
                         <UndoIcon fontSize="small" />
                     </IconButton>
                 </Tooltip>
 
                 <Tooltip
-                    title="Zu dieser Änderung springen"
+                    title="Zu dieser Änderung springen."
                     arrow
                     placement={position === "before-pointer" ? "top" : "bottom"}
                     enterDelay={1000}
@@ -172,7 +181,8 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
                                 color: theme.palette.warning.dark,
                             },
                         }}
-                        disabled={position === "equal-to-pointer"}
+                        disabled
+                        // disabled={position === "equal-to-pointer"}
                     >
                         {position === "before-pointer" && <MoveUpIcon fontSize="small" />}
                         {position === "equal-to-pointer" && <PlaceIcon fontSize="small" />}
@@ -193,7 +203,8 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
                                 color: theme.palette.warning.light,
                             },
                         }}
-                        disabled={position !== "after-pointer"}
+                        disabled
+                        // disabled={position !== "after-pointer"}
                     >
                         <RedoIcon fontSize="small" />
                     </IconButton>
