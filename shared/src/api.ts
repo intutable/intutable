@@ -21,7 +21,7 @@ export { immutableColumnAttributes } from "./types"
  */
 export const APP_TABLE_COLUMNS: Column[] = [
     { name: "index", type: ColumnType.integer, options: [] },
-    { name: "name", type: ColumnType.string, options: [] },
+    { name: "name", type: ColumnType.text, options: [] },
 ]
 
 /**

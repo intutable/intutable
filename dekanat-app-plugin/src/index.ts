@@ -229,7 +229,7 @@ async function createStandardColumn(
     )) as RawViewOptions
     const key = sanitizeName(column.name)
     const tableColumn = await core.events.request(
-        pm.createColumnInTable(connectionId, asTable(options.source).id, key)
+        pm.createColumnInTable(connectionId, asTable(options.source).id, key, ColumnType.text)
     )
     // add column to table and filter views
     const columnIndex = getNextColumnIndex(options.columnOptions)
