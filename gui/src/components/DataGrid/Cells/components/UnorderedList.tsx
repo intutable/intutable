@@ -32,26 +32,22 @@ import DeleteIcon from "@mui/icons-material/Delete"
 import { useRouter } from "next/router"
 import { FormatterProps } from "react-data-grid"
 
-export type ListItem<T> = {
-    value: string
-    url?: string
-    props?: T // <- additional data goes here
+const formatValue = (value: unknown, cellType: string): React.ReactNode => {
+    const ctor = cellMap.getCellCtor(cellType)
+    const catchEmpty = ctor.catchEmpty
+    const deserializer = ctor.deserialize
+    const exporter = ctor.export
+    const deserialized = catchEmpty(deserializer.bind(ctor), value)
+    if (deserialized == null) return <em>Leer</em>
+    return exporter(deserialized) as string
 }
-export type List<T = undefined> = {
-    format?: { cellType: string }
-    items: ListItem<T>[]
-}
-const isUnorderedList = (value: unknown): value is List =>
-    Object.prototype.hasOwnProperty.call(value, "items")
 
 const formatItems = (list: List): ListItem<undefined>[] => {
     try {
-        if (list.format) {
-            const ctor = cellMap.getCellCtor(list.format.cellType)
-            const exporter = ctor.export
+        if (list.format != null) {
             return list.items.map(item => ({
                 ...item,
-                value: exporter(item.value) as string,
+                value: formatValue(item.value, list.format!.cellType) as string,
             }))
         }
 
@@ -60,6 +56,19 @@ const formatItems = (list: List): ListItem<undefined>[] => {
         return [{ value: "Fehler: Die Daten konnten nicht geladen werden!" }]
     }
 }
+
+export type ListItem<T> = {
+    value: string // <- raw value
+    url?: string
+    props?: T // <- additional data goes here
+}
+
+export type List<T = undefined> = {
+    format?: { cellType: string }
+    items: ListItem<T>[]
+}
+const isUnorderedList = (value: unknown): value is List =>
+    Object.prototype.hasOwnProperty.call(value, "items")
 
 export class UnorderedList extends Cell {
     public brand = "unordered-list"
