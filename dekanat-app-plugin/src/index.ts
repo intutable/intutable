@@ -53,7 +53,7 @@ import {
     defaultViewRowOptions,
     COLUMN_INDEX_KEY,
     doNotAggregate,
-    jsonbArrayAggregate,
+    unorderedListAggregate,
     firstAggregate,
 } from "shared/dist/api"
 
@@ -387,6 +387,7 @@ async function createBackwardLinkColumn(
         })
     )
     // add and return link column
+    const homeIdColumn = homeTableInfo.columns.find(c => c.name === "_id")!
     const homeUserPrimaryColumn = homeTableInfo.columns.find(
         c => c.attributes.isUserPrimaryKey! === 1
     )!
@@ -398,7 +399,16 @@ async function createBackwardLinkColumn(
     const linkColumn = await addColumnToTableView(
         connectionId,
         foreignTableInfo.descriptor.id,
-        { parentColumnId: homeUserPrimaryColumn.id, attributes, outputFunc: jsonbArrayAggregate() },
+        {
+            parentColumnId: homeUserPrimaryColumn.id,
+            attributes,
+            outputFunc: unorderedListAggregate(
+                join,
+                homeTableInfo,
+                homeIdColumn,
+                homeUserPrimaryColumn
+            ),
+        },
         join.id,
         addToViews
     )
@@ -447,7 +457,6 @@ async function createLookupColumn(
             `other table ${otherTableId} has no column with ID ${column.foreignColumn}`
         )
 
-    const linkKind = linkColumn.attributes.kind === "link" ? LinkKind.Forward : LinkKind.Backward
     const columnIndex =
         Math.max(
             ...tableInfo.columns
@@ -455,8 +464,9 @@ async function createLookupColumn(
                 .map(c => c.attributes[COLUMN_INDEX_KEY])
         ) + 1
     const specifier = createRawSpecifierForLookupColumn(
-        linkKind,
-        otherTableInfo.descriptor,
+        tableInfo,
+        linkColumn,
+        otherTableInfo,
         parentColumn,
         columnIndex
     )
@@ -483,19 +493,23 @@ async function createLookupColumn(
 }
 
 function createRawSpecifierForLookupColumn(
-    kind: LinkKind,
-    otherTableDescriptor: TableDescriptor,
+    tableInfo: RawViewInfo,
+    linkColumn: RawViewColumnInfo,
+    otherTableInfo: RawViewInfo,
     parentColumn: RawViewColumnInfo,
     columnIndex: number
 ): ColumnSpecifier {
     // determine meta attributes
+    const linkKind = linkColumn.attributes.kind === "link" ? LinkKind.Forward : LinkKind.Backward
     const displayName =
         (parentColumn.attributes.displayName || parentColumn.name) +
-        `(${otherTableDescriptor.name})`
+        `(${otherTableInfo.descriptor.name})`
+    const join = tableInfo.joins.find(j => j.id === linkColumn.joinId)!
+    const otherTableIdColumn = otherTableInfo.columns.find(c => c.name === "_id")!
     let contentType: string
     let attributes: Partial<DB.Column>
     let aggregateFunction: ColumnSpecifier["outputFunc"]
-    switch (kind) {
+    switch (linkKind) {
         case LinkKind.Forward:
             contentType = parentColumn.attributes.cellType || "string"
             attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
@@ -504,7 +518,12 @@ function createRawSpecifierForLookupColumn(
         case LinkKind.Backward:
             contentType = parentColumn.attributes.cellType || "string"
             attributes = backwardLookupColumnAttributes(displayName, contentType, columnIndex)
-            aggregateFunction = jsonbArrayAggregate()
+            aggregateFunction = unorderedListAggregate(
+                join,
+                otherTableInfo,
+                otherTableIdColumn,
+                parentColumn
+            )
             break
     }
     return { parentColumnId: parentColumn.id, attributes, outputFunc: aggregateFunction }

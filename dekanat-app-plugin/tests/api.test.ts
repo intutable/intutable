@@ -227,10 +227,10 @@ describe("create different kinds of columns", () => {
         )
 
         // make sure column also exists in the view
-        const testViewData = await coreRequest<SerializedViewData>(
-            req.getViewData(connId, TEST_TABLE.id)
+        const testTableData = await coreRequest<SerializedViewData>(
+            req.getTableData(connId, TEST_TABLE.id)
         )
-        const childColumn = testViewData.columns.find(c => c.name === column.name)
+        const childColumn = testTableData.columns.find(c => c.name === column.name)
         expect(childColumn).toBeDefined()
     })
 })
@@ -651,14 +651,20 @@ describe("links between tables", () => {
                 _id: foreignRow1._id,
                 [foreignNameColumn.key]: foreignRow1.name,
                 [foreignLevelColumn.key]: foreignRow1.authorityLevel,
-                [backwardLinkColumn.key]: expect.arrayContaining([
-                    homeRow1.name,
-                    homeRow2.name,
-                ]),
-                [backwardLookupColumn.key]: expect.arrayContaining([
-                    homeRow1.firstName,
-                    homeRow2.firstName
-                ]),
+                [backwardLinkColumn.key]: expect.objectContaining({
+                    format: { cellType: "string" },
+                    items: expect.arrayContaining([
+                        { value: homeRow1.name, props: { _id: homeRow1._id } },
+                        { value: homeRow2.name, props: { _id: homeRow2._id } },
+                    ])
+                }),
+                [backwardLookupColumn.key]: expect.objectContaining({
+                    format: { cellType: "string" },
+                    items: expect.arrayContaining([
+                        { value: homeRow1.firstName, props: { _id: homeRow1._id } },
+                        { value: homeRow2.firstName, props: { _id: homeRow2._id } },
+                    ]),
+                })
             })
         ]))
     })
@@ -669,7 +675,7 @@ describe("links between tables", () => {
         )
         foreignTableData = await coreRequest<TableData>(
             req.getTableData(connId, foreignTable.id)
-        )
+        ).catch(e => { console.dir(e); return Promise.reject(e) })
         let backwardLinkColumn2 = foreignTableData.columns.find(
             c => c.id === linkColumn2.inverseLinkColumnId
         )

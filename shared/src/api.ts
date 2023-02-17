@@ -3,13 +3,15 @@
  */
 import { Column, ColumnType } from "@intutable/database/dist/types"
 import {
+    JoinDescriptor,
+    ViewInfo as RawViewInfo,
     ColumnSpecifier,
     ParentColumnDescriptor,
     RowOptions,
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
 
-import { DB } from "./types"
+import { DB, RawColumn } from "./types"
 
 export { immutableColumnAttributes } from "./types"
 
@@ -77,7 +79,7 @@ export function backwardLinkColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 1,
-        cellType: "multiselect",
+        cellType: "unordered-list",
     }
 }
 export function foreignKeyColumnAttributes(columnIndex: number): Partial<DB.Column> {
@@ -112,7 +114,7 @@ export function backwardLookupColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 0,
-        cellType: "multiselect",
+        cellType: "unordered-list",
     }
 }
 
@@ -189,12 +191,32 @@ export function doNotAggregate(): ColumnSpecifier["outputFunc"] {
 }
 
 /**
- * For backward links, we have to aggregate multiple values into an array. Unfortunately,
- * PostgreSQL's `ARRAY_AGG` does not work nicely with nested arrays: The sub-arrays all have to
- * be the same length. We have to use `JSONB_AGG` instead.
+ * For backward links, we have to aggregate multiple values into an array. We also need them to
+ * have their IDs and the type that the contents should be rendered with. The GUI's UnorderedList
+ * component provides an appropriate data type, {@link types.gui.UnorderedListCellContent}. This
+ * output function makes PostgreSQL directly spit out that data type.
+ * @param {RawColumn} idColumn the ID column of the target table
+ * @param {RawColumn} parentColumn the column that the link/lookup should take its values
+ * from.
  */
-export function jsonbArrayAggregate(): ColumnSpecifier["outputFunc"] {
-    return "JSONB_AGG(??)"
+export function unorderedListAggregate(
+    join: JoinDescriptor,
+    foreignTableInfo: RawViewInfo,
+    idColumn: RawColumn,
+    parentColumn: RawColumn
+): ColumnSpecifier["outputFunc"] {
+    // yes, this is constant, for now at least.
+    const idKey = `"j${join.id}_${foreignTableInfo.descriptor.name}"."${idColumn.key}"`
+    const cellType = parentColumn.attributes["cellType"]
+    return (
+        `JSON_BUILD_OBJECT(` +
+        `'format', JSON_BUILD_OBJECT('cellType', '${cellType}'),` +
+        `'items', JSON_AGG(JSON_BUILD_OBJECT(` +
+        `'value', ??,` +
+        ` 'props', JSON_BUILD_OBJECT('_id', ${idKey})` +
+        `))` + //end JSON_AGG(JSON_BUILD_OBJECT(
+        `)`
+    ) //end JSON_BUILD_OBJECT(
 }
 /**
  * Since forward link columns are grouped on the foreign table's (unique) ID, there will be

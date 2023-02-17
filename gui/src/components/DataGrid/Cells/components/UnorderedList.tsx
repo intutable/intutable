@@ -1,4 +1,7 @@
-import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
+import ClearIcon from "@mui/icons-material/Clear"
+import DeleteIcon from "@mui/icons-material/Delete"
+import { useRouter } from "next/router"
+import { FormatterProps } from "react-data-grid"
 import ListIcon from "@mui/icons-material/List"
 import OpenInFullIcon from "@mui/icons-material/OpenInFull"
 import {
@@ -12,25 +15,28 @@ import {
     MenuList,
     TextField,
     Tooltip,
-    Typography,
 } from "@mui/material"
 import useTheme from "@mui/system/useTheme"
+
+import {
+    UnorderedListCellContent as List,
+    UnorderedListCellContentItem as ListItem,
+} from "@shared/types/gui"
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
 import { Column, Row } from "types"
-import { isJSONObject } from "utils/isJSON"
 import { stringToColor } from "utils/stringToColor"
+
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { cellMap } from "../index"
 import { MenuAddItemTextField } from "./Select"
 import { HelperTooltip } from "./Text"
-import ClearIcon from "@mui/icons-material/Clear"
-import DeleteIcon from "@mui/icons-material/Delete"
-import { useRouter } from "next/router"
-import { FormatterProps } from "react-data-grid"
+
+const isUnorderedList = (value: unknown): value is List =>
+    Object.prototype.hasOwnProperty.call(value, "items")
 
 const formatValue = (value: unknown, cellType: string): React.ReactNode => {
     const ctor = cellMap.getCellCtor(cellType)
@@ -56,19 +62,6 @@ const formatItems = (list: List): ListItem<undefined>[] => {
         return [{ value: "Fehler: Die Daten konnten nicht geladen werden!" }]
     }
 }
-
-export type ListItem<T> = {
-    value: string // <- raw value
-    url?: string
-    props?: T // <- additional data goes here
-}
-
-export type List<T = undefined> = {
-    format?: { cellType: string }
-    items: ListItem<T>[]
-}
-const isUnorderedList = (value: unknown): value is List =>
-    Object.prototype.hasOwnProperty.call(value, "items")
 
 export class UnorderedList extends Cell {
     public brand = "unordered-list"
@@ -115,7 +108,7 @@ export class UnorderedList extends Cell {
     public editor = () => null
 
     public formatter = (props: FormatterProps<Row>) => {
-        const { content, column, row, key } = this.destruct<List | null>(props)
+        const { content: rawContent, row, key } = this.destruct<List | null>(props)
 
         const theme = useTheme()
         const router = useRouter()
@@ -123,7 +116,10 @@ export class UnorderedList extends Cell {
         const [hovering, setHovering] = useState<boolean>(false)
         const modalRef = useRef<HTMLDivElement | null>(null)
         const [menuOpen, setMenuOpen] = useState<boolean>(false)
-        const isEmpty = content == null || content?.items.length === 0
+        const [content] = useState<List | null>(
+            rawContent?.items.every(item => item.value == null) ? null : rawContent
+        )
+        const isEmpty = content === null || content?.items.length === 0
 
         const addListItem = async (value: string) => {
             props.onRowChange({
@@ -303,6 +299,7 @@ export class UnorderedList extends Cell {
     }
 
     public ExposedInput: React.FC<ExposedInputProps<List | null>> = props => {
+        const { content: rawContent } = props
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
         const theme = useTheme()
@@ -310,14 +307,17 @@ export class UnorderedList extends Cell {
 
         const modalRef = useRef<HTMLDivElement | null>(null)
         const [menuOpen, setMenuOpen] = useState<boolean>(false)
-        const isEmpty = props.content == null || props.content?.items.length === 0
+        const [content] = useState<List | null>(
+            rawContent?.items.every(item => item.value == null) ? null : rawContent
+        )
+        const isEmpty = content == null || content?.items.length === 0
 
         const addListItem = async (value: string) => {
             try {
-                const update: List = props.content
+                const update: List = content
                     ? {
-                          ...props.content,
-                          items: [...props.content.items, { value }],
+                          ...content,
+                          items: [...content.items, { value }],
                       }
                     : {
                           items: [{ value: value }],
@@ -330,10 +330,10 @@ export class UnorderedList extends Cell {
         }
         const removeListItem = async (value: string) => {
             try {
-                const update = props.content
+                const update = content
                     ? {
-                          ...props.content,
-                          items: props.content.items.filter(listItem => listItem.value !== value),
+                          ...content,
+                          items: content.items.filter(listItem => listItem.value !== value),
                       }
                     : null
                 if (update == null) return
@@ -351,9 +351,9 @@ export class UnorderedList extends Cell {
         }
 
         const listItems = useMemo(() => {
-            if (props.content == null) return []
-            return formatItems(props.content)
-        }, [props.content])
+            if (content == null) return []
+            return formatItems(content)
+        }, [content])
 
         return (
             <>

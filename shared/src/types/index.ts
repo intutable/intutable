@@ -1,6 +1,7 @@
 import { LinkDescriptor, SerializedColumn, TableId } from "./tables"
 export * from "./tables"
 export * from "./filter"
+export * from "./gui"
 
 /**
  * Subset of a column's props (note: these are metadata: "id" and
