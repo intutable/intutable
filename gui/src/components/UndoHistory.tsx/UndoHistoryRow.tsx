@@ -7,6 +7,7 @@ import PlaceIcon from "@mui/icons-material/Place"
 import RedoIcon from "@mui/icons-material/Redo"
 import UndoIcon from "@mui/icons-material/Undo"
 import {
+    Box,
     Chip,
     IconButton,
     TableCell,
@@ -26,6 +27,7 @@ import KeyIcon from "@mui/icons-material/Key"
 import { format } from "./format"
 import { useRouter } from "next/router"
 import { UrlObject } from "url"
+import { FormattedTimeStringCell } from "./FormattedTimeStringCell"
 
 export type MementoRowProps = {
     memento: Memento
@@ -39,25 +41,32 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
     const { memento, index } = props
     const router = useRouter()
 
-    if (undoManager?.history == null || userSettings == null) return <>Lädt...</>
+    if (undoManager == null || userSettings == null) return <>Lädt...</>
     const { history } = undoManager
-    const position = getListPosition(memento, undoManager.history)
+    const position = getListPosition(memento, history)
 
     return (
-        <TableRow {...props.TableRowProps}>
+        <TableRow
+            {...props.TableRowProps}
+            sx={{
+                bgcolor: userSettings.enableUndoCache
+                    ? "inherit"
+                    : theme.palette.action.disabledBackground,
+            }}
+        >
             <TableCell>
                 {isCurrentMemento(memento, history) ? (
-                    <Tooltip title="Aktuelle Änderung" arrow placement="top">
+                    <Tooltip title="Letzte Änderung" arrow placement="top">
                         <ArrowRightAltIcon color="success" />
                     </Tooltip>
                 ) : (
                     index + 1
                 )}
             </TableCell>
-            <TableCell>{getFormattedTimeString(memento.timestamp)}</TableCell>
+            <FormattedTimeStringCell timestamp={memento.timestamp} />
             <TableCell>{userSettings.firstName + " " + userSettings.lastName} (Sie)</TableCell>
             <TableCell>
-                <Typography
+                <Box
                     onClick={() => {
                         const project = props.memento.snapshot.project
                         const table = props.memento.snapshot.table
@@ -81,9 +90,34 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
                     }}
                 >
                     {memento.snapshot.column.name}
-                </Typography>{" "}
-                / {memento.snapshot.row.formattedPrimaryColumnValue} ({memento.snapshot.row.index}
-                <KeyIcon />)
+                </Box>{" "}
+                /{" "}
+                <Box
+                    onClick={() => {
+                        const project = props.memento.snapshot.project
+                        const table = props.memento.snapshot.table
+                        const view = props.memento.snapshot.view
+                        const url: UrlObject = {
+                            pathname: `/project/${project.id}/table/${table.id}`,
+                            query: {
+                                viewId: view.id,
+                            },
+                        }
+                        const as = `/project/${project.id}/table/${table.id}`
+                        router.push(url, as)
+                    }}
+                    display="inline-block"
+                    sx={{
+                        "&:hover": {
+                            textDecoration: "underline",
+                            color: theme.palette.primary.main,
+                        },
+                        cursor: "pointer",
+                    }}
+                >
+                    {memento.snapshot.row.formattedPrimaryColumnValue} (#
+                    {memento.snapshot.row.index})
+                </Box>
             </TableCell>
             <TableCell>
                 <Chip

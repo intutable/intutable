@@ -16,6 +16,8 @@ import { useTheme } from "@mui/material/styles"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
 import { HelperIcon } from "./HelperIcon"
+import RedoIcon from "@mui/icons-material/Redo"
+import UndoIcon from "@mui/icons-material/Undo"
 
 const VerticalDivider: React.FC = () => (
     <Divider orientation="vertical" flexItem variant="middle" sx={{ mx: 3 }} />
@@ -26,7 +28,7 @@ export const UndoHistoryHead: React.FC = () => {
     const { userSettings, changeUserSetting } = useUserSettings()
     const theme = useTheme()
 
-    if (undoManager?.history == null || userSettings == null) return <>Lädt...</>
+    if (undoManager == null || userSettings == null) return <>Lädt...</>
 
     return (
         <Toolbar>
@@ -38,11 +40,50 @@ export const UndoHistoryHead: React.FC = () => {
             </Stack>
             <Box flexGrow={1} />
 
-            <IconButton>
-                <KeyboardIcon />
-            </IconButton>
-
+            <Tooltip
+                title="Die letzte Änderung rückgängig machen (undo)."
+                arrow
+                placement="top"
+                enterDelay={1000}
+            >
+                <IconButton
+                    size="small"
+                    sx={{
+                        "&:hover": {
+                            color: theme.palette.success.light,
+                        },
+                    }}
+                    // disabled={undoManager.prev().done}
+                    onClick={async () => {
+                        await undoManager.undoLast()
+                    }}
+                >
+                    <UndoIcon fontSize="small" />
+                </IconButton>
+            </Tooltip>
+            <Tooltip
+                title="Diese letzte Änderung wiederholen (redo)."
+                arrow
+                placement="top"
+                enterDelay={1000}
+            >
+                <IconButton
+                    size="small"
+                    sx={{
+                        "&:hover": {
+                            color: theme.palette.warning.light,
+                        },
+                    }}
+                    // disabled={undoManager.next().done}
+                    onClick={async () => {
+                        await undoManager.redoLast()
+                    }}
+                >
+                    <RedoIcon fontSize="small" />
+                </IconButton>
+            </Tooltip>
             <VerticalDivider />
+
             <FormControlLabel
                 checked={userSettings.enableUndoCache}
                 control={
@@ -81,7 +122,7 @@ export const UndoHistoryHead: React.FC = () => {
                 <IconButton
                     size="small"
                     onClick={() => {
-                        undoManager.cleanUp()
+                        undoManager.clearCache()
                     }}
                     sx={{
                         "&:hover": {

@@ -52,7 +52,7 @@ const dummy: UserSettings = {
 // TODO: actually use each setting
 
 export const useUserSettings = () => {
-    const [userSettings, setUserSettings] = useState<UserSettings | undefined>(dummy)
+    const [userSettings, setUserSettings] = useState<UserSettings | null>(dummy)
 
     const changeUserSetting = async (
         update: Partial<{ [key in keyof UserSettings]: UserSettings[key] }>

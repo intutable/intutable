@@ -37,10 +37,14 @@ export type Memento = {
 }
 
 export type History = {
-    /** index of the current memento */
-    state: { current: number }
-    mementos: Memento[]
+    cache: Cache
+    state: State
 }
+
+/** alias */
+export type Cache = Memento[]
+/** alias */
+export type State = number | null
 
 export type UpdateRowCallback = (snapshot: Snapshot, action: "undo" | "redo") => Promise<void>
 
@@ -58,18 +62,18 @@ export class UndoManager extends UndoManagerStorage {
         this.updateRowCallback = props.updateRowCallback
     }
 
-    public get history(): History | null {
+    public get history() {
         return {
-            mementos: this.mementos,
-            state: { current: this.pointer },
+            cache: this.mementos,
+            state: this.state,
         }
     }
 
     public addMemento(snapshot: Snapshot) {
         // cut history if not at the end
-        if (this.pointer !== this.mementos.length - 1) {
-            this.remove(...this.mementos.slice(this.pointer + 1))
-        }
+        // if (this.state !== this.mementos.length - 1) {
+        //     this.remove(...this.mementos.slice(this.state + 1))
+        // }
         // then insert
         this.add(snapshot)
     }
@@ -78,26 +82,25 @@ export class UndoManager extends UndoManagerStorage {
     // async undoCertain(memento: MementoID): Promise<Memento> { }
     // async redoCertain(memento: MementoID): Promise<Memento> { }
 
-    async undoPrevious(): Promise<Memento> {
-        if (this.size === 0) throw new UndoManagerEmptyCache()
-        if (this.pointer === -1) throw new UndoManagerNoMoreUndo()
+    async undoLast(): Promise<Memento> {
+        if (this.size === 0 || this.state === null) throw new UndoManagerEmptyCache()
+        if (this.prev().done) throw new UndoManagerNoMoreUndo()
 
-        const memento = this.mementos[this.pointer]
-        this.pointer -= 1
+        const memento = this.mementos[this.state]
+        this.state -= 1
 
         await this.updateRowCallback(memento.snapshot, "undo")
-
         return memento
     }
 
     async redoLast(): Promise<Memento> {
-        if (this.size === 0) throw new UndoManagerEmptyCache()
-        const next = this.next()
-        if (next.done) throw new UndoManagerNoMoreRedo()
+        if (this.size === 0 || this.state === null) throw new UndoManagerEmptyCache()
+        if (this.next().done) throw new UndoManagerNoMoreRedo()
 
-        await this.updateRowCallback(next.value.snapshot, "redo")
-        this.pointer += 1
+        const next = this.next().value
+        this.state += 1
 
-        return next.value
+        await this.updateRowCallback(next.snapshot, "redo")
+        return next
     }
 }

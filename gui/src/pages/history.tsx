@@ -2,10 +2,10 @@ import { Box, Divider, Typography } from "@mui/material"
 import { withSessionSsr } from "auth"
 import MetaTitle from "components/MetaTitle"
 import { UndoHistory } from "components/UndoHistory.tsx/UndoHistory"
-import type { NextPage } from "next"
+import type { InferGetServerSidePropsType, NextPage } from "next"
 import { withSSRCatch } from "utils/withSSRCatch"
 
-const History: NextPage = () => {
+const History: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => {
     return (
         <>
             <MetaTitle title="Versionsverlauf" />

@@ -1,10 +1,6 @@
-import { fetcher } from "api"
 import { useSnacki } from "hooks/useSnacki"
-import { useTable } from "hooks/useTable"
 import { useUndoManager } from "hooks/useUndoManager"
-import { useUserSettings } from "hooks/useUserSettings"
-import { useView } from "hooks/useView"
-import React, { useEffect, useMemo } from "react"
+import React, { useEffect } from "react"
 import {
     UndoManager,
     UndoManagerEmptyCache,
@@ -36,8 +32,9 @@ export const UndoContextProvider: React.FC<UndoContextProviderProps> = props => 
     const { undoManager } = useUndoManager()
 
     useEffect(() => {
-        console.log("history", undoManager?.history)
-    }, [undoManager?.history])
+        console.log("history", undoManager?.mementos)
+        console.log("pointer", undoManager?.state)
+    }, [undoManager?.mementos, undoManager?.state])
 
     useEffect(() => {
         if (window == null || undoManager == null) return
@@ -55,7 +52,7 @@ export const UndoContextProvider: React.FC<UndoContextProviderProps> = props => 
             // undo cmd+z
             if (isUndoMac || isUndoWindows) {
                 try {
-                    const memento = await undoManager.undoPrevious()
+                    const memento = await undoManager.undoLast()
                     snackSuccess(
                         `UNDO: '${memento.snapshot.newValue}' --> '${memento.snapshot.oldValue}'.`
                     )

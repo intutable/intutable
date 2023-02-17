@@ -1,80 +1,20 @@
-import { Memento, MementoID, Snapshot } from "./UndoManager"
+import { Memento, Snapshot } from "./UndoManager"
 
-export class UndoManagerStorage implements IterableIterator<Memento> {
+export class UndoManagerStorageMismatch extends Error {}
+
+export class UndoManagerStorage {
     static StorageKeyMementoPrefix = "UndoManager_Memento--" as const
     static StatePointerStorageKey = "UndoManager_StatePointer" as const
-
     static sort(mementos: Memento[]): Memento[] {
         return mementos.sort((a, b) => a.timestamp - b.timestamp)
     }
-
-    // deeper level of abstraction of `pointer`
-    // holds the uid in the session storage, because it cannot be lost during reloads etc.
-    private set _pointingMemento(memento: MementoID | null) {
-        if (!memento) window.sessionStorage.removeItem(UndoManagerStorage.StatePointerStorageKey)
-        else window.sessionStorage.setItem(UndoManagerStorage.StatePointerStorageKey, memento.uid)
-    }
-    private get _pointingMemento(): MementoID | null {
-        const uid = window.sessionStorage.getItem(UndoManagerStorage.StatePointerStorageKey)
-        return this.mementos.find(item => item.uid === uid) ?? null
+    protected indexOf(memento: Memento): number {
+        return this.mementos.findIndex(item => item.uid === memento.uid)
     }
 
-    // actuallay a pointer that holds the index of the current memento in the sorted array
-    protected set pointer(index: number) {
-        const memento = this.mementos[index]
-        if (memento) this._pointingMemento = memento
-        else this._pointingMemento = null
-    }
-    /** returns `-1` if nothing found */
-    protected get pointer(): number {
-        const pointingMemento = this._pointingMemento
-        const indexOf = this.mementos.findIndex(item => item.uid === pointingMemento?.uid)
-        return indexOf
-    }
+    constructor(public maxCacheSize: number) {}
 
-    get size(): number {
-        return this.mementos.length
-    }
-
-    prev(): IteratorResult<Memento> {
-        if (this.pointer > 0) {
-            return {
-                done: false,
-                value: this.mementos[this.pointer--],
-            }
-        } else {
-            return {
-                done: true,
-                value: null,
-            }
-        }
-    }
-
-    next(): IteratorResult<Memento> {
-        if (this.pointer < this.mementos.length) {
-            return {
-                done: false,
-                value: this.mementos[this.pointer++],
-            }
-        } else {
-            return {
-                done: true,
-                value: null,
-            }
-        }
-    }
-
-    [Symbol.iterator](): IterableIterator<Memento> {
-        return this
-    }
-
-    constructor(public maxCacheSize: number) {
-        if (maxCacheSize < 2)
-            throw new Error(
-                "UndoManager: If enabled, the cache needs to be at least 2 mementos in size!"
-            )
-    }
-
+    /** Returns all mementos from cache */
     get mementos(): Memento[] {
         const mementoKeys = Object.keys(window.sessionStorage).filter(item =>
             item.startsWith(UndoManagerStorage.StorageKeyMementoPrefix)
@@ -82,9 +22,39 @@ export class UndoManagerStorage implements IterableIterator<Memento> {
         const mementos = mementoKeys
             .map(key => window.sessionStorage.getItem(key))
             .map(item => JSON.parse(item!) as Memento)
-        return mementos
+        return UndoManagerStorage.sort(mementos)
     }
 
+    /** Size of the cache/mementos */
+    get size(): number {
+        return this.mementos.length
+    }
+
+    /** Set the current memento in `mementos`. ('null' to reset) */
+    protected set state(index: number | null) {
+        if (index === null) {
+            window.sessionStorage.removeItem(UndoManagerStorage.StatePointerStorageKey)
+            return
+        }
+        if (this.size === 0) throw new Error("UndoManager: cannot set state of empty cache!")
+        const memento = this.mementos[index]
+        if (memento == null) throw new Error("UndoManager: cannot set state out of bounds!")
+        window.sessionStorage.setItem(UndoManagerStorage.StatePointerStorageKey, memento.uid)
+    }
+
+    /** Returns the index of the current memento in `mementos`. ('null' if the cache is empty) */
+    get state(): number | null {
+        if (this.size === 0) return null
+        const uid = window.sessionStorage.getItem(UndoManagerStorage.StatePointerStorageKey)
+        const indexOf = this.mementos.findIndex(item => item.uid === uid)
+        // mismatch
+        if (indexOf === -1) {
+            throw this.destroySelf()
+        }
+        return indexOf
+    }
+
+    /** Adds a memento to the cache */
     add(snapshot: Snapshot) {
         const uid: Memento["uid"] = crypto.randomUUID()
         const key = UndoManagerStorage.StorageKeyMementoPrefix + uid
@@ -97,11 +67,12 @@ export class UndoManagerStorage implements IterableIterator<Memento> {
         // add memento
         window.sessionStorage.setItem(key, JSON.stringify(memento))
         // update pointer
-        this._pointingMemento = memento
+        this.state = this.indexOf(memento)
         // clean up
-        this.collectGarbage()
+        // this.collectGarbage()
     }
 
+    /** Removes one or more mementos from the cache */
     remove(...mementos: Memento[]) {
         mementos.forEach(memento => {
             const key = UndoManagerStorage.StorageKeyMementoPrefix + memento.uid
@@ -109,21 +80,73 @@ export class UndoManagerStorage implements IterableIterator<Memento> {
         })
     }
 
-    private collectGarbage(): { dropped: number } {
-        if (this.size > this.maxCacheSize) {
-            const overflowSize = this.size - this.maxCacheSize
-            this.remove(...this.mementos.slice(0, overflowSize))
-            return { dropped: overflowSize }
-        }
-        return { dropped: 0 }
+    // private collectGarbage(): { dropped: number } {
+    //     if (this.size > this.maxCacheSize) {
+    //         const overflowSize = this.size - this.maxCacheSize
+    //         this.remove(...this.mementos.slice(0, overflowSize))
+    //         return { dropped: overflowSize }
+    //     }
+    //     return { dropped: 0 }
+    // }
+
+    private destroySelf() {
+        this.clearCache()
+        throw new UndoManagerStorageMismatch()
     }
 
-    cleanUp() {
+    /** Clears the cache with all mementos */
+    clearCache() {
         // delete all mementos
         Object.keys(window.sessionStorage)
             .filter(item => item.startsWith(UndoManagerStorage.StorageKeyMementoPrefix))
             .forEach(key => window.sessionStorage.removeItem(key))
         // delete pointer
         window.sessionStorage.removeItem(UndoManagerStorage.StatePointerStorageKey)
+    }
+
+    /** Returns the next element previous to the current state  */
+    prev(): IteratorResult<Memento> {
+        // Note: this is no iterator
+        if (this.state && this.state > 0) {
+            return {
+                done: false,
+                value: this.mementos[this.state - 1],
+            }
+        } else {
+            return {
+                done: true,
+                value: null,
+            }
+        }
+    }
+    /** Returns the current state as a memento */
+    current(): IteratorResult<Memento> {
+        // Note: this is no iterator
+        if (this.state != null) {
+            return {
+                done: false,
+                value: this.mementos[this.state],
+            }
+        } else {
+            return {
+                done: true,
+                value: null,
+            }
+        }
+    }
+    /** Returns the next element after the current state  */
+    next(): IteratorResult<Memento> {
+        // Note: this is no iterator
+        if (this.state && this.state < this.mementos.length) {
+            return {
+                done: false,
+                value: this.mementos[this.state + 1],
+            }
+        } else {
+            return {
+                done: true,
+                value: null,
+            }
+        }
     }
 }
