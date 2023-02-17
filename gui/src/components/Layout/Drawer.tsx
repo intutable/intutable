@@ -159,7 +159,7 @@ const DrawerBar: React.FC<DrawerProps> = props => {
             />
             {user?.isLoggedIn && (
                 <DrawerLink
-                    text="Versionsverlauf"
+                    text="Änderungsverlauf"
                     url="/history"
                     nonActiveIcon={<HistoryIcon />}
                     activeIcon={<HistoryIcon />}
