@@ -12,8 +12,11 @@ export const useUndoManager = () => {
 
     const [undoManager, setUndoManager] = useState<UndoManager | null>(null)
 
+    // BUG: useEffect does not update state correctly
+    // BUG: but useMemo bugs because window is not defined
+
     useEffect(() => {
-        if (typeof window === "undefined") return
+        if (typeof window === undefined) return
         const instance = new UndoManager({
             updateRowCallback: async (snapshot, action) => {
                 await fetcher({
@@ -35,6 +38,32 @@ export const useUndoManager = () => {
         })
         setUndoManager(instance)
     }, [mutateTable, mutateView, userSettings?.undoCacheLimit])
+
+    // const undoManager = useMemo(
+    //     () =>
+    //         typeof window === undefined
+    //             ? null
+    //             : new UndoManager({
+    //                   updateRowCallback: async (snapshot, action) => {
+    //                       await fetcher({
+    //                           url: "/api/row",
+    //                           body: {
+    //                               viewId: snapshot.view.id,
+    //                               rowsToUpdate: snapshot.row._id,
+    //                               values: {
+    //                                   [snapshot.column.id]:
+    //                                       action === "undo" ? snapshot.oldValue : snapshot.newValue,
+    //                               },
+    //                           },
+    //                           method: "PATCH",
+    //                       })
+    //                       await mutateTable()
+    //                       await mutateView()
+    //                   },
+    //                   maxCacheSize: userSettings?.undoCacheLimit ?? 20,
+    //               }),
+    //     [mutateTable, mutateView, userSettings?.undoCacheLimit]
+    // )
 
     return {
         undoManager,

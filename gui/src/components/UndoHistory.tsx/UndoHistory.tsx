@@ -1,30 +1,21 @@
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever"
-import InfoIcon from "@mui/icons-material/Info"
-import KeyboardIcon from "@mui/icons-material/Keyboard"
 import {
     Box,
-    Divider,
-    FormControlLabel,
-    IconButton,
     Paper,
-    Switch,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
-    Toolbar,
-    Tooltip,
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
+import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
 import { useEffect, useState } from "react"
 import { Memento } from "utils/UndoManager"
-import { useUndoManager } from "hooks/useUndoManager"
-import { sameCell, sameCellDistinctMemento } from "./sameCell"
+import { sameCellDistinctMemento } from "./sameCell"
+import { UndoHistoryHead } from "./UndoHistoryHead"
 import { MementoRow } from "./UndoHistoryRow"
 
 export type CellID = {
@@ -41,50 +32,19 @@ export const UndoHistory: React.FC = () => {
 
     const [hoveringOnCell, setHoveringOnCell] = useState<CellID | null>(null)
 
+    const disabled = userSettings?.enableUndoCache === false
+
+    useEffect(() => {
+        console.log(userSettings?.enableUndoCache)
+    }, [userSettings?.enableUndoCache])
+
     if (undoManager?.history == null || userSettings == null) return <>Lädt...</>
 
     return (
         <Box>
             <Paper sx={{ p: 2 }}>
-                <Toolbar>
-                    <Typography sx={{ flex: "1 1 100%" }} variant="h6" component="div">
-                        Versionsverlauf der Sitzung{" "}
-                        <Tooltip title="Nur die aktuelle Browser-Session" arrow placement="right">
-                            <InfoIcon fontSize="small" color="disabled" sx={{ cursor: "help" }} />
-                        </Tooltip>
-                    </Typography>
-                    <IconButton>
-                        <KeyboardIcon />
-                    </IconButton>
-                    <Divider orientation="vertical" flexItem variant="middle" sx={{ mx: 5 }} />
-                    <FormControlLabel
-                        control={<Switch color="primary" value={userSettings.enableUndoCache} />}
-                        label="Cache aktiviert"
-                        labelPlacement="start"
-                    />
-                    <Divider orientation="vertical" flexItem variant="middle" sx={{ mx: 5 }} />
-                    <TextField
-                        size="small"
-                        sx={{ width: 100 }}
-                        margin="none"
-                        value={userSettings.undoCacheLimit}
-                        label="Limit"
-                        type="number"
-                    />
-                    <Divider orientation="vertical" flexItem variant="middle" sx={{ mx: 5 }} />
-                    <Tooltip title="Cache löschen" arrow placement="bottom" enterDelay={100}>
-                        <IconButton
-                            size="small"
-                            sx={{
-                                "&:hover": {
-                                    color: theme.palette.warning.dark,
-                                },
-                            }}
-                        >
-                            <DeleteForeverIcon fontSize="small" />
-                        </IconButton>
-                    </Tooltip>
-                </Toolbar>
+                <UndoHistoryHead />
+
                 <TableContainer>
                     <Table>
                         <TableHead>
@@ -115,6 +75,11 @@ export const UndoHistory: React.FC = () => {
                                     TableRowProps={{
                                         hover: true,
                                         selected: sameCellDistinctMemento(memento, hoveringOnCell),
+                                        sx: {
+                                            bgcolor: disabled
+                                                ? theme.palette.action.disabled
+                                                : "inherit",
+                                        },
                                         onMouseEnter: () => {
                                             setHoveringOnCell({
                                                 mementoID: memento.uid,

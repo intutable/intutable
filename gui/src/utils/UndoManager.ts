@@ -48,6 +48,8 @@ export class UndoManagerNoMoreUndo extends Error {}
 export class UndoManagerNoMoreRedo extends Error {}
 export class UndoManagerEmptyCache extends Error {}
 
+// TODO: implement userSettings.enableUndoCache
+
 export class UndoManager extends UndoManagerStorage {
     private updateRowCallback: UpdateRowCallback
 
