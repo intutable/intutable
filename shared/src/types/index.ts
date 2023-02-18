@@ -3,17 +3,22 @@ export * from "./tables"
 export * from "./filter"
 
 /**
- * Subset of the column attributes ({@link types.tables.MetaColumnProps}) that are substantial
- * to a column and that must not be changed. If you change these, make sure to update
- * {@link api.immutableColumnAttributes} as well.
+ * Subset of a column's props (note: these are metadata: "id" and
+ * "index" (column index) are totally distinct from the ID and index
+ * (row index) _columns_ that exist in object tables)
+ * They cannot be changed by the back-ends "change column attributes" method.
  */
-export type ImmutableColumnAttributes =
-    | "id"
-    | "parentColumnId"
-    | "linkId"
-    | "key"
-    | "kind"
-    | "index"
-    | "isUserPrimaryKey"
+export const immutableColumnAttributes = [
+    "id",
+    "parentColumnId",
+    "linkId",
+    "inverseLinkColumnId",
+    "key",
+    "kind",
+    "index",
+    "isUserPrimaryKey",
+] as const
+
+export type ImmutableColumnAttributes = (typeof immutableColumnAttributes)[number]
 
 export type CustomColumnAttributes = Partial<SerializedColumn>

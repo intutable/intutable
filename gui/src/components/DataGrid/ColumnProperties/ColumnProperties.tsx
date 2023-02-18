@@ -31,7 +31,6 @@ export const Name: React.FC<{ column: Column.Serialized }> = props => {
             type="text"
             value={props.column.name}
             onChange={changeName}
-            disabled={props.column.kind !== "standard"}
         />
     )
 }
@@ -59,7 +58,10 @@ const _makeBooleanInput = (label: string, columnKey: keyof Column.Serialized) =>
                 type="switch"
                 value={props.column[columnKey] as boolean}
                 onChange={changeProp}
-                disabled={columnKey === "editable" && props.column.kind === "lookup"}
+                disabled={
+                    columnKey === "editable" &&
+                    ["lookup", "backwardLookup"].includes(props.column.kind)
+                }
             />
         )
     }

@@ -48,6 +48,7 @@ export class InternalColumnUtil {
                         _id: row[column.key] as DB.Restructured.Row["_id"],
                         ...row,
                     })))
+                if (column.kind === "foreignKey") return
 
                 throw new Error(
                     `SystemError: Not Implemented (This mechanism is not supported yet). Column ${inspect(

@@ -5,7 +5,6 @@ import { ReleaseList } from "components/Release Notes/ReleaseList"
 import type { NextPage } from "next"
 import { supportedFeatures } from "public/supportedFeatures"
 import SupportedFeatures from "components/Wiki/SupportedFeatures"
-import Link from "components/Link"
 
 const ServiceDesk: NextPage = () => {
     const theme = useTheme()

@@ -5,6 +5,7 @@ import { Core, EventSystem } from "@intutable/core"
 import { openConnection, closeConnection, select, insert } from "@intutable/database/dist/requests"
 import { getConfig } from "shared/dist/config"
 
+import { setCore, getCore as core } from "./core"
 import { createExampleSchema, insertExampleData } from "./example/load"
 
 const PLUGIN_PATHS = [
@@ -23,8 +24,6 @@ let ADMIN_ID: number
 // restricting access is then up to a dedicated permission plugin.
 let PM_ROLE_ID: number
 
-let core: Core
-
 main()
 
 /**
@@ -41,10 +40,10 @@ async function main() {
     ADMIN_PASSWORD = config.appAdminPassword
     PM_ROLE_ID = config.projectManagementRoleId
 
-    core = await Core.create(PLUGIN_PATHS, events).catch(e => crash<Core>(e))
+    setCore(await Core.create(PLUGIN_PATHS, events).catch(e => crash<Core>(e)))
 
-    const connId = await core.events
-        .request(openConnection(config.databaseAdminUsername, config.databaseAdminPassword))
+    const connId = await core()
+        .events.request(openConnection(config.databaseAdminUsername, config.databaseAdminPassword))
         .then(({ connectionId }) => connectionId)
 
     try {
@@ -53,15 +52,15 @@ async function main() {
         if (ADMIN_ID === null) {
             ADMIN_ID = await createAdmin(connId)
             console.log("set up admin user")
-            await createExampleSchema(core, connId, PM_ROLE_ID)
-            await insertExampleData(core, connId)
+            await createExampleSchema(connId, PM_ROLE_ID)
+            await insertExampleData(connId)
             console.log("set up example schema")
         } else {
             console.log("admin user already present")
             console.log("skipped creating example schema")
         }
     } finally {
-        await core.events.request(closeConnection(connId))
+        await core().events.request(closeConnection(connId))
     }
 }
 
@@ -117,7 +116,7 @@ function crash<A>(e: Error): A {
 
 /** Get the ID of the admin user (if they exist) */
 async function getAdminId(connectionId: string): Promise<number | null> {
-    const userRows = await core.events.request(
+    const userRows = await core().events.request(
         select(connectionId, "users", {
             columns: ["_id"],
             condition: ["username", ADMIN_USERNAME],
@@ -130,14 +129,14 @@ async function getAdminId(connectionId: string): Promise<number | null> {
 
 /** Create an example admin user for dev mode */
 async function createAdmin(connectionId: string): Promise<number> {
-    const passwordHash: string = await core.events
-        .request({
+    const passwordHash: string = await core()
+        .events.request({
             channel: "user-authentication",
             method: "hashPassword",
             password: ADMIN_PASSWORD,
         })
         .then(response => response.hash)
-    await core.events.request(
+    await core().events.request(
         insert(connectionId, "users", {
             username: ADMIN_USERNAME,
             password: passwordHash,

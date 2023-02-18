@@ -1,16 +1,32 @@
 import AddIcon from "@mui/icons-material/Add"
 import BookmarksIcon from "@mui/icons-material/Bookmarks"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import { Box, IconButton, Stack } from "@mui/material"
+import AddOptionIcon from "@mui/icons-material/PlaylistAdd"
+import {
+    Box,
+    Chip,
+    Divider,
+    FormControl,
+    FormHelperText,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Select as MuiSelect,
+    TextField,
+    Typography,
+} from "@mui/material"
+import useTheme from "@mui/system/useTheme"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
+import { stringToColor } from "utils/stringToColor"
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { ChipItem, SelectMenu as MultiSelectMenu } from "./Select"
+import { HelperTooltip } from "./Text"
 
 export class MultiSelect extends Cell {
     public brand = "multiselect"
@@ -53,21 +69,23 @@ export class MultiSelect extends Cell {
 
     public editor = () => null
 
-    private getOptions(column: Column.Deserialized, rows: Row[], self?: string[] | null): string[] {
+    /** Returns a list of all available options in this column (the values of other chips) */
+    private getAvailableOptions(
+        column: Column.Deserialized,
+        rows: Row[],
+        self?: string[] | null
+    ): string[] {
         const options = rows
             .map(row => row[column.key])
             .flat()
             .filter(option => Cell.isEmpty(option) === false) // remove empty values
-
         const optionsWithoutSelf = (
             self == null
                 ? options
                 : options.filter(option => self.includes(option as string) === false)
-        ) as string[]
-
-        const uniqueOptions = new Set(optionsWithoutSelf)
-
-        return [...uniqueOptions]
+        ) as string[] // remove self from list
+        const uniqueOptions = new Set(optionsWithoutSelf) // remove duplicates from list
+        return [...uniqueOptions] // return sorted
     }
 
     public formatter = (props: FormatterProps<Row>) => {
@@ -75,7 +93,7 @@ export class MultiSelect extends Cell {
         const isEmpty = content == null || content.length === 0
 
         const [hovering, setHovering] = useState<boolean>(false)
-        const modalRef = useRef<HTMLElement | null>(null)
+        const modalRef = useRef(null)
         const [open, setOpen] = useState<boolean>(false)
         const openModal = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             e.preventDefault()
@@ -104,9 +122,12 @@ export class MultiSelect extends Cell {
 
         const { data } = useView()
         const list = useMemo(
-            () => (data ? this.getOptions(column, data.rows, content) : []),
+            () => (data ? this.getAvailableOptions(column, data.rows, content) : []),
             [data, column, content]
         )
+
+        const showSelectMenuButton =
+            (hovering || open) && this.column.editable && this.isReadonlyComponent === false
 
         return (
             <>
@@ -122,17 +143,14 @@ export class MultiSelect extends Cell {
                         alignItems: "center",
                         whiteSpace: "nowrap",
                     }}
-                    ref={modalRef}
                 >
                     {isEmpty ? (
                         <>
-                            {hovering &&
-                                this.column.editable &&
-                                this.isReadonlyComponent === false && (
-                                    <IconButton size="small" onClick={openModal}>
-                                        <AddIcon fontSize="small" />
-                                    </IconButton>
-                                )}
+                            {showSelectMenuButton && (
+                                <IconButton size="small" onClick={openModal} ref={modalRef}>
+                                    <AddIcon fontSize="small" />
+                                </IconButton>
+                            )}
                         </>
                     ) : (
                         <>
@@ -144,25 +162,27 @@ export class MultiSelect extends Cell {
                                 }}
                             >
                                 {isEmpty === false &&
-                                    content.map(chip => (
-                                        <ChipItem
-                                            label={chip}
-                                            key={chip}
-                                            onDelete={
-                                                this.column.editable
-                                                    ? () => removeChip(chip)
-                                                    : undefined
-                                            }
-                                        />
-                                    ))}
+                                    content.map(chip =>
+                                        chip ? (
+                                            <ChipItem
+                                                label={chip.toString()}
+                                                key={chip}
+                                                onDelete={
+                                                    this.column.editable
+                                                        ? () => removeChip(chip)
+                                                        : undefined
+                                                }
+                                            />
+                                        ) : (
+                                            <></>
+                                        )
+                                    )}
                             </Box>
-                            {hovering &&
-                                this.column.editable &&
-                                this.isReadonlyComponent === false && (
-                                    <IconButton size="small" onClick={openModal}>
-                                        <KeyboardArrowDownIcon fontSize="small" />
-                                    </IconButton>
-                                )}
+                            {showSelectMenuButton && (
+                                <IconButton size="small" onClick={openModal} ref={modalRef}>
+                                    <KeyboardArrowDownIcon fontSize="small" />
+                                </IconButton>
+                            )}
                         </>
                     )}
                 </Box>
@@ -183,90 +203,147 @@ export class MultiSelect extends Cell {
     public ExposedInput: React.FC<ExposedInputProps<string[] | null>> = props => {
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
+        const theme = useTheme()
 
-        const modalRef = useRef<HTMLElement | null>(null)
-
-        const [open, setOpen] = useState<boolean>(false)
-        const openModal = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setOpen(true)
-        }
-        const closeModal = () => setOpen(false)
-
-        const addChip = async (value: string) => {
+        const handleChange = async (selected: string[]) => {
             try {
-                if (Cell.isEmpty(value)) return
-                if (props.content?.includes(value)) return
-                const update = props.content ? [...props.content, value] : [value]
-                await updateRow(props.column, props.row, update)
+                const reset = selected.includes("--KEINE-AUSWAHL--")
+                await updateRow(props.column, props.row, reset ? null : selected)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
-            } finally {
-                closeModal()
-            }
-        }
-        const removeChip = async (value: string) => {
-            if (props.content == null) return
-            try {
-                const update = props.content.filter(option => option !== value)
-                await updateRow(props.column, props.row, update)
-            } catch (e) {
-                snackError("Der Wert konnte nicht geändert werden")
-            } finally {
-                closeModal()
             }
         }
 
         const { data } = useView()
         const list = useMemo(
-            () => (data ? this.getOptions(props.column, data.rows, props.content) : []),
+            () => (data ? this.getAvailableOptions(props.column, data.rows, props.content) : []),
             [data, props.column, props.content]
         )
 
+        const [input, setInput] = useState<string>("")
+        const isEmpty =
+            props.content == null ||
+            Array.isArray(props.content) === false ||
+            props.content.length === 0
+        const noLabel = props.label == null || props.label === ""
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const disallowNewSelectValues = (props.column as any).disallowNewSelectValues ?? false
+
         return (
-            <>
-                <Stack
-                    ref={modalRef}
-                    direction="row"
-                    sx={{
-                        gap: "5px",
-                        maxWidth: "200px",
-                        flexWrap: "wrap",
-                        w: 1,
-                        h: 1,
-                    }}
-                >
-                    {props.content &&
-                        props.content.map(option => (
-                            <ChipItem
-                                label={option}
-                                key={option}
-                                onDelete={
-                                    this.column.editable ? () => removeChip(option) : undefined
-                                }
+            <FormControl
+                size="small"
+                disabled={this.column.editable === false}
+                error={props.required && isEmpty}
+                fullWidth
+                // required={props.required} // <- forces a '*' to appear within in the label or placeholder
+            >
+                <InputLabel id="Select-InputLabel">{props.label}</InputLabel>
+                <MuiSelect
+                    labelId="Select-InputLabel"
+                    label={props.label}
+                    value={props.content ?? []}
+                    onChange={e => handleChange(e.target.value as string[])}
+                    multiple
+                    multiline
+                    displayEmpty={noLabel}
+                    renderValue={values => {
+                        if (isEmpty)
+                            return (
+                                <Typography>
+                                    {props.label == null && props.required
+                                        ? props.placeholder + "*"
+                                        : props.placeholder}
+                                </Typography>
+                            )
+
+                        return values.map(value => (
+                            <Chip
+                                key={value}
+                                label={value}
+                                size="small"
+                                sx={{
+                                    color: theme.palette.getContrastText(stringToColor(value)),
+                                    bgcolor: stringToColor(value),
+                                    mr: 0.5,
+                                }}
                             />
+                        ))
+                    }}
+                    size="small"
+                    error={props.required && isEmpty} // BUG: https://github.com/mui/material-ui/issues/29821
+                    placeholder={
+                        props.label == null && props.required
+                            ? props.placeholder + "*"
+                            : props.placeholder
+                    }
+                    readOnly={this.isReadonlyComponent}
+                    required={props.required}
+                    disabled={this.column.editable === false}
+                    endAdornment={<HelperTooltip text={props.tooltip} />}
+                    // variant="standard"
+                    // disableUnderline
+                >
+                    <MenuItem value="--KEINE-AUSWAHL--">
+                        <em>Keine Auswahl</em>
+                    </MenuItem>
+                    {list
+                        .concat(props.content ?? [])
+                        .filter(i => i !== null)
+                        .map(option => (
+                            <MenuItem key={option} value={option}>
+                                <Chip
+                                    label={option}
+                                    size="small"
+                                    sx={{
+                                        color: theme.palette.getContrastText(stringToColor(option)),
+                                        bgcolor: stringToColor(option),
+                                        mr: 0.5,
+                                    }}
+                                />
+                            </MenuItem>
                         ))}
-
-                    {props.hoveringOnParent &&
-                        props.column.editable &&
-                        this.isReadonlyComponent === false && (
-                            <IconButton size="small" onClick={openModal}>
-                                <AddIcon fontSize="small" />
+                    {disallowNewSelectValues === false && [
+                        <Divider key="Select-Menu-Divider" />,
+                        <MenuItem key="Select-Menu-Input">
+                            <TextField
+                                label="Option hinzufügen"
+                                value={input}
+                                onChange={e => setInput(e.target.value)}
+                                size="small"
+                                fullWidth
+                                onKeyDown={e => {
+                                    e.stopPropagation()
+                                    if (e.key === "Enter")
+                                        handleChange(
+                                            props.content ? [...props.content, input] : [input]
+                                        )
+                                }}
+                            />
+                            <IconButton
+                                size="small"
+                                sx={{ ml: 1 }}
+                                onClick={e => {
+                                    e.stopPropagation()
+                                    if (input === "") return
+                                    handleChange(
+                                        props.content ? [...props.content, input] : [input]
+                                    )
+                                }}
+                                disabled={input === ""}
+                            >
+                                <AddOptionIcon
+                                    fontSize="small"
+                                    color={input === "" ? "disabled" : "primary"}
+                                />
                             </IconButton>
-                        )}
-                </Stack>
-
-                {modalRef.current !== null && (
-                    <MultiSelectMenu
-                        open={open}
-                        anchor={modalRef.current}
-                        options={list}
-                        addOption={addChip}
-                        onClose={closeModal}
-                    />
-                )}
-            </>
+                        </MenuItem>,
+                    ]}
+                </MuiSelect>
+                <FormHelperText>
+                    {props.required && isEmpty ? "Pflichtfeld" : undefined}
+                </FormHelperText>
+            </FormControl>
         )
     }
 }

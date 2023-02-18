@@ -1,6 +1,9 @@
 import { cellMap } from "@datagrid/Cells"
+import { ColumnGroup } from "@shared/input-masks/types"
 import { SELECT_COLUMN_KEY } from "react-data-grid"
 import { Column, Row, ViewData } from "types"
+
+type Sortable = Column.Deserialized | Column.Serialized | Row | ColumnGroup
 
 export class ColumnUtility {
     /** 'true' if yes, if no an array with indices of rows whose cells do not suit the new type */

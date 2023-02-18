@@ -14,6 +14,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { ExposedInputProps } from "../abstract/protocols"
 import { DatePickerProps } from "@mui/lab"
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
+import { HelperTooltip } from "./Text"
 
 export class DateCell extends TempusCell {
     public brand = "date"
@@ -120,55 +121,75 @@ export class DateCell extends TempusCell {
         )
     }
 
-    public ExposedInput: React.FC<ExposedInputProps<number | null, DatePickerProps>> = props => {
-        const { updateRow } = useRow()
-        const { snackError } = useSnacki()
+    public ExposedInput: React.FC<ExposedInputProps<number | null, DatePickerProps<unknown>>> =
+        props => {
+            const { updateRow } = useRow()
+            const { snackError } = useSnacki()
 
-        const [content, setContent] = useState(props.content)
+            const [content, setContent] = useState(props.content)
+            const isEmpty = content == null
 
-        const handleChange = async (value: number | null) => {
-            if (DateCell.isValid(value)) setContent(value)
-            try {
-                await updateRow(props.column, props.row, value)
-            } catch (e) {
-                snackError("Der Wert konnte nicht geändert werden")
+            const handleChange = async (value: number | null) => {
+                if (DateCell.isValid(value)) setContent(value)
+                try {
+                    await updateRow(props.column, props.row, value)
+                } catch (e) {
+                    snackError("Der Wert konnte nicht geändert werden")
+                }
             }
-        }
 
-        return (
-            <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={deLocale}
-                localeText={{
-                    openPreviousView: "Stunde setzen",
-                    openNextView: "Minuten setzen",
-                    clearButtonLabel: "Löschen",
-                    cancelButtonLabel: "Abbrechen",
-                    okButtonLabel: "OK",
-                    todayButtonLabel: "Jetzt",
-                    // start: "Start",
-                    // end: "Ende",
-                }}
-            >
-                <DatePicker
-                    showToolbar
-                    value={content}
-                    disabled={this.column.editable === false}
-                    onChange={handleChange}
-                    renderInput={props => <TextField {...props} />}
-                    componentsProps={{
-                        actionBar: {
-                            actions: ["clear", "today", "accept"],
-                        },
+            return (
+                <LocalizationProvider
+                    dateAdapter={AdapterDateFns}
+                    adapterLocale={deLocale}
+                    localeText={{
+                        openPreviousView: "Stunde setzen",
+                        openNextView: "Minuten setzen",
+                        clearButtonLabel: "Löschen",
+                        cancelButtonLabel: "Abbrechen",
+                        okButtonLabel: "OK",
+                        todayButtonLabel: "Jetzt",
+                        // start: "Start",
+                        // end: "Ende",
                     }}
-                    readOnly={this.isReadonlyComponent}
-                    InputProps={{
-                        startAdornment: <ExposedInputAdornment column={this.column} />,
-                    }}
-                    // sx={props.forwardSX}
-                    // {...props.forwardProps}
-                />
-            </LocalizationProvider>
-        )
-    }
+                >
+                    <DatePicker
+                        showToolbar
+                        value={content}
+                        disabled={this.column.editable === false}
+                        onChange={handleChange}
+                        label={props.label}
+                        renderInput={props => (
+                            <TextField
+                                size="small"
+                                fullWidth
+                                required={props.required}
+                                label={props.label}
+                                placeholder={
+                                    props.label == null && props.required
+                                        ? props.placeholder + "*"
+                                        : props.placeholder
+                                }
+                                error={props.required && isEmpty}
+                                helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
+                                {...props}
+                            />
+                        )}
+                        componentsProps={{
+                            actionBar: {
+                                actions: ["clear", "today", "accept"],
+                            },
+                        }}
+                        readOnly={this.isReadonlyComponent}
+                        InputProps={{
+                            readOnly: this.isReadonlyComponent,
+                            startAdornment: <ExposedInputAdornment column={this.column} />,
+                            endAdornment: <HelperTooltip text={props.tooltip} />,
+                        }}
+                        // sx={props.forwardSX}
+                        // {...props.forwardProps}
+                    />
+                </LocalizationProvider>
+            )
+        }
 }

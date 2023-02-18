@@ -1,5 +1,5 @@
 import { ViewDescriptor, LinkDescriptor } from "@shared/types/tables"
-import { asView } from "@intutable/lazy-views/dist/selectable"
+import { getOtherTable } from "@shared/utils/link"
 import { useMemo } from "react"
 import { Column } from "types"
 import { useColumn } from "./useColumn"
@@ -33,7 +33,7 @@ export const useForeignTable = (forColumn: Column.Deserialized) => {
         const link = currentTableData.links.find(link => link.id === tableColumn.linkId)
         if (link == null) return initialState
 
-        const foreignTable = tables.find(table => table.id === asView(link.foreignSource).id)
+        const foreignTable = tables.find(table => table.id === getOtherTable(link))
         if (foreignTable == null) return initialState
 
         return { foreignTable, link }

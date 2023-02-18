@@ -4,6 +4,7 @@ import { useView, ViewHookOptions } from "hooks/useView"
 import { RowsChangeData } from "react-data-grid"
 import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
+import { useColumn } from "./useColumn"
 
 import { useSnacki } from "./useSnacki"
 import { useSnapshot } from "./useSnapshot"
@@ -46,9 +47,11 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     }
 
     // TODO: the cache should be mutated differently
-    // TODO: the state should be updated differently
-    const createRow = async (atIndex?: number): Promise<void> => {
-        await fetcher({
+    const createRow = async (atIndex?: number): Promise<{ _id: number }> => {
+        // BUG: the endpoint is supposed to return data like `{ _id: 0}`
+        // but somehow `row` is just a number
+        // watch out for this bug
+        const row: number = await fetcher({
             url: "/api/row",
             body: {
                 viewId: view!.descriptor.id,
@@ -56,14 +59,14 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
                 atIndex,
             },
         })
-
         await mutateTable()
         await mutateView()
+        return { _id: row }
     }
 
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
-    const deleteRow = async (row: Row): Promise<void> => {
+    const deleteRow = async (row: { _id: number }): Promise<void> => {
         await fetcher({
             url: "/api/row",
             body: {

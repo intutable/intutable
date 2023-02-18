@@ -1,3 +1,4 @@
+import { CacheProvider, EmotionCache } from "@emotion/react"
 import ErrorIcon from "@mui/icons-material/Error"
 import { CssBaseline, PaletteMode } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
@@ -12,6 +13,7 @@ import React, { useMemo } from "react"
 import { SWRConfig } from "swr"
 import { getDesignToken } from "theme"
 import createTheme from "theme/utils"
+import { createEmotionCache } from "utils/createEmotionCache"
 
 type ThemeTogglerContextProps = {
     toggleColorMode: () => void
@@ -21,8 +23,15 @@ const ThemeTogglerContext = React.createContext<ThemeTogglerContextProps>(undefi
 export const useThemeToggler = () => React.useContext(ThemeTogglerContext)
 export const THEME_MODE_STORAGE_KEY = "__USER_THEME_PREFERENCE__"
 
-const MyApp = (props: AppProps) => {
-    const { Component, pageProps } = props
+const clientSideEmotionCache = createEmotionCache()
+
+interface MyAppProps extends AppProps {
+    emotionCache?: EmotionCache
+}
+
+// = {emotionCache = clientSideEmotionCache}
+const MyApp = (props: MyAppProps) => {
+    const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
 
     // const systemPreferredThemeMode: PaletteMode = useMediaQuery(
     //     "(prefers-color-scheme: dark)"
@@ -64,7 +73,7 @@ const MyApp = (props: AppProps) => {
     const theme = useMemo(() => createTheme((() => getDesignToken(themeMode))()), [themeMode])
 
     return (
-        <>
+        <CacheProvider value={emotionCache}>
             <Head>
                 {/* Responsive */}
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -105,7 +114,7 @@ const MyApp = (props: AppProps) => {
                     </ThemeProvider>
                 </ThemeTogglerContext.Provider>
             </SWRConfig>
-        </>
+        </CacheProvider>
     )
 }
 

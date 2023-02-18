@@ -1,12 +1,24 @@
-import type { Condition } from "@intutable/lazy-views/dist/types"
-import { asTable } from "@intutable/lazy-views/dist/selectable"
+import type { Condition, JoinDescriptor } from "@intutable/lazy-views/dist/types"
+import { asTable, asView } from "@intutable/lazy-views/dist/selectable"
 import type { RawViewColumnInfo, RawViewData } from "../types/raw"
-import { DB, SerializedColumn, SerializedViewData, TableData } from "shared/dist/types"
+import {
+    DB,
+    SerializedColumn,
+    SerializedViewData,
+    TableData,
+    LinkKind,
+    LinkDescriptor,
+    ForwardLinkDescriptor,
+    BackwardLinkDescriptor,
+} from "shared/dist/types"
 import { Filter } from "../types/filter"
+import { errorSync } from "../error"
 import { cast } from "./cast"
 import { internalColumnUtil } from "./InternalColumnUtil"
 import * as FilterParser from "./filter"
 import { restructure } from "./restructure"
+import { inspect } from "util"
+import * as InputMask from "shared/dist/input-masks"
 
 /**
  * ### Parser
@@ -138,12 +150,51 @@ export class ParserClass {
 
         return {
             descriptor: view.descriptor,
-            links: view.joins,
+            links: view.joins.map(join => this.parseLink(join, castedColumns)),
             rawTable: asTable(view.source).table,
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
         }
     }
+
+    private parseLink(join: JoinDescriptor, columns: SerializedColumn[]): LinkDescriptor {
+        const linkColumns = columns.filter(
+            c => c.linkId === join.id && ["link", "backwardLink"].includes(c.kind)
+        )
+        if (linkColumns.length !== 1)
+            throw errorSync(
+                "parseLink",
+                `link ${join.id} should have exactly one associated link column,` +
+                    ` but the associated columns are ${linkColumns.map(c => c.id)}`
+            )
+        if (linkColumns[0].kind === "link") return this.parseForwardLink(join, linkColumns[0])
+        else return this.parseBackwardLink(join, linkColumns[0])
+    }
+    private parseForwardLink(
+        join: JoinDescriptor,
+        linkColumn: SerializedColumn
+    ): ForwardLinkDescriptor {
+        return {
+            kind: LinkKind.Forward,
+            id: join.id,
+            foreignTable: asView(join.foreignSource).id,
+            forwardLinkColumn: linkColumn.id,
+            backwardLinkColumn: linkColumn.inverseLinkColumnId!,
+        }
+    }
+    private parseBackwardLink(
+        join: JoinDescriptor,
+        linkColumn: SerializedColumn
+    ): BackwardLinkDescriptor {
+        return {
+            kind: LinkKind.Backward,
+            id: join.id,
+            homeTable: asView(join.foreignSource).id,
+            forwardLinkColumn: linkColumn.inverseLinkColumnId!,
+            backwardLinkColumn: linkColumn.id,
+        }
+    }
+
     public parseView(view: RawViewData): SerializedViewData {
         const restructuredColumns = view.columns.map(restructure.column)
         const { columns: internalProcessedColumns, rows: internalProcessRows } =
@@ -152,14 +203,20 @@ export class ParserClass {
                 rows: view.rows,
             })
         const castedColumns = internalProcessedColumns.map(this.castColumn)
-        return {
+
+        const masks = InputMask.getInputMasksFor(view)
+
+        const viewData = {
             descriptor: view.descriptor,
             filters: view.rowOptions.conditions.map(ParserClass.parseFilter),
             sortColumns: view.rowOptions.sortColumns,
             groupColumns: view.rowOptions.groupColumns,
             columns: castedColumns.sort(ParserClass.sortByIndex),
             rows: internalProcessRows,
+            inputMasks: masks, // TODO: IN DEVELOPMENT – just a quick hack to get it working
         }
+
+        return viewData
     }
 
     static parseFilter(condition: Condition): Filter {

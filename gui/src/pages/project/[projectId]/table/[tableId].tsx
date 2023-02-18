@@ -1,12 +1,14 @@
 import { SelectColumn } from "@datagrid/Cells/SelectColumn"
 import LoadingSkeleton from "@datagrid/LoadingSkeleton"
 import { RowRenderer } from "@datagrid/renderers"
-import RowMask from "@datagrid/RowMask/RowMask"
+import RowMaskContainer from "@datagrid/RowMask/Container"
 import Toolbar from "@datagrid/Toolbar/Toolbar"
 import * as ToolbarItem from "@datagrid/Toolbar/ToolbarItems"
 import { ViewDescriptor } from "@intutable/lazy-views"
-import { Box, Button, Grid, Typography } from "@mui/material"
+
+import { Box, Grid, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
+import { InputMask } from "@shared/input-masks/types"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
 import Link from "components/Link"
@@ -17,7 +19,6 @@ import { HeaderSearchFieldProvider, useHeaderSearchField } from "context"
 import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { APIQueries, parseQuery, useAPI } from "hooks/useAPI"
-import { useBrowserInfo } from "hooks/useBrowserInfo"
 import { useCellNavigation } from "hooks/useCellNavigation"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
@@ -25,37 +26,24 @@ import { useTables } from "hooks/useTables"
 import { useView } from "hooks/useView"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import { useThemeToggler } from "pages/_app"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import DataGrid from "react-data-grid"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
+import { Row } from "types"
 import { ClipboardUtil } from "utils/ClipboardUtil"
+import { PageActionUtil } from "utils/PageAction"
 import { rowKeyGetter } from "utils/rowKeyGetter"
 import { withSSRCatch } from "utils/withSSRCatch"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
     const { getTheme } = useThemeToggler()
-    const { snackWarning, closeSnackbar, snackError, snack } = useSnacki()
-    const { isChrome } = useBrowserInfo()
+    const { snackError, snack } = useSnacki()
+
     const { selectedRows, setSelectedRows } = useSelectedRows()
     const { cellNavigationMode } = useCellNavigation()
-
-    // warn if browser is not chrome
-    useEffect(() => {
-        if (isChrome === false)
-            snackWarning("Zzt. wird für Tabellen nur Google Chrome (für Browser) unterstützt!", {
-                persist: true,
-                action: key => (
-                    <Button onClick={() => closeSnackbar(key)} sx={{ color: "white" }}>
-                        Ich verstehe
-                    </Button>
-                ),
-                preventDuplicate: true,
-            })
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isChrome])
+    // const { createPendingRow } = usePendingRow()
 
     // #################### states ####################
 
@@ -170,20 +158,42 @@ const TablePage: React.FC = () => {
                             <ToolbarItem.Connection status="connected" />
                         </Toolbar>
                     </Box>
+                    <RowMaskContainer />
                 </Grid>
-
-                <RowMask />
             </Grid>
         </>
     )
 }
 
-const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => {
+type PageProps = {
+    // project: ProjectDescriptor
+    // table: TableDescriptor
+    // tableList: TableDescriptor[]
+    // view: ViewDescriptor
+    // actions: PageAction[]
+    // viewList: ViewDescriptor[]
+    inputMask?: InputMask["id"]
+    openRow?: Row["_id"]
+    // fallback: {
+    //     [cacheKey: string]: ViewData
+    // }
+}
+
+const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
+    props: PageProps
+) => {
     return (
         <SelectedRowsContextProvider>
             <HeaderSearchFieldProvider>
-                <RowMaskProvider>
+                <RowMaskProvider
+                    initialRowMaskState={
+                        props.openRow ? { mode: "edit", row: { _id: props.openRow } } : undefined
+                    }
+                    initialAppliedInputMask={props.inputMask}
+                >
+                    {/* <ConstraintsProvider> */}
                     <TablePage />
+                    {/* </ConstraintsProvider> */}
                 </RowMaskProvider>
             </HeaderSearchFieldProvider>
         </SelectedRowsContextProvider>
@@ -197,6 +207,12 @@ export const getServerSideProps = withSSRCatch(
             "tableId",
             "viewId",
         ])
+
+        const user = context.req.session.user
+        if (user == null || user.isLoggedIn === false)
+            return {
+                notFound: true,
+            }
 
         if (projectId == null || tableId == null)
             return {
@@ -219,14 +235,33 @@ export const getServerSideProps = withSSRCatch(
             }
         }
 
-        const user = context.req.session.user
-        if (user == null || user.isLoggedIn === false)
-            return {
-                notFound: true,
-            }
+        const pageActionUtil = PageActionUtil.fromQuery(context.query)
+        const inputMask = pageActionUtil.use<string>("selectInputMask")?.payload ?? null
+        const openRow = pageActionUtil.use<number>("openRow")?.payload ?? null
+
+        // TODO: check if the action 'createRow' would be executed again, if the user would reload the page
+        // if so, push the action into 'completedActions' and use the uid to guarantee that the same action
+        // does not get executed twice
+        // if that does not work – save it to a session storage and do not execute actions twice
+
+        // TODO: maybe remove the url parameter `newRecord` once executed
+        // https://nextjs.org/docs/api-reference/next/router#routerpush
+        // router.push({ shallow: boolean }) <-- this could help ?
+        // if true, it wont re-run ssgr/ssr methods again
+        // i think this is what we want: actions build from the url wouldn't be dispatches twice
+
+        // TODO: if setting an inputMask, it must be guaranteed that it matches especially its source (but also / project / table / view)
+        const createRow = pageActionUtil.use<number>("createRow") // TODO: show a dialog that asks "Neuen Eintrag erstellen" and then opens it
+
+        /** @deprecated */
+        const selectView = pageActionUtil.use<ViewDescriptor["id"]>("selectView")
 
         return {
-            props: {},
+            props: {
+                actions: pageActionUtil.actions,
+                inputMask,
+                openRow,
+            } as PageProps,
         }
     })
 )
