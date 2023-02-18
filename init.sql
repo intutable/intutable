@@ -85,6 +85,9 @@ CREATE TABLE view_columns(
     "inverseLinkColumnId" INTEGER NULL,
     -- type of the content of a column (string, date, currency, ...)
     "cellType" TEXT NOT NULL,
+    -- parameter to the type of a column (e.g. in List<Int>, List would be the cellType and Int
+    -- the cellTypeParameter
+    "cellTypeParameter" TEXT NULL,
     "hidden" INTEGER NOT NULL DEFAULT 0,
     "displayName" TEXT NULL,
     -- column index

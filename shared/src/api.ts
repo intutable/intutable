@@ -72,6 +72,7 @@ export function linkColumnAttributes(name: string, columnIndex: number): Partial
 }
 export function backwardLinkColumnAttributes(
     name: string,
+    parentColumnCellType: string,
     columnIndex: number
 ): Partial<DB.Column> {
     return {
@@ -80,6 +81,7 @@ export function backwardLinkColumnAttributes(
         index: columnIndex,
         editable: 1,
         cellType: "unordered-list",
+        cellTypeParameter: parentColumnCellType,
     }
 }
 export function foreignKeyColumnAttributes(columnIndex: number): Partial<DB.Column> {
@@ -106,7 +108,7 @@ export function lookupColumnAttributes(
 }
 export function backwardLookupColumnAttributes(
     name: string,
-    contentType: string,
+    parentColumnCellType: string,
     columnIndex: number
 ): Partial<DB.Column> {
     return {
@@ -115,6 +117,7 @@ export function backwardLookupColumnAttributes(
         index: columnIndex,
         editable: 0,
         cellType: "unordered-list",
+        cellTypeParameter: parentColumnCellType,
     }
 }
 

@@ -20,6 +20,7 @@ export namespace DB {
         kind: string
         inverseLinkColumnId: number | null
         cellType: string
+        cellTypeParameter: string | null
         displayName: string
         index: number
         isInternal: DB.Boolean
@@ -55,6 +56,7 @@ export namespace DB {
                 | "displayName" // `name` instead
                 | "kind" // included in `MetaColumnProps`
                 | "cellType" // included in `MetaColumnProps`
+                | "cellTypeParameter" // included in MetaColumnProps
                 | "index" // included in `MetaColumnProps`
                 | "isUserPrimaryKey" // included in `MetaColumnProps`
                 | "isInternal" // included in `MetaColumnProps`

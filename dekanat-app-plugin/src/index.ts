@@ -107,6 +107,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
         .on(req.renameTableColumn.name, renameTableColumn)
+        .on(req.changeCellType.name, changeCellType_)
         .on(req.getTableData.name, getTableData_)
         .on(req.createView.name, createView_)
         .on(req.renameView.name, renameView_)
@@ -395,7 +396,8 @@ async function createBackwardLinkColumn(
         ((homeUserPrimaryColumn.attributes.displayName || homeUserPrimaryColumn.name) as string) +
         `(${homeTableInfo.descriptor.name})`
     const columnIndex = foreignTableInfo.columns.length
-    const attributes = backwardLinkColumnAttributes(displayName, columnIndex)
+    const cellTypeParameter = homeUserPrimaryColumn.attributes.cellType
+    const attributes = backwardLinkColumnAttributes(displayName, cellTypeParameter, columnIndex)
     const linkColumn = await addColumnToTableView(
         connectionId,
         foreignTableInfo.descriptor.id,
@@ -796,6 +798,76 @@ async function renameTableColumn({
     const update = { name: newName }
     await changeTableColumnAttributes(connectionId, tableId, columnId, update)
     return { message: `column ${columnId} renamed to "${newName}"` }
+}
+
+async function changeCellType_({
+    connectionId,
+    tableId,
+    columnId,
+    newType,
+}): Promise<CoreResponse> {
+    const column = await coreRequest<RawViewColumnInfo>(
+        lvr.getColumnInfo(connectionId, columnId)
+    ).then(rawColumn => parser.parseColumn(rawColumn))
+    if (column.kind !== "standard")
+        return error("changeCellType", `cannot change type of non-standard column ${columnId}`)
+    return changeCellType(connectionId, tableId, columnId, newType)
+}
+async function changeCellType(
+    connectionId: string,
+    tableId: TableId,
+    columnId: SerializedColumn["id"],
+    newType: string
+): Promise<SerializedColumn[]> {
+    const tableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const columnInfo = tableInfo.columns.find(c => c.id === columnId)
+    if (!columnInfo)
+        return error("changeCellType", `no such column ${columnId} in table ${tableId}`)
+    let newColumn: RawViewColumnInfo
+    // Backward links and lookups always have array-type row data. There is a special cellType
+    // for these arrays. It stays the same, so we have to leave it in place and instead change
+    // the type parameter (what the elements of the array are rendered with).
+    // We have decided that nested arrays will just be flattened, so there is no need to store meta
+    // levels (List<List<...<List<Int>...>> or something like that)
+    if (
+        columnInfo.attributes.kind === "backwardLink" ||
+        columnInfo.attributes.kind === "backwardLookup"
+    )
+        newColumn = await coreRequest<RawViewColumnInfo>(
+            lvr.changeColumnAttributes(connectionId, columnId, { cellTypeParameter: newType })
+        )
+    else
+        newColumn = await coreRequest<RawViewColumnInfo>(
+            lvr.changeColumnAttributes(connectionId, columnId, { cellType: newType })
+        )
+    const linkingColumns = tableInfo.columns.filter(
+        c => c.attributes.kind === "link" || c.attributes.kind === "backwardLink"
+    )
+    const joins = linkingColumns.map(c => tableInfo.joins.find(j => j.id === c.joinId)!)
+    const newChildColumns = await Promise.all(
+        joins.map(async join => {
+            const otherTableId = asView(join.foreignSource).id
+            const childColumns: RawViewColumnInfo[] = await getColumnsBasedOnForeignColumn(
+                connectionId,
+                otherTableId,
+                columnId
+            )
+            console.dir(childColumns)
+            const newChildColumns: SerializedColumn[] = await Promise.all(
+                childColumns.map(c => changeCellType(connectionId, otherTableId, c.id, newType))
+            ).then(columnArrays => columnArrays.flat())
+            return newChildColumns
+        })
+    ).then(columnArrays => columnArrays.flat())
+    return [parser.parseColumn(newColumn)].concat(newChildColumns)
+}
+async function getColumnsBasedOnForeignColumn(
+    connectionId: string,
+    tableId: TableId,
+    columnId: SerializedColumn["id"]
+): Promise<RawViewColumnInfo[]> {
+    const info = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    return info.columns.filter(c => c.parentColumnId === columnId && c.joinId !== null)
 }
 
 async function getTableData_({ connectionId, tableId }: CoreRequest): Promise<CoreResponse> {
