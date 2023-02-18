@@ -33,7 +33,7 @@ export class UndoManagerStorage {
     }
 
     /** Set the current memento in `mementos`. ('null' to reset | '-1' for everything undone) */
-    protected set state(index: number | null) {
+    set state(index: number | null) {
         if (index === null) {
             sessionStorage.removeItem(UndoManagerStorage.StatePointerStorageKey)
             return
