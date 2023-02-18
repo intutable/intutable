@@ -22,7 +22,7 @@ export const EverythingUndone: React.FC = () => {
                     arrow
                     placement="top"
                 >
-                    <PanToolIcon color="warning" fontSize="small" />
+                    <PanToolIcon color="disabled" fontSize="small" sx={{ cursor: "help" }} />
                 </Tooltip>
             </TableCell>
             <TableCell>
@@ -42,7 +42,7 @@ export const EverythingUndone: React.FC = () => {
                     arrow
                     placement="top"
                 >
-                    <PanToolIcon color="warning" fontSize="small" />
+                    <PanToolIcon color="disabled" fontSize="small" sx={{ cursor: "help" }} />
                 </Tooltip>
             </TableCell>
         </TableRow>

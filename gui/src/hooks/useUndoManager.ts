@@ -2,7 +2,7 @@ import { fetcher } from "api"
 import { useTable } from "hooks/useTable"
 import { useUserSettings } from "hooks/useUserSettings"
 import { useView } from "hooks/useView"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { UndoManager } from "../utils/UndoManager"
 
 export const useUndoManager = () => {
@@ -20,7 +20,6 @@ export const useUndoManager = () => {
         if (typeof window === undefined) return
         const instance = new UndoManager({
             updateRowCallback: async (snapshot, action) => {
-                setLoading(true)
                 await fetcher({
                     url: "/api/row",
                     body: {
@@ -35,7 +34,6 @@ export const useUndoManager = () => {
                 })
                 await mutateTable()
                 await mutateView()
-                setLoading(false)
             },
             maxCacheSize: userSettings?.undoCacheLimit ?? 20,
         })

@@ -1,4 +1,3 @@
-import { Typography } from "@mui/material"
 import { cellMap } from "@datagrid/Cells"
 import { Highlight } from "./Highlight"
 

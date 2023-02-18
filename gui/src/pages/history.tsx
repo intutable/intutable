@@ -1,7 +1,7 @@
 import { Box, Divider, Typography } from "@mui/material"
 import { withSessionSsr } from "auth"
 import MetaTitle from "components/MetaTitle"
-import { UndoHistory } from "components/UndoHistory.tsx/UndoHistory"
+import { UndoHistory } from "components/UndoHistory/UndoHistory"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import { withSSRCatch } from "utils/withSSRCatch"
 

@@ -1,13 +1,13 @@
 import { fetcher } from "api"
-import { useUndo } from "context/UndoContext"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { ViewHookOptions, useView } from "hooks/useView"
+import { useView, ViewHookOptions } from "hooks/useView"
 import { RowsChangeData } from "react-data-grid"
 import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
 
 import { useSnacki } from "./useSnacki"
 import { useSnapshot } from "./useSnapshot"
+import { useUndoManager } from "./useUndoManager"
 
 type Column = Column.Deserialized
 
@@ -28,7 +28,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
-    const { undoManager } = useUndo()
+    const { undoManager } = useUndoManager()
     const { captureSnapshot } = useSnapshot()
 
     /**

@@ -1,4 +1,4 @@
-import { TableCell, TableRow, Typography } from "@mui/material"
+import { TableCell, TableRow } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useUserSettings } from "hooks/useUserSettings"
 
@@ -15,7 +15,7 @@ export const EmptyHistoryOverlay: React.FC = () => {
             }}
         >
             <TableCell>0</TableCell>
-            <TableCell>
+            <TableCell width={"20%"} sx={{ overflow: "visible" }}>
                 <em>Keine Einträge im Änderungsverlauf vorhanden!</em>
             </TableCell>
             <TableCell />

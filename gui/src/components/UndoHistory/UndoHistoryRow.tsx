@@ -15,20 +15,17 @@ import {
     TableRow,
     TableRowProps,
     Tooltip,
-    Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
-import { stringToColor } from "utils/stringToColor"
-import { getFormattedTimeString } from "./getFormattedTimeString"
-import { getListPosition } from "./getListPosition"
-import { isCurrentMemento } from "./isCurrentMemento"
-import KeyIcon from "@mui/icons-material/Key"
-import { format } from "./format"
 import { useRouter } from "next/router"
 import { UrlObject } from "url"
+import { stringToColor } from "utils/stringToColor"
+import { format } from "./format"
 import { FormattedTimeStringCell } from "./FormattedTimeStringCell"
+import { getListPosition } from "./getListPosition"
+import { isCurrentMemento } from "./isCurrentMemento"
 
 export type MementoRowProps = {
     memento: Memento
@@ -154,18 +151,20 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
                     placement="left"
                     enterDelay={1000}
                 >
-                    <IconButton
-                        size="small"
-                        sx={{
-                            "&:hover": {
-                                color: theme.palette.success.light,
-                            },
-                        }}
-                        disabled
-                        // disabled={position === "after-pointer"}
-                    >
-                        <UndoIcon fontSize="small" />
-                    </IconButton>
+                    <span>
+                        <IconButton
+                            size="small"
+                            sx={{
+                                "&:hover": {
+                                    color: theme.palette.success.light,
+                                },
+                            }}
+                            disabled
+                            // disabled={position === "after-pointer"}
+                        >
+                            <UndoIcon fontSize="small" />
+                        </IconButton>
+                    </span>
                 </Tooltip>
 
                 <Tooltip
@@ -174,20 +173,22 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
                     placement={position === "before-pointer" ? "top" : "bottom"}
                     enterDelay={1000}
                 >
-                    <IconButton
-                        size="small"
-                        sx={{
-                            "&:hover": {
-                                color: theme.palette.warning.dark,
-                            },
-                        }}
-                        disabled
-                        // disabled={position === "equal-to-pointer"}
-                    >
-                        {position === "before-pointer" && <MoveUpIcon fontSize="small" />}
-                        {position === "equal-to-pointer" && <PlaceIcon fontSize="small" />}
-                        {position === "after-pointer" && <MoveDownIcon fontSize="small" />}
-                    </IconButton>
+                    <span>
+                        <IconButton
+                            size="small"
+                            sx={{
+                                "&:hover": {
+                                    color: theme.palette.warning.dark,
+                                },
+                            }}
+                            disabled
+                            // disabled={position === "equal-to-pointer"}
+                        >
+                            {position === "before-pointer" && <MoveUpIcon fontSize="small" />}
+                            {position === "equal-to-pointer" && <PlaceIcon fontSize="small" />}
+                            {position === "after-pointer" && <MoveDownIcon fontSize="small" />}
+                        </IconButton>
+                    </span>
                 </Tooltip>
 
                 <Tooltip
@@ -196,18 +197,20 @@ export const MementoRow: React.FC<MementoRowProps> = props => {
                     placement="right"
                     enterDelay={1000}
                 >
-                    <IconButton
-                        size="small"
-                        sx={{
-                            "&:hover": {
-                                color: theme.palette.warning.light,
-                            },
-                        }}
-                        disabled
-                        // disabled={position !== "after-pointer"}
-                    >
-                        <RedoIcon fontSize="small" />
-                    </IconButton>
+                    <span>
+                        <IconButton
+                            size="small"
+                            sx={{
+                                "&:hover": {
+                                    color: theme.palette.warning.light,
+                                },
+                            }}
+                            disabled
+                            // disabled={position !== "after-pointer"}
+                        >
+                            <RedoIcon fontSize="small" />
+                        </IconButton>
+                    </span>
                 </Tooltip>
             </TableCell>
         </TableRow>

@@ -1,5 +1,6 @@
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever"
-import KeyboardIcon from "@mui/icons-material/Keyboard"
+import RedoIcon from "@mui/icons-material/Redo"
+import UndoIcon from "@mui/icons-material/Undo"
 import {
     Box,
     Divider,
@@ -15,15 +16,16 @@ import {
 import { useTheme } from "@mui/material/styles"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
+import { DispatchWithoutAction } from "react"
 import { HelperIcon } from "./HelperIcon"
-import RedoIcon from "@mui/icons-material/Redo"
-import UndoIcon from "@mui/icons-material/Undo"
 
 const VerticalDivider: React.FC = () => (
     <Divider orientation="vertical" flexItem variant="middle" sx={{ mx: 3 }} />
 )
 
-export const UndoHistoryHead: React.FC = () => {
+export const UndoHistoryHead: React.FC<{ forceUpdate: DispatchWithoutAction }> = ({
+    forceUpdate,
+}) => {
     const { undoManager } = useUndoManager()
     const { userSettings, changeUserSetting } = useUserSettings()
     const theme = useTheme()
@@ -58,6 +60,7 @@ export const UndoHistoryHead: React.FC = () => {
                             disabled={undoManager.everythingUndone}
                             onClick={async () => {
                                 await undoManager.undoLast()
+                                forceUpdate()
                             }}
                         >
                             <UndoIcon fontSize="small" />
@@ -79,6 +82,7 @@ export const UndoHistoryHead: React.FC = () => {
                             disabled={undoManager.state === undoManager.size - 1}
                             onClick={async () => {
                                 await undoManager.redoLast()
+                                forceUpdate()
                             }}
                         >
                             <RedoIcon fontSize="small" />
@@ -97,6 +101,7 @@ export const UndoHistoryHead: React.FC = () => {
                             changeUserSetting({
                                 enableUndoCache: e.target.checked,
                             })
+                            forceUpdate()
                         }}
                     />
                 }
@@ -115,6 +120,7 @@ export const UndoHistoryHead: React.FC = () => {
                     changeUserSetting({
                         undoCacheLimit: value,
                     })
+                    forceUpdate()
                 }}
                 value={userSettings.undoCacheLimit}
                 label="Limit"
@@ -127,6 +133,7 @@ export const UndoHistoryHead: React.FC = () => {
                     size="small"
                     onClick={() => {
                         undoManager.clearCache()
+                        forceUpdate()
                     }}
                     sx={{
                         "&:hover": {

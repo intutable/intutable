@@ -1,46 +1,60 @@
+import { format } from "components/UndoHistory/format"
 import { useSnacki } from "hooks/useSnacki"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
-import user from "pages/api/auth/user"
-import React, { useEffect } from "react"
+import { useRouter } from "next/router"
+import React, { useEffect, useReducer } from "react"
 import {
-    UndoManager,
     UndoManagerEmptyCache,
     UndoManagerNoMoreRedo,
     UndoManagerNoMoreUndo,
 } from "utils/UndoManager"
 
-export type UndoContextProps = {
-    undoManager: UndoManager | null
-}
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type UndoContextProps = {}
 
 const initialState: UndoContextProps = {
-    undoManager: null,
+    updateCallback: undefined!,
 }
 
 const UndoContext = React.createContext<UndoContextProps>(initialState)
 
-export const useUndo = () => React.useContext(UndoContext)
+export const useUndoContext = () => React.useContext(UndoContext)
 
 export type UndoContextProviderProps = {
     children: React.ReactNode
 }
 
-const getOS = (): "macOS" | "windows" | "other" => "macOS" // TODO
-
 /** Only listens to shortcut events and then fires undo/redo */
 export const UndoContextProvider: React.FC<UndoContextProviderProps> = props => {
-    const { snackError, snackWarning, snackInfo, snackSuccess } = useSnacki()
+    const { snackError, snackWarning, snackSuccess } = useSnacki()
     const { undoManager } = useUndoManager()
     const { userSettings } = useUserSettings()
+    const router = useRouter()
 
     useEffect(() => {
         if (window == null || undoManager == null) return
 
-        const os: "macOS" | "windows" | "other" = getOS()
+        const getOs = () => {
+            const os = ["Windows", "Linux", "Mac"] // add your OS values
+            return os.find(v => navigator.appVersion.indexOf(v) >= 0)
+        }
+
+        // BUG: useUndoManager must implement something like useSyncExternalStore
+        // otherwise the state is not updated in `/history`
+        const _refreshUndoHistoryPage = () => {
+            if (router.pathname === "/history") {
+                router.reload()
+            }
+        }
+
+        const os: "macOS" | "windows" | "other" =
+            getOs() === "Mac" ? "macOS" : getOs() === "Windows" ? "windows" : "other"
 
         if (os === "other") {
-            snackWarning("Auf diesem Betriebssystem wird kein 'undo' unterstützt!")
+            snackWarning(
+                "Auf diesem Betriebssystem wird kein 'undo/redo'-Shortcut unterstützt! Nutzen Sie den Änderungsverlauf"
+            )
             return
         }
 
@@ -51,9 +65,16 @@ export const UndoContextProvider: React.FC<UndoContextProviderProps> = props => 
             if (isUndoMac || isUndoWindows) {
                 try {
                     const memento = await undoManager.undoLast()
-                    snackSuccess(
-                        `UNDO: '${memento.snapshot.newValue}' --> '${memento.snapshot.oldValue}'.`
+                    const msg = (
+                        <>
+                            UNDO:{" "}
+                            {format(memento.snapshot.newValue, memento.snapshot.column.cellType)}{" "}
+                            &#8594;
+                            {format(memento.snapshot.oldValue, memento.snapshot.column.cellType)}
+                        </>
                     )
+                    snackSuccess(msg)
+                    _refreshUndoHistoryPage()
                 } catch (error) {
                     if (error instanceof UndoManagerEmptyCache)
                         snackWarning("UNDO: Keine Aktionen im Cache.")
@@ -70,14 +91,21 @@ export const UndoContextProvider: React.FC<UndoContextProviderProps> = props => 
             if (isRedoMac || isRedoWindows) {
                 try {
                     const memento = await undoManager.redoLast()
-                    snackSuccess(
-                        `UNDO: '${memento.snapshot.oldValue}' --> '${memento.snapshot.newValue}'.`
+                    const msg = (
+                        <>
+                            REDO:{" "}
+                            {format(memento.snapshot.oldValue, memento.snapshot.column.cellType)}{" "}
+                            &#8594;
+                            {format(memento.snapshot.newValue, memento.snapshot.column.cellType)}
+                        </>
                     )
+                    snackSuccess(msg)
+                    _refreshUndoHistoryPage()
                 } catch (error) {
                     if (error instanceof UndoManagerEmptyCache)
                         snackWarning("UNDO: Keine Aktionen im Cache.")
                     if (error instanceof UndoManagerNoMoreRedo)
-                        snackWarning("REDO: Keine weiteren Aktionen zu wiederholen")
+                        snackWarning("REDO: Keine weiteren Aktionen zu wiederholen.")
                     else snackError("REDO: Aktion konnte nicht wiederholt werden!")
                 }
             }
@@ -90,15 +118,7 @@ export const UndoContextProvider: React.FC<UndoContextProviderProps> = props => 
         return () => {
             document.removeEventListener("keydown", shortcutListener)
         }
-    }, [snackError, snackSuccess, snackWarning, undoManager, userSettings?.enableUndoCache])
+    }, [router, snackError, snackSuccess, snackWarning, undoManager, userSettings?.enableUndoCache])
 
-    return (
-        <UndoContext.Provider
-            value={{
-                undoManager,
-            }}
-        >
-            {props.children}
-        </UndoContext.Provider>
-    )
+    return <UndoContext.Provider value={{}}>{props.children}</UndoContext.Provider>
 }

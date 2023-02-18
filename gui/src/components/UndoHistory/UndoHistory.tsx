@@ -1,3 +1,4 @@
+import KeyIcon from "@mui/icons-material/Key"
 import {
     Backdrop,
     Box,
@@ -11,20 +12,18 @@ import {
     TableHead,
     TableRow,
     Tooltip,
-    Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
-import { useEffect, useState } from "react"
+import { useReducer, useState } from "react"
 import { Memento } from "utils/UndoManager"
 import { EmptyHistoryOverlay } from "./EmptyHistoryOverlay"
+import { EverythingUndone } from "./EverythingUndone"
 import { sameCellDistinctMemento } from "./sameCell"
+import { UndoHistoryFooter } from "./UndoHistoryFooter"
 import { UndoHistoryHead } from "./UndoHistoryHead"
 import { MementoRow } from "./UndoHistoryRow"
-import KeyIcon from "@mui/icons-material/Key"
-import PersonIcon from "@mui/icons-material/Person"
-import { EverythingUndone } from "./EverythingUndone"
 
 export type CellID = {
     mementoID: Memento["uid"]
@@ -38,6 +37,9 @@ export const UndoHistory: React.FC = () => {
     const { userSettings } = useUserSettings()
     const theme = useTheme()
 
+    // BUG: useUndoManager must implement something like useSyncExternalStore
+    const [, _forceUpdate] = useReducer(x => x + 1, 0)
+
     const [hoveringOnCell, setHoveringOnCell] = useState<CellID | null>(null)
 
     if (undoManager == null || userSettings == null) return <>Lädt...</>
@@ -45,9 +47,9 @@ export const UndoHistory: React.FC = () => {
     return (
         <Box>
             <Paper sx={{ p: 2 }}>
-                <UndoHistoryHead />
-                <TableContainer>
-                    <Table>
+                <UndoHistoryHead forceUpdate={_forceUpdate} />
+                <TableContainer sx={{ maxHeight: "60vh" }}>
+                    <Table stickyHeader>
                         <TableHead>
                             <TableRow
                                 sx={{
@@ -107,6 +109,7 @@ export const UndoHistory: React.FC = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                <UndoHistoryFooter />
             </Paper>
             <Backdrop open={loading}>
                 <CircularProgress color="inherit" />

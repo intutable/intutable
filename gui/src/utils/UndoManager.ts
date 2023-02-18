@@ -1,6 +1,5 @@
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { Column, TableDescriptor, ViewDescriptor } from "types"
-import { Row } from "types"
+import { TableDescriptor, ViewDescriptor } from "types"
 import { UndoManagerStorage } from "./UndoManagerStorage"
 
 export type Snapshot = {
@@ -73,15 +72,18 @@ export class UndoManager extends UndoManagerStorage {
 
     addMemento(snapshot: Snapshot) {
         // cut history if not at the end
-        // if (this.state !== this.mementos.length - 1) {
-        //     this.remove(...this.mementos.slice(this.state + 1))
-        // }
+        if (this.size > 0 && this.state !== null && this.state < this.size - 1) {
+            this.remove(...this.mementos.slice(this.state + 1))
+        }
         // then insert
         this.add(snapshot)
     }
 
+    // TODO: undo/redo multiple mementos at once
     // async jump(memento: MementoID) { }
+    // TODO: undo a single memento (and all similiar cells in the history) that's not the state
     // async undoCertain(memento: MementoID): Promise<Memento> { }
+    // TODO: redo a single memento (and all similiar cells in the history) that's not the state
     // async redoCertain(memento: MementoID): Promise<Memento> { }
 
     async undoLast(): Promise<Memento> {

@@ -1,5 +1,5 @@
 import { ImplementationError } from "utils/ImplementationError"
-import { Cache, Memento, State, History } from "utils/UndoManager"
+import { History, Memento } from "utils/UndoManager"
 
 export const getListPosition = (
     memento: Memento,

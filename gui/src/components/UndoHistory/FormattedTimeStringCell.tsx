@@ -1,4 +1,4 @@
-import { Box, TableCell } from "@mui/material"
+import { TableCell } from "@mui/material"
 import { useState } from "react"
 import { getFormattedTimeString } from "./getFormattedTimeString"
 

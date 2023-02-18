@@ -82,8 +82,8 @@ export class UndoManagerStorage {
         sessionStorage.setItem(key, JSON.stringify(memento))
         // update pointer
         this.state = this.indexOf(memento)
-        // clean up
-        // this.collectGarbage()
+        // collect garbage
+        this.collectGarbage()
     }
 
     /** Removes one or more mementos from the cache */
@@ -94,14 +94,14 @@ export class UndoManagerStorage {
         })
     }
 
-    // private collectGarbage(): { dropped: number } {
-    //     if (this.size > this.maxCacheSize) {
-    //         const overflowSize = this.size - this.maxCacheSize
-    //         this.remove(...this.mementos.slice(0, overflowSize))
-    //         return { dropped: overflowSize }
-    //     }
-    //     return { dropped: 0 }
-    // }
+    private collectGarbage(): { dropped: number } {
+        if (this.size > this.maxCacheSize) {
+            const overflowSize = this.size - this.maxCacheSize
+            this.remove(...this.mementos.slice(0, overflowSize))
+            return { dropped: overflowSize }
+        }
+        return { dropped: 0 }
+    }
 
     private destroySelf() {
         this.clearCache()
