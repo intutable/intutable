@@ -106,6 +106,7 @@ export class ParserClass {
                 // optionally null keys
                 case "kind":
                 case "cellType":
+                case "cellTypeParameter":
                 case "cellClass":
                 case "headerCellClass":
                 case "summaryCellClass":

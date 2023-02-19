@@ -17,6 +17,7 @@ export class ColumnFactory {
         name: "",
         hidden: false,
         cellType: "string", // Text.brand
+        cellTypeParameter: null,
         width: undefined,
         minWidth: undefined,
         maxWidth: undefined,
@@ -36,6 +37,7 @@ export class ColumnFactory {
         name: "",
         hidden: false,
         cellType: "string", // Text.brand
+        cellTypeParameter: null,
         width: undefined,
         cellClass: undefined,
         headerCellClass: undefined,
