@@ -1,10 +1,8 @@
 import { TableDescriptor, ViewDescriptor } from "@backend/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { InputMask } from "@shared/input-masks/types"
 import { useState } from "react"
 import { Row } from "types"
-
-/** @deprecated */
-export type InputMask = { id: string }
 
 export type Bookmark = {
     projectId: ProjectDescriptor["id"]

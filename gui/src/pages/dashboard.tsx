@@ -159,14 +159,14 @@ export const getServerSideProps = withSSRCatch(
                     url: {
                         pathname: `/project/${project.id}/table/${table.id}`,
                         query: {
-                            view: viewDescriptor.id,
+                            viewId: viewDescriptor.id,
                             inputMask: mask.id,
                         },
                     },
                     callToActionUrl: {
                         pathname: `/project/${project.id}/table/${table.id}`,
                         query: {
-                            view: viewDescriptor.id,
+                            viewId: viewDescriptor.id,
                             inputMask: mask.id,
                             newRecord: Date.now().toString(),
                         },
