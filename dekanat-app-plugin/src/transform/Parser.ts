@@ -15,9 +15,9 @@ import { Filter } from "../types/filter"
 import { errorSync } from "../error"
 import { cast } from "./cast"
 import { internalColumnUtil } from "./InternalColumnUtil"
+import { rowMetadataUtil } from "./RowMetadataUtil"
 import * as FilterParser from "./filter"
 import { restructure } from "./restructure"
-import { inspect } from "util"
 import * as InputMask from "shared/dist/input-masks"
 
 /**
@@ -79,7 +79,8 @@ export class ParserClass {
     /**
      * It does not inherently make sense to send an entire front-end column to the back-end, but
      * it is convenient for updating columns' props if we can just use
-     * `Partial<SerializedColumn>` instead of defining a new type. In light of this purpose,
+     * `Partial<SerializedColumn>` instead of defining a new type, or, God forbid, expecting
+     * the front-end to deliver readily database-storable values. In light of this purpose,
      * this method does not fully convert the column, but leaves out the properties defined in
      * {@link shared.dist.types.MetaColumnProps}
      */
@@ -147,13 +148,17 @@ export class ParserClass {
             ...this.castColumn(column),
             parentColumnId: null,
         }))
+        const rowsWithMetadata = rowMetadataUtil.applyMetadataToRows(
+            castedColumns,
+            internalProcessRows
+        )
 
         return {
             descriptor: view.descriptor,
             links: view.joins.map(join => this.parseLink(join, castedColumns)),
             rawTable: asTable(view.source).table,
             columns: castedColumns.sort(ParserClass.sortByIndex),
-            rows: internalProcessRows,
+            rows: rowsWithMetadata,
         }
     }
 
@@ -203,6 +208,10 @@ export class ParserClass {
                 rows: view.rows,
             })
         const castedColumns = internalProcessedColumns.map(this.castColumn)
+        const rowsWithMetadata = rowMetadataUtil.applyMetadataToRows(
+            castedColumns,
+            internalProcessRows
+        )
 
         const masks = InputMask.getInputMasksFor(view)
 
@@ -212,7 +221,7 @@ export class ParserClass {
             sortColumns: view.rowOptions.sortColumns,
             groupColumns: view.rowOptions.groupColumns,
             columns: castedColumns.sort(ParserClass.sortByIndex),
-            rows: internalProcessRows,
+            rows: rowsWithMetadata,
             inputMasks: masks, // TODO: IN DEVELOPMENT – just a quick hack to get it working
         }
 

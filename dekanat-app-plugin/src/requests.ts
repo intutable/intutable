@@ -175,7 +175,7 @@ export function removeColumnFromTable(
  * All boolean values in the attributes are changed into ones and zeros,
  * other than that no transformation takes place.
  * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn}
- * An array of all columns that were changed, with the specified one at position 0.
+ * An array of all columns that were changed (table and view), with the specified one at position 0.
  */
 export function changeTableColumnAttributes(
     connectionId: string,
@@ -227,7 +227,7 @@ export function renameTableColumn(
  * columns pointing at it have to be updated. In particular, backward links and lookups cannot simply
  * copy over the cellType, rather they have to keep track of their child column's cell type in an extra
  * attribute.
- * Response: {SerializedColumn[]} an array of all columns that were changed, with the specified one
+ * Response: {SerializedColumn[]} an array of all _table_ columns that were changed, with the specified one
  * at position 0.
  * Rules:
  * R1 User-primary keys cannot have certain cell types (boolean, currency, select, multiselect, percentage)

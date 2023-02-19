@@ -195,31 +195,27 @@ export function doNotAggregate(): ColumnSpecifier["outputFunc"] {
 
 /**
  * For backward links, we have to aggregate multiple values into an array. We also need them to
- * have their IDs and the type that the contents should be rendered with. The GUI's UnorderedList
- * component provides an appropriate data type, {@link types.gui.UnorderedListCellContent}. This
- * output function makes PostgreSQL directly spit out that data type.
+ * have their IDs and the type that the contents should be rendered with,
+ * {@link UnorderedListCellContent}. This output function packages the ID and value into
+ * `UnorderedListCellContent[items]`. The Parsing stage then completes it with the
+ * appropriate cell type to be used.
  * @param {RawColumn} idColumn the ID column of the target table
  * @param {RawColumn} parentColumn the column that the link/lookup should take its values
  * from.
  */
-export function unorderedListAggregate(
+export function unorderedListItemsAggregate(
     join: JoinDescriptor,
     foreignTableInfo: RawViewInfo,
-    idColumn: RawColumn,
-    parentColumn: RawColumn
+    idColumn: RawColumn
 ): ColumnSpecifier["outputFunc"] {
     // yes, this is constant, for now at least.
     const idKey = `"j${join.id}_${foreignTableInfo.descriptor.name}"."${idColumn.key}"`
-    const cellType = parentColumn.attributes["cellType"]
     return (
-        `JSON_BUILD_OBJECT(` +
-        `'format', JSON_BUILD_OBJECT('cellType', '${cellType}'),` +
-        `'items', JSON_AGG(JSON_BUILD_OBJECT(` +
+        `JSON_AGG(JSON_BUILD_OBJECT(` +
         `'value', ??,` +
         ` 'props', JSON_BUILD_OBJECT('_id', ${idKey})` +
-        `))` + //end JSON_AGG(JSON_BUILD_OBJECT(
-        `)`
-    ) //end JSON_BUILD_OBJECT(
+        `))`
+    )
 }
 /**
  * Since forward link columns are grouped on the foreign table's (unique) ID, there will be

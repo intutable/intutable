@@ -53,7 +53,7 @@ import {
     defaultViewRowOptions,
     COLUMN_INDEX_KEY,
     doNotAggregate,
-    unorderedListAggregate,
+    unorderedListItemsAggregate,
     firstAggregate,
 } from "shared/dist/api"
 
@@ -404,12 +404,7 @@ async function createBackwardLinkColumn(
         {
             parentColumnId: homeUserPrimaryColumn.id,
             attributes,
-            outputFunc: unorderedListAggregate(
-                join,
-                homeTableInfo,
-                homeIdColumn,
-                homeUserPrimaryColumn
-            ),
+            outputFunc: unorderedListItemsAggregate(join, homeTableInfo, homeIdColumn),
         },
         join.id,
         addToViews
@@ -520,11 +515,10 @@ function createRawSpecifierForLookupColumn(
         case LinkKind.Backward:
             contentType = parentColumn.attributes.cellType || "string"
             attributes = backwardLookupColumnAttributes(displayName, contentType, columnIndex)
-            aggregateFunction = unorderedListAggregate(
+            aggregateFunction = unorderedListItemsAggregate(
                 join,
                 otherTableInfo,
-                otherTableIdColumn,
-                parentColumn
+                otherTableIdColumn
             )
             break
     }
@@ -832,14 +826,19 @@ async function changeCellType(
     if (
         columnInfo.attributes.kind === "backwardLink" ||
         columnInfo.attributes.kind === "backwardLookup"
-    )
+    ) {
         newColumn = await coreRequest<RawViewColumnInfo>(
             lvr.changeColumnAttributes(connectionId, columnId, { cellTypeParameter: newType })
         )
-    else
+        await changeColumnAttributesInViews(connectionId, tableId, columnId, {
+            cellTypeParameter: newType,
+        })
+    } else {
         newColumn = await coreRequest<RawViewColumnInfo>(
             lvr.changeColumnAttributes(connectionId, columnId, { cellType: newType })
         )
+        await changeColumnAttributesInViews(connectionId, tableId, columnId, { cellType: newType })
+    }
     const linkingColumns = tableInfo.columns.filter(
         c => c.attributes.kind === "link" || c.attributes.kind === "backwardLink"
     )
@@ -852,7 +851,6 @@ async function changeCellType(
                 otherTableId,
                 columnId
             )
-            console.dir(childColumns)
             const newChildColumns: SerializedColumn[] = await Promise.all(
                 childColumns.map(c => changeCellType(connectionId, otherTableId, c.id, newType))
             ).then(columnArrays => columnArrays.flat())
