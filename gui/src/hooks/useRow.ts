@@ -1,11 +1,14 @@
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
-import { ViewHookOptions, useView } from "hooks/useView"
+import { useView, ViewHookOptions } from "hooks/useView"
+import { RowsChangeData } from "react-data-grid"
 import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
 import { useColumn } from "./useColumn"
 
 import { useSnacki } from "./useSnacki"
+import { useSnapshot } from "./useSnapshot"
+import { useUndoManager } from "./useUndoManager"
 
 type Column = Column.Deserialized
 
@@ -26,6 +29,8 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     const { data: table, mutate: mutateTable } = useTable(tableOptions)
     const { data: view, mutate: mutateView } = useView(viewOptions)
+    const { undoManager } = useUndoManager()
+    const { captureSnapshot } = useSnapshot()
 
     /**
      * Used for row reordering / drag n drop
@@ -78,12 +83,11 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: `value` needs a (better) type
-    const updateRow = async (
-        column: Column,
-        row: { _id: number },
-        updatedValue: unknown
-    ): Promise<void> => {
+    /** only use outside rdg */
+    const updateRow = async (column: Column, row: Row, updatedValue: unknown): Promise<void> => {
         const serializedValue = SerDes.serializeRowValue(updatedValue, column)
+        const previousValue = row[column.key]
+        const previousSerialized = SerDes.serializeRowValue(previousValue, column)
 
         // TODO: put this in the api route
         if (!["standard", "link"].includes(column.kind)) {
@@ -106,6 +110,64 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         })
         await mutateTable()
         await mutateView()
+
+        const snapshot = captureSnapshot({
+            oldValue: previousSerialized as string,
+            newValue: serializedValue as string,
+            column,
+            row,
+        })
+
+        undoManager?.addMemento(snapshot)
+    }
+
+    // TODO: the cache should be mutated differently
+    // TODO: the state should be updated differently
+    // TODO: `value` needs a (better) type
+    /** only use within rdg */
+    const updateRow_RDG = async (
+        updatedRows: Row[],
+        changedData: RowsChangeData<Row>
+    ): Promise<void> => {
+        const changedRow = updatedRows[changedData.indexes[0]]
+        const col = changedData.column
+        const updatedValue = changedRow[col.key]
+        const column = changedData.column
+        const serializedValue = SerDes.serializeRowValue(updatedValue, column)
+        const previousRow = view?.rows[changedData.indexes[0]]
+        const previousValue = previousRow![column.key]
+        const previousSerialized = SerDes.serializeRowValue(previousValue, column)
+
+        // TODO: put this in the api route
+        if (!["standard", "link"].includes(column.kind)) {
+            snackError(
+                "Diese Spalte gehört zu einer anderen Tabelle." +
+                    " Änderungen dürfen nur in der Originaltabelle vorgenommen werden."
+            )
+            return
+            // throw Error("attempted to edit data of a different table")
+        }
+
+        await fetcher({
+            url: "/api/row",
+            body: {
+                viewId: view!.descriptor.id,
+                rowsToUpdate: changedRow._id,
+                values: { [column.id]: serializedValue },
+            },
+            method: "PATCH",
+        })
+        await mutateTable()
+        await mutateView()
+
+        const snapshot = captureSnapshot({
+            oldValue: previousSerialized as string,
+            newValue: serializedValue as string,
+            column,
+            row: previousRow!,
+        })
+
+        undoManager?.addMemento(snapshot)
     }
 
     return {
@@ -113,5 +175,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         createRow,
         deleteRow,
         updateRow,
+        updateRow_RDG,
     }
 }

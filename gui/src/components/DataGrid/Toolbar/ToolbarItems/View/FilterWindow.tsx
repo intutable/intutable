@@ -27,7 +27,7 @@ import {
     FILTER_OPERATORS_LIST,
 } from "types/filter"
 import { wherePartial, and, stripPartialFilter, partialFilterEquals } from "@shared/utils/filter"
-import { useAPI } from "context/APIContext"
+import { useAPI } from "hooks/useAPI"
 import { useUpdateTimer } from "hooks/useUpdateTimer"
 import { FilterEditor } from "./Filter"
 import { SimpleFilterEditor } from "./SimpleFilter"

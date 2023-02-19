@@ -15,13 +15,15 @@ import {
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { useAPI } from "context/APIContext"
+import { useAPI } from "hooks/useAPI"
 import { useSnacki } from "hooks/useSnacki"
 import { useTable } from "hooks/useTable"
 import { useViews } from "hooks/useViews"
 import React, { useState } from "react"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { ViewListItem } from "./ViewListItem"
+import { useRouter } from "next/router"
+import { UrlObject } from "url"
 
 type AddViewModalProps = {
     open: boolean
@@ -67,8 +69,9 @@ export type ViewNavigatorProps = {
 }
 export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     const theme = useTheme()
+    const router = useRouter()
 
-    const { view: currentView, setView } = useAPI()
+    const { project, table, view: currentView } = useAPI()
     const { data } = useTable()
     const { views, createView, renameView, deleteView, mutate } = useViews({
         table: data?.descriptor,
@@ -83,7 +86,7 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
     const handleCreateView = async (name: string): Promise<void> => {
         try {
             const newView = await createView(name)
-            setView(newView)
+            if (newView != null) await mutate()
         } catch (error) {
             const err = makeError(error)
             if (err.message === "alreadyTaken")
@@ -91,9 +94,17 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
             else snackError("unbekannter Fehler beim erstellen der Sicht")
         }
     }
+
     const handleSelectView = async (view: ViewDescriptor): Promise<void> => {
-        if (currentView?.id === view.id) return
-        else setView(view)
+        if (currentView?.id === view.id || !project || !table) return
+        const url: UrlObject = {
+            pathname: `/project/${project.id}/table/${table.id}`,
+            query: {
+                viewId: view.id,
+            },
+        }
+        const as = `/project/${project.id}/table/${table.id}`
+        router.push(url, as)
     }
 
     const handleRenameView = async (view: ViewDescriptor, newName: string): Promise<void> => {
@@ -115,9 +126,10 @@ export const ViewNavigator: React.FC<ViewNavigatorProps> = props => {
             snackInfo("Kann einzige Sicht nicht löschen")
             return
         }
+        if (currentView?.id === view.id || !project || !table) return
         try {
             await deleteView(view.id)
-            mutate()
+            await mutate()
         } catch (error) {
             const err = makeError(error)
             if (err.message === "changeDefaultView")

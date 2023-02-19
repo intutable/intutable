@@ -1,17 +1,18 @@
-import { CssBaseline, PaletteMode, useMediaQuery } from "@mui/material"
+import { CacheProvider, EmotionCache } from "@emotion/react"
+import ErrorIcon from "@mui/icons-material/Error"
+import { CssBaseline, PaletteMode } from "@mui/material"
 import { ThemeProvider } from "@mui/material/styles"
 import { fetcher } from "api"
-import { logger, deserializeView } from "api/middelware"
+import { deserializeView, logger } from "api/middelware"
 import Layout from "components/Layout/Layout"
+import { UndoContextProvider } from "context/UndoContext"
 import type { AppProps } from "next/app"
 import Head from "next/head"
 import { SnackbarProvider } from "notistack"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useMemo } from "react"
 import { SWRConfig } from "swr"
 import { getDesignToken } from "theme"
 import createTheme from "theme/utils"
-import ErrorIcon from "@mui/icons-material/Error"
-import { CacheProvider, EmotionCache } from "@emotion/react"
 import { createEmotionCache } from "utils/createEmotionCache"
 
 type ThemeTogglerContextProps = {
@@ -103,10 +104,12 @@ const MyApp = (props: MyAppProps) => {
                                 error: <ErrorIcon fontSize="small" sx={{ mr: 1 }} />,
                             }}
                         >
-                            <CssBaseline />
-                            <Layout>
-                                <Component {...pageProps} />
-                            </Layout>
+                            <UndoContextProvider>
+                                <CssBaseline />
+                                <Layout>
+                                    <Component {...pageProps} />
+                                </Layout>
+                            </UndoContextProvider>
                         </SnackbarProvider>
                     </ThemeProvider>
                 </ThemeTogglerContext.Provider>

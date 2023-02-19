@@ -1,4 +1,5 @@
 import { OptionsObject, useSnackbar } from "notistack"
+import React from "react"
 
 /**
  * Simplifies the {@link useSnackbar} hook.
@@ -6,19 +7,19 @@ import { OptionsObject, useSnackbar } from "notistack"
 export const useSnacki = () => {
     const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
-    const snackError = (message: string, options?: Omit<OptionsObject, "variant">) =>
+    const snackError = (message: React.ReactNode, options?: Omit<OptionsObject, "variant">) =>
         enqueueSnackbar(message, { variant: "error", ...options })
 
-    const snackWarning = (message: string, options?: Omit<OptionsObject, "variant">) =>
+    const snackWarning = (message: React.ReactNode, options?: Omit<OptionsObject, "variant">) =>
         enqueueSnackbar(message, { variant: "warning", ...options })
 
-    const snackSuccess = (message: string, options?: Omit<OptionsObject, "variant">) =>
+    const snackSuccess = (message: React.ReactNode, options?: Omit<OptionsObject, "variant">) =>
         enqueueSnackbar(message, { variant: "success", ...options })
 
-    const snackInfo = (message: string, options?: Omit<OptionsObject, "variant">) =>
+    const snackInfo = (message: React.ReactNode, options?: Omit<OptionsObject, "variant">) =>
         enqueueSnackbar(message, { variant: "info", ...options })
 
-    const snack = (message: string, options?: Omit<OptionsObject, "variant">) =>
+    const snack = (message: React.ReactNode, options?: Omit<OptionsObject, "variant">) =>
         enqueueSnackbar(message, { variant: "default", ...options })
 
     return {

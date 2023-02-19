@@ -16,6 +16,7 @@ import {
     Drawer as MuiDrawer,
     IconButton,
     ListItem,
+    ListItemButton,
     ListItemIcon,
     ListItemText,
     Toolbar,
@@ -26,6 +27,7 @@ import { RoleKind } from "@backend/permissions/types"
 import { useUser } from "auth"
 import { useRouter } from "next/router"
 import React from "react"
+import HistoryIcon from "@mui/icons-material/History"
 
 const drawerWidth = 240
 
@@ -71,27 +73,25 @@ type DrawerListItemProps = {
     nonActiveIcon: React.ReactNode
     activeIcon: React.ReactNode
     text: string
-    href: string
+    url: string
 }
 
-const DrawerListItem: React.FC<DrawerListItemProps> = props => {
+const DrawerLink: React.FC<DrawerListItemProps> = props => {
     const router = useRouter()
     return (
-        <ListItem
-            button
-            onClick={() => router.push(props.href)}
+        <ListItemButton
+            onClick={() => router.push(props.url)}
             sx={{
-                ...(router.pathname === props.href && {
+                ...(router.pathname === props.url && {
                     bgcolor: "#dedede",
                 }),
-                "&:hover": {},
             }}
         >
             <ListItemIcon>
-                {router.pathname === props.href ? props.activeIcon : props.nonActiveIcon}
+                {router.pathname === props.url ? props.activeIcon : props.nonActiveIcon}
             </ListItemIcon>
             <ListItemText primary={props.text} />
-        </ListItem>
+        </ListItemButton>
     )
 }
 
@@ -122,32 +122,32 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     <ChevronLeftIcon />
                 </IconButton>
             </Toolbar>
-            <DrawerListItem
+            <DrawerLink
                 text="Startseite"
-                href="/"
+                url="/"
                 nonActiveIcon={<HomeIconOutlined />}
                 activeIcon={<HomeIcon />}
             />
             {user?.isLoggedIn && (
                 <>
-                    <DrawerListItem
+                    <DrawerLink
                         text="Dashboard"
-                        href="/dashboard"
+                        url="/dashboard"
                         nonActiveIcon={<DashboardOutlinedIcon />}
                         activeIcon={<DashboardIcon />}
                     />
-                    <DrawerListItem
+                    <DrawerLink
                         text="Projekte"
-                        href="/projects"
+                        url="/projects"
                         nonActiveIcon={<WorkspacesIconOutlined />}
                         activeIcon={<WorkspacesIcon />}
                     />
                 </>
             )}
             {user?.isLoggedIn && user?.role.roleKind === RoleKind.Admin && (
-                <DrawerListItem
+                <DrawerLink
                     text="Nutzerverwaltung"
-                    href="/users"
+                    url="/users"
                     nonActiveIcon={<PeopleIconOutlined />}
                     activeIcon={<PeopleIcon />}
                 />
@@ -157,15 +157,23 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     flexGrow: 100,
                 }}
             />
-            <DrawerListItem
+            {user?.isLoggedIn && (
+                <DrawerLink
+                    text="Änderungsverlauf"
+                    url="/history"
+                    nonActiveIcon={<HistoryIcon />}
+                    activeIcon={<HistoryIcon />}
+                />
+            )}
+            <DrawerLink
                 text="Service Desk"
-                href="/service-desk"
+                url="/service-desk"
                 nonActiveIcon={<SupportAgentIconOutlined />}
                 activeIcon={<SupportAgentIcon />}
             />
-            <DrawerListItem
+            <DrawerLink
                 text="Einstellungen"
-                href="/settings"
+                url="/settings"
                 nonActiveIcon={<SettingsIconOutlined />}
                 activeIcon={<SettingsIcon />}
             />
