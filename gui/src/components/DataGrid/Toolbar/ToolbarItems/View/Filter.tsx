@@ -9,7 +9,7 @@ import { PartialFilter, PartialSimpleFilter } from "types/filter"
 import { wherePartial, and, or, not, isValidFilter } from "@shared/utils/filter"
 import { TableColumn } from "types"
 import { SimpleFilterEditor } from "./SimpleFilter"
-import { getFilterColor } from "./utils"
+
 import { useTheme } from "@mui/material/styles"
 
 const Infix = c.ConditionKind.Infix
@@ -139,7 +139,6 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                 borderRadius: "4px",
                 display: "flex",
                 alignContent: "center",
-                backgroundColor: getFilterColor(nestingDepth),
             }}
         >
             <Box sx={{ m: 0.5, p: 0.5 }}>

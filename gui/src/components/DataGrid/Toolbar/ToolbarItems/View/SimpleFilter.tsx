@@ -16,7 +16,6 @@ import {
     PartialSimpleFilter,
 } from "types/filter"
 import { TableColumn } from "types"
-import { getFilterColor } from "./utils"
 import { useTheme } from "@mui/material/styles"
 
 type SimpleFilterEditorProps = {
@@ -84,9 +83,6 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
                 borderRadius: "4px",
                 display: "flex",
                 alignContent: "center",
-                ...(props.nestingDepth && {
-                    backgroundColor: getFilterColor(props.nestingDepth),
-                }),
             }}
         >
             <Select
