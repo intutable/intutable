@@ -8,39 +8,39 @@ import { Row } from "types"
 import { Bookmark } from "components/DataGrid/RowMask/Bookmark"
 
 export type UserSettings = {
+    // --- user account ---
     title: string
     sex: "male" | "female" | "diverse" | ""
     firstName: string
     lastName: string
-    /** @default false */
+    // --- user preferences ---
     disableFunnyGreetings: boolean
-    /** @default [] */
-    bookmarkedRecords: Bookmark[]
-    /** @default 'system' */
     preferredTheme: "system" | "dark" | "light"
-    /** @default 20 */
-    undoCacheLimit: number
-    /** @default true */
+    // --- undo cache ---
     enableUndoCache: boolean
-    /** @default 'always' */
+    undoCacheLimit: number
+    // --- constrain validation ---
     constrainValidation: "always" | "opening-closening"
-
-    /** @default ';' */
-    exportJoinCharacter: string
+    enableConstrainValidation: boolean
+    saveMismatchingRecords: boolean
+    // --- features ---
+    bookmarkedRecords: Bookmark[]
 }
 
+// dont delete, will be used for initial values
 export const DefaultUserSettings: UserSettings = {
     title: "",
     sex: "",
-    firstName: "Max",
-    lastName: "Mustermann",
-    disableFunnyGreetings: false,
+    firstName: "",
+    lastName: "",
+    disableFunnyGreetings: true,
     bookmarkedRecords: [],
     preferredTheme: "system",
     undoCacheLimit: 20,
     enableUndoCache: true,
     constrainValidation: "always",
-    exportJoinCharacter: ";",
+    enableConstrainValidation: true,
+    saveMismatchingRecords: true,
 }
 
 // TODO: connect to db ✅

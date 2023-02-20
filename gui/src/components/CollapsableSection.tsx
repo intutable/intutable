@@ -1,4 +1,4 @@
-import { Box, Divider, IconButton, Stack, Typography } from "@mui/material"
+import { Badge, BadgeTypeMap, Box, Divider, IconButton, Stack, Typography } from "@mui/material"
 import React, { useState } from "react"
 
 import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown"
@@ -8,6 +8,8 @@ export type CollapsableSectionProps = {
     title: string
     /** @default true */
     defaultClosed?: boolean
+    badgeCount?: number
+    badgeColor?: BadgeTypeMap["props"]["color"]
 }
 
 export const CollapsableSection: React.FC<CollapsableSectionProps> = props => {
@@ -26,9 +28,14 @@ export const CollapsableSection: React.FC<CollapsableSectionProps> = props => {
                     width: "100%",
                 }}
             >
-                <Typography variant="h5" component="h2">
-                    {props.title}
-                </Typography>
+                <Badge
+                    badgeContent={collapsed === false ? undefined : props.badgeCount ?? 0}
+                    color={props.badgeColor ?? "default"}
+                >
+                    <Typography variant="h5" component="h2">
+                        {props.title}
+                    </Typography>
+                </Badge>
                 <Box flexGrow={1} />
                 <IconButton size="small" onClick={() => setCollapsed(prev => !prev)}>
                     <ExpandCircleDownIcon

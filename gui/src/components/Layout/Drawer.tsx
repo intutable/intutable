@@ -179,12 +179,14 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                 nonActiveIcon={<SupportAgentIconOutlined />}
                 activeIcon={<SupportAgentIcon />}
             />
-            <DrawerLink
-                text="Einstellungen"
-                url="/settings"
-                nonActiveIcon={<SettingsIconOutlined />}
-                activeIcon={<SettingsIcon />}
-            />
+            {user?.isLoggedIn && (
+                <DrawerLink
+                    text="Einstellungen"
+                    url="/settings"
+                    nonActiveIcon={<SettingsIconOutlined />}
+                    activeIcon={<SettingsIcon />}
+                />
+            )}
         </Drawer>
     )
 }

@@ -15,26 +15,6 @@ import { SWRConfig } from "swr"
 import { getTheme } from "theme"
 import { createEmotionCache } from "utils/createEmotionCache"
 
-export const useThemeMode = (): { themeMode: PaletteMode; theme: Theme } => {
-    const { userSettings } = useUserSettings()
-
-    const systemPreferredThemeMode: PaletteMode = useMediaQuery("(prefers-color-scheme: dark)")
-        ? "dark"
-        : "light"
-
-    const userPreferredTheme = userSettings?.preferredTheme ?? "system"
-
-    const themeMode: PaletteMode =
-        userPreferredTheme === "system" ? systemPreferredThemeMode : userPreferredTheme
-
-    const theme = useMemo(() => getTheme(themeMode), [themeMode])
-
-    return {
-        themeMode,
-        theme,
-    }
-}
-
 const clientSideEmotionCache = createEmotionCache()
 
 interface MyAppProps extends AppProps {
@@ -43,7 +23,21 @@ interface MyAppProps extends AppProps {
 
 const MyApp = (props: MyAppProps) => {
     const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
-    const { theme } = useThemeMode()
+
+    const { userSettings } = useUserSettings()
+
+    const systemPreferredThemeMode: PaletteMode = useMediaQuery("(prefers-color-scheme: dark)")
+        ? "dark"
+        : "light"
+
+    const theme = useMemo(() => {
+        const userPreferredTheme = userSettings?.preferredTheme ?? "system"
+
+        const themeMode: PaletteMode =
+            userPreferredTheme === "system" ? systemPreferredThemeMode : userPreferredTheme
+
+        return getTheme(themeMode)
+    }, [systemPreferredThemeMode, userSettings?.preferredTheme])
 
     return (
         <CacheProvider value={emotionCache}>

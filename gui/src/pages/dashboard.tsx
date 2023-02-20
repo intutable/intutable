@@ -33,9 +33,15 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                 <em>Coming Soon</em>
             </CollapsableSection>
 
-            <CollapsableSection title="Bookmarks">
+            <CollapsableSection
+                title="Bookmarks"
+                badgeCount={userSettings?.bookmarkedRecords.length}
+                badgeColor="info"
+            >
                 {userSettings == null ? (
                     <>Lädt...</>
+                ) : userSettings.bookmarkedRecords.length === 0 ? (
+                    <em>Keine gespeicherten Einträge</em>
                 ) : (
                     userSettings.bookmarkedRecords.map(bookmark => (
                         <BookmarkedRecord key={bookmark.rowId} bookmark={bookmark} />

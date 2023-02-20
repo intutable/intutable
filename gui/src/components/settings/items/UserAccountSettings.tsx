@@ -9,10 +9,18 @@ import {
     TextField,
 } from "@mui/material"
 import { UserSettings, useUserSettings } from "hooks/useUserSettings"
+import { useTextFieldChangeStore } from "utils/useTextFieldChangeStore"
 import { CollapsableList, CollapsableListDivider } from "../CollapsableList"
 
 export const UserAccountSettings: React.FC = () => {
     const { userSettings, changeUserSetting } = useUserSettings()
+
+    const { value: firstName, onChangeHandler: onChangeFirstName } = useTextFieldChangeStore(
+        userSettings?.firstName ?? ""
+    )
+    const { value: lastName, onChangeHandler: onChangeLastName } = useTextFieldChangeStore(
+        userSettings?.lastName ?? ""
+    )
 
     return (
         <CollapsableList label="Benutzerkonto" description="Name, Titel, Geschlecht">
@@ -78,14 +86,30 @@ export const UserAccountSettings: React.FC = () => {
                             variant="filled"
                             size="small"
                             label="Vorname"
-                            value={userSettings.firstName}
+                            value={firstName}
+                            onChange={onChangeFirstName}
+                            onBlur={() => changeUserSetting({ firstName })}
+                            onKeyDown={e => {
+                                if (e.key === "Enter") {
+                                    e.currentTarget.blur()
+                                    changeUserSetting({ firstName })
+                                }
+                            }}
                             sx={{ mr: 0.5 }}
                         />
                         <TextField
                             variant="filled"
                             size="small"
                             label="Nachname"
-                            value={userSettings.lastName}
+                            value={lastName}
+                            onChange={onChangeLastName}
+                            onBlur={() => changeUserSetting({ lastName })}
+                            onKeyDown={e => {
+                                if (e.key === "Enter") {
+                                    e.currentTarget.blur()
+                                    changeUserSetting({ lastName })
+                                }
+                            }}
                         />
                     </ListItem>
                 </>

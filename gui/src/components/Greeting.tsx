@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material"
+import { Typography, TypographyTypeMap } from "@mui/material"
 import { TypographyProps } from "@mui/system"
 import { useUser } from "auth"
 import { useUserSettings } from "hooks/useUserSettings"
@@ -26,7 +26,7 @@ const GREETINGS = [
     "Whazuuuuuuuup",
     "Lange nicht gesehen",
     "Alles Rogger in Kambodscha",
-    "Milord",
+    "Milord, es ist mir eine Ehre",
     "Tach",
     "Moinsen",
     "Grüß Gott",
@@ -36,7 +36,7 @@ const GREETINGS = [
     "Lebe lang und in Frieden",
 ]
 
-export const Greeting: React.FC<TypographyProps> = TypographyProps => {
+export const Greeting: React.FC<TypographyTypeMap["props"]> = TypographyProps => {
     const { user } = useUser()
     const { userSettings } = useUserSettings()
 
@@ -69,11 +69,11 @@ export const Greeting: React.FC<TypographyProps> = TypographyProps => {
                 ? maleGreeting
                 : userSettings.sex === "female"
                 ? femaleGreeting
-                : usernameGreeting
+                : diverseGreeting || usernameGreeting
 
-        return userSettings.disableFunnyGreetings === false
-            ? `${randomFunnyGreeting}, ${firstName}!`
-            : `Willkommen, ${lastName}.`
+        return userSettings.disableFunnyGreetings
+            ? `Willkommen, ${lastName}.`
+            : `${randomFunnyGreeting}, ${firstName}!`
     }, [user, userSettings])
 
     return <Typography {...TypographyProps}>{greeting}</Typography>
