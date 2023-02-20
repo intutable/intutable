@@ -28,6 +28,7 @@ import { useUser } from "auth"
 import { useRouter } from "next/router"
 import React from "react"
 import HistoryIcon from "@mui/icons-material/History"
+import DynamicFormIcon from "@mui/icons-material/DynamicForm"
 
 const drawerWidth = 240
 
@@ -78,12 +79,13 @@ type DrawerListItemProps = {
 
 const DrawerLink: React.FC<DrawerListItemProps> = props => {
     const router = useRouter()
+    const theme = useTheme()
     return (
         <ListItemButton
             onClick={() => router.push(props.url)}
             sx={{
                 ...(router.pathname === props.url && {
-                    bgcolor: "#dedede",
+                    bgcolor: theme.palette.action.selected,
                 }),
             }}
         >
@@ -142,6 +144,12 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                         nonActiveIcon={<WorkspacesIconOutlined />}
                         activeIcon={<WorkspacesIcon />}
                     />
+                    <DrawerLink
+                        text="Formulare"
+                        url="/forms"
+                        nonActiveIcon={<DynamicFormIcon />}
+                        activeIcon={<DynamicFormIcon />}
+                    />
                 </>
             )}
             {user?.isLoggedIn && user?.role.roleKind === RoleKind.Admin && (
@@ -171,12 +179,14 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                 nonActiveIcon={<SupportAgentIconOutlined />}
                 activeIcon={<SupportAgentIcon />}
             />
-            <DrawerLink
-                text="Einstellungen"
-                url="/settings"
-                nonActiveIcon={<SettingsIconOutlined />}
-                activeIcon={<SettingsIcon />}
-            />
+            {user?.isLoggedIn && (
+                <DrawerLink
+                    text="Einstellungen"
+                    url="/settings"
+                    nonActiveIcon={<SettingsIconOutlined />}
+                    activeIcon={<SettingsIcon />}
+                />
+            )}
         </Drawer>
     )
 }

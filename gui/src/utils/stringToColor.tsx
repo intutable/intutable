@@ -10,7 +10,7 @@ import { rgbToHex } from "utils/rgbToHex"
  * in the column without using a context around.
  */
 export const stringToColor = (str: string) => {
-    let hashCode = hash(str)
+    let hashCode = hash(str ?? "")
     const red = hashCode & 0xff
     hashCode >>= 8
     const green = hashCode & 0xff

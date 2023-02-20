@@ -367,3 +367,35 @@ export function deleteRows(
 ) {
     return { channel: CHANNEL, method: deleteRows.name, connectionId, viewId, condition }
 }
+
+/**
+ * Creates a new user settings object in the database.
+ */
+export function createUserSettings(
+    connectionId: string,
+    userId: number,
+    defaultUserSettings?: string
+) {
+    return {
+        channel: CHANNEL,
+        method: createUserSettings.name,
+        connectionId,
+        userId,
+        defaultUserSettings,
+    }
+}
+
+/**
+ * Creates a new user settings object in the database.
+ */
+export function getUserSettings(connectionId: string, userId: number) {
+    return { channel: CHANNEL, method: getUserSettings.name, connectionId, userId }
+}
+
+/**
+ * Update the user's settings.
+ * @param settings json stringified user settings
+ */
+export function updateUserSettings(connectionId: string, userId: number, settings: string) {
+    return { channel: CHANNEL, method: updateUserSettings.name, connectionId, userId, settings }
+}

@@ -163,3 +163,11 @@ DELETE FROM roles;
 INSERT INTO roles(_id, name, password)
   VALUES (1, 'all_users', '');
 -- end dekanat-app<version> changes
+
+
+-- begin user settings schema
+CREATE TABLE user_settings(
+    user_id integer unique,
+    settings jsonb 
+);
+-- end user settings schema

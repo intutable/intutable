@@ -17,6 +17,7 @@ import { useTheme } from "@mui/material/styles"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
 import { DispatchWithoutAction } from "react"
+import { useTextFieldChangeStore } from "utils/useTextFieldChangeStore"
 import { HelperIcon } from "./HelperIcon"
 
 const VerticalDivider: React.FC = () => (
@@ -29,6 +30,9 @@ export const UndoHistoryHead: React.FC<{ forceUpdate: DispatchWithoutAction }> =
     const { undoManager } = useUndoManager()
     const { userSettings, changeUserSetting } = useUserSettings()
     const theme = useTheme()
+
+    const { value: undoCacheLimit, onChangeHandler: onChangeCacheLimit } =
+        useTextFieldChangeStore<number>(userSettings?.undoCacheLimit ?? 20)
 
     if (undoManager == null || userSettings == null) return <>Lädt...</>
 
@@ -114,15 +118,23 @@ export const UndoHistoryHead: React.FC<{ forceUpdate: DispatchWithoutAction }> =
                 size="small"
                 sx={{ width: 100 }}
                 margin="none"
-                onChange={e => {
-                    const value = parseInt(e.target.value)
-                    if (value < 2) return
+                onChange={onChangeCacheLimit}
+                value={undoCacheLimit}
+                onBlur={e => {
+                    if (undoCacheLimit < 2) return
                     changeUserSetting({
-                        undoCacheLimit: value,
+                        undoCacheLimit,
                     })
                     forceUpdate()
                 }}
-                value={userSettings.undoCacheLimit}
+                onKeyDown={e => {
+                    if (e.key === "Enter" && undoCacheLimit >= 2) {
+                        e.currentTarget.blur()
+                        changeUserSetting({
+                            undoCacheLimit,
+                        })
+                    }
+                }}
                 label="Limit"
                 type="number"
             />

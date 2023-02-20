@@ -89,6 +89,9 @@ export const Avatar: React.FC = () => {
             </Button>
         )
 
+    const name = userSettings?.firstName + " " + userSettings?.lastName
+    const username = user.username
+
     return (
         <>
             <Stack
@@ -107,7 +110,7 @@ export const Avatar: React.FC = () => {
                     <PersonIcon />
                 </MUIAvatar>
                 {userSettings && (
-                    <Typography>{userSettings.firstName + " " + userSettings.lastName}</Typography>
+                    <Typography>{name.trim().length > 0 ? name : username}</Typography>
                 )}
             </Stack>
             {anchorEL && (
