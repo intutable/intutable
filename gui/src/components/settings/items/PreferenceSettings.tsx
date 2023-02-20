@@ -28,17 +28,10 @@ export const PreferenceSettings: React.FC = () => {
                             onChange={(e, value: UserSettings["preferredTheme"] | null) =>
                                 changeUserSetting({ preferredTheme: value ?? "system" })
                             }
-                            aria-label="text alignment"
                         >
-                            <ToggleButton value="system" aria-label="left aligned">
-                                system
-                            </ToggleButton>
-                            <ToggleButton value="light" aria-label="centered">
-                                hell
-                            </ToggleButton>
-                            <ToggleButton value="dark" aria-label="right aligned">
-                                dunkel
-                            </ToggleButton>
+                            <ToggleButton value="system">system</ToggleButton>
+                            <ToggleButton value="light">hell</ToggleButton>
+                            <ToggleButton value="dark">dunkel</ToggleButton>
                         </ToggleButtonGroup>
                     </ListItem>
 

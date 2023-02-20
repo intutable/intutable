@@ -31,6 +31,7 @@ import EmojiPeopleIcon from "@mui/icons-material/EmojiPeople"
 import { CollapsableList } from "components/settings/CollapsableList"
 import { UserAccountSettings } from "components/settings/items/UserAccountSettings"
 import { PreferenceSettings } from "components/settings/items/PreferenceSettings"
+import { InputMaskSettings } from "components/settings/items/InputMaskSettings"
 
 // TODO: make each List collapsable
 
@@ -92,6 +93,8 @@ const Settings: NextPage = () => {
             <UserAccountSettings />
 
             <PreferenceSettings />
+
+            <InputMaskSettings />
 
             {user?.isLoggedIn && (
                 <List>

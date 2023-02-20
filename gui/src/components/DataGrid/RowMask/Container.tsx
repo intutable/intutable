@@ -40,6 +40,8 @@ import DeleteIcon from "@mui/icons-material/Delete"
 import { useRecordDraftSession } from "hooks/useRecordDraftSession"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
+import { Bookmark } from "@mui/icons-material"
+import { BookmarkButton } from "./Bookmark"
 
 export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
@@ -106,6 +108,7 @@ export const RowMaskContainer: React.FC = () => {
                         commentsVisible={commentsVisible}
                         toggleCommentsVisible={() => setCommentsVisible(prev => !prev)}
                     />
+                    <BookmarkButton row={selectedRow} />
                     <Divider orientation="vertical" flexItem sx={{ mx: 2 }} variant="middle" />
                     {isInputMask &&
                         currentInputMask?.draftsCanBeDeleted &&

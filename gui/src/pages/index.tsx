@@ -11,20 +11,26 @@ const Home: NextPage = () => {
     const { user } = useUser()
     const { userSettings } = useUserSettings()
 
+    if (user == null || user.isLoggedIn === false)
+        return (
+            <Typography>
+                Melde <Link href="/login">melden</Link> Sie sich an!
+            </Typography>
+        )
+
     return (
         <>
             <MetaTitle title="Startseite" />
-            <Typography variant={"h4"}>Startseite</Typography>
+
+            <Greeting variant="h4" />
+
             <Divider />
             <Typography sx={{ mt: 2 }}>
-                {user?.isLoggedIn ? (
-                    <Greeting />
-                ) : (
-                    <>
-                        Melde dich an: <Link href="/login">anmelden</Link>
-                    </>
-                )}
+                Willkommen beim Verwaltungs-Tool der Fakultät für Mathematik und Informatik der
+                Universität Heidelberg 🙋‍♂️
             </Typography>
+
+            {/* Quick Links */}
 
             {/* <ReleaseNotification /> */}
         </>

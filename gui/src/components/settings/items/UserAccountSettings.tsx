@@ -15,7 +15,7 @@ export const UserAccountSettings: React.FC = () => {
     const { userSettings, changeUserSetting } = useUserSettings()
 
     return (
-        <CollapsableList label="Benutzerkonto" description="Name, Adresse, Geschlecht">
+        <CollapsableList label="Benutzerkonto" description="Name, Titel, Geschlecht">
             {userSettings == null ? (
                 <CircularProgress />
             ) : (

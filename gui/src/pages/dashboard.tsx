@@ -1,7 +1,9 @@
 import { Divider, Stack, Typography } from "@mui/material"
+import { BookmarkedRecord } from "components/BookmarkedRecord"
 import { CollapsableSection } from "components/CollapsableSection"
 import { InputMaskCTACard } from "components/InputMaskCTACard"
 import MetaTitle from "components/MetaTitle"
+import { useUserSettings } from "hooks/useUserSettings"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import Head from "next/head"
 import { getServerSideProps as forms_getServerSideProps, InputMaskCallToActionCard } from "./forms"
@@ -13,6 +15,8 @@ type DashboardProps = {
 const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
     props: DashboardProps
 ) => {
+    const { userSettings } = useUserSettings()
+
     return (
         <>
             <MetaTitle title="Dashboard" />
@@ -29,8 +33,14 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                 <em>Coming Soon</em>
             </CollapsableSection>
 
-            <CollapsableSection title="Bookmarks" defaultClosed>
-                <em>Coming Soon</em>
+            <CollapsableSection title="Bookmarks">
+                {userSettings == null ? (
+                    <>Lädt...</>
+                ) : (
+                    userSettings.bookmarkedRecords.map(bookmark => (
+                        <BookmarkedRecord key={bookmark.rowId} bookmark={bookmark} />
+                    ))
+                )}
             </CollapsableSection>
 
             <CollapsableSection title="Eingabemasken">

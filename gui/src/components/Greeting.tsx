@@ -1,4 +1,5 @@
 import { Typography } from "@mui/material"
+import { TypographyProps } from "@mui/system"
 import { useUser } from "auth"
 import { useUserSettings } from "hooks/useUserSettings"
 import { useMemo } from "react"
@@ -35,7 +36,7 @@ const GREETINGS = [
     "Lebe lang und in Frieden",
 ]
 
-export const Greeting: React.FC = () => {
+export const Greeting: React.FC<TypographyProps> = TypographyProps => {
     const { user } = useUser()
     const { userSettings } = useUserSettings()
 
@@ -75,5 +76,5 @@ export const Greeting: React.FC = () => {
             : `Willkommen, ${lastName}.`
     }, [user, userSettings])
 
-    return <Typography>{greeting}</Typography>
+    return <Typography {...TypographyProps}>{greeting}</Typography>
 }

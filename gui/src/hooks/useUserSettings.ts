@@ -5,13 +5,7 @@ import { fetcher } from "api"
 import { useUser } from "auth"
 import useSWR from "swr"
 import { Row } from "types"
-
-export type Bookmark = {
-    projectId: ProjectDescriptor["id"]
-    tableId: TableDescriptor["id"]
-    inputMask: InputMask["id"]
-    rowId: Row["_id"]
-}
+import { Bookmark } from "components/DataGrid/RowMask/Bookmark"
 
 export type UserSettings = {
     title: string
@@ -30,6 +24,7 @@ export type UserSettings = {
     enableUndoCache: boolean
     /** @default 'always' */
     constrainValidation: "always" | "opening-closening"
+
     /** @default ';' */
     exportJoinCharacter: string
 }
@@ -69,7 +64,7 @@ export const useUserSettings = () => {
             : null
     )
 
-    console.log(userSettings)
+    // console.log(userSettings)
 
     const changeUserSetting = async (
         update: Partial<{ [key in keyof UserSettings]: UserSettings[key] }>

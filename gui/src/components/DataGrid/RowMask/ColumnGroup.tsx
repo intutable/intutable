@@ -51,7 +51,7 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
             sx={{
                 bgcolor: "inherit",
                 "&:hover": {
-                    bgcolor: theme.palette.grey[100],
+                    bgcolor: theme.palette.action.hover,
                 },
                 borderRadius: theme.shape.borderRadius,
                 mb: 3,
