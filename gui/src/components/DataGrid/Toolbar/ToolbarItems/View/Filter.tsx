@@ -10,6 +10,7 @@ import { wherePartial, and, or, not, isValidFilter } from "@shared/utils/filter"
 import { TableColumn } from "types"
 import { SimpleFilterEditor } from "./SimpleFilter"
 import { getFilterColor } from "./utils"
+import { useTheme } from "@mui/material/styles"
 
 const Infix = c.ConditionKind.Infix
 const Not = c.ConditionKind.Not
@@ -40,6 +41,7 @@ type FilterEditorProps = {
 
 export const FilterEditor: React.FC<FilterEditorProps> = props => {
     const { filter, columns, onDemote, onChange, nestingDepth } = props
+    const theme = useTheme()
 
     const newFilter = () => wherePartial(undefined, "=", undefined)
 
@@ -223,7 +225,7 @@ export const FilterEditor: React.FC<FilterEditorProps> = props => {
                     <FormatIndentDecreaseIcon
                         sx={{
                             fontSize: "80%",
-                            color: "#aa0000",
+                            color: theme.palette.error.main,
                         }}
                     />
                 </IconButton>

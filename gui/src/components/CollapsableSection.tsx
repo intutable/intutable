@@ -6,10 +6,12 @@ import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown"
 export type CollapsableSectionProps = {
     children: React.ReactNode
     title: string
+    /** @default true */
+    defaultClosed?: boolean
 }
 
 export const CollapsableSection: React.FC<CollapsableSectionProps> = props => {
-    const [collapsed, setCollapsed] = useState<boolean>(false)
+    const [collapsed, setCollapsed] = useState<boolean>(props.defaultClosed === true)
 
     return (
         <Box

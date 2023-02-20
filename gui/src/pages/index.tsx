@@ -4,9 +4,12 @@ import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
 import type { NextPage } from "next"
 import { ReleaseNotification } from "components/Release Notes/ReleaseNotification"
+import { useUserSettings } from "hooks/useUserSettings"
+import { Greeting } from "components/Greeting"
 
 const Home: NextPage = () => {
     const { user } = useUser()
+    const { userSettings } = useUserSettings()
 
     return (
         <>
@@ -15,7 +18,7 @@ const Home: NextPage = () => {
             <Divider />
             <Typography sx={{ mt: 2 }}>
                 {user?.isLoggedIn ? (
-                    <>Hallo {user.username}!</>
+                    <Greeting />
                 ) : (
                     <>
                         Melde dich an: <Link href="/login">anmelden</Link>

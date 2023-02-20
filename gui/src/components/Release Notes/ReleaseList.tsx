@@ -4,8 +4,9 @@ import { localeDateString, MONTHS } from "utils/date"
 import { ReleaseProps } from "./Release"
 import { releases } from "public/releases"
 const byDate = (a: ReleaseProps, b: ReleaseProps) => b.date.getTime() - a.date.getTime()
+import { useTheme } from "@mui/material/styles"
 
-export const ReleaseList: React.FC = props => {
+export const ReleaseList: React.FC = () => {
     return (
         <List
             sx={{
@@ -30,6 +31,7 @@ const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({
     index,
 }) => {
     const router = useRouter()
+    const theme = useTheme()
 
     return (
         <ListItem
@@ -37,7 +39,7 @@ const ReleaseListItem: React.FC<{ release: ReleaseProps; index: number }> = ({
             sx={{
                 cursor: "pointer",
                 "&:hover": {
-                    bgcolor: "#eee",
+                    bgcolor: theme.palette.action.hover,
                 },
             }}
         >

@@ -25,7 +25,7 @@ import { useSnacki } from "hooks/useSnacki"
 import { useTables } from "hooks/useTables"
 import { useView } from "hooks/useView"
 import { InferGetServerSidePropsType, NextPage } from "next"
-import { useThemeToggler } from "pages/_app"
+import { useThemeMode } from "pages/_app"
 import React, { useState } from "react"
 import DataGrid from "react-data-grid"
 import { DndProvider } from "react-dnd"
@@ -38,8 +38,8 @@ import { withSSRCatch } from "utils/withSSRCatch"
 
 const TablePage: React.FC = () => {
     const theme = useTheme()
-    const { getTheme } = useThemeToggler()
     const { snackError, snack } = useSnacki()
+    const { themeMode } = useThemeMode()
 
     const { selectedRows, setSelectedRows } = useSelectedRows()
     const { cellNavigationMode } = useCellNavigation()
@@ -113,7 +113,7 @@ const TablePage: React.FC = () => {
 
                         <DndProvider backend={HTML5Backend}>
                             <DataGrid
-                                className={"rdg-" + getTheme() + " fill-grid"}
+                                className={"rdg-" + themeMode + " fill-grid"}
                                 rows={data.rows}
                                 columns={[
                                     SelectColumn,

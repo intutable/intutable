@@ -17,6 +17,7 @@ import {
 } from "types/filter"
 import { TableColumn } from "types"
 import { getFilterColor } from "./utils"
+import { useTheme } from "@mui/material/styles"
 
 type SimpleFilterEditorProps = {
     /** When the user clicks "create new filter", a new filter with no data
@@ -43,6 +44,7 @@ type SimpleFilterEditorProps = {
 
 export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
     const { columns, filter, onPromote, onChange } = props
+    const theme = useTheme()
 
     const getColumn = (columnId: number | string) => {
         const column = columns.find(c => c.id === columnId)
@@ -127,7 +129,7 @@ export const SimpleFilterEditor: React.FC<SimpleFilterEditorProps> = props => {
                 <FormatIndentIncreaseIcon
                     sx={{
                         fontSize: "80%",
-                        color: "#00aa00",
+                        color: theme.palette.success.main,
                     }}
                 />
             </IconButton>
