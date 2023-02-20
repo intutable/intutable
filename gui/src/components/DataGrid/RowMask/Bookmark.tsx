@@ -1,7 +1,7 @@
 import StarOutlineIcon from "@mui/icons-material/StarOutline"
 import StarIcon from "@mui/icons-material/Star"
 import { useUserSettings } from "hooks/useUserSettings"
-import { Row, TableDescriptor } from "types"
+import { Row, TableDescriptor, ViewDescriptor } from "types"
 import { InputMask } from "@shared/input-masks/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { useMemo } from "react"
@@ -9,48 +9,25 @@ import { useAPI } from "context"
 import { IconButton } from "@mui/material"
 import { useInputMask } from "hooks/useInputMask"
 import { useRowMask } from "context/RowMaskContext"
+import { UrlObject } from "url"
+import { Bookmark, useBookmark } from "hooks/useBookmark"
+export type { Bookmark }
 
-export type Bookmark = {
-    projectId: ProjectDescriptor["id"]
-    tableId: TableDescriptor["id"]
-    rowId: Row["_id"]
-    inputMask?: InputMask["id"]
-}
-
-export const BookmarkButton: React.FC<{ row: { _id: number } }> = props => {
+export const BookmarkButton: React.FC<{ row: Row }> = props => {
     const { tableId, projectId } = useAPI()
     const { appliedInputMask } = useRowMask()
     const { userSettings, changeUserSetting } = useUserSettings()
-
-    const isBookmarked: boolean = useMemo(() => {
-        if (userSettings == null || tableId == null) return false
-        return userSettings.bookmarkedRecords.some(
-            bookmark => bookmark.rowId === props.row._id && bookmark.tableId === tableId
-        )
-    }, [props.row._id, tableId, userSettings])
+    const { isBookmarked, addBookmark, removeBookmark, captureBookmark } = useBookmark()
 
     const toggle = () => {
-        if (userSettings == null || tableId == null || projectId == null) return
-        if (isBookmarked) {
+        const bookmark = isBookmarked(props.row)
+        if (bookmark != null) {
             // remove
-            changeUserSetting({
-                bookmarkedRecords: userSettings.bookmarkedRecords.filter(
-                    b => b.rowId !== props.row._id && b.tableId !== tableId
-                ),
-            })
+            removeBookmark(bookmark)
         } else {
             // add
-            changeUserSetting({
-                bookmarkedRecords: [
-                    ...userSettings.bookmarkedRecords,
-                    {
-                        projectId,
-                        tableId,
-                        rowId: props.row._id,
-                        inputMask: appliedInputMask ?? undefined,
-                    },
-                ],
-            })
+            const captured = captureBookmark({ row: props.row })
+            addBookmark(captured)
         }
     }
 
@@ -58,7 +35,7 @@ export const BookmarkButton: React.FC<{ row: { _id: number } }> = props => {
 
     return (
         <IconButton size="small" onClick={toggle}>
-            {isBookmarked ? (
+            {isBookmarked(props.row) != null ? (
                 <StarIcon fontSize="small" sx={{ color: "#FFDF00" }} />
             ) : (
                 <StarOutlineIcon fontSize="small" />

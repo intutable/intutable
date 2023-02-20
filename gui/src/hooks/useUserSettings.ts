@@ -44,7 +44,7 @@ export const DefaultUserSettings: UserSettings = {
 }
 
 // TODO: connect to db ✅
-// TODO: integrate in `/settings`
+// TODO: integrate in `/settings` ✅
 // TODO: actually use each setting
 
 export const useUserSettings = () => {
