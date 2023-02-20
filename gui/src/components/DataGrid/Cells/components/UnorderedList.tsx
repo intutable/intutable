@@ -44,7 +44,7 @@ const formatValue = (value: unknown, cellType: string): React.ReactNode => {
     const deserializer = ctor.deserialize
     const exporter = ctor.export
     const deserialized = catchEmpty(deserializer.bind(ctor), value)
-    if (deserialized == null) return <em>Leer</em>
+    if (deserialized == null) return "Leer"
     return exporter(deserialized) as string
 }
 
@@ -191,108 +191,17 @@ export class UnorderedList extends Cell {
                         }}
                         variant="standard"
                     />
-                    <Menu
-                        id="demo-positioned-menu"
-                        aria-labelledby="demo-positioned-button"
-                        anchorEl={modalRef.current}
-                        open={menuOpen && modalRef.current !== null}
+                    <UnorderedListMenu
+                        menuOpen={menuOpen}
+                        modalRef={modalRef}
                         onClose={() => setMenuOpen(false)}
-                        MenuListProps={{
-                            sx: { width: modalRef.current && modalRef.current.offsetWidth },
-                        }}
-                    >
-                        {this.isReadonlyComponent === false && [
-                            <MenuItem dense key={"UnorderredList-Menu-Header"}>
-                                <ListItemText>
-                                    {listItems.length}{" "}
-                                    {listItems.length === 1 ? "Eintrag" : "Einträge"}
-                                </ListItemText>
-                                <Tooltip
-                                    arrow
-                                    enterDelay={1000}
-                                    placement="bottom"
-                                    title="Alle Listen-Einträge löschen"
-                                >
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => {
-                                            const confirmed = confirm(
-                                                "Sollen alle Listen-Einträge gelöscht werden?"
-                                            )
-                                            if (confirmed) removeAllListItems()
-                                        }}
-                                        disabled={listItems.length === 0}
-                                        sx={{
-                                            "&:hover": {
-                                                color: theme.palette.error.light,
-                                            },
-                                        }}
-                                    >
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                </Tooltip>
-                            </MenuItem>,
-                            <Divider sx={{ mb: 1 }} key={"UnorderredList-Menu-Header-Divider"} />,
-                        ]}
-
-                        <MenuList
-                            dense
-                            sx={{
-                                overflowY: "scroll",
-                                maxHeight: "500px",
-                            }}
-                        >
-                            {isEmpty && (
-                                <MenuItem>
-                                    <em>Keine Listen-Einträge</em>
-                                </MenuItem>
-                            )}
-                            {listItems.map(item => (
-                                <MenuItem key={item.value}>
-                                    <ListItemText>
-                                        &#x2022;{" "}
-                                        <Chip
-                                            label={item.value}
-                                            size="small"
-                                            sx={{
-                                                color: theme.palette.getContrastText(
-                                                    stringToColor(item.value)
-                                                ),
-                                                bgcolor: stringToColor(item.value),
-                                                mr: 0.5,
-                                                cursor: item.url && "pointer",
-                                            }}
-                                            onClick={
-                                                item.url ? () => router.push(item.url!) : undefined
-                                            }
-                                        />
-                                    </ListItemText>
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => removeListItem(item.value)}
-                                    >
-                                        <ClearIcon
-                                            fontSize="small"
-                                            sx={{
-                                                "&:hover": {
-                                                    color: theme.palette.error.light,
-                                                },
-                                            }}
-                                        />
-                                    </IconButton>
-                                </MenuItem>
-                            ))}
-                        </MenuList>
-
-                        {this.isReadonlyComponent === false && [
-                            <Divider sx={{ mt: 1 }} key={"UnorderredList-Footer-Divider"} />,
-                            <MenuAddItemTextField
-                                key={"UnorderredList-Footer"}
-                                onAdd={value => addListItem(value)}
-                                label="Eintrag hinzufügen"
-                            />,
-                        ]}
-                    </Menu>
+                        self={this}
+                        removeAllListItems={removeAllListItems}
+                        removeListItem={removeListItem}
+                        addListItem={addListItem}
+                        listItems={listItems}
+                        isEmpty={isEmpty}
+                    />
                 </Box>
             </>
         )
@@ -391,105 +300,141 @@ export class UnorderedList extends Cell {
                     helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
                     {...props.forwardProps}
                 />
-                <Menu
-                    id="demo-positioned-menu"
-                    aria-labelledby="demo-positioned-button"
-                    anchorEl={modalRef.current}
-                    open={menuOpen && modalRef.current !== null}
+                <UnorderedListMenu
+                    menuOpen={menuOpen}
+                    modalRef={modalRef}
                     onClose={() => setMenuOpen(false)}
-                    MenuListProps={{
-                        sx: { width: modalRef.current && modalRef.current.offsetWidth },
-                    }}
-                >
-                    {this.isReadonlyComponent === false && [
-                        <MenuItem dense key={"UnorderredList-Menu-Header"}>
-                            <ListItemText>
-                                {listItems.length} {listItems.length === 1 ? "Eintrag" : "Einträge"}
-                            </ListItemText>
-                            <Tooltip
-                                arrow
-                                enterDelay={1000}
-                                placement="bottom"
-                                title="Alle Listen-Einträge löschen"
-                            >
-                                <IconButton
-                                    size="small"
-                                    onClick={() => {
-                                        const confirmed = confirm(
-                                            "Sollen alle Listen-Einträge gelöscht werden?"
-                                        )
-                                        if (confirmed) removeAllListItems()
-                                    }}
-                                    disabled={listItems.length === 0}
-                                    sx={{
-                                        "&:hover": {
-                                            color: theme.palette.error.light,
-                                        },
-                                    }}
-                                >
-                                    <DeleteIcon fontSize="small" />
-                                </IconButton>
-                            </Tooltip>
-                        </MenuItem>,
-                        <Divider sx={{ mb: 1 }} key={"UnorderredList-Menu-Header-Divider"} />,
-                    ]}
-
-                    <MenuList
-                        dense
-                        sx={{
-                            overflowY: "scroll",
-                            maxHeight: "500px",
-                        }}
-                    >
-                        {isEmpty && (
-                            <MenuItem>
-                                <em>Keine Listen-Einträge</em>
-                            </MenuItem>
-                        )}
-                        {listItems.map(item => (
-                            <MenuItem key={item.value}>
-                                <ListItemText>
-                                    &#x2022;{" "}
-                                    <Chip
-                                        label={item.value}
-                                        size="small"
-                                        sx={{
-                                            color: theme.palette.getContrastText(
-                                                stringToColor(item.value)
-                                            ),
-                                            bgcolor: stringToColor(item.value),
-                                            mr: 0.5,
-                                            cursor: item.url && "pointer",
-                                        }}
-                                        onClick={
-                                            item.url ? () => router.push(item.url!) : undefined
-                                        }
-                                    />
-                                </ListItemText>
-                                <IconButton size="small" onClick={() => removeListItem(item.value)}>
-                                    <ClearIcon
-                                        fontSize="small"
-                                        sx={{
-                                            "&:hover": {
-                                                color: theme.palette.error.light,
-                                            },
-                                        }}
-                                    />
-                                </IconButton>
-                            </MenuItem>
-                        ))}
-                    </MenuList>
-
-                    {this.isReadonlyComponent === false && [
-                        <Divider sx={{ mt: 1 }} key={"UnorderredList-Footer-Divider"} />,
-                        <MenuAddItemTextField
-                            key={"UnorderredList-Footer"}
-                            onAdd={value => addListItem(value)}
-                            label="Eintrag hinzufügen"
-                        />,
-                    ]}
-                </Menu>
+                    self={this}
+                    removeAllListItems={removeAllListItems}
+                    removeListItem={removeListItem}
+                    addListItem={addListItem}
+                    listItems={listItems}
+                    isEmpty={isEmpty}
+                />
             </>
         )
     }
+}
+
+type UnorderedListMenuProps = {
+    menuOpen: boolean
+    modalRef: React.RefObject<HTMLDivElement>
+    onClose: () => void
+    readonly self: UnorderedList
+    removeListItem: (value: string) => void
+    removeAllListItems: () => void
+    addListItem: (value: string) => void
+    listItems: ListItem<undefined>[]
+    isEmpty: boolean
+}
+const UnorderedListMenu: React.FC<UnorderedListMenuProps> = props => {
+    const {
+        menuOpen,
+        modalRef,
+        self,
+        removeAllListItems,
+        removeListItem,
+        addListItem,
+        listItems,
+        isEmpty,
+    } = props
+    const theme = useTheme()
+    const router = useRouter()
+
+    return (
+        <Menu
+            id="demo-positioned-menu"
+            aria-labelledby="demo-positioned-button"
+            anchorEl={modalRef.current}
+            open={menuOpen && modalRef.current !== null}
+            onClose={props.onClose}
+            MenuListProps={{
+                sx: { width: modalRef.current && modalRef.current.offsetWidth },
+            }}
+        >
+            {self.isReadonlyComponent === false && [
+                <MenuItem dense key={"UnorderredList-Menu-Header"}>
+                    <ListItemText>
+                        {listItems.length} {listItems.length === 1 ? "Eintrag" : "Einträge"}
+                    </ListItemText>
+                    <Tooltip
+                        arrow
+                        enterDelay={1000}
+                        placement="bottom"
+                        title="Alle Listen-Einträge löschen"
+                    >
+                        <IconButton
+                            size="small"
+                            onClick={() => {
+                                const confirmed = confirm(
+                                    "Sollen alle Listen-Einträge gelöscht werden?"
+                                )
+                                if (confirmed) removeAllListItems()
+                            }}
+                            disabled={listItems.length === 0}
+                            sx={{
+                                "&:hover": {
+                                    color: theme.palette.error.light,
+                                },
+                            }}
+                        >
+                            <DeleteIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                </MenuItem>,
+                <Divider sx={{ mb: 1 }} key={"UnorderredList-Menu-Header-Divider"} />,
+            ]}
+
+            <MenuList
+                dense
+                sx={{
+                    overflowY: "scroll",
+                    maxHeight: "500px",
+                }}
+            >
+                {isEmpty && (
+                    <MenuItem>
+                        <em>Keine Listen-Einträge</em>
+                    </MenuItem>
+                )}
+                {listItems.map(item => (
+                    <MenuItem key={item.value}>
+                        <ListItemText>
+                            &#x2022;{" "}
+                            <Chip
+                                label={item.value}
+                                size="small"
+                                sx={{
+                                    color: theme.palette.getContrastText(stringToColor(item.value)),
+                                    bgcolor: stringToColor(item.value),
+                                    mr: 0.5,
+                                    cursor: item.url && "pointer",
+                                }}
+                                onClick={item.url ? () => router.push(item.url!) : undefined}
+                            />
+                        </ListItemText>
+                        <IconButton size="small" onClick={() => removeListItem(item.value)}>
+                            <ClearIcon
+                                fontSize="small"
+                                sx={{
+                                    "&:hover": {
+                                        color: theme.palette.error.light,
+                                    },
+                                }}
+                            />
+                        </IconButton>
+                    </MenuItem>
+                ))}
+            </MenuList>
+
+            {self.isReadonlyComponent === false && [
+                <Divider sx={{ mt: 1 }} key={"UnorderredList-Footer-Divider"} />,
+                <MenuAddItemTextField
+                    key={"UnorderredList-Footer"}
+                    onAdd={value => addListItem(value)}
+                    label="Eintrag hinzufügen"
+                />,
+            ]}
+        </Menu>
+    )
 }
