@@ -1,7 +1,5 @@
 import ClearIcon from "@mui/icons-material/Clear"
 import DeleteIcon from "@mui/icons-material/Delete"
-import { useRouter } from "next/router"
-import { FormatterProps } from "react-data-grid"
 import ListIcon from "@mui/icons-material/List"
 import OpenInFullIcon from "@mui/icons-material/OpenInFull"
 import {
@@ -17,12 +15,14 @@ import {
     Tooltip,
 } from "@mui/material"
 import useTheme from "@mui/system/useTheme"
+import { useRouter } from "next/router"
+import { FormatterProps } from "react-data-grid"
 
+import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import {
     UnorderedListCellContent as List,
     UnorderedListCellContentItem as ListItem,
 } from "@shared/types/gui"
-import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { useMemo, useRef, useState } from "react"
@@ -48,12 +48,17 @@ const formatValue = (value: unknown, cellType: string): React.ReactNode => {
     return exporter(deserialized) as string
 }
 
-const formatItems = (list: List): ListItem<undefined>[] => {
+const formatItems = (
+    list: List,
+    replaceNestedFn: (list: List) => string
+): ListItem<undefined>[] => {
     try {
         if (list.format != null) {
             return list.items.map(item => ({
                 ...item,
-                value: formatValue(item.value, list.format!.cellType) as string,
+                value: isUnorderedList(item.value)
+                    ? replaceNestedFn(item.value)
+                    : (formatValue(item.value, list.format!.cellType) as string),
             }))
         }
 
@@ -96,7 +101,7 @@ export class UnorderedList extends Cell {
     }
 
     static export(list: List): string {
-        return formatItems(list).join(";")
+        return formatItems(list, () => "[Verlinkte-Spalte]").join(";")
     }
     static unexport(value: string): List {
         const items = value.split(";")
@@ -151,8 +156,10 @@ export class UnorderedList extends Cell {
         }
 
         const listItems = useMemo(() => {
-            if (content == null) return []
-            return formatItems(content)
+            if (!content) return []
+            return formatItems(content, nestedList => {
+                return nestedList.items.toString()
+            })
         }, [content])
 
         return (
@@ -260,8 +267,10 @@ export class UnorderedList extends Cell {
         }
 
         const listItems = useMemo(() => {
-            if (content == null) return []
-            return formatItems(content)
+            if (!content) return []
+            return formatItems(content, nestedList => {
+                return nestedList.items.toString()
+            })
         }, [content])
 
         return (
