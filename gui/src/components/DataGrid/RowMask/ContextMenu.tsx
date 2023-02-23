@@ -12,9 +12,12 @@ import { useInputMask } from "hooks/useInputMask"
 import ShareIcon from "@mui/icons-material/Share"
 import { useAPI } from "context"
 import { isViewIdOrigin, isViewNameOrigin } from "@shared/input-masks/utils"
+
 export type RowMaskContextMenuProps = {
-    commentsVisible: boolean
-    toggleCommentsVisible: () => void
+    commentSectionOpen: boolean
+    toggleCommentSection: () => void
+    constraintSectionOpen: boolean
+    toggleConstrainSection: () => void
 }
 
 export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
@@ -91,8 +94,8 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                         currentInputMask &&
                         currentInputMask.comments.length > 0 && (
                             <>
-                                <MenuItem onClick={props.toggleCommentsVisible}>
-                                    {props.commentsVisible && (
+                                <MenuItem onClick={props.toggleCommentSection}>
+                                    {props.commentSectionOpen && (
                                         <ListItemIcon>
                                             <CheckIcon fontSize="small" />
                                         </ListItemIcon>
@@ -101,6 +104,20 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                                 </MenuItem>
                             </>
                         )}
+
+                    {selectedInputMask != null && currentInputMask && (
+                        <>
+                            <MenuItem onClick={props.toggleConstrainSection}>
+                                {props.constraintSectionOpen && (
+                                    <ListItemIcon>
+                                        <CheckIcon fontSize="small" />
+                                    </ListItemIcon>
+                                )}
+                                <ListItemText>Constrains</ListItemText>
+                            </MenuItem>
+                        </>
+                    )}
+
                     {selectedInputMask != null && (
                         <MenuItem onClick={createShareLink}>
                             <ListItemIcon>

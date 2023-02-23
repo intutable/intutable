@@ -119,6 +119,6 @@ const mask: InputMask = {
             inputRequired: true,
         },
     ],
-    rules: [],
+    constraints: [],
 }
 export default mask

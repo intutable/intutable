@@ -6,19 +6,19 @@ import VerifiedIcon from "@mui/icons-material/Verified"
 
 import { Badge, Grow, IconButton, Tooltip, Zoom } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { useConstraints } from "context/ConstraintsContext"
+import { useConstraintValidation } from "context/ConstraintContext"
 
-export type ConstraintsValidProps = {
+export type ConstraintValidationButtonProps = {
     onShowInvalidConstraints: () => void
 }
 
-export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
+export const ConstraintValidationButton: React.FC<ConstraintValidationButtonProps> = props => {
     const theme = useTheme()
 
-    const { isValid, isSynchronising, loaded, error, constraintMismatches } = useConstraints()
+    const { runtimeError, isValidationRunning, succeeded, loading } = useConstraintValidation()
 
     // if an error occured, always display it first
-    if (error != null)
+    if (runtimeError != null)
         return (
             <Tooltip
                 arrow
@@ -33,7 +33,7 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
         )
 
     // if constraints are note loaded yet
-    if (loaded === false)
+    if (loading)
         return (
             <Tooltip
                 arrow
@@ -47,7 +47,7 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
             </Tooltip>
         )
 
-    if (isSynchronising)
+    if (isValidationRunning)
         return (
             <>
                 <Tooltip
@@ -73,7 +73,7 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
             </>
         )
 
-    if (isValid === false)
+    if (succeeded === false)
         return (
             <Tooltip
                 arrow
@@ -82,14 +82,14 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
                 TransitionComponent={Zoom}
             >
                 <IconButton color="error" onClick={props.onShowInvalidConstraints}>
-                    <Badge badgeContent={constraintMismatches.length} color="error">
-                        <RuleIcon />
-                    </Badge>
+                    {/* <Badge badgeContent={debug.length} color="error" > */}
+                    <RuleIcon />
+                    {/* </Badge> */}
                 </IconButton>
             </Tooltip>
         )
 
-    if (isValid)
+    if (succeeded === true)
         return (
             <Tooltip
                 arrow

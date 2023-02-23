@@ -1,3 +1,6 @@
+import { Alert } from "../../constraints/dos/Alert"
+import { AlwaysTrue } from "../../constraints/ifs/AlwaysTrue"
+import { Constraint } from "../../constraints/util/Constraint"
 import { InputMask } from "../types"
 
 const mask: InputMask = {
@@ -139,6 +142,47 @@ const mask: InputMask = {
             inputRequired: true,
         },
     ],
-    rules: [],
+    constraints: [
+        {
+            name: "Proof-of-Concept",
+            __type: "constraint",
+            __ctor: "Constraint",
+            conditions: {
+                __type: "node",
+                __ctor: "Node",
+                data: { __type: "if", __ctor: "AlwaysFalse" },
+                next: null,
+            },
+            executments: [
+                {
+                    __type: "do",
+                    __ctor: "Alert",
+                    alert: {
+                        severity: "warn",
+                        title: "Test",
+                        description: "Test",
+                        howToSolve: "Test",
+                    },
+                },
+            ],
+            debugMessage: {
+                title: "Fehlernachricht",
+                severity: "error",
+                message: "Ein Problem mit Constrain X ist aufgetreten",
+                howToSolve: "Wenden Sie sich an den Entwickler",
+            },
+        },
+        // new Constraint("Proof-of-Concept")
+        //     .do(
+        //         new Alert({
+        //             severity: "warn",
+        //             title: "Test",
+        //             message: "Test",
+        //         })
+        //     )
+        //     .if(new AlwaysTrue())
+        //     .error()
+        //     .toJSON(),
+    ],
 }
 export default mask

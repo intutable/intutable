@@ -1,3 +1,4 @@
+import { ConstraintObjectNotation } from "src/constraints/util/ObjectNotation"
 import { SerializedColumn, SerializedViewData } from "../types/tables/serialized"
 
 export type Comment = {
@@ -82,7 +83,7 @@ export type InputMask = {
     groups: ColumnGroup[]
     columnProps: InputMaskColumn[]
     components: InputMaskComponents[]
-    rules: Rule[] // TODO: maybe rename to 'constraints'
+    constraints: ConstraintObjectNotation[]
 }
 
 /** only for development */

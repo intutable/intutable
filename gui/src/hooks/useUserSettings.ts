@@ -19,7 +19,7 @@ export type UserSettings = {
     // --- undo cache ---
     enableUndoCache: boolean
     undoCacheLimit: number
-    // --- constrain validation ---
+    // --- constraint validation ---
     constrainValidation: "always" | "opening-closening"
     enableConstrainValidation: boolean
     saveMismatchingRecords: boolean

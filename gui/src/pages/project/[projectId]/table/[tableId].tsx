@@ -16,6 +16,7 @@ import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
 import { HeaderSearchFieldProvider, useHeaderSearchField } from "context"
+import { ConstraintValidationProvider } from "context/ConstraintContext"
 import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { APIQueries, parseQuery, useAPI } from "hooks/useAPI"
@@ -189,9 +190,9 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
                     }
                     initialAppliedInputMask={props.inputMask}
                 >
-                    {/* <ConstraintsProvider> */}
-                    <TablePage />
-                    {/* </ConstraintsProvider> */}
+                    <ConstraintValidationProvider>
+                        <TablePage />
+                    </ConstraintValidationProvider>
                 </RowMaskProvider>
             </HeaderSearchFieldProvider>
         </SelectedRowsContextProvider>

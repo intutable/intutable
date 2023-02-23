@@ -32,9 +32,9 @@ import { MakeInputMaskColumns } from "./InputMask"
 
 import VerifiedIcon from "@mui/icons-material/Verified"
 import RuleIcon from "@mui/icons-material/Rule"
-import { ConstraintsValid } from "./ConstraintsValid"
-import { ConstraintMismatches } from "./ConstraintMismatches"
-import { useConstraints } from "context/ConstraintsContext"
+import { ConstraintValidationButton } from "./Constraints/ConstraintValidationButton"
+import { ConstraintSection } from "./Constraints/ConstraintSection"
+import { useConstraintValidation } from "context/ConstraintContext"
 import { useCheckRequiredInputs } from "hooks/useCheckRequiredInputs"
 import DeleteIcon from "@mui/icons-material/Delete"
 import { useRecordDraftSession } from "hooks/useRecordDraftSession"
@@ -42,6 +42,7 @@ import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { Bookmark } from "@mui/icons-material"
 import { BookmarkButton } from "./Bookmark"
+import { Header } from "./RowMaskContainerHead"
 
 export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
@@ -50,174 +51,106 @@ export const RowMaskContainer: React.FC = () => {
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
     const isInputMask = selectedInputMask != null
-    const { isValid } = useConstraints()
-    const { deleteRow } = useRow()
+    // const { isValid } = useConstraintValidation()
 
-    const { isDraft } = useRecordDraftSession()
-
-    const [commentsVisible, setCommentsVisible] = useState<boolean>(false)
-    useEffect(() => {
-        // no comment section for default mask
-        if (isInputMask === false) setCommentsVisible(false)
-    }, [isInputMask])
-
-    const deleteDraft = async () => {
-        try {
-            if (selectedRow == null) throw new Error("No row selected")
-            await deleteRow(selectedRow)
-            snackWarning("Entwurf gelöscht.")
-        } catch (error) {
-            snackError("Der Entwurf konnte nicht gelöscht werden.")
-        }
-    }
+    const [commentSectionOpen, setCommentSectionOpen] = useState<boolean>(false)
 
     // const { ...state } = useCheckRequiredInputs()
     // console.log(state)
 
-    const [mismatchingConstraintsVisible, setMismatchingConstraintsVisible] =
-        useState<boolean>(false)
+    const [constraintSectionOpen, setConstraintSectionOpen] = useState<boolean>(false)
 
     const abort = () => {
-        if (isValid === false)
-            alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
+        // if (isValid === false)
+        //     alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
         setRowMaskState({ mode: "closed" })
     }
 
     if (rowMaskState.mode === "closed" || data == null) return null
-
     const nonHidden = data.columns.filter(column => column.hidden !== true)
     const columns = nonHidden
-
     const selectedRow = data.rows.find(row => row._id === rowMaskState.row._id)
     if (selectedRow == null) return null
 
     return (
-        <Dialog open fullWidth onClose={abort} keepMounted>
-            <DialogTitle>
-                <Stack
-                    direction="row"
-                    sx={{
-                        alignItems: "center",
-                    }}
-                >
-                    {rowMaskState.mode === "edit" && <RowNavigator />}
-                    <Typography sx={{ ml: 2 }}>Zeile {selectedRow.index}</Typography>
-                    <Box flexGrow={1} />
-                    <DevOverlay />
-                    <RowMaskContextMenu
-                        commentsVisible={commentsVisible}
-                        toggleCommentsVisible={() => setCommentsVisible(prev => !prev)}
-                    />
-                    <BookmarkButton row={selectedRow} />
-                    <Divider orientation="vertical" flexItem sx={{ mx: 2 }} variant="middle" />
-                    {isInputMask &&
-                        currentInputMask?.draftsCanBeDeleted &&
-                        isDraft(selectedRow) && (
-                            <Tooltip
-                                arrow
-                                placement="bottom"
-                                title="Entwurf löschen"
-                                enterDelay={1000}
-                            >
-                                <IconButton
-                                    size="small"
-                                    sx={{
-                                        "&:hover": {
-                                            color: theme.palette.error.light,
-                                        },
-                                    }}
-                                    onClick={deleteDraft}
-                                >
-                                    <DeleteIcon fontSize="small" />
-                                </IconButton>
-                            </Tooltip>
-                        )}
-                    <Tooltip
-                        arrow
-                        placement="bottom"
-                        title="Speichern & Schließen"
-                        enterDelay={1000}
-                    >
-                        <IconButton
-                            size="small"
-                            onClick={abort}
-                            sx={{
-                                "&:hover": {
-                                    color: theme.palette.success.main,
-                                },
-                            }}
-                        >
-                            <CloseIcon fontSize="small" />
-                        </IconButton>
-                    </Tooltip>
-                </Stack>
-            </DialogTitle>
+        <Dialog
+            open
+            fullWidth
+            onClose={abort}
+            keepMounted
+            maxWidth={constraintSectionOpen && isInputMask ? "md" : "sm"}
+        >
+            <Header
+                selectedRow={selectedRow}
+                commentSectionOpen={commentSectionOpen}
+                setCommentSectionOpen={setCommentSectionOpen}
+                constrainSectionOpen={constraintSectionOpen}
+                setConstrainSectionOpen={setConstraintSectionOpen}
+            />
 
             <Divider />
 
             <DialogContent>
-                <Grid container spacing={0}>
-                    {/* columns */}
-                    <Grid item xs={commentsVisible ? 8 : 12}>
-                        <Box
-                            sx={{
-                                overflowY: "scroll",
-                                maxHeight: "70vh",
-                                minHeight: "70vh",
-                                height: "70vh",
-                                width: 1,
-                            }}
-                        >
-                            {isInputMask ? (
-                                <MakeInputMaskColumns columns={columns} />
-                            ) : (
-                                columns
-                                    .sort(ColumnUtility.sortByIndex)
-                                    .map(column => (
-                                        <RowMaskColumn column={column} key={column.id} />
-                                    ))
-                            )}
-                        </Box>
-                    </Grid>
-
-                    {/* constraints section */}
-                    {mismatchingConstraintsVisible && (
-                        <Grid item xs={4}>
-                            <Stack
+                <Stack direction="row">
+                    <Grid container spacing={0}>
+                        {/* columns */}
+                        <Grid item xs={commentSectionOpen ? 8 : 12}>
+                            <Box
                                 sx={{
+                                    overflowY: "scroll",
                                     maxHeight: "70vh",
                                     minHeight: "70vh",
                                     height: "70vh",
                                     width: 1,
                                 }}
+                            >
+                                {isInputMask ? (
+                                    <MakeInputMaskColumns columns={columns} />
+                                ) : (
+                                    columns
+                                        .sort(ColumnUtility.sortByIndex)
+                                        .map(column => (
+                                            <RowMaskColumn column={column} key={column.id} />
+                                        ))
+                                )}
+                            </Box>
+                        </Grid>
+
+                        {/* comment section */}
+                        {commentSectionOpen && isInputMask && (
+                            <Grid item xs={4}>
+                                <Stack
+                                    sx={{
+                                        maxHeight: "70vh",
+                                        minHeight: "70vh",
+                                        height: "70vh",
+                                        width: 1,
+                                    }}
+                                    direction="row"
+                                >
+                                    <Divider orientation="vertical" sx={{ mx: 2 }} />
+                                    <CommentSection />
+                                </Stack>
+                            </Grid>
+                        )}
+                    </Grid>
+                    {/* constraints section */}
+                    {constraintSectionOpen && isInputMask && (
+                        <Box>
+                            <Stack
+                                sx={{
+                                    height: "100%",
+                                }}
                                 direction="row"
                             >
                                 <Divider orientation="vertical" sx={{ mx: 2 }} />
-                                <ConstraintMismatches
-                                    onClose={() => setMismatchingConstraintsVisible(false)}
+                                <ConstraintSection
+                                    onClose={() => setConstraintSectionOpen(false)}
                                 />
                             </Stack>
-                        </Grid>
+                        </Box>
                     )}
-
-                    {/* comment section */}
-                    {commentsVisible && (
-                        <Grid item xs={4}>
-                            <Stack
-                                sx={{
-                                    maxHeight: "70vh",
-                                    minHeight: "70vh",
-                                    height: "70vh",
-                                    width: 1,
-                                }}
-                                direction="row"
-                            >
-                                <Divider orientation="vertical" sx={{ mx: 2 }} />
-                                <CommentSection />
-                            </Stack>
-                        </Grid>
-                    )}
-                </Grid>
+                </Stack>
             </DialogContent>
 
             <Divider />
@@ -245,8 +178,8 @@ export const RowMaskContainer: React.FC = () => {
                             right: 10,
                         }}
                     >
-                        <ConstraintsValid
-                            onShowInvalidConstraints={() => setMismatchingConstraintsVisible(true)}
+                        <ConstraintValidationButton
+                            onShowInvalidConstraints={() => setConstraintSectionOpen(true)}
                         />
                     </Box>
                 )}

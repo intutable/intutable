@@ -18,5 +18,6 @@
         "outDir": "./dist",
         "composite": true,
         "rootDir": "./src"
-    }
+    },
+    
 }

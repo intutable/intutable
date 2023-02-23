@@ -17,6 +17,6 @@ const mask: InputMask = {
     groups: [],
     columnProps: [],
     components: [],
-    rules: [],
+    constraints: [],
 }
 export default mask

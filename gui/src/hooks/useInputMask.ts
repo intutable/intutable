@@ -24,6 +24,12 @@ export const useInputMask = () => {
 
     // const overriden: ViewData | null = currentInputMask ? overrideColumns(view.columns, currentInputMask) : null
 
+    // TODO: maybe kick of the input masks from the view
+    // TODO: fetch them based on the view here
+    // TODO: dont let them revalidate, since they are read only
+
+    console.log(inputMasks)
+
     return {
         inputMasks,
         currentInputMask,
