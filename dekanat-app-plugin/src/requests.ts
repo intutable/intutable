@@ -21,10 +21,10 @@ export const CHANNEL = "dekanat-app-plugin"
 export function getProjects(connectionId: string, unusedRoleId: number, username: string) {
     return {
         channel: CHANNEL,
-        method: 'getProjects',
+        method: "getProjects",
         connectionId,
         unusedRoleId,
-        username
+        username,
     }
 }
 

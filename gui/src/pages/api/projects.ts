@@ -20,7 +20,10 @@ const GET = withCatchingAPIRoute(async (req, res) => {
     const roleId = parseInt(process.env.PROJECT_MANAGEMENT_ROLE!)
 
     const projects = await withReadOnlyConnection(user, async sessionID => {
-        return coreRequest<ProjectDescriptor[]>(getProjects(sessionID, roleId, user.username), user.authCookie)
+        return coreRequest<ProjectDescriptor[]>(
+            getProjects(sessionID, roleId, user.username),
+            user.authCookie
+        )
     })
 
     res.status(200).json(projects)

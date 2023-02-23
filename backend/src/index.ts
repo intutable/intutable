@@ -48,8 +48,7 @@ async function main() {
 
     try {
         // create some example data for testing, if none are present
-        const project_count = await core().events.request(
-            select(connId, "projects"))
+        const project_count = await core().events.request(select(connId, "projects"))
         if (project_count.length === 0) {
             await createExampleSchema(connId, PM_ROLE_ID)
             await insertExampleData(connId)
