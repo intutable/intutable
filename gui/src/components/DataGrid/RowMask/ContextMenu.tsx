@@ -113,7 +113,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                                         <CheckIcon fontSize="small" />
                                     </ListItemIcon>
                                 )}
-                                <ListItemText>Constrains</ListItemText>
+                                <ListItemText>Constraints</ListItemText>
                             </MenuItem>
                         </>
                     )}

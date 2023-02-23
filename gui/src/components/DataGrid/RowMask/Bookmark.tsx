@@ -1,22 +1,15 @@
-import StarOutlineIcon from "@mui/icons-material/StarOutline"
 import StarIcon from "@mui/icons-material/Star"
-import { useUserSettings } from "hooks/useUserSettings"
-import { Row, TableDescriptor, ViewDescriptor } from "types"
-import { InputMask } from "@shared/input-masks/types"
-import { ProjectDescriptor } from "@intutable/project-management/dist/types"
-import { useMemo } from "react"
-import { useAPI } from "context"
+import StarOutlineIcon from "@mui/icons-material/StarOutline"
 import { IconButton } from "@mui/material"
-import { useInputMask } from "hooks/useInputMask"
-import { useRowMask } from "context/RowMaskContext"
-import { UrlObject } from "url"
+import { useAPI } from "context"
 import { Bookmark, useBookmark } from "hooks/useBookmark"
+import { useUserSettings } from "hooks/useUserSettings"
+import { Row } from "types"
 export type { Bookmark }
 
 export const BookmarkButton: React.FC<{ row: Row }> = props => {
-    const { tableId, projectId } = useAPI()
-    const { appliedInputMask } = useRowMask()
-    const { userSettings, changeUserSetting } = useUserSettings()
+    const { tableId } = useAPI()
+    const { userSettings } = useUserSettings()
     const { isBookmarked, addBookmark, removeBookmark, captureBookmark } = useBookmark()
 
     const toggle = () => {
@@ -38,7 +31,14 @@ export const BookmarkButton: React.FC<{ row: Row }> = props => {
             {isBookmarked(props.row) != null ? (
                 <StarIcon fontSize="small" sx={{ color: "#FFDF00" }} />
             ) : (
-                <StarOutlineIcon fontSize="small" />
+                <StarOutlineIcon
+                    fontSize="small"
+                    sx={{
+                        "&:hover": {
+                            color: "#FFDF00",
+                        },
+                    }}
+                />
             )}
         </IconButton>
     )

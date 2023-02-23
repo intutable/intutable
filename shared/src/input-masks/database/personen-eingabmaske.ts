@@ -150,21 +150,10 @@ const mask: InputMask = {
             conditions: {
                 __type: "node",
                 __ctor: "Node",
-                data: { __type: "if", __ctor: "AlwaysFalse" },
+                data: { __type: "if", __ctor: "AlwaysTrue" },
                 next: null,
             },
-            executments: [
-                {
-                    __type: "do",
-                    __ctor: "Alert",
-                    alert: {
-                        severity: "warn",
-                        title: "Test",
-                        description: "Test",
-                        howToSolve: "Test",
-                    },
-                },
-            ],
+            executments: [],
             debugMessage: {
                 title: "Fehlernachricht",
                 severity: "error",
@@ -172,7 +161,27 @@ const mask: InputMask = {
                 howToSolve: "Wenden Sie sich an den Entwickler",
             },
         },
+        {
+            name: "Proof-of-Concept 2",
+            __type: "constraint",
+            __ctor: "Constraint",
+            conditions: {
+                __type: "node",
+                __ctor: "Node",
+                data: { __type: "if", __ctor: "Timeout", __props: [12000] },
+                next: null,
+            },
+            executments: [],
+            debugMessage: {
+                title: "Fehlernachricht 2",
+                severity: "error",
+                message: "Ein Problem mit Constrain X ist aufgetreten",
+                howToSolve: "Wenden Sie sich an den Entwickler",
+            },
+        },
+        // BUG: fetcher will throw if using this, source probably in `coreRequest`
         // new Constraint("Proof-of-Concept")
+        //     .if(new AlwaysTrue())
         //     .do(
         //         new Alert({
         //             severity: "warn",
@@ -180,8 +189,6 @@ const mask: InputMask = {
         //             message: "Test",
         //         })
         //     )
-        //     .if(new AlwaysTrue())
-        //     .error()
         //     .toJSON(),
     ],
 }

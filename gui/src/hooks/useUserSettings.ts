@@ -20,8 +20,7 @@ export type UserSettings = {
     enableUndoCache: boolean
     undoCacheLimit: number
     // --- constraint validation ---
-    constrainValidation: "always" | "opening-closening"
-    enableConstrainValidation: boolean
+    constrainValidation: "always" | "opening-closening" | "never"
     saveMismatchingRecords: boolean
     // --- features ---
     bookmarkedRecords: Bookmark[]
@@ -39,7 +38,6 @@ export const DefaultUserSettings: UserSettings = {
     undoCacheLimit: 20,
     enableUndoCache: true,
     constrainValidation: "always",
-    enableConstrainValidation: true,
     saveMismatchingRecords: true,
 }
 

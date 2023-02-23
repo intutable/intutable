@@ -1,27 +1,88 @@
-import { Box, Typography } from "@mui/material"
+import { Box, Chip, Divider, Paper, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { Mismatch } from "@shared/constraints/util/Mismatch"
+import { useState } from "react"
 
 export const DebugMismatch: React.FC<{ mismatch: Mismatch }> = ({ mismatch }) => {
     const theme = useTheme()
+
+    const [collapsed, setCollapsed] = useState<boolean>(false)
+    const toggleCollapsed = () => setCollapsed(prev => !prev)
+
     return (
         <Box
             sx={{
                 borderRadius: theme.shape.borderRadius,
-                bgcolor: theme.palette.error.main,
-                py: 0.8,
-                px: 1.5,
-                mb: 0.5,
+                // bgcolor: theme.palette.error.main,
+                p: 2,
+                mt: 1,
                 overflowWrap: "break-word",
                 width: 1,
+                cursor: "pointer",
             }}
+            onClick={toggleCollapsed}
+            component={Paper}
         >
-            <Typography>{mismatch.title}</Typography>
-            {mismatch.severity}
-            <Typography variant="body2" fontSize="small">
-                {mismatch.message}
-            </Typography>
-            {mismatch.howToSolve}
+            <Stack direction="column">
+                <Stack direction="row" flexWrap="nowrap">
+                    <Typography
+                        variant="subtitle2"
+                        sx={{
+                            overflow: "clip",
+                        }}
+                    >
+                        {mismatch.title}
+                    </Typography>
+                    <Box flexGrow={1} />
+                    <Chip
+                        label={mismatch.severity}
+                        size="small"
+                        variant="outlined"
+                        color={mismatch.severity}
+                    />
+                </Stack>
+                <Typography
+                    variant="caption"
+                    sx={{
+                        color: theme.palette.action.disabled,
+                    }}
+                >
+                    Constraint X/Y
+                </Typography>
+            </Stack>
+
+            {collapsed === false && (
+                <>
+                    <Box marginTop={3}>
+                        <Divider>
+                            <Typography variant="overline">Beschreibung</Typography>
+                        </Divider>
+                        <Typography
+                            variant="body2"
+                            fontSize="small"
+                            color="text.secondary"
+                            marginTop={0.5}
+                        >
+                            {mismatch.message}
+                        </Typography>
+                    </Box>
+
+                    <Box marginTop={6}>
+                        <Divider>
+                            <Typography variant="overline">Behebung</Typography>
+                        </Divider>
+
+                        <Typography
+                            variant="body2"
+                            fontSize="small"
+                            color="text.secondary"
+                            marginTop={0.5}
+                        >
+                            {mismatch.howToSolve}
+                        </Typography>
+                    </Box>
+                </>
+            )}
         </Box>
     )
 }

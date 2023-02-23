@@ -10,7 +10,7 @@ import { DevOverlay } from "./DevOverlay"
 import { RowNavigator } from "./RowNavigator"
 
 import DeleteIcon from "@mui/icons-material/Delete"
-import { useConstraintValidation } from "context/ConstraintContext"
+import { useConstraintValidation } from "context/ConstraintValidationContext"
 import { useRecordDraftSession } from "hooks/useRecordDraftSession"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"

@@ -1,5 +1,5 @@
 import Expand from "@mui/icons-material/ExpandMore"
-import { Box, Divider, List, ListSubheader, Paper, Stack, Typography } from "@mui/material"
+import { alpha, Box, Divider, List, ListSubheader, Paper, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useState } from "react"
 
@@ -8,6 +8,7 @@ export const CollapsableListDivider: React.FC = () => <Divider sx={{ my: 2 }} va
 export type CollapsableListProps = {
     label: string
     description?: string
+    error?: boolean
     children: React.ReactNode
 }
 
@@ -29,12 +30,17 @@ export const CollapsableList: React.FC<CollapsableListProps> = props => {
                         <Expand
                             onClick={() => setCollapsed(prev => !prev)}
                             fontSize="small"
+                            color={props.error ? "error" : undefined}
                             sx={{
                                 cursor: "pointer",
                                 transform: collapsed ? "rotate(-90deg)" : undefined,
                             }}
                         />
-                        <Typography variant="subtitle1" fontSize="large">
+                        <Typography
+                            variant="subtitle1"
+                            fontSize="large"
+                            sx={{ color: props.error ? theme.palette.error.main : undefined }}
+                        >
                             {props.label}
                         </Typography>
                     </Stack>
@@ -50,7 +56,12 @@ export const CollapsableList: React.FC<CollapsableListProps> = props => {
                     <Typography
                         variant="caption"
                         sx={{
-                            color: theme.palette.action.disabled,
+                            color: props.error
+                                ? alpha(
+                                      theme.palette.error.main,
+                                      theme.palette.action.disabledOpacity
+                                  )
+                                : theme.palette.action.disabled,
                         }}
                     >
                         {props.description}

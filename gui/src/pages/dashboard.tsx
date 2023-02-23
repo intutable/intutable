@@ -7,10 +7,7 @@ import { useBookmark } from "hooks/useBookmark"
 import { useUserSettings } from "hooks/useUserSettings"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import Head from "next/head"
-import {
-    getServerSideProps as forms_getServerSideProps,
-    InputMaskCallToActionCard,
-} from "./api/forms"
+import { getServerSideProps as forms_getServerSideProps, InputMaskCallToActionCard } from "./forms"
 
 type DashboardProps = {
     cards: InputMaskCallToActionCard[]

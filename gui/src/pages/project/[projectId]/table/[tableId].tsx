@@ -16,7 +16,7 @@ import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
 import { HeaderSearchFieldProvider, useHeaderSearchField } from "context"
-import { ConstraintValidationProvider } from "context/ConstraintContext"
+
 import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { APIQueries, parseQuery, useAPI } from "hooks/useAPI"
@@ -157,6 +157,7 @@ const TablePage: React.FC = () => {
                             <ToolbarItem.Connection status="connected" />
                         </Toolbar>
                     </Box>
+
                     <RowMaskContainer />
                 </Grid>
             </Grid>
@@ -190,9 +191,7 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
                     }
                     initialAppliedInputMask={props.inputMask}
                 >
-                    <ConstraintValidationProvider>
-                        <TablePage />
-                    </ConstraintValidationProvider>
+                    <TablePage />
                 </RowMaskProvider>
             </HeaderSearchFieldProvider>
         </SelectedRowsContextProvider>
@@ -206,14 +205,13 @@ export const getServerSideProps = withSSRCatch(
             "tableId",
             "viewId",
         ])
-
-        const user = context.req.session.user
-        if (user == null || user.isLoggedIn === false)
+        if (projectId == null || tableId == null)
             return {
                 notFound: true,
             }
 
-        if (projectId == null || tableId == null)
+        const user = context.req.session.user
+        if (user == null || user.isLoggedIn === false)
             return {
                 notFound: true,
             }
@@ -229,7 +227,7 @@ export const getServerSideProps = withSSRCatch(
             return {
                 redirect: {
                     destination: `/project/${projectId}/table/${tableId}?viewId=${defaultViewId}`,
-                    permanent: true,
+                    permanent: false,
                 },
             }
         }

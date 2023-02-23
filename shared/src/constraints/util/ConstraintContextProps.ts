@@ -10,4 +10,5 @@ export type ConstraintContextProps = {
     inputMask: Omit<InputMask, "constraints">
     data: SerializedViewData // TODO: add MergedColumns
     currentRecord: Row
+    // user: User
 }

@@ -1,47 +1,32 @@
-import CloseIcon from "@mui/icons-material/Close"
+import { AddPendingRow } from "@datagrid/Toolbar/ToolbarItems/AddRow/AddPendingRow"
 import {
+    Alert,
+    AlertTitle,
     Box,
-    Button,
     Dialog,
     DialogActions,
     DialogContent,
-    DialogTitle,
     Divider,
-    Stack,
-    Typography,
     Grid,
-    Tooltip,
-    IconButton,
+    Stack,
 } from "@mui/material"
-import { useRowMask } from "context/RowMaskContext"
-import { useView } from "hooks/useView"
-import React, { useDebugValue, useEffect, useState } from "react"
-import { ColumnUtility } from "utils/column utils/ColumnUtility"
-import { DevOverlay } from "./DevOverlay"
-import { AddColumnButton, AddLinkButton } from "./DialogActions"
-import { RowMaskColumn } from "./Column"
-import { RowMaskContextMenu } from "./ContextMenu"
-import { RowNavigator } from "./RowNavigator"
-import { useInputMask } from "hooks/useInputMask"
-import { CommentSection } from "./Comments"
 import { useTheme } from "@mui/material/styles"
-import { AddPendingRow } from "@datagrid/Toolbar/ToolbarItems/AddRow/AddPendingRow"
-import { Column } from "types/tables/rdg"
-import { ColumnGroup } from "@shared/input-masks/types"
+import { useRowMask } from "context/RowMaskContext"
+import { useInputMask } from "hooks/useInputMask"
+import { useView } from "hooks/useView"
+import React, { useState } from "react"
+import { ColumnUtility } from "utils/column utils/ColumnUtility"
+import { RowMaskColumn } from "./Column"
+import { CommentSection } from "./Comments"
+import { AddColumnButton, AddLinkButton } from "./DialogActions"
 import { MakeInputMaskColumns } from "./InputMask"
 
-import VerifiedIcon from "@mui/icons-material/Verified"
-import RuleIcon from "@mui/icons-material/Rule"
-import { ConstraintValidationButton } from "./Constraints/ConstraintValidationButton"
-import { ConstraintSection } from "./Constraints/ConstraintSection"
-import { useConstraintValidation } from "context/ConstraintContext"
-import { useCheckRequiredInputs } from "hooks/useCheckRequiredInputs"
-import DeleteIcon from "@mui/icons-material/Delete"
-import { useRecordDraftSession } from "hooks/useRecordDraftSession"
-import { useRow } from "hooks/useRow"
+import Link from "components/Link"
+import { ConstraintValidationProvider } from "context/ConstraintValidationContext"
 import { useSnacki } from "hooks/useSnacki"
-import { Bookmark } from "@mui/icons-material"
-import { BookmarkButton } from "./Bookmark"
+import { useUserSettings } from "hooks/useUserSettings"
+import { ConstraintSection } from "./Constraints/ConstraintSection"
+import { ConstraintValidationButton } from "./Constraints/ConstraintValidationButton"
 import { Header } from "./RowMaskContainerHead"
 
 export const RowMaskContainer: React.FC = () => {
@@ -51,6 +36,7 @@ export const RowMaskContainer: React.FC = () => {
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
     const isInputMask = selectedInputMask != null
+    const { userSettings } = useUserSettings()
     // const { isValid } = useConstraintValidation()
 
     const [commentSectionOpen, setCommentSectionOpen] = useState<boolean>(false)
@@ -58,7 +44,7 @@ export const RowMaskContainer: React.FC = () => {
     // const { ...state } = useCheckRequiredInputs()
     // console.log(state)
 
-    const [constraintSectionOpen, setConstraintSectionOpen] = useState<boolean>(false)
+    const [constraintSectionOpen, setConstraintSectionOpen] = useState<boolean>(true)
 
     const abort = () => {
         // if (isValid === false)
@@ -73,118 +59,130 @@ export const RowMaskContainer: React.FC = () => {
     if (selectedRow == null) return null
 
     return (
-        <Dialog
-            open
-            fullWidth
-            onClose={abort}
-            keepMounted
-            maxWidth={constraintSectionOpen && isInputMask ? "md" : "sm"}
-        >
-            <Header
-                selectedRow={selectedRow}
-                commentSectionOpen={commentSectionOpen}
-                setCommentSectionOpen={setCommentSectionOpen}
-                constrainSectionOpen={constraintSectionOpen}
-                setConstrainSectionOpen={setConstraintSectionOpen}
-            />
+        <ConstraintValidationProvider>
+            <Dialog
+                open
+                fullWidth
+                onClose={abort}
+                maxWidth={constraintSectionOpen && isInputMask ? "md" : "sm"}
+            >
+                <Header
+                    selectedRow={selectedRow}
+                    commentSectionOpen={commentSectionOpen}
+                    setCommentSectionOpen={setCommentSectionOpen}
+                    constrainSectionOpen={constraintSectionOpen}
+                    setConstrainSectionOpen={setConstraintSectionOpen}
+                />
 
-            <Divider />
+                <Divider />
 
-            <DialogContent>
-                <Stack direction="row">
-                    <Grid container spacing={0}>
-                        {/* columns */}
-                        <Grid item xs={commentSectionOpen ? 8 : 12}>
-                            <Box
-                                sx={{
-                                    overflowY: "scroll",
-                                    maxHeight: "70vh",
-                                    minHeight: "70vh",
-                                    height: "70vh",
-                                    width: 1,
-                                }}
-                            >
-                                {isInputMask ? (
-                                    <MakeInputMaskColumns columns={columns} />
-                                ) : (
-                                    columns
-                                        .sort(ColumnUtility.sortByIndex)
-                                        .map(column => (
-                                            <RowMaskColumn column={column} key={column.id} />
-                                        ))
-                                )}
-                            </Box>
-                        </Grid>
+                {userSettings?.constrainValidation === "never" && isInputMask && (
+                    <Box sx={{ px: 5, my: 3 }}>
+                        <Alert severity="error" variant="filled">
+                            <AlertTitle>
+                                Achtung! Ihre Constraint-Validierung ist ausgeschaltet.
+                            </AlertTitle>
+                            Schalten Sie diese nur aus, wenn Sie sich sicher sind. Unerwartete
+                            Fehler können auftreten! Unter{" "}
+                            <Link href="/settings">Einstellungen &#8250; Eingabemasken</Link> können
+                            Sie die Constraint-Validierung wieder einschalten.
+                        </Alert>
+                    </Box>
+                )}
 
-                        {/* comment section */}
-                        {commentSectionOpen && isInputMask && (
-                            <Grid item xs={4}>
-                                <Stack
+                <DialogContent>
+                    <Stack direction="row">
+                        <Grid container spacing={0}>
+                            {/* columns */}
+                            <Grid item xs={commentSectionOpen ? 8 : 12}>
+                                <Box
                                     sx={{
+                                        overflowY: "scroll",
                                         maxHeight: "70vh",
                                         minHeight: "70vh",
                                         height: "70vh",
                                         width: 1,
                                     }}
+                                >
+                                    {isInputMask ? (
+                                        <MakeInputMaskColumns columns={columns} />
+                                    ) : (
+                                        columns
+                                            .sort(ColumnUtility.sortByIndex)
+                                            .map(column => (
+                                                <RowMaskColumn column={column} key={column.id} />
+                                            ))
+                                    )}
+                                </Box>
+                            </Grid>
+
+                            {/* comment section */}
+                            {commentSectionOpen && isInputMask && (
+                                <Grid item xs={4}>
+                                    <Stack
+                                        sx={{
+                                            maxHeight: "70vh",
+                                            minHeight: "70vh",
+                                            height: "70vh",
+                                            width: 1,
+                                        }}
+                                        direction="row"
+                                    >
+                                        <Divider orientation="vertical" sx={{ mx: 2 }} />
+                                        <CommentSection />
+                                    </Stack>
+                                </Grid>
+                            )}
+                        </Grid>
+                        {/* constraints section */}
+                        {constraintSectionOpen && isInputMask && (
+                            <Box>
+                                <Stack
+                                    sx={{
+                                        height: "100%",
+                                    }}
                                     direction="row"
                                 >
                                     <Divider orientation="vertical" sx={{ mx: 2 }} />
-                                    <CommentSection />
+                                    <ConstraintSection
+                                        onClose={() => setConstraintSectionOpen(false)}
+                                    />
                                 </Stack>
-                            </Grid>
+                            </Box>
                         )}
-                    </Grid>
-                    {/* constraints section */}
-                    {constraintSectionOpen && isInputMask && (
-                        <Box>
-                            <Stack
-                                sx={{
-                                    height: "100%",
-                                }}
-                                direction="row"
-                            >
-                                <Divider orientation="vertical" sx={{ mx: 2 }} />
-                                <ConstraintSection
-                                    onClose={() => setConstraintSectionOpen(false)}
-                                />
-                            </Stack>
-                        </Box>
+                    </Stack>
+                </DialogContent>
+
+                <Divider />
+
+                <DialogActions
+                    sx={{
+                        justifyContent: "space-evenly",
+                    }}
+                >
+                    <AddPendingRow
+                        text={isInputMask ? currentInputMask?.addRecordButtonText : undefined}
+                    />
+                    {isInputMask === false && (
+                        <>
+                            <Divider flexItem variant="middle" orientation="vertical" />
+                            <AddColumnButton />
+                            <Divider flexItem variant="middle" orientation="vertical" />
+                            <AddLinkButton />
+                        </>
                     )}
-                </Stack>
-            </DialogContent>
 
-            <Divider />
-
-            <DialogActions
-                sx={{
-                    justifyContent: "space-evenly",
-                }}
-            >
-                <AddPendingRow
-                    text={isInputMask ? currentInputMask?.addRecordButtonText : undefined}
-                />
-                {isInputMask === false && (
-                    <>
-                        <Divider flexItem variant="middle" orientation="vertical" />
-                        <AddColumnButton />
-                        <Divider flexItem variant="middle" orientation="vertical" />
-                        <AddLinkButton />
-                    </>
-                )}
-                {isInputMask && (
                     <Box
                         sx={{
                             position: "absolute",
                             right: 10,
                         }}
                     >
-                        <ConstraintValidationButton
-                            onShowInvalidConstraints={() => setConstraintSectionOpen(true)}
-                        />
+                        <ConstraintValidationButton />
                     </Box>
-                )}
-            </DialogActions>
-        </Dialog>
+                </DialogActions>
+            </Dialog>
+        </ConstraintValidationProvider>
     )
 }
 

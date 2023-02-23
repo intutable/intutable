@@ -30,13 +30,13 @@ export type OperatorObjectNotation = {
 export type IfObjectNotation = {
     __type: "if"
     __ctor: string
-    __props?: unknown
+    __props?: unknown[]
     [key: string]: unknown
 }
 
 export type DoObjectNotation = {
     __type: "do"
     __ctor: string
-    __props?: unknown
+    __props?: unknown[]
     [key: string]: unknown
 }
