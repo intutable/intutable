@@ -4,7 +4,7 @@ import MetaTitle from "components/MetaTitle"
 import { ReleaseList } from "components/Release Notes/ReleaseList"
 import type { NextPage } from "next"
 import { supportedFeatures } from "public/supportedFeatures"
-import SupportedFeatures from "components/Wiki/SupportedFeatures"
+import SupportedFeatures from "components/SupportedFeatures"
 import { CollapsableSection } from "components/CollapsableSection"
 
 const ServiceDesk: NextPage = () => {

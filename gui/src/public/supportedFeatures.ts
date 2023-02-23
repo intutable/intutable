@@ -1,4 +1,4 @@
-import { Feature } from "components/Wiki/SupportedFeatures"
+import { Feature } from "components/SupportedFeatures"
 
 export const supportedFeatures: Feature[] = [
     {

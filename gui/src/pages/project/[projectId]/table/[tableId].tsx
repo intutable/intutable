@@ -216,6 +216,7 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
+        // TODO: put this inside `useAPI`
         if (viewId == null) {
             const viewList = await fetcher<ViewDescriptor[]>({
                 url: `/api/views/${tableId}`,

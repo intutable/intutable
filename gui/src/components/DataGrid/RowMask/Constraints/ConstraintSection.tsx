@@ -31,8 +31,6 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
     const { currentInputMask } = useInputMask()
     const theme = useTheme()
 
-    const [showVerboseLog, setShowVerboseLog] = useState(true)
-
     return (
         <Box
             sx={{
@@ -67,14 +65,6 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
                     <Box marginTop={5}>
                         <ProgressIndicator />
                     </Box>
-
-                    {showVerboseLog && (
-                        <Box marginTop={5}>
-                            <Divider>
-                                <Typography variant="overline">Ausführlicher Bericht</Typography>
-                            </Divider>
-                        </Box>
-                    )}
 
                     {state.runtimeErrors.length > 0 && (
                         <Box marginTop={5}>

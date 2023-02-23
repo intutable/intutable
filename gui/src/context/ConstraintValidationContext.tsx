@@ -1,4 +1,3 @@
-import { AlertType as Alert } from "@shared/constraints/dos/Alert"
 import { IfCtorMap } from "@shared/constraints/ifs/"
 import { ConditionIterIter } from "@shared/constraints/util/ConstrainStore"
 import type { ConstraintContextProps } from "@shared/constraints/util/ConstraintContextProps"
@@ -9,8 +8,12 @@ import { useInputMask } from "hooks/useInputMask"
 import { useSnacki } from "hooks/useSnacki"
 import { useUserSettings } from "hooks/useUserSettings"
 import { useView } from "hooks/useView"
-import React, { useEffect, useMemo, useReducer, useState } from "react"
+import React, { useEffect, useMemo, useReducer, useRef, useState } from "react"
+import { Row } from "types"
 import { useRowMask } from "./RowMaskContext"
+// import hash from "stable-hash"
+
+// const compare = (a: Row, b: Row) => hash(a) === hash(b)
 
 type ValidationReport = {
     failed: string[]
@@ -26,6 +29,7 @@ type ActionMap = {
     endValidation: {
         report: ValidationReport
     }
+    reset: null
 }
 
 type Action<T extends keyof ActionMap> = {
@@ -89,6 +93,9 @@ const reducer = <T extends keyof ActionMap>(
                 report: payload.report,
             }
         }
+        case "reset": {
+            return initialValidationState
+        }
         default:
             return state
     }
@@ -114,17 +121,27 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
     const { userSettings } = useUserSettings()
     const { currentInputMask } = useInputMask()
     const { props: contextProps } = useConstraintContextProps()
-    const { rowMaskState } = useRowMask()
+    const { rowMaskState, setSuppressRowChange } = useRowMask()
+
+    const prevRecord = useRef<Row>() // TODO: detect row changes, prevent doubled execution when reloading, only fire when values have changed
+    /**
+     *
+     */
 
     // state
 
     const [state, dispatch] = useReducer(reducer, initialValidationState)
     const [loading, setLoading] = useState<boolean>(true)
 
-    console.table(state)
+    useEffect(() => {
+        setSuppressRowChange(state.isRunning)
+    }, [setSuppressRowChange, state.isRunning])
 
     useEffect(() => {
-        // BUG: gets executed twice
+        if (state.isRunning) {
+            console.log("STOP or ABORT")
+            return
+        }
         if (
             !userSettings ||
             userSettings.constrainValidation === "never" ||
@@ -134,9 +151,12 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         )
             return
 
+        setLoading(false) // TODO: where to put this?
         // begin validation
         const validate = async () => {
-            setLoading(false)
+            console.log("started validation")
+            console.table(state)
+
             dispatch({
                 type: "startValidation",
                 payload: {
@@ -206,6 +226,9 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         }
 
         // call validation
+        if (state.finished) {
+            dispatch({ type: "reset", payload: null })
+        }
         validate()
 
         return () => {}

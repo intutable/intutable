@@ -1,4 +1,5 @@
 import { InputMask } from "@shared/input-masks/types"
+import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
 import React, { useState } from "react"
 
@@ -15,6 +16,7 @@ export type RowMaskContextProps = {
     setRowMaskState: React.Dispatch<React.SetStateAction<RowMaskState<RowMaskMode>>>
     appliedInputMask: InputMask["id"] | null
     setInputMask: React.Dispatch<React.SetStateAction<InputMask["id"] | null>>
+    setSuppressRowChange: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const initialState: RowMaskContextProps = {
@@ -22,6 +24,7 @@ const initialState: RowMaskContextProps = {
     setRowMaskState: undefined!,
     appliedInputMask: null,
     setInputMask: undefined!,
+    setSuppressRowChange: undefined!,
 }
 
 const RowMaskContext = React.createContext<RowMaskContextProps>(initialState)
@@ -36,6 +39,9 @@ type RowMaskProviderProps = {
 
 export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     const { data: view } = useView()
+    const { snackError } = useSnacki()
+
+    const [suppressRowChange, setSuppressRowChange] = useState<boolean>(false)
 
     const [rowMaskState, setRowMaskState] = useState<RowMaskState<RowMaskMode>>(
         props.initialRowMaskState ?? initialState.rowMaskState
@@ -47,14 +53,28 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     )
 
     // BUG: reset selectedInputMask to default if table changes
+    // TODO: add an elaborated mechanism that selects the inputMask automatically, if not specified
+
+    const _setRowMaskState: typeof setRowMaskState = (
+        ...props: Parameters<typeof setRowMaskState>
+    ) => {
+        if (suppressRowChange) {
+            snackError(
+                "Der Eintrag kann nicht gewechselt oder geschlossen werden, während Constraints validiert werden!"
+            )
+            return
+        }
+        setRowMaskState(props[0])
+    }
 
     return (
         <RowMaskContext.Provider
             value={{
                 rowMaskState,
-                setRowMaskState,
+                setRowMaskState: _setRowMaskState,
                 appliedInputMask,
                 setInputMask,
+                setSuppressRowChange,
             }}
         >
             {props.children}
