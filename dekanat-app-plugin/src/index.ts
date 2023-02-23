@@ -93,7 +93,7 @@ import * as req from "./requests"
 import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
 import { can, getRoles } from "@intutable/user-permissions/dist/requests"
-import { ProjectDescriptor } from "@intutable/project-management/dist/types";
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
 let core: PluginLoader
 
