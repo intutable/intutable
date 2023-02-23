@@ -18,6 +18,16 @@ export * from "./types/requests"
 
 export const CHANNEL = "dekanat-app-plugin"
 
+export function getProjects(connectionId: string, unusedRoleId: number, username: string) {
+    return {
+        channel: CHANNEL,
+        method: "getProjects",
+        connectionId,
+        unusedRoleId,
+        username,
+    }
+}
+
 /**
  * Create a table in the given project with the given name
  * Also created:

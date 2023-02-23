@@ -92,6 +92,8 @@ import {
 import * as req from "./requests"
 import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
+import { can, getRoles } from "@intutable/user-permissions/dist/requests"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
 let core: PluginLoader
 
@@ -122,9 +124,34 @@ export async function init(plugins: PluginLoader) {
         .on(perm.createUser.name, perm.createUser_)
         .on(perm.deleteUser.name, perm.deleteUser_)
         .on(perm.changeRole.name, perm.changeRole_)
+        .on("getProjects", getProjects)
         .on(req.createUserSettings.name, createUserSettings_)
         .on(req.getUserSettings.name, getUserSettings_)
         .on(req.updateUserSettings.name, updateUserSettings_)
+}
+
+async function getProjects(request: CoreRequest): Promise<ProjectDescriptor[]> {
+    const allProjects = (await core.events.request(
+        pm.getProjects(request.connectionId, request.unusedRoleId)
+    )) as ProjectDescriptor[]
+
+    const roleId = await core.events.request(getRoles(request.connectionId, "", request.username))
+    const permissions = await core.events.request(
+        can(request.connectionId, roleId[0], "read", "project", "", "")
+    )
+    const checkedProjects: ProjectDescriptor[] = []
+
+    if (permissions["isAllowed"] && permissions["conditions"] == "") {
+        return allProjects
+    }
+
+    for (const project of allProjects) {
+        if (permissions["conditions"].includes(project["name"])) {
+            checkedProjects.push(project)
+        }
+    }
+
+    return checkedProjects
 }
 
 function coreRequest<T = unknown>(req: CoreRequest): Promise<T> {

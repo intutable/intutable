@@ -1,47 +1,55 @@
--- begin project-management schema
+-- user and permission schemata
 CREATE TABLE users(
     _id SERIAL PRIMARY KEY,
-    email TEXT,
-    password TEXT
+    username text,
+    password text,
+    "globalRoleId" integer
 );
 
+CREATE TABLE roles(
+    _id SERIAL PRIMARY KEY,
+    "description" TEXT
+);
+
+CREATE TABLE permissions(
+    "roleId" integer NOT NULL,
+    action text COLLATE pg_catalog."default" NOT NULL,
+    subject text COLLATE pg_catalog."default" NOT NULL,
+    "subjectName" text COLLATE pg_catalog."default" NOT NULL,
+    conditions text COLLATE pg_catalog."default",
+    CONSTRAINT permissions_pkey PRIMARY KEY ("roleId", action, subject, "subjectName")
+);
+
+-- begin project-management schema
 CREATE TABLE projects(
     _id SERIAL PRIMARY KEY,
-    "projectName" TEXT,
-    "ownerId" INTEGER,
-    FOREIGN KEY("ownerId") REFERENCES users(_id)
-);
-
-CREATE TABLE userprojects(
-    _id SERIAL PRIMARY KEY,
-    "userId" INTEGER,
-    "projectId" INTEGER,
-    FOREIGN KEY("userId") REFERENCES users(_id),
-    FOREIGN KEY("projectId") REFERENCES projects(_id)
+    "project_name" TEXT,
+    "owner_id" INTEGER,
+    FOREIGN KEY("owner_id") REFERENCES users(_id)
 );
 
 CREATE TABLE tables(
     _id SERIAL PRIMARY KEY,
     key TEXT NOT NULL,
     name TEXT,
-    "ownerId" INTEGER,
-    FOREIGN KEY("ownerId") REFERENCES users(_id)
+    "owner_id" INTEGER,
+    FOREIGN KEY("owner_id") REFERENCES users(_id)
 );
 
-CREATE TABLE projecttables(
+CREATE TABLE projects_tables(
     _id SERIAL PRIMARY KEY,
-    "projectId" INTEGER,
-    "tableId" INTEGER,
-    FOREIGN KEY("projectId") REFERENCES projects(_id),
-    FOREIGN KEY("tableId") REFERENCES tables(_id)
+    "project_id" INTEGER,
+    "table_id" INTEGER,
+    FOREIGN KEY("project_id") REFERENCES projects(_id),
+    FOREIGN KEY("table_id") REFERENCES tables(_id)
 );
 
 CREATE TABLE columns(
     _id SERIAL PRIMARY KEY,
-    "columnName" TEXT,
-    "tableId" INTEGER,
+    "column_name" TEXT,
+    "table_id" INTEGER,
     type TEXT default 'string' NOT NULL,
-    FOREIGN KEY("tableId") REFERENCES tables(_id)
+    FOREIGN KEY("table_id") REFERENCES tables(_id)
 );
 -- end project-management schema
 
@@ -111,63 +119,41 @@ CREATE TABLE view_columns(
 );
 -- end lazy-views schema
 
--- the following statements should be run once when updating from version
--- 1.1.1-alpha.1 to <version>.
-
--- begin changes of project-management version 2.0.0 (think "role" instead
--- of "user"; extract authentication)
-ALTER TABLE userprojects RENAME COLUMN "userId" TO role_id;
-ALTER TABLE users RENAME TO roles;
-ALTER TABLE userprojects RENAME TO roles_projects;
-ALTER TABLE projecttables RENAME TO projects_tables;
-ALTER TABLE roles RENAME email to name;
--- also get rid of all camel case for good
-ALTER TABLE roles_projects RENAME COLUMN "projectId" to project_id;
-ALTER TABLE projects_tables RENAME COLUMN "projectId" to project_id;
-ALTER TABLE projects RENAME COLUMN "projectName" to project_name;
-ALTER TABLE projects RENAME COLUMN "ownerId" to owner_id;
-ALTER TABLE tables RENAME COLUMN "ownerId" to owner_id;
-ALTER TABLE projects_tables RENAME COLUMN "tableId" to table_id;
-ALTER TABLE columns RENAME COLUMN "tableId" to table_id;
-ALTER TABLE columns RENAME COLUMN "columnName" to column_name;
--- end project-management 2.0.0 changes
-
--- begin changes of user-authentication version 3.0.0: users table
--- managed by plugin itself (previously in project-management)
-CREATE TABLE users(
-  _id SERIAL PRIMARY KEY,
-  username TEXT NOT NULL,
-  password TEXT NOT NULL
-);
-
 -- converting any existing data to new schemata of PM 2.0.0 and user-auth 3.0.0.
 -- On updating an existing instance. These should be no-ops when running this
 -- script on a fresh container, they are only needed when updating a running
 -- instance.
-UPDATE projects SET owner_id=1;
-UPDATE tables SET owner_id=1;
-UPDATE views SET user_id=1;
-
-INSERT INTO users (username, password)
-  SELECT name as username, password
-  FROM roles;
-
-DELETE FROM roles;
-
--- There was an idea to have n:m or 1:n or whatever relationship between
--- users (with passwords) roles (with access to projects/tables/...)
--- We are still going to do this, however it will all be managed by a
--- dedicated user permission plugin. To avoid restricting it from the
--- get-go, we just create a single role that has access to everything,
--- and the perm plugin can take away privileges later.
-INSERT INTO roles(_id, name, password)
-  VALUES (1, 'all_users', '');
+UPDATE projects SET owner_id=0;
+UPDATE tables SET owner_id=0;
+UPDATE views SET user_id=0;
 -- end dekanat-app<version> changes
+
+-- TEST DATA!
+-- Create users and default global roles
+INSERT INTO users(_id, username, password, "globalRoleId")
+    VALUES
+    (0, 'admin@dekanat.de', '$argon2i$v=19$m=16,t=2,p=1$RlJjcHZQeDVHTVkzSUVjNw$yj4y+O1mXcwfCjuo/XGQ7w', 0),
+    (1, 'write@dekanat.de', '$argon2i$v=19$m=16,t=2,p=1$RlJjcHZQeDVHTVkzSUVjNw$yj4y+O1mXcwfCjuo/XGQ7w', 1),
+    (2, 'writesome@dekanat.de', '$argon2i$v=19$m=16,t=2,p=1$RlJjcHZQeDVHTVkzSUVjNw$yj4y+O1mXcwfCjuo/XGQ7w', 1),
+    (3, 'readonly@dekanat.de', '$argon2i$v=19$m=16,t=2,p=1$RlJjcHZQeDVHTVkzSUVjNw$yj4y+O1mXcwfCjuo/XGQ7w', 1),
+    (4, 'nothing@dekanat.de', '$argon2i$v=19$m=16,t=2,p=1$RlJjcHZQeDVHTVkzSUVjNw$yj4y+O1mXcwfCjuo/XGQ7w', 2);
+
+INSERT INTO roles(_id, description)
+    VALUES
+    (0, 'Administrator'),
+    (1, 'Normaler User'),
+    (2, 'Gast User');
+
+INSERT INTO permissions("roleId", "action", "subject", "subjectName", "conditions")
+    VALUES
+    (0, 'read', 'project', '', '');
+
+
 
 
 -- begin user settings schema
 CREATE TABLE user_settings(
     user_id integer unique,
-    settings jsonb 
+    settings jsonb
 );
 -- end user settings schema
