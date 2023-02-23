@@ -26,31 +26,34 @@ type ConnectionProps = {
 /**
  * Toolbar item for connection status.
  */
-const Connection: React.FC<ConnectionProps> = props => (
-    <Box
-        sx={{
-            display: "flex",
-            padding: 2,
-            alignItems: "center",
-        }}
-    >
-        <FiberManualRecordIcon
-            fontSize="small"
+const Connection: React.FC<ConnectionProps> = props => {
+    const theme = useTheme()
+    return (
+        <Box
             sx={{
-                mr: 1,
-                color: useConnectionStatusColor(props.status),
-            }}
-        />
-        <Typography
-            variant="caption"
-            sx={{
-                fontStyle: "italic",
-                color: "#666",
+                display: "flex",
+                padding: 2,
+                alignItems: "center",
             }}
         >
-            {props.status === "connected" ? "verbunden" : props.status}
-        </Typography>
-    </Box>
-)
+            <FiberManualRecordIcon
+                fontSize="small"
+                sx={{
+                    mr: 1,
+                    color: useConnectionStatusColor(props.status),
+                }}
+            />
+            <Typography
+                variant="caption"
+                sx={{
+                    fontStyle: "italic",
+                    color: theme.palette.text.secondary,
+                }}
+            >
+                {props.status === "connected" ? "verbunden" : props.status}
+            </Typography>
+        </Box>
+    )
+}
 
 export default Connection

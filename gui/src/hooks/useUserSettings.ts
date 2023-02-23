@@ -1,68 +1,93 @@
-import { TableDescriptor, ViewDescriptor } from "@backend/types"
+import { TableDescriptor } from "@backend/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import { InputMask } from "@shared/input-masks/types"
-import { useState } from "react"
+import { fetcher } from "api"
+import { useUser } from "auth"
+import useSWR from "swr"
 import { Row } from "types"
-
-export type Bookmark = {
-    projectId: ProjectDescriptor["id"]
-    tableId: TableDescriptor["id"]
-    inputMask: InputMask["id"]
-    rowId: Row["_id"]
-}
+import { Bookmark } from "components/DataGrid/RowMask/Bookmark"
 
 export type UserSettings = {
+    // --- user account ---
+    title: string
+    sex: "male" | "female" | "diverse" | ""
     firstName: string
     lastName: string
-    /** @default false */
+    // --- user preferences ---
     disableFunnyGreetings: boolean
-    /** @default [] */
-    bookmarkedRecords: Bookmark[]
-    /** @default 'system' */
     preferredTheme: "system" | "dark" | "light"
-    /** @default '/dashboard' */
-    loginRedirect: string
-    /** @default 20 */
-    undoCacheLimit: number
-    /** @default true */
+    // --- undo cache ---
     enableUndoCache: boolean
-    /** @default 'always' */
+    undoCacheLimit: number
+    // --- constrain validation ---
     constrainValidation: "always" | "opening-closening"
-    /** @default ';' */
-    exportJoinCharacter: string
+    enableConstrainValidation: boolean
+    saveMismatchingRecords: boolean
+    // --- features ---
+    bookmarkedRecords: Bookmark[]
 }
 
-const dummy: UserSettings = {
-    firstName: "Max",
-    lastName: "Mustermann",
-    disableFunnyGreetings: false,
+// dont delete, will be used for initial values
+export const DefaultUserSettings: UserSettings = {
+    title: "",
+    sex: "",
+    firstName: "",
+    lastName: "",
+    disableFunnyGreetings: true,
     bookmarkedRecords: [],
     preferredTheme: "system",
-    loginRedirect: "/dashboard",
     undoCacheLimit: 20,
     enableUndoCache: true,
     constrainValidation: "always",
-    exportJoinCharacter: ";",
+    enableConstrainValidation: true,
+    saveMismatchingRecords: true,
 }
 
-// TODO: connect to db
-// TODO: integrate in `/settings`
+// TODO: connect to db ✅
+// TODO: integrate in `/settings` ✅
 // TODO: actually use each setting
 
 export const useUserSettings = () => {
-    const [userSettings, setUserSettings] = useState<UserSettings | null>(dummy)
+    const { user } = useUser()
+
+    const {
+        data: userSettings,
+        mutate: mutateUserSettings,
+        error,
+        isValidating,
+    } = useSWR<UserSettings>(
+        user
+            ? {
+                  url: `/api/user/settings`,
+                  method: "GET",
+              }
+            : null
+    )
+
+    // console.log(userSettings)
 
     const changeUserSetting = async (
         update: Partial<{ [key in keyof UserSettings]: UserSettings[key] }>
     ) => {
-        setUserSettings(prev => ({
-            ...prev!,
+        if (userSettings == null) return
+        const newSettingsObject: UserSettings = {
+            ...userSettings,
             ...update,
-        }))
+        }
+        await fetcher({
+            url: "/api/user/settings",
+            body: {
+                update: newSettingsObject,
+            },
+            method: "PATCH",
+        })
+        await mutateUserSettings()
     }
 
     return {
-        userSettings,
+        userSettings: userSettings ?? null,
         changeUserSetting,
+        error,
+        isValidating,
     }
 }

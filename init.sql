@@ -149,3 +149,11 @@ INSERT INTO permissions("roleId", "action", "subject", "subjectName", "condition
     (0, 'read', 'project', '', '');
 
 
+
+
+-- begin user settings schema
+CREATE TABLE user_settings(
+    user_id integer unique,
+    settings jsonb
+);
+-- end user settings schema

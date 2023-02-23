@@ -22,7 +22,7 @@
  * provided by this plugin from the front-end.
  */
 import { PluginLoader, CoreRequest, CoreResponse } from "@intutable/core"
-import { insert, update, deleteRow } from "@intutable/database/dist/requests"
+import { insert, update, deleteRow, select } from "@intutable/database/dist/requests"
 import { Condition as RawCondition, ColumnType } from "@intutable/database/dist/types"
 import * as pm from "@intutable/project-management/dist/requests"
 import {
@@ -125,6 +125,9 @@ export async function init(plugins: PluginLoader) {
         .on(perm.deleteUser.name, perm.deleteUser_)
         .on(perm.changeRole.name, perm.changeRole_)
         .on('getProjects', getProjects)
+        .on(req.createUserSettings.name, createUserSettings_)
+        .on(req.getUserSettings.name, getUserSettings_)
+        .on(req.updateUserSettings.name, updateUserSettings_)
 }
 
 async function getProjects(request: CoreRequest): Promise<ProjectDescriptor[]> {
@@ -1183,4 +1186,52 @@ async function deleteRows(
     )
 
     return { rowsDeleted }
+}
+
+async function createUserSettings_({
+    connectionId,
+    userId,
+    defaultUserSettings,
+}: CoreRequest): Promise<CoreResponse> {
+    return createUserSettings(connectionId, userId, defaultUserSettings)
+}
+
+async function createUserSettings(
+    connectionId: string,
+    userId: number,
+    defaultUserSettings?: string
+) {
+    return core.events.request(
+        insert(connectionId, "user_settings", {
+            user_id: userId,
+            settings: defaultUserSettings ?? "{}",
+        })
+    )
+}
+
+async function getUserSettings_({ connectionId, userId }: CoreRequest): Promise<CoreResponse> {
+    return getUserSettings(connectionId, userId)
+}
+
+async function getUserSettings(connectionId: string, userId: number) {
+    return core.events.request(
+        select(connectionId, "user_settings", { condition: ["user_id", userId] })
+    )
+}
+
+async function updateUserSettings_({
+    connectionId,
+    userId,
+    settings,
+}: CoreRequest): Promise<CoreResponse> {
+    return updateUserSettings(connectionId, userId, settings)
+}
+
+async function updateUserSettings(connectionId: string, userId: number, settings: string) {
+    return core.events.request(
+        update(connectionId, "user_settings", {
+            update: { settings: settings },
+            condition: ["user_id", userId],
+        })
+    )
 }

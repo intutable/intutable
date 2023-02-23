@@ -1,10 +1,11 @@
-import { Box, Divider, Tooltip, Typography } from "@mui/material"
+import { Alert, Box, Divider, Paper, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import MetaTitle from "components/MetaTitle"
 import { ReleaseList } from "components/Release Notes/ReleaseList"
 import type { NextPage } from "next"
 import { supportedFeatures } from "public/supportedFeatures"
 import SupportedFeatures from "components/Wiki/SupportedFeatures"
+import { CollapsableSection } from "components/CollapsableSection"
 
 const ServiceDesk: NextPage = () => {
     const theme = useTheme()
@@ -14,105 +15,82 @@ const ServiceDesk: NextPage = () => {
             <Typography variant={"h4"}>Service Desk</Typography>
             <Divider />
 
-            {/* Bugs & Feature-Requests */}
-            <Typography variant={"h5"} sx={{ mt: 20 }}>
-                Bugs und Feature-Requests
-            </Typography>
-            <Divider />
-            <ul>
-                <li>
-                    <Typography>
-                        Bugs oder Feature-Requests können mit einer
-                        <Tooltip
-                            title="Die Beschreibung sollte Angaben wie die Seite, auf der es zu einem Fehler kam, beinhalten, welche Aktionen im Detail ausgeführt wurden etc."
-                            arrow
-                        >
-                            <Box
-                                sx={{
-                                    textDecoration: "dotted",
-                                }}
-                            >
-                                detaillierten
-                            </Box>
-                        </Tooltip>{" "}
-                        Beschreibung an diese{" "}
+            <CollapsableSection title="Schnelle Hilfe">
+                <Alert severity="error" variant="filled">
+                    Wir Entwickler entschuldigen uns für die Unannehmlichkeiten, die durch mögliche
+                    Fehler in der Software entstanden sind. Wenn Sie schnelle Hilfe benötigen, dann
+                    kontaktieren Sie uns bitte umgehend.
+                </Alert>
+                <ul>
+                    <li>
+                        Ticket eröffnen (langsam):{" "}
                         <a href="mailto:contact-project+intutable-dekanat-app-30881788-issue-@incoming.gitlab.com">
-                            E-Mail
-                        </a>{" "}
-                        gesendet werden. Die Entwickler erhalten eine Nachricht und werden das
-                        Problem so schnell wie möglich lösen.
-                    </Typography>
-                </li>
-            </ul>
+                            contact-project+intutable-dekanat-app-30881788-issue-@incoming.gitlab.com
+                        </a>
+                    </li>
+                    <li>
+                        Entwickler kontaktieren (dringend):{" "}
+                        <a href="mailto:01faenge_notieren@icloud.com">
+                            01faenge_notieren@icloud.com
+                        </a>
+                    </li>
+                    <li>
+                        Telefon (Notfall): Kontaktieren Sie einen der HiWis telefonisch, um
+                        schnellste Hilfe zu erhalten!
+                    </li>
+                </ul>
+            </CollapsableSection>
 
-            {/* Caveats */}
-            <Typography variant={"h5"} sx={{ mt: 20 }}>
-                Caveats
-            </Typography>
-            <Divider />
-            <ul>
-                <li>
-                    <Typography
-                        sx={{
-                            color: theme.palette.text.secondary,
-                        }}
-                    >
-                        Einige Browser (u.a. Safari) werden zzt. nicht vollständig unterstützt. Wir
-                        empfehlen Google Chrome.
-                    </Typography>
-                </li>
-                <li>
-                    <Typography
-                        sx={{
-                            color: theme.palette.text.secondary,
-                        }}
-                    >
-                        Die App ist zzt. nicht für mobile Endgeräte optimiert.
-                    </Typography>
-                </li>
-                <li>
-                    <Typography
-                        sx={{
-                            color: theme.palette.text.secondary,
-                        }}
-                    >
-                        Einige Kontext-Menüs können nicht zuverlässig mit der Maus bedient werden.
-                        Dann kann trotzdem die Tastatur zum Navigieren verwendet werden.
-                    </Typography>
-                </li>
-            </ul>
+            <CollapsableSection title="Status zukünftiger Features" defaultClosed>
+                <ul>
+                    <li>
+                        Hier sehen Sie eine Liste möglicher Features, die in Zukunft in die App
+                        integriert werden.
+                    </li>
+                    <li>
+                        Wenn Sie selbst eine Idee für ein neues Feature oder Änderungswünsche haben,
+                        kontaktiern Sie uns gerne!
+                    </li>
+                </ul>
+                <SupportedFeatures features={supportedFeatures} />
+            </CollapsableSection>
 
-            {/* Wiki */}
-            {/* <Typography variant={"h5"} sx={{ mt: 20 }}>
-                Wiki
-            </Typography>
-            <Divider />
-            <ul>
-                <li>
-                    <Typography
-                        sx={{
-                            color: theme.palette.text.secondary,
-                        }}
-                    >
-                        Wirf einen Blick in&apos;s{" "}
-                        <Link href="/wiki/">Wiki</Link> .
-                    </Typography>
-                </li>
-            </ul> */}
+            <CollapsableSection title="Bekannte Bugs" defaultClosed>
+                <Typography marginBottom={2}>
+                    In der folgenden Liste sind bekannte Fehler aufgelistet, die wir in Kürze
+                    beheben werden!
+                </Typography>
+                <Alert severity="warning">
+                    Wenn Sie einen Bug entdeckt haben, der hier nicht aufgeführt ist, schreiben Sie
+                    bitte eine E-Mail an diese{" "}
+                    <a href="mailto:contact-project+intutable-dekanat-app-30881788-issue-@incoming.gitlab.com">
+                        Adresse
+                    </a>
+                    . Damit wir den Fehler schnellstmöglich beheben können, beschreiben Sie bitte
+                    den aufgetreten Fehler sowie die Schritte, die Sie durchgeführt haben, um den
+                    Fehler zu reproduzieren. Außerdem benötigen wir Informationen über Ihren Browser
+                    und Betriebssystem.
+                </Alert>
+                <ul>
+                    <li>
+                        Einige Features könnten in manchen Browsern nicht unterstüzt sein. Wir
+                        empfehlen Google Chrome. Installieren Sie möglichst die neuste Version Ihres
+                        Browsers!
+                    </li>
+                    <li>Die App ist nicht für mobile Endgeräte optimiert.</li>
+                    <li>
+                        Gelegentlich tritt ein unerwarteter Fehler auf, der es verhindert, innerhalb
+                        der Kontext-Menüs zu klicken. Für diesen Fehler ist leider eine
+                        Drittanbieter-Software verantwortlich. Wir arbeiten an einer Lösung.
+                        Mithilfe der Tastatur können Sie die Menüs dennoch navigieren und klicken
+                        (Pfeiltasten, Enter).
+                    </li>
+                </ul>
+            </CollapsableSection>
 
-            {/* Features */}
-            <Typography variant={"h5"} sx={{ mt: 20 }}>
-                Features
-            </Typography>
-            <SupportedFeatures features={supportedFeatures} />
-
-            {/* Versionsverlauf */}
-            <Typography variant={"h5"} sx={{ mt: 20 }}>
-                Versionsverlauf
-            </Typography>
-            <Divider />
-
-            <ReleaseList />
+            <CollapsableSection title="Versionsverlauf" defaultClosed>
+                <ReleaseList />
+            </CollapsableSection>
         </>
     )
 }

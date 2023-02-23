@@ -65,7 +65,8 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                 sx={{
                     p: 0,
                     mb: 0.5,
-                    bgcolor: view.id === currentView?.id ? theme.palette.grey[100] : undefined,
+                    bgcolor:
+                        view.id === currentView?.id ? theme.palette.action.selected : undefined,
                 }}
                 dense
                 disablePadding
