@@ -3,7 +3,7 @@ import { useAPI } from "hooks/useAPI"
 import useSWR, { unstable_serialize } from "swr"
 import { TableData } from "types"
 import { useMemo } from "react"
-import { BareFetcher, PublicConfiguration } from "swr/dist/types"
+import { BareFetcher, PublicConfiguration } from "swr/_internal"
 
 type TableData = TableData.Serialized
 

@@ -2,7 +2,7 @@ import { useAPI } from "hooks/useAPI"
 import useSWR, { unstable_serialize } from "swr"
 import { ViewData } from "types"
 import { useMemo } from "react"
-import { BareFetcher, PublicConfiguration } from "swr/dist/types"
+import { BareFetcher, PublicConfiguration } from "swr/_internal"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ViewDescriptor } from "@shared/types"
 import { Filter } from "types/filter"
