@@ -1,5 +1,5 @@
 export type UnorderedListCellContentItem<T> = {
-    value: string // <- raw value
+    value: string | UnorderedListCellContentItem<T>[] // <- raw value
     url?: string
     props?: T // <- additional data goes here
 }

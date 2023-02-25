@@ -35,8 +35,18 @@ import { cellMap } from "../index"
 import { MenuAddItemTextField } from "./Select"
 import { HelperTooltip } from "./Text"
 
+type BacklinkItemProps = { _id: number }
+type FormattedListItem<T> = Omit<ListItem<T>, "value"> & { value: string }
+
 const isUnorderedList = (value: unknown): value is List =>
     Object.prototype.hasOwnProperty.call(value, "items")
+
+const flattenUnorderedListItems = <T,>(items: ListItem<T>[]): string[] =>
+    items
+        .map(item =>
+            typeof item.value === "string" ? item.value : flattenUnorderedListItems(item.value)
+        )
+        .flat()
 
 const formatValue = (value: unknown, cellType: string): React.ReactNode => {
     const ctor = cellMap.getCellCtor(cellType)
@@ -48,23 +58,29 @@ const formatValue = (value: unknown, cellType: string): React.ReactNode => {
     return exporter(deserialized) as string
 }
 
-const formatItems = (
-    list: List,
-    replaceNestedFn: (list: List) => string
-): ListItem<undefined>[] => {
+const formatItems = <T,>(list: List<T>): FormattedListItem<T>[] => {
     try {
         if (list.format != null) {
-            return list.items.map(item => ({
-                ...item,
-                value: isUnorderedList(item.value)
-                    ? replaceNestedFn(item.value)
-                    : (formatValue(item.value, list.format!.cellType) as string),
-            }))
-        }
-
-        return list.items
+            return list.items.map(item => {
+                let displayComponent: string
+                if (typeof item.value === "string")
+                    displayComponent = formatValue(item.value, list.format!.cellType) as string
+                else if (item.value.map(subItem => typeof subItem === "string"))
+                    displayComponent = item.value
+                        .map(subItem => formatValue(subItem.value, list.format!.cellType) as string)
+                        .join(",")
+                else
+                    displayComponent = flattenUnorderedListItems(item.value)
+                        .map(subItem => formatValue(subItem, list.format!.cellType) as string)
+                        .join(",")
+                return { ...item, value: displayComponent }
+            })
+        } else throw TypeError("cannot format a list with no format property")
     } catch (error) {
-        return [{ value: "Fehler: Die Daten konnten nicht geladen werden!" }]
+        console.log(error)
+        console.dir(error)
+        console.log(JSON.stringify(list))
+        return [{ value: "Fehler: Die Daten konnten nicht formatiert werden!" }]
     }
 }
 
@@ -101,7 +117,7 @@ export class UnorderedList extends Cell {
     }
 
     static export(list: List): string {
-        return formatItems(list, () => "[Verlinkte-Spalte]").join(";")
+        return formatItems(list).join(";")
     }
     static unexport(value: string): List {
         const items = value.split(";")
@@ -114,9 +130,6 @@ export class UnorderedList extends Cell {
 
     public formatter = (props: FormatterProps<Row>) => {
         const { content: rawContent, row, key } = this.destruct<List | null>(props)
-
-        const theme = useTheme()
-        const router = useRouter()
 
         const [hovering, setHovering] = useState<boolean>(false)
         const modalRef = useRef<HTMLDivElement | null>(null)
@@ -157,9 +170,7 @@ export class UnorderedList extends Cell {
 
         const listItems = useMemo(() => {
             if (!content) return []
-            return formatItems(content, nestedList => {
-                return nestedList.items.toString()
-            })
+            return formatItems(content)
         }, [content])
 
         return (
@@ -181,8 +192,7 @@ export class UnorderedList extends Cell {
                         ref={modalRef}
                         size="small"
                         fullWidth
-                        value={listItems.map(item => item.value).join(", ")}
-                        disabled={this.column.editable === false}
+                        value={listItems.map(item => item.value).join("; ")}
                         onClick={() => setMenuOpen(true)}
                         InputProps={{
                             readOnly: true, // <- Note: this is not the same as `this.isReadonlyComponent`.
@@ -218,8 +228,6 @@ export class UnorderedList extends Cell {
         const { content: rawContent } = props
         const { updateRow } = useRow()
         const { snackError } = useSnacki()
-        const theme = useTheme()
-        const router = useRouter()
 
         const modalRef = useRef<HTMLDivElement | null>(null)
         const [menuOpen, setMenuOpen] = useState<boolean>(false)
@@ -268,9 +276,7 @@ export class UnorderedList extends Cell {
 
         const listItems = useMemo(() => {
             if (!content) return []
-            return formatItems(content, nestedList => {
-                return nestedList.items.toString()
-            })
+            return formatItems(content)
         }, [content])
 
         return (
@@ -333,7 +339,7 @@ type UnorderedListMenuProps = {
     removeListItem: (value: string) => void
     removeAllListItems: () => void
     addListItem: (value: string) => void
-    listItems: ListItem<undefined>[]
+    listItems: FormattedListItem<BacklinkItemProps>[]
     isEmpty: boolean
 }
 const UnorderedListMenu: React.FC<UnorderedListMenuProps> = props => {
@@ -407,7 +413,7 @@ const UnorderedListMenu: React.FC<UnorderedListMenuProps> = props => {
                     </MenuItem>
                 )}
                 {listItems.map(item => (
-                    <MenuItem key={item.value}>
+                    <MenuItem key={item.props?._id || item.value}>
                         <ListItemText>
                             &#x2022;{" "}
                             <Chip

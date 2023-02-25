@@ -513,7 +513,10 @@ function createRawSpecifierForLookupColumn(
             aggregateFunction = firstAggregate()
             break
         case LinkKind.Backward:
-            contentType = parentColumn.attributes.cellType || "string"
+            contentType =
+                parentColumn.attributes.kind === "backwardLink"
+                    ? parentColumn.attributes.cellTypeParameter
+                    : parentColumn.attributes.cellType || "string"
             attributes = backwardLookupColumnAttributes(displayName, contentType, columnIndex)
             aggregateFunction = unorderedListItemsAggregate(
                 join,
