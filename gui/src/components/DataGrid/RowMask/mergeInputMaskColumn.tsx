@@ -3,6 +3,7 @@ import { isColumnIdOrigin } from "@shared/input-masks/utils"
 import { Column } from "types/tables/rdg"
 
 export type MergedColumn = Column & InputMaskColumnProps
+
 export const merge = (columns: Column[], withInputMaskColumns: InputMaskColumn[]): MergedColumn[] =>
     columns.map(column => {
         const maskCol = withInputMaskColumns.find(c =>
@@ -17,6 +18,7 @@ export const merge = (columns: Column[], withInputMaskColumns: InputMaskColumn[]
         // add default values if nullish
         merged.inputRequired ??= false
         merged.suppressInputLabel ??= false
+        merged.disallowNewSelectValues ??= false
 
         return column
     })

@@ -1,3 +1,4 @@
+import { merge } from "@datagrid/RowMask/mergeInputMaskColumn"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { useView, ViewHookOptions } from "hooks/useView"
@@ -5,6 +6,7 @@ import { RowsChangeData } from "react-data-grid"
 import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
 import { useColumn } from "./useColumn"
+import { useInputMask } from "./useInputMask"
 
 import { useSnacki } from "./useSnacki"
 import { useSnapshot } from "./useSnapshot"
@@ -31,6 +33,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     const { data: view, mutate: mutateView } = useView(viewOptions)
     const { undoManager } = useUndoManager()
     const { captureSnapshot } = useSnapshot()
+    const { currentInputMask } = useInputMask()
 
     /**
      * Used for row reordering / drag n drop
@@ -48,6 +51,18 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     const createRow = async (atIndex?: number): Promise<{ _id: number }> => {
+        // TODO: implement default values from input masks
+        const withDefaultValues: Record<number, unknown> = {}
+        if (view && currentInputMask) {
+            const merged = merge(view.columns, currentInputMask.columnProps)
+            merged.forEach(inputMaskCol => {
+                if (inputMaskCol.defaultValue != null && inputMaskCol.defaultValue !== "") {
+                    withDefaultValues[inputMaskCol.id] = inputMaskCol.defaultValue
+                }
+                // TODO: do we need to do some special treatment if the `inputMaskCol` is a (backdrop) link / lookup
+            })
+        }
+
         // BUG: the endpoint is supposed to return data like `{ _id: 0}`
         // but somehow `row` is just a number
         // watch out for this bug

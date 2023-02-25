@@ -8,7 +8,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Column } from "types"
 import KeyIcon from "@mui/icons-material/Key"
 import { useView } from "hooks/useView"
-import { MergedColumn } from "./merge"
+import { MergedColumn } from "./mergeInputMaskColumn"
 
 export const ColumnAttributesWindowButton: React.FC<{
     column: Column.Serialized

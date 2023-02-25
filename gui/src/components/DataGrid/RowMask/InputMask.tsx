@@ -4,7 +4,7 @@ import { useInputMask } from "hooks/useInputMask"
 import { Column } from "types/tables/rdg"
 import { RowMaskColumn } from "./Column"
 import { ColumnGroupComponent } from "./ColumnGroup"
-import { merge, MergedColumn } from "./merge"
+import { merge, MergedColumn } from "./mergeInputMaskColumn"
 import Components from "./Input Mask Components"
 
 const columnIsInGroup = (column: Column, groups: ColumnGroup[]) =>
