@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = props => {
     const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
     const { currentInputMask } = useInputMask()
     const isInputMask = selectedInputMask != null
-    // const { isValid } = useConstraintValidation()
+    const { state } = useConstraintValidation()
     const { deleteRow } = useRow()
     const { isDraft } = useRecordDraftSession()
 
@@ -99,6 +99,7 @@ export const Header: React.FC<HeaderProps> = props => {
                     <IconButton
                         size="small"
                         onClick={abort}
+                        disabled={state.isRunning}
                         sx={{
                             "&:hover": {
                                 color: theme.palette.success.main,
