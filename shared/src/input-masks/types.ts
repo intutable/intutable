@@ -40,6 +40,10 @@ export type InputMaskColumnProps = {
     suppressInputLabel?: boolean
     /** @default false */
     disallowNewSelectValues?: boolean
+
+    /** When creating a new record, this will automatically insert this value.  */
+    /** (Not implemented yet) */
+    defaultValue?: unknown // TODO: implement
 }
 export type OverrideableColumnProps = Partial<
     Pick<SerializedColumn, "name" | "editable" | "frozen" | "index" | "hidden">
