@@ -50,7 +50,7 @@ const Forms: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = 
             <Typography variant={"h4"}>Eingabemasken</Typography>
             <Divider />
 
-            <Stack direction="row" sx={{ width: "100%", mt: 5 }} gap={4}>
+            <Stack direction="row" sx={{ width: "100%", mt: 5 }} gap={4} flexWrap="wrap">
                 {props.cards.map(card => (
                     <InputMaskCTACard key={card.inputMask.id} card={card} />
                 ))}

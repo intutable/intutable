@@ -21,6 +21,8 @@ import { useInputMask } from "hooks/useInputMask"
 import { ManualRetry } from "./ManualRetry"
 import { useState } from "react"
 
+const formatTime = (timeInMs: number) => {}
+
 export type ConstraintSectionProps = {
     onClose: () => void
 }
@@ -35,9 +37,7 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
         <Box
             sx={{
                 minWidth: "300px",
-                height: 1,
                 boxSizing: "border-box",
-                overflowY: "scroll",
             }}
         >
             <Stack direction="row" alignItems={"center"} gap={1} marginBottom={3}>
@@ -88,10 +88,14 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
                             <ul>
                                 <li>
                                     Validiert: {state.progress[0]}/{state.progress[1]}
+                                    <ul>
+                                        <li>Zeit: {state.report!.time} ms</li>
+                                        <li>Erfolgreich: {state.report!.succeeded.length}</li>
+                                        <li>Fehlgeschlagen: {state.report!.failed.length}</li>
+                                        <li>Unterbrochen: {state.report!.interrupted.length}</li>
+                                    </ul>
                                 </li>
-                                <li>Erfolgreich: {state.report!.succeeded.length}</li>
-                                <li>Fehlgeschlagen: {state.report!.failed.length}</li>
-                                <li>Unterbrochen: {state.report!.interrupted.length}</li>
+                                <li>Ausgeführt: 0/0 (Nicht implementiert)</li>
                             </ul>
                         </Box>
                     )}

@@ -3,11 +3,20 @@ import { useTheme } from "@mui/material/styles"
 import { Mismatch } from "@shared/constraints/util/Mismatch"
 import { useState } from "react"
 
-export const DebugMismatch: React.FC<{ mismatch: Mismatch }> = ({ mismatch }) => {
+export const DebugMismatch: React.FC<{ mismatch: Mismatch & { constraint: string } }> = ({
+    mismatch,
+}) => {
     const theme = useTheme()
 
-    const [collapsed, setCollapsed] = useState<boolean>(false)
+    const [collapsed, setCollapsed] = useState<boolean>(true)
     const toggleCollapsed = () => setCollapsed(prev => !prev)
+
+    const label =
+        mismatch.severity === "error"
+            ? "schwerwiegend"
+            : mismatch.severity === "warning"
+            ? "mismatch"
+            : "hinweis"
 
     return (
         <Box
@@ -34,12 +43,7 @@ export const DebugMismatch: React.FC<{ mismatch: Mismatch }> = ({ mismatch }) =>
                         {mismatch.title}
                     </Typography>
                     <Box flexGrow={1} />
-                    <Chip
-                        label={mismatch.severity}
-                        size="small"
-                        variant="outlined"
-                        color={mismatch.severity}
-                    />
+                    <Chip label={label} size="small" variant="outlined" color={mismatch.severity} />
                 </Stack>
                 <Typography
                     variant="caption"
@@ -47,7 +51,7 @@ export const DebugMismatch: React.FC<{ mismatch: Mismatch }> = ({ mismatch }) =>
                         color: theme.palette.action.disabled,
                     }}
                 >
-                    Constraint X/Y
+                    {mismatch.constraint}
                 </Typography>
             </Stack>
 

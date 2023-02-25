@@ -144,6 +144,18 @@ const mask: InputMask = {
     ],
     constraints: [
         {
+            name: "Proof-of-Concept 2",
+            __type: "constraint",
+            __ctor: "Constraint",
+            conditions: {
+                __type: "node",
+                __ctor: "Node",
+                data: { __type: "if", __ctor: "Timeout", __props: [12000] },
+                next: null,
+            },
+            executments: [],
+        },
+        {
             name: "Proof-of-Concept",
             __type: "constraint",
             __ctor: "Constraint",
@@ -172,12 +184,6 @@ const mask: InputMask = {
                 next: null,
             },
             executments: [],
-            debugMessage: {
-                title: "Fehlernachricht 2",
-                severity: "error",
-                message: "Ein Problem mit Constrain X ist aufgetreten",
-                howToSolve: "Wenden Sie sich an den Entwickler",
-            },
         },
         // BUG: fetcher will throw if using this, source probably in `coreRequest`
         // new Constraint("Proof-of-Concept")

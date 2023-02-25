@@ -94,7 +94,7 @@ export const ProgressIndicator: React.FC = () => {
                 {loading
                     ? "Lade Constraints ..."
                     : state.finished
-                    ? "Validierung abgeschlossen ..."
+                    ? "Validierung abgeschlossen "
                     : state.isRunning
                     ? "Validiere Constraints ..."
                     : ""}

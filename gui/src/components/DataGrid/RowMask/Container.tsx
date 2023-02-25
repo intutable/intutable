@@ -139,14 +139,23 @@ export const RowMaskContainer: React.FC = () => {
                             <Box>
                                 <Stack
                                     sx={{
-                                        height: "100%",
+                                        maxHeight: "70vh",
+                                        minHeight: "70vh",
+                                        height: "70vh",
+                                        width: 1,
                                     }}
                                     direction="row"
                                 >
                                     <Divider orientation="vertical" sx={{ mx: 2 }} />
-                                    <ConstraintSection
-                                        onClose={() => setConstraintSectionOpen(false)}
-                                    />
+                                    <Box
+                                        sx={{
+                                            overflowY: "scroll",
+                                        }}
+                                    >
+                                        <ConstraintSection
+                                            onClose={() => setConstraintSectionOpen(false)}
+                                        />
+                                    </Box>
                                 </Stack>
                             </Box>
                         )}
