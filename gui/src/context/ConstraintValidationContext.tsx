@@ -1,5 +1,5 @@
 import { IfCtorMap } from "@shared/constraints/ifs/"
-import { ConditionIterIter } from "@shared/constraints/util/ConstrainStore"
+import { ConditionIterIter } from "@shared/constraints/util/ConstraintStore"
 import type { ConstraintContextProps } from "@shared/constraints/util/ConstraintContextProps"
 import { Mismatch } from "@shared/constraints/util/Mismatch"
 import { UNSAFE_ViewData } from "@shared/input-masks"
@@ -144,7 +144,7 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         }
         if (
             !userSettings ||
-            userSettings.constrainValidation === "never" ||
+            userSettings.constraintValidation === "never" ||
             currentInputMask === null ||
             rowMaskState.mode === "closed" ||
             !contextProps

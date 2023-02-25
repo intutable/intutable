@@ -6,6 +6,7 @@ import {
     Switch,
     ToggleButton,
     ToggleButtonGroup,
+    Tooltip,
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
@@ -20,7 +21,7 @@ export const InputMaskSettings: React.FC = () => {
         <CollapsableList
             label="Eingabemasken"
             description="Validierung, Dashboard"
-            error={userSettings?.constrainValidation === "never"}
+            error={userSettings?.constraintValidation === "never"}
         >
             {userSettings == null ? (
                 <CircularProgress />
@@ -31,24 +32,26 @@ export const InputMaskSettings: React.FC = () => {
 
                         <ToggleButtonGroup
                             size="small"
-                            value={userSettings.constrainValidation}
+                            value={userSettings.constraintValidation}
                             exclusive
-                            onChange={(e, value: UserSettings["constrainValidation"] | null) =>
+                            onChange={(e, value: UserSettings["constraintValidation"] | null) =>
                                 changeUserSetting({
-                                    constrainValidation:
-                                        value ?? DefaultUserSettings.constrainValidation,
+                                    constraintValidation:
+                                        value ?? DefaultUserSettings.constraintValidation,
                                 })
                             }
                         >
                             <ToggleButton value="never" color="error">
                                 Aus
                             </ToggleButton>
-                            <ToggleButton value="always">Immer</ToggleButton>
+                            <ToggleButton value="always" disabled>
+                                Immer
+                            </ToggleButton>
                             <ToggleButton value="opening-closening">Öffnen/Schließen</ToggleButton>
                         </ToggleButtonGroup>
                     </ListItem>
 
-                    {userSettings.constrainValidation === "never" && (
+                    {userSettings.constraintValidation === "never" && (
                         <Box sx={{ px: 2, my: 1, lineHeight: 0 }}>
                             <Typography
                                 variant="caption"

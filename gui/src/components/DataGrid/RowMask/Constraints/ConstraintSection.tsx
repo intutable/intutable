@@ -49,7 +49,7 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
                 </IconButton>
             </Stack>
 
-            {userSettings?.constrainValidation === "never" ? (
+            {userSettings?.constraintValidation === "never" ? (
                 <Stack direction="row" marginY={5} justifyContent="center">
                     <Typography
                         textAlign={"center"}

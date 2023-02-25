@@ -76,7 +76,7 @@ export const RowMaskContainer: React.FC = () => {
 
                 <Divider />
 
-                {userSettings?.constrainValidation === "never" && isInputMask && (
+                {userSettings?.constraintValidation === "never" && isInputMask && (
                     <Box sx={{ px: 5, my: 3 }}>
                         <Alert severity="error" variant="filled">
                             <AlertTitle>
