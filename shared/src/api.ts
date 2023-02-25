@@ -80,7 +80,7 @@ export function backwardLinkColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 1,
-        cellType: "unordered-list",
+        cellType: "backward-link",
         cellTypeParameter: parentColumnCellType,
     }
 }
@@ -116,7 +116,7 @@ export function backwardLookupColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 0,
-        cellType: "unordered-list",
+        cellType: "backward-link",
         cellTypeParameter: parentColumnCellType,
     }
 }

@@ -1,5 +1,17 @@
-import ClearIcon from "@mui/icons-material/Clear"
-import DeleteIcon from "@mui/icons-material/Delete"
+/**
+ * A cell type for backward links and lookups, which are a 1:n mapping between rows. A
+ * cell shows one column value for every row that is linked. The individual values are
+ * formatted according to the cell type of the parent column, which means the link/lookup
+ * must have the parent's cellType attached in an extra prop.
+ * A backward lookup can be based on another backward link/lookup, leading to nested
+ * lists. These are displayed in full detail if the nesting is only one level deep
+ * (list of list of raw values) according to the following pattern:
+ * linkedRow1;        linkedRow2;  ... linkedRowN
+ * item1,item2,item3; item4,item5; ... eltn-1,eltn
+ *
+ * If the nesting is more than two levels deep, the sub-lists are flattened and the result
+ * displayed according to the above pattern.
+ */
 import ListIcon from "@mui/icons-material/List"
 import OpenInFullIcon from "@mui/icons-material/OpenInFull"
 import {
@@ -12,7 +24,6 @@ import {
     MenuItem,
     MenuList,
     TextField,
-    Tooltip,
 } from "@mui/material"
 import useTheme from "@mui/system/useTheme"
 import { useRouter } from "next/router"
@@ -20,11 +31,9 @@ import { FormatterProps } from "react-data-grid"
 
 import { ExposedInputAdornment } from "@datagrid/RowMask/ExposedInputAdornment"
 import {
-    UnorderedListCellContent as List,
-    UnorderedListCellContentItem as ListItem,
+    BackwardLinkCellContent as List,
+    BackwardLinkCellContentItem as ListItem,
 } from "@shared/types/gui"
-import { useRow } from "hooks/useRow"
-import { useSnacki } from "hooks/useSnacki"
 import { useMemo, useRef, useState } from "react"
 import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
@@ -32,20 +41,17 @@ import { stringToColor } from "utils/stringToColor"
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { cellMap } from "../index"
-import { MenuAddItemTextField } from "./Select"
 import { HelperTooltip } from "./Text"
 
 type BacklinkItemProps = { _id: number }
 type FormattedListItem<T> = Omit<ListItem<T>, "value"> & { value: string }
 
-const isUnorderedList = (value: unknown): value is List =>
+const isList = (value: unknown): value is List =>
     Object.prototype.hasOwnProperty.call(value, "items")
 
-const flattenUnorderedListItems = <T,>(items: ListItem<T>[]): string[] =>
+const flattenListItems = <T,>(items: ListItem<T>[]): string[] =>
     items
-        .map(item =>
-            typeof item.value === "string" ? item.value : flattenUnorderedListItems(item.value)
-        )
+        .map(item => (typeof item.value === "string" ? item.value : flattenListItems(item.value)))
         .flat()
 
 const formatValue = (value: unknown, cellType: string): React.ReactNode => {
@@ -70,7 +76,7 @@ const formatItems = <T,>(list: List<T>): FormattedListItem<T>[] => {
                         .map(subItem => formatValue(subItem.value, list.format!.cellType) as string)
                         .join(",")
                 else
-                    displayComponent = flattenUnorderedListItems(item.value)
+                    displayComponent = flattenListItems(item.value)
                         .map(subItem => formatValue(subItem, list.format!.cellType) as string)
                         .join(",")
                 return { ...item, value: displayComponent }
@@ -84,8 +90,8 @@ const formatItems = <T,>(list: List<T>): FormattedListItem<T>[] => {
     }
 }
 
-export class UnorderedList extends Cell {
-    public brand = "unordered-list"
+export class BackwardLink extends Cell {
+    public brand = "backward-link"
     public label = "Liste"
     public icon = ListIcon
     public canBeUserPrimaryKey = false
@@ -98,18 +104,18 @@ export class UnorderedList extends Cell {
     }
 
     static isValid(value: unknown): boolean {
-        return isUnorderedList(value)
+        return isList(value)
     }
 
     static serialize(value: List): string {
         return JSON.stringify(value)
     }
     static deserialize(value: unknown): List {
-        if (isUnorderedList(value)) return value
+        if (isList(value)) return value
         if (typeof value === "string") {
             try {
                 const jsonparsed = JSON.parse(value)
-                if (isUnorderedList(jsonparsed)) return jsonparsed
+                if (isList(jsonparsed)) return jsonparsed
                 // eslint-disable-next-line no-empty
             } catch (_) {}
         }
@@ -129,7 +135,7 @@ export class UnorderedList extends Cell {
     public editor = () => null
 
     public formatter = (props: FormatterProps<Row>) => {
-        const { content: rawContent, row, key } = this.destruct<List | null>(props)
+        const { content: rawContent } = this.destruct<List | null>(props)
 
         const [hovering, setHovering] = useState<boolean>(false)
         const modalRef = useRef<HTMLDivElement | null>(null)
@@ -138,35 +144,6 @@ export class UnorderedList extends Cell {
             rawContent?.items.every(item => item.value == null) ? null : rawContent
         )
         const isEmpty = content === null || content?.items.length === 0
-
-        const addListItem = async (value: string) => {
-            props.onRowChange({
-                ...row,
-                [key]: content
-                    ? {
-                          ...content,
-                          items: [...content.items, { value }],
-                      }
-                    : {
-                          items: [{ value: value }],
-                      },
-            })
-        }
-        const removeListItem = async (value: string) => {
-            props.onRowChange({
-                ...row,
-                [key]: {
-                    ...content,
-                    items: content?.items.filter(item => item.value !== value),
-                },
-            })
-        }
-        const removeAllListItems = () => {
-            props.onRowChange({
-                ...row,
-                [key]: null,
-            })
-        }
 
         const listItems = useMemo(() => {
             if (!content) return []
@@ -208,14 +185,11 @@ export class UnorderedList extends Cell {
                         }}
                         variant="standard"
                     />
-                    <UnorderedListMenu
+                    <ListItemsDropdown
                         menuOpen={menuOpen}
                         modalRef={modalRef}
                         onClose={() => setMenuOpen(false)}
                         self={this}
-                        removeAllListItems={removeAllListItems}
-                        removeListItem={removeListItem}
-                        addListItem={addListItem}
                         listItems={listItems}
                         isEmpty={isEmpty}
                     />
@@ -226,8 +200,6 @@ export class UnorderedList extends Cell {
 
     public ExposedInput: React.FC<ExposedInputProps<List | null>> = props => {
         const { content: rawContent } = props
-        const { updateRow } = useRow()
-        const { snackError } = useSnacki()
 
         const modalRef = useRef<HTMLDivElement | null>(null)
         const [menuOpen, setMenuOpen] = useState<boolean>(false)
@@ -235,44 +207,6 @@ export class UnorderedList extends Cell {
             rawContent?.items.every(item => item.value == null) ? null : rawContent
         )
         const isEmpty = content == null || content?.items.length === 0
-
-        const addListItem = async (value: string) => {
-            try {
-                const update: List = content
-                    ? {
-                          ...content,
-                          items: [...content.items, { value }],
-                      }
-                    : {
-                          items: [{ value: value }],
-                      }
-
-                await updateRow(props.column, props.row, update)
-            } catch (e) {
-                snackError("Der Wert konnte nicht hinzugefügt werden")
-            }
-        }
-        const removeListItem = async (value: string) => {
-            try {
-                const update = content
-                    ? {
-                          ...content,
-                          items: content.items.filter(listItem => listItem.value !== value),
-                      }
-                    : null
-                if (update == null) return
-                await updateRow(props.column, props.row, update)
-            } catch (e) {
-                snackError("Der Wert konnte nicht entfernt werden")
-            }
-        }
-        const removeAllListItems = async () => {
-            try {
-                await updateRow(props.column, props.row, null)
-            } catch (e) {
-                snackError("Die Werte konnten nicht entfernt werden")
-            }
-        }
 
         const listItems = useMemo(() => {
             if (!content) return []
@@ -315,14 +249,11 @@ export class UnorderedList extends Cell {
                     helperText={props.required && isEmpty ? "Pflichtfeld" : undefined}
                     {...props.forwardProps}
                 />
-                <UnorderedListMenu
+                <ListItemsDropdown
                     menuOpen={menuOpen}
                     modalRef={modalRef}
                     onClose={() => setMenuOpen(false)}
                     self={this}
-                    removeAllListItems={removeAllListItems}
-                    removeListItem={removeListItem}
-                    addListItem={addListItem}
                     listItems={listItems}
                     isEmpty={isEmpty}
                 />
@@ -331,28 +262,16 @@ export class UnorderedList extends Cell {
     }
 }
 
-type UnorderedListMenuProps = {
+type ListItemsDropdownProps = {
     menuOpen: boolean
     modalRef: React.RefObject<HTMLDivElement>
     onClose: () => void
-    readonly self: UnorderedList
-    removeListItem: (value: string) => void
-    removeAllListItems: () => void
-    addListItem: (value: string) => void
+    readonly self: BackwardLink
     listItems: FormattedListItem<BacklinkItemProps>[]
     isEmpty: boolean
 }
-const UnorderedListMenu: React.FC<UnorderedListMenuProps> = props => {
-    const {
-        menuOpen,
-        modalRef,
-        self,
-        removeAllListItems,
-        removeListItem,
-        addListItem,
-        listItems,
-        isEmpty,
-    } = props
+const ListItemsDropdown: React.FC<ListItemsDropdownProps> = props => {
+    const { menuOpen, modalRef, self, listItems, isEmpty } = props
     const theme = useTheme()
     const router = useRouter()
 
@@ -372,30 +291,6 @@ const UnorderedListMenu: React.FC<UnorderedListMenuProps> = props => {
                     <ListItemText>
                         {listItems.length} {listItems.length === 1 ? "Eintrag" : "Einträge"}
                     </ListItemText>
-                    <Tooltip
-                        arrow
-                        enterDelay={1000}
-                        placement="bottom"
-                        title="Alle Listen-Einträge löschen"
-                    >
-                        <IconButton
-                            size="small"
-                            onClick={() => {
-                                const confirmed = confirm(
-                                    "Sollen alle Listen-Einträge gelöscht werden?"
-                                )
-                                if (confirmed) removeAllListItems()
-                            }}
-                            disabled={listItems.length === 0}
-                            sx={{
-                                "&:hover": {
-                                    color: theme.palette.error.light,
-                                },
-                            }}
-                        >
-                            <DeleteIcon fontSize="small" />
-                        </IconButton>
-                    </Tooltip>
                 </MenuItem>,
                 <Divider sx={{ mb: 1 }} key={"UnorderredList-Menu-Header-Divider"} />,
             ]}
@@ -428,28 +323,9 @@ const UnorderedListMenu: React.FC<UnorderedListMenuProps> = props => {
                                 onClick={item.url ? () => router.push(item.url!) : undefined}
                             />
                         </ListItemText>
-                        <IconButton size="small" onClick={() => removeListItem(item.value)}>
-                            <ClearIcon
-                                fontSize="small"
-                                sx={{
-                                    "&:hover": {
-                                        color: theme.palette.error.light,
-                                    },
-                                }}
-                            />
-                        </IconButton>
                     </MenuItem>
                 ))}
             </MenuList>
-
-            {self.isReadonlyComponent === false && [
-                <Divider sx={{ mt: 1 }} key={"UnorderredList-Footer-Divider"} />,
-                <MenuAddItemTextField
-                    key={"UnorderredList-Footer"}
-                    onAdd={value => addListItem(value)}
-                    label="Eintrag hinzufügen"
-                />,
-            ]}
         </Menu>
     )
 }

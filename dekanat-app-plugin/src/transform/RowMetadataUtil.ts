@@ -1,4 +1,4 @@
-import { DB, SerializedColumn, UnorderedListCellContent } from "shared/dist/types"
+import { DB, SerializedColumn, BackwardLinkCellContent } from "shared/dist/types"
 
 export class RowMetadataUtil {
     public applyMetadataToRows(
@@ -13,7 +13,7 @@ export class RowMetadataUtil {
                 processedRows = processedRows.map(row => ({
                     ...row,
                     [column.key]: {
-                        items: row[column.key] as UnorderedListCellContent["items"],
+                        items: row[column.key] as BackwardLinkCellContent["items"],
                         format: { cellType: column.cellTypeParameter },
                     },
                 }))
