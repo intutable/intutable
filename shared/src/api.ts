@@ -7,6 +7,7 @@ import {
     ViewInfo as RawViewInfo,
     ColumnSpecifier,
     ParentColumnDescriptor,
+    ColumnInfo as LV_Column,
     RowOptions,
     SortOrder,
 } from "@intutable/lazy-views/dist/types"
@@ -95,7 +96,7 @@ export function foreignKeyColumnAttributes(columnIndex: number): Partial<DB.Colu
 }
 export function lookupColumnAttributes(
     name: string,
-    contentType: string,
+    parentColumn: LV_Column,
     columnIndex: number
 ): Partial<DB.Column> {
     return {
@@ -103,21 +104,26 @@ export function lookupColumnAttributes(
         displayName: name,
         index: columnIndex,
         editable: 0,
-        cellType: contentType,
+        cellType: parentColumn.attributes.cellType || "string",
     }
 }
 export function backwardLookupColumnAttributes(
     name: string,
-    parentColumnCellType: string,
+    parentColumn: LV_Column,
     columnIndex: number
 ): Partial<DB.Column> {
+    const cellTypeParameter = ["backwardLink", "backwardLookup"].includes(
+        parentColumn.attributes.kind
+    )
+        ? parentColumn.attributes.cellTypeParameter
+        : parentColumn.attributes.cellType
     return {
         kind: "backwardLookup",
         displayName: name,
         index: columnIndex,
         editable: 0,
         cellType: "backward-link",
-        cellTypeParameter: parentColumnCellType,
+        cellTypeParameter,
     }
 }
 

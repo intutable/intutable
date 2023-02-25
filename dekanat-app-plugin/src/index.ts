@@ -503,21 +503,15 @@ function createRawSpecifierForLookupColumn(
         `(${otherTableInfo.descriptor.name})`
     const join = tableInfo.joins.find(j => j.id === linkColumn.joinId)!
     const otherTableIdColumn = otherTableInfo.columns.find(c => c.name === "_id")!
-    let contentType: string
     let attributes: Partial<DB.Column>
     let aggregateFunction: ColumnSpecifier["outputFunc"]
     switch (linkKind) {
         case LinkKind.Forward:
-            contentType = parentColumn.attributes.cellType || "string"
-            attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
+            attributes = lookupColumnAttributes(displayName, parentColumn, columnIndex)
             aggregateFunction = firstAggregate()
             break
         case LinkKind.Backward:
-            contentType =
-                parentColumn.attributes.kind === "backwardLink"
-                    ? parentColumn.attributes.cellTypeParameter
-                    : parentColumn.attributes.cellType || "string"
-            attributes = backwardLookupColumnAttributes(displayName, contentType, columnIndex)
+            attributes = backwardLookupColumnAttributes(displayName, parentColumn, columnIndex)
             aggregateFunction = unorderedListItemsAggregate(
                 join,
                 otherTableInfo,

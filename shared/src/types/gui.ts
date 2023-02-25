@@ -22,7 +22,7 @@ export type BackwardLinkCellContent<T = undefined> = {
  * @prop {T} props optional additional properties.
  */
 export type BackwardLinkCellContentItem<T> = {
-    value: string | BackwardLinkCellContentItem<T>[] // <- raw value
+    value: null | string | BackwardLinkCellContentItem<T>[] // <- raw value
     url?: string
     props?: T // <- additional data goes here
 }

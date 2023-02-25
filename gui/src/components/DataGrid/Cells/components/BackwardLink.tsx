@@ -49,10 +49,14 @@ type FormattedListItem<T> = Omit<ListItem<T>, "value"> & { value: string }
 const isList = (value: unknown): value is List =>
     Object.prototype.hasOwnProperty.call(value, "items")
 
-const flattenListItems = <T,>(items: ListItem<T>[]): string[] =>
-    items
-        .map(item => (typeof item.value === "string" ? item.value : flattenListItems(item.value)))
-        .flat()
+const flattenListItems = <T,>(items: ListItem<T>[]): string[] => {
+    const sublists: string[][] = []
+    for (const item of items) {
+        if (typeof item.value === "string") sublists.push([item.value])
+        else if (item.value !== null) sublists.push(flattenListItems(item.value))
+    }
+    return sublists.flat()
+}
 
 const formatValue = (value: unknown, cellType: string): React.ReactNode => {
     const ctor = cellMap.getCellCtor(cellType)
@@ -60,32 +64,34 @@ const formatValue = (value: unknown, cellType: string): React.ReactNode => {
     const deserializer = ctor.deserialize
     const exporter = ctor.export
     const deserialized = catchEmpty(deserializer.bind(ctor), value)
-    if (deserialized == null) return "Leer"
+    if (deserialized == null) return "<Leer>"
     return exporter(deserialized) as string
 }
 
+/**
+ *
+ */
 const formatItems = <T,>(list: List<T>): FormattedListItem<T>[] => {
     try {
         if (list.format != null) {
             return list.items.map(item => {
                 let displayComponent: string
-                if (typeof item.value === "string")
+                if (item.value === null) displayComponent = "<Leer>"
+                else if (typeof item.value === "string")
                     displayComponent = formatValue(item.value, list.format!.cellType) as string
                 else if (item.value.map(subItem => typeof subItem === "string"))
                     displayComponent = item.value
                         .map(subItem => formatValue(subItem.value, list.format!.cellType) as string)
                         .join(",")
-                else
+                else {
                     displayComponent = flattenListItems(item.value)
                         .map(subItem => formatValue(subItem, list.format!.cellType) as string)
                         .join(",")
+                }
                 return { ...item, value: displayComponent }
             })
         } else throw TypeError("cannot format a list with no format property")
     } catch (error) {
-        console.log(error)
-        console.dir(error)
-        console.log(JSON.stringify(list))
         return [{ value: "Fehler: Die Daten konnten nicht formatiert werden!" }]
     }
 }
