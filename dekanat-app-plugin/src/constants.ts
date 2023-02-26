@@ -1,10 +1,16 @@
-/** 
+/**
  * Internal constants, e.g. fixed column attributes for different column kinds
  */
 import { DB } from "shared/dist/types"
 import { ROW_INDEX_KEY } from "shared/dist/api"
 import { RawViewColumnInfo, RawViewInfo } from "./types/raw"
-import { RowOptions, ParentColumnDescriptor, ColumnSpecifier, SortOrder, JoinDescriptor } from "@intutable/lazy-views"
+import {
+    RowOptions,
+    ParentColumnDescriptor,
+    ColumnSpecifier,
+    SortOrder,
+    JoinDescriptor,
+} from "@intutable/lazy-views"
 
 /**
  * Default attributes for a standard column.
