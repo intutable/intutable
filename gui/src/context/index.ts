@@ -1,2 +1,2 @@
 export * from "./HeaderSearchFieldContext"
-export * from "./APIContext"
+export { useAPI } from "hooks/useAPI"

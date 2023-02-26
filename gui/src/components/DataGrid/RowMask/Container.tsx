@@ -33,6 +33,7 @@ import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
 import { ConstraintMismatches } from "./ConstraintMismatches"
 import { ConstraintsValid } from "./ConstraintsValid"
+import { BookmarkButton } from "./Bookmark"
 
 export const RowMaskContainer: React.FC = () => {
     const theme = useTheme()
@@ -99,6 +100,7 @@ export const RowMaskContainer: React.FC = () => {
                         commentsVisible={commentsVisible}
                         toggleCommentsVisible={() => setCommentsVisible(prev => !prev)}
                     />
+                    <BookmarkButton row={selectedRow} />
                     <Divider orientation="vertical" flexItem sx={{ mx: 2 }} variant="middle" />
                     {isInputMask &&
                         currentInputMask?.draftsCanBeDeleted &&

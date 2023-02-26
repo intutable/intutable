@@ -8,7 +8,7 @@ type CallbackParser<T = any> = (value: string) => T
  * Just add new keys and they will be parsed automatically.
  *
  * #### Types of page actions
- * - `view` expects a view id
+ * - `viewId` expects a view id
  * - `inputMask` expects an input mask id
  * - `record` expects a row id
  * - `newRecord` expects a unique id (e.g. timestamp)
@@ -16,7 +16,7 @@ type CallbackParser<T = any> = (value: string) => T
 const RUNTIME_ROUTE_PARAMETERS_MAP: {
     [key: string]: PageAction["type"] | { type: PageAction["type"]; parser: CallbackParser }
 } = {
-    view: { type: "selectView", parser: value => Number.parseInt(value) },
+    viewId: { type: "selectView", parser: value => Number.parseInt(value) },
     inputMask: "selectInputMask",
     record: { type: "openRow", parser: value => Number.parseInt(value) },
     newRecord: { type: "createRow", parser: value => Number.parseInt(value) },
@@ -35,8 +35,8 @@ const isParser = (value: unknown): value is { type: PageAction["type"]; parser: 
  * to do something special or behave differently.
  *
  * #### Example
- * `/project/:projectId/table/:tableId?view=1`
- * => this additional parameter `view=1` sets the view.
+ * `/project/:projectId/table/:tableId?viewId=1`
+ * => this additional parameter `viewId=1` sets the view.
  *
  * _Note_: These route parameters starting with a `?` can also
  * be appended to the query (and thus not beeing visible).

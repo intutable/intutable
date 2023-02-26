@@ -11,7 +11,7 @@ import {
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { useAPI } from "context/APIContext"
+import { useAPI } from "hooks/useAPI"
 import React, { useState } from "react"
 
 export type ViewListItemProps = {
@@ -65,7 +65,8 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                 sx={{
                     p: 0,
                     mb: 0.5,
-                    bgcolor: view.id === currentView?.id ? theme.palette.grey[100] : undefined,
+                    bgcolor:
+                        view.id === currentView?.id ? theme.palette.action.selected : undefined,
                 }}
                 dense
                 disablePadding
@@ -87,7 +88,7 @@ export const ViewListItem: React.FC<ViewListItemProps> = props => {
                     <ListItemButton onClick={() => props.onHandleSelectView(view)}>
                         {props.icon || <ChevronRightIcon />}
                         <ListItemText sx={{ ml: 1 }} primary={view.name} />
-                        {hovering && (
+                        {hovering && currentView?.id !== props.view.id && (
                             <IconButton size="small" onClick={handleDeleteViewButton}>
                                 <ClearIcon
                                     sx={{

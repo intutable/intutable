@@ -1,8 +1,6 @@
-import { TableDescriptor } from "@shared/types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 import AddIcon from "@mui/icons-material/Add"
 import {
-    Box,
     Card,
     CardContent,
     CircularProgress,
@@ -12,51 +10,24 @@ import {
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
+import { TableDescriptor } from "@shared/types"
 import { fetcher } from "api"
 import { withSessionSsr } from "auth"
-import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
+import MetaTitle from "components/MetaTitle"
 import { useSnacki } from "hooks/useSnacki"
 import { useTables, useTablesConfig } from "hooks/useTables"
+import { useViews } from "hooks/useViews"
 import { InferGetServerSidePropsType, NextPage } from "next"
 import { useRouter } from "next/router"
 import React, { useState } from "react"
 import { SWRConfig, unstable_serialize } from "swr"
 import { DynamicRouteQuery } from "types/DynamicRouteQuery"
+import { UrlObject } from "url"
 import { makeError } from "utils/error-handling/utils/makeError"
 import { prepareName } from "utils/validateName"
 import { withSSRCatch } from "utils/withSSRCatch"
 
-type TableContextMenuProps = {
-    anchorEL: Element
-    open: boolean
-    onClose: () => void
-    children?: React.ReactNode
-}
-const TableContextMenu: React.FC<TableContextMenuProps> = props => {
-    const theme = useTheme()
-    return (
-        <Menu
-            elevation={0}
-            anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            // transformOrigin={{ vertical: "top", horizontal: "right" }}
-            open={props.open}
-            anchorEl={props.anchorEL}
-            onClose={props.onClose}
-            PaperProps={{
-                sx: {
-                    boxShadow: theme.shadows[1],
-                },
-            }}
-        >
-            {Array.isArray(props.children) ? (
-                props.children.map((item, i) => <MenuItem key={i}>{item}</MenuItem>)
-            ) : (
-                <MenuItem>{props.children}</MenuItem>
-            )}
-        </Menu>
-    )
-}
 type AddTableCardProps = {
     handleCreate: () => Promise<void>
     children?: React.ReactNode
@@ -89,14 +60,15 @@ const TableProjectCard: React.FC<AddTableCardProps> = props => {
 type TableCardProps = {
     project: ProjectDescriptor
     table: TableDescriptor
-    handleRename: (tableView: TableDescriptor) => Promise<void>
-    handleDelete: (tableView: TableDescriptor) => Promise<void>
     children: string
 }
 const TableCard: React.FC<TableCardProps> = props => {
     const router = useRouter()
     const theme = useTheme()
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
+    const { snackError } = useSnacki()
+    const { mutate } = useTables({ project: props.project })
+    const { views } = useViews({ table: props.table })
 
     const handleOpenContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault()
@@ -105,7 +77,50 @@ const TableCard: React.FC<TableCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        router.push("/project/" + props.project.id + "/table/" + props.table.id)
+        const defaultView = views![0]
+        const url: UrlObject = {
+            pathname: `/project/${props.project.id}/table/${props.table.id}`,
+            query: {
+                viewId: defaultView.id,
+            },
+        }
+        const as = `/project/${props.project.id}/table/${props.table.id}`
+        router.push(url, as)
+    }
+
+    const renameTable = async () => {
+        try {
+            const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
+            if (!name) return
+            await fetcher({
+                url: `/api/table/${props.table.id}`,
+                body: {
+                    newName: name,
+                    project: props.project,
+                },
+                method: "PATCH",
+            })
+            await mutate()
+        } catch (error) {
+            const err = makeError(error)
+            if (err.message === "alreadyTaken")
+                snackError("Dieser Name wird bereits für eine deiner Tabellen verwendet!")
+            else snackError("Die Tabelle konnte nicht umbenannt werden!")
+        }
+    }
+
+    const deleteTable = async () => {
+        try {
+            const confirmed = confirm("Möchtest du deine Tabelle wirklich löschen?")
+            if (!confirmed) return
+            await fetcher({
+                url: `/api/table/${props.table.id}`,
+                method: "DELETE",
+            })
+            await mutate()
+        } catch (error) {
+            snackError("Tabelle konnte nicht gelöscht werden!")
+        }
     }
 
     return (
@@ -129,29 +144,37 @@ const TableCard: React.FC<TableCardProps> = props => {
             </Card>
 
             {anchorEL && (
-                <TableContextMenu
-                    anchorEL={anchorEL}
-                    open={anchorEL != null}
+                <Menu
+                    elevation={0}
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                    // transformOrigin={{ vertical: "top", horizontal: "right" }}
+                    open={anchorEL !== null}
+                    anchorEl={anchorEL}
                     onClose={handleCloseContextMenu}
+                    PaperProps={{
+                        sx: {
+                            boxShadow: theme.shadows[1],
+                        },
+                    }}
                 >
-                    <Box
-                        onClick={async () => {
+                    <MenuItem
+                        onClick={() => {
                             handleCloseContextMenu()
-                            await props.handleRename(props.table)
+                            renameTable()
                         }}
                     >
                         Umbenennen
-                    </Box>
-                    <Box
-                        onClick={async () => {
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
                             handleCloseContextMenu()
-                            await props.handleDelete(props.table)
+                            deleteTable()
                         }}
                         sx={{ color: theme.palette.warning.main }}
                     >
                         Löschen
-                    </Box>
-                </TableContextMenu>
+                    </MenuItem>
+                </Menu>
             )}
         </>
     )
@@ -193,41 +216,6 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
         }
     }
 
-    const handleRenameTable = async (tableView: TableDescriptor) => {
-        try {
-            const name = prompt("Gib einen neuen Namen für deine Tabelle ein:")
-            if (!name) return
-            await fetcher({
-                url: `/api/table/${tableView.id}`,
-                body: {
-                    newName: name,
-                    project,
-                },
-                method: "PATCH",
-            })
-            await mutate()
-        } catch (error) {
-            const err = makeError(error)
-            if (err.message === "alreadyTaken")
-                snackError("Dieser Name wird bereits für eine deiner Tabellen verwendet!")
-            else snackError("Die Tabelle konnte nicht umbenannt werden!")
-        }
-    }
-
-    const handleDeleteTable = async (joinTable: TableDescriptor) => {
-        try {
-            const confirmed = confirm("Möchtest du deine Tabelle wirklich löschen?")
-            if (!confirmed) return
-            await fetcher({
-                url: `/api/table/${joinTable.id}`,
-                method: "DELETE",
-            })
-            await mutate()
-        } catch (error) {
-            snackError("Tabelle konnte nicht gelöscht werden!")
-        }
-    }
-
     if (error) return <>Error: {error}</>
     if (tables == null) return <CircularProgress />
 
@@ -255,12 +243,7 @@ const TableList: React.FC<TableListProps> = ({ project }) => {
             <Grid container spacing={2}>
                 {tables.map((tbl: TableDescriptor, i: number) => (
                     <Grid item key={i}>
-                        <TableCard
-                            table={tbl}
-                            handleDelete={handleDeleteTable}
-                            handleRename={handleRenameTable}
-                            project={project}
-                        >
+                        <TableCard table={tbl} project={project}>
                             {tbl.name}
                         </TableCard>
                     </Grid>

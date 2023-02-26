@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material"
+import { Alert, Box, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import Link from "components/Link"
 import { releases } from "public/releases"
@@ -21,13 +21,10 @@ export const ReleaseNotification: React.FC = () => {
                 display: "inline-block",
             }}
         >
-            <Typography
-                sx={{
-                    mb: theme.spacing(2),
-                }}
-            >
+            <Alert severity="info" sx={{ mb: theme.spacing(2) }}>
                 Eine neue Version ist verfügbar!
-            </Typography>
+            </Alert>
+
             <Typography>
                 Schau dir die Release-Notes{" "}
                 <Link href={`/release/${latestRelease.version}`}>hier</Link> an.

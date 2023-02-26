@@ -61,7 +61,7 @@ export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) =>
                 sx={{
                     bgcolor: "inherit",
                     "&:hover": {
-                        bgcolor: theme.palette.grey[100],
+                        bgcolor: theme.palette.action.hover,
                     },
                     borderRadius: theme.shape.borderRadius,
                     mb: 2,

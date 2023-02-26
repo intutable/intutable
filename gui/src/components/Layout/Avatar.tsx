@@ -1,9 +1,10 @@
 import LoginIcon from "@mui/icons-material/Login"
 import PersonIcon from "@mui/icons-material/Person"
-import { Avatar as MUIAvatar, Button, Menu, MenuItem, Stack } from "@mui/material"
+import { Avatar as MUIAvatar, Button, Menu, MenuItem, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { fetcher } from "api"
 import { useUser } from "auth/useUser"
+import { useUserSettings } from "hooks/useUserSettings"
 import { useRouter } from "next/router"
 import { useSnackbar } from "notistack"
 import React, { useState } from "react"
@@ -61,6 +62,7 @@ const ContextMenu: React.FC<ContextMenuProps> = props => {
 
 export const Avatar: React.FC = () => {
     const { user } = useUser()
+    const { userSettings } = useUserSettings()
     const router = useRouter()
 
     const [anchorEL, setAnchorEL] = useState<HTMLElement | null>(null)
@@ -87,6 +89,9 @@ export const Avatar: React.FC = () => {
             </Button>
         )
 
+    const name = userSettings?.firstName + " " + userSettings?.lastName
+    const username = user.username
+
     return (
         <>
             <Stack
@@ -104,6 +109,9 @@ export const Avatar: React.FC = () => {
                 >
                     <PersonIcon />
                 </MUIAvatar>
+                {userSettings && (
+                    <Typography>{name.trim().length > 0 ? name : username}</Typography>
+                )}
             </Stack>
             {anchorEL && (
                 <ContextMenu

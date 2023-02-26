@@ -40,7 +40,7 @@ const getIcon = (support: Feature["support"]): JSX.Element =>
 
 export type Feature = {
     name: string
-    infoText: string
+    infoText?: string
     support: "supported" | "unsupported" | "in-development" | "in-testing"
     /**
      * since when this feature is supported or current release notes with important changes
@@ -54,13 +54,13 @@ export type SupportedFeaturesProps = {
 
 export const SupportedFeatures: React.FC<SupportedFeaturesProps> = props => {
     return (
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} sx={{ maxWidth: "800px" }}>
             <Table>
                 <TableHead>
                     <TableRow>
                         <TableCell>Name</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell>Release-Notes</TableCell>
+                        <TableCell>Eingeführt mit Release</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -98,12 +98,6 @@ export const SupportedFeatures: React.FC<SupportedFeaturesProps> = props => {
                         </TableRow>
                     ))}
                 </TableBody>
-
-                <TableFooter>
-                    <TableRow>
-                        <TableCell>Übersicht über die Features</TableCell>
-                    </TableRow>
-                </TableFooter>
             </Table>
         </TableContainer>
     )

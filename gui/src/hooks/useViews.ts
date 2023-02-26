@@ -1,7 +1,7 @@
 import { ViewDescriptor } from "@shared/types"
 import useSWR, { unstable_serialize } from "swr"
 import { fetcher } from "api"
-import { useAPI } from "context/APIContext"
+import { useAPI } from "hooks/useAPI"
 import { TableHookOptions } from "./useTable"
 import { useMemo } from "react"
 
@@ -11,7 +11,7 @@ import { useMemo } from "react"
  * Returns a list of views on a given table.
  */
 export const useViews = (options?: TableHookOptions) => {
-    const { view: currentView, setView, table: api_table } = useAPI()
+    const { view: currentView, table: api_table } = useAPI()
 
     // if the table param is specified, use that over the api context
     const tableToFetch = useMemo(
@@ -58,14 +58,13 @@ export const useViews = (options?: TableHookOptions) => {
      * set a new current view.
      */
     const deleteView = async (viewId: ViewDescriptor["id"]): Promise<void> => {
-        return fetcher<void>({
+        await fetcher<void>({
             url: `/api/view/${viewId}`,
             body: {},
             method: "DELETE",
-        }).then(async () => {
-            if (viewId === currentView?.id && views && views.length > 0) setView(views[0])
-            await mutate()
         })
+
+        await mutate()
     }
 
     return { views, createView, renameView, deleteView, error, mutate }

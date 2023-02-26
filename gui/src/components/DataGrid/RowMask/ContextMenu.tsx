@@ -53,7 +53,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
             // TODO: this might be not appropriate
             const viewParam =
                 isViewIdOrigin(currentInputMask.origin) || isViewNameOrigin(currentInputMask.origin)
-                    ? `&view=${view.descriptor.id}`
+                    ? `&viewId=${view.descriptor.id}`
                     : ""
             const link =
                 `${window.location.origin}/project/${project.id}/table/${table.id}?inputMask=${currentInputMask.id}&record=${rowMaskState.row._id}` +
