@@ -1,7 +1,7 @@
 {
     "name": "dekanat-app-plugin",
     "version": "0.1.0",
-    "description": "A core plugin with GUI-specific methods.",
+    "description": "A core plugin for maintaining dekanat-app's data structures and abstractions",
     "private": true,
     "main": "./dist/index.js",
     "scripts": {
@@ -17,7 +17,7 @@
         "@intutable/database": "^4.0.0",
         "@intutable/http": "^0.2.0",
         "@intutable/http-cors": "^0.1.0",
-        "@intutable/lazy-views": "^6.1.1",
+        "@intutable/lazy-views": "^7.0.0",
         "@intutable/project-management": "^2.0.0",
         "@intutable/user-authentication": "^3.0.0"
     }

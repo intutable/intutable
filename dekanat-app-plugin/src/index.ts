@@ -41,6 +41,9 @@ import {
     defaultViewName,
     APP_TABLE_COLUMNS,
     immutableColumnAttributes,
+    COLUMN_INDEX_KEY,
+} from "shared/dist/api"
+import {
     idColumnAttributes,
     indexColumnAttributes,
     standardColumnAttributes,
@@ -51,11 +54,10 @@ import {
     lookupColumnAttributes,
     defaultTableRowOptions,
     defaultViewRowOptions,
-    COLUMN_INDEX_KEY,
-    doNotAggregate,
-    unorderedListItemsAggregate,
-    firstAggregate,
-} from "shared/dist/api"
+    noAggregation,
+    backwardLinkAggregation,
+    firstItemAggregation,
+} from "./constants"
 
 import sanitizeName from "shared/dist/utils/sanitizeName"
 
@@ -164,12 +166,12 @@ async function createTable(
         {
             parentColumnId: idxColumn.id,
             attributes: indexColumnAttributes(1),
-            outputFunc: doNotAggregate(),
+            outputFunc: noAggregation(),
         },
         {
             parentColumnId: nameColumn.id,
             attributes: standardColumnAttributes("Name", "string", 2, true),
-            outputFunc: doNotAggregate(),
+            outputFunc: noAggregation(),
         },
     ]
     const tableView = (await core.events.request(
@@ -244,7 +246,7 @@ async function createStandardColumn(
         {
             parentColumnId: tableColumn.id,
             attributes: allAttributes,
-            outputFunc: doNotAggregate(),
+            outputFunc: noAggregation(),
         },
         null,
         addToViews
@@ -354,7 +356,7 @@ async function createForwardLinkColumn(
     const linkColumn = await addColumnToTableView(
         connectionId,
         homeTableInfo.descriptor.id,
-        { parentColumnId: foreignUserPrimaryColumn.id, attributes, outputFunc: firstAggregate() },
+        { parentColumnId: foreignUserPrimaryColumn.id, attributes, outputFunc: firstItemAggregation() },
         join.id,
         addToViews
     )
@@ -377,7 +379,7 @@ async function createBackwardLinkColumn(
             parentColumnId: foreignKeyColumn.id,
             // the forward link column gets the next index, we just add 1 here to keep it short.
             attributes: foreignKeyColumnAttributes(forwardLinkColumnIndex + 1),
-            outputFunc: doNotAggregate(),
+            outputFunc: noAggregation(),
         })
     )
     const join = await coreRequest<JoinDescriptor>(
@@ -385,6 +387,7 @@ async function createBackwardLinkColumn(
             foreignSource: selectable.viewId(homeTableInfo.descriptor.id),
             on: [foreignIdColumn.parentColumnId, "=", foreignKeyViewColumn.id],
             columns: [],
+            preGroup: true,
         })
     )
     // add and return link column
@@ -404,7 +407,7 @@ async function createBackwardLinkColumn(
         {
             parentColumnId: homeUserPrimaryColumn.id,
             attributes,
-            outputFunc: unorderedListItemsAggregate(join, homeTableInfo, homeIdColumn),
+            outputFunc: backwardLinkAggregation(join, homeTableInfo, homeIdColumn),
         },
         join.id,
         addToViews
@@ -508,11 +511,11 @@ function createRawSpecifierForLookupColumn(
     switch (linkKind) {
         case LinkKind.Forward:
             attributes = lookupColumnAttributes(displayName, parentColumn, columnIndex)
-            aggregateFunction = firstAggregate()
+            aggregateFunction = firstItemAggregation()
             break
         case LinkKind.Backward:
             attributes = backwardLookupColumnAttributes(displayName, parentColumn, columnIndex)
-            aggregateFunction = unorderedListItemsAggregate(
+            aggregateFunction = backwardLinkAggregation(
                 join,
                 otherTableInfo,
                 otherTableIdColumn

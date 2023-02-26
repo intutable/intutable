@@ -15,6 +15,7 @@ import { Filter } from "../types/filter"
 import { errorSync } from "../error"
 import { cast } from "./cast"
 import { internalColumnUtil } from "./InternalColumnUtil"
+import { rowParser } from "./RowParser"
 import { rowMetadataUtil } from "./RowMetadataUtil"
 import * as FilterParser from "./filter"
 import { restructure } from "./restructure"
@@ -149,10 +150,8 @@ export class ParserClass {
             ...this.castColumn(column),
             parentColumnId: null,
         }))
-        const rowsWithMetadata = rowMetadataUtil.applyMetadataToRows(
-            castedColumns,
-            internalProcessRows
-        )
+        const parsedRows = rowParser.parseRows(castedColumns, internalProcessRows)
+        const rowsWithMetadata = rowMetadataUtil.applyMetadataToRows(castedColumns, parsedRows)
 
         return {
             descriptor: view.descriptor,
@@ -209,10 +208,8 @@ export class ParserClass {
                 rows: view.rows,
             })
         const castedColumns = internalProcessedColumns.map(this.castColumn)
-        const rowsWithMetadata = rowMetadataUtil.applyMetadataToRows(
-            castedColumns,
-            internalProcessRows
-        )
+        const parsedRows = rowParser.parseRows(castedColumns, internalProcessRows)
+        const rowsWithMetadata = rowMetadataUtil.applyMetadataToRows(castedColumns, parsedRows)
 
         const masks = InputMask.getInputMasksFor(view)
 

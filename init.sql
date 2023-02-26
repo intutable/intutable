@@ -166,3 +166,8 @@ DELETE FROM roles;
 INSERT INTO roles(_id, name, password)
   VALUES (1, 'all_users', '');
 -- end dekanat-app<version> changes
+
+-- changes with lazy-views version 7.0.0 (introduce join pre-group option)
+ALTER TABLE view_joins ADD COLUMN pre_group INTEGER NOT NULL DEFAULT 0;
+UPDATE view_joins SET pre_group=0;
+-- end LV 7.0.0 changes
