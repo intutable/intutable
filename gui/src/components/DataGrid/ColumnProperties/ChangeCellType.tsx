@@ -12,7 +12,7 @@ export const ChangeCellType: React.FC<{
     column: Column.Serialized
 }> = props => {
     const { data: view } = useView()
-    const { changeAttributes } = useColumn()
+    const { changeCellType } = useColumn()
     const { snackSuccess, snackError, closeSnackbar } = useSnacki()
 
     const [cellType, setCellType] = React.useState(props.column.cellType)
@@ -51,9 +51,7 @@ export const ChangeCellType: React.FC<{
                 )
             }
 
-            await changeAttributes(props.column, {
-                cellType: wantedCell.brand,
-            })
+            await changeCellType(props.column, wantedCell.brand)
 
             snackSuccess(
                 `Der Spaltentype wurde von '${currentCell.label}' zu '${wantedCell.label}' konvertiert.`

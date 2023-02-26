@@ -93,6 +93,9 @@ CREATE TABLE view_columns(
     "inverseLinkColumnId" INTEGER NULL,
     -- type of the content of a column (string, date, currency, ...)
     "cellType" TEXT NOT NULL,
+    -- parameter to the type of a column (e.g. in List<Int>, List would be the cellType and Int
+    -- the cellTypeParameter
+    "cellTypeParameter" TEXT NULL,
     "hidden" INTEGER NOT NULL DEFAULT 0,
     "displayName" TEXT NULL,
     -- column index
@@ -128,6 +131,11 @@ UPDATE tables SET owner_id=0;
 UPDATE views SET user_id=0;
 -- end dekanat-app<version> changes
 
+-- changes with lazy-views version 7.0.0 (introduce join pre-group option)
+ALTER TABLE view_joins ADD COLUMN pre_group INTEGER NOT NULL DEFAULT 0;
+UPDATE view_joins SET pre_group=0;
+-- end LV 7.0.0 changes
+
 -- TEST DATA!
 -- Create users and default global roles
 INSERT INTO users(_id, username, password, "globalRoleId")
@@ -157,3 +165,4 @@ CREATE TABLE user_settings(
     settings jsonb
 );
 -- end user settings schema
+

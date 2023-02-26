@@ -227,10 +227,10 @@ describe("create different kinds of columns", () => {
         )
 
         // make sure column also exists in the view
-        const testViewData = await coreRequest<SerializedViewData>(
-            req.getViewData(connId, TEST_TABLE.id)
+        const testTableData = await coreRequest<SerializedViewData>(
+            req.getTableData(connId, TEST_TABLE.id)
         )
-        const childColumn = testViewData.columns.find(c => c.name === column.name)
+        const childColumn = testTableData.columns.find(c => c.name === column.name)
         expect(childColumn).toBeDefined()
     })
 })
@@ -491,16 +491,16 @@ describe("links between tables", () => {
     let homeTable: TableDescriptor
     let homeTableData: TableData
     let homeNameColumn: SerializedColumn
-    let homeFirstNameColumn: SerializedColumn
-    let homeRow1 = { _id: -1, name: "Doe", firstName: "John" }
-    let homeRow2 = { _id: -1, name: "Stag", firstName: "Jane" }
+    let homeSalaryColumn: SerializedColumn
+    let homeRow1 = { _id: -1, name: "Doe", salary: 60000 }
+    let homeRow2 = { _id: -1, name: "Stag", salary: 60001 }
 
     let foreignTableName = "supervisors"
     let foreignTable: TableDescriptor
     let foreignTableData: TableData
     let foreignNameColumn: SerializedColumn
     let foreignLevelColumn: SerializedColumn
-    let foreignRow1 = { _id: -1, name: "Bill Lumbergh", authorityLevel: "total" }
+    let foreignRow1 = { _id: -1, name: "Bill Lumbergh", authorityLevel: 100000 }
 
     let linkColumn: SerializedColumn
     let lookupColumn: SerializedColumn
@@ -516,10 +516,10 @@ describe("links between tables", () => {
 
         homeTableData = await coreRequest<TableData>(req.getTableData(connId, homeTable.id))
         homeNameColumn = homeTableData.columns.find(c => c.name === userPrimaryColumnName())!
-        homeFirstNameColumn = await coreRequest<SerializedColumn>(
+        homeSalaryColumn = await coreRequest<SerializedColumn>(
             req.createStandardColumn(connId, homeTable.id, {
-                name: "First Name",
-                cellType: "string"
+                name: "Salary",
+                cellType: "number"
             })
         )
 
@@ -527,7 +527,7 @@ describe("links between tables", () => {
             req.createRow(connId, homeTable.id, {
                 values: {
                     [homeNameColumn.id]: homeRow1.name,
-                    [homeFirstNameColumn.id]: homeRow1.firstName,
+                    [homeSalaryColumn.id]: homeRow1.salary.toString(),
                 }
             })
         )
@@ -536,7 +536,7 @@ describe("links between tables", () => {
             req.createRow(connId, homeTable.id, {
                 values: {
                     [homeNameColumn.id]: homeRow2.name,
-                    [homeFirstNameColumn.id]: homeRow2.firstName,
+                    [homeSalaryColumn.id]: homeRow2.salary.toString(),
                 }
             })
         )
@@ -549,7 +549,7 @@ describe("links between tables", () => {
         foreignLevelColumn = await coreRequest<SerializedColumn>(
             req.createStandardColumn(connId, foreignTable.id, {
                 name: "Authority Level",
-                cellType: "string",
+                cellType: "number",
             })
         )
 
@@ -581,14 +581,14 @@ describe("links between tables", () => {
         )
         foreignTableData = await coreRequest<TableData>(
             req.getTableData(connId, foreignTable.id)
-        ).catch(e => { console.dir(e); return Promise.reject(e) })
+        )
         backwardLinkColumn = foreignTableData.columns.find(
             c => c.inverseLinkColumnId === linkColumn.id
         )!
         backwardLookupColumn = await coreRequest<SerializedColumn>(
             req.createLookupColumn(connId, foreignTable.id, {
                 linkId: backwardLinkColumn.linkId,
-                foreignColumn: homeFirstNameColumn.id,
+                foreignColumn: homeSalaryColumn.id,
             })
         )
     })
@@ -633,13 +633,13 @@ describe("links between tables", () => {
                 _id: homeRow1._id,
                 [homeNameColumn.key]: homeRow1.name,
                 [linkColumn.key]: foreignRow1.name,
-                [lookupColumn.key]: foreignRow1.authorityLevel,
+                [lookupColumn.key]: foreignRow1.authorityLevel.toString(),
             }),
             expect.objectContaining({
                 _id: homeRow2._id,
                 [homeNameColumn.key]: homeRow2.name,
                 [linkColumn.key]: foreignRow1.name,
-                [lookupColumn.key]: foreignRow1.authorityLevel,
+                [lookupColumn.key]: foreignRow1.authorityLevel.toString(),
             }),
         ]))
         foreignTableData = await coreRequest<TableData>(
@@ -650,17 +650,47 @@ describe("links between tables", () => {
             expect.objectContaining({
                 _id: foreignRow1._id,
                 [foreignNameColumn.key]: foreignRow1.name,
-                [foreignLevelColumn.key]: foreignRow1.authorityLevel,
-                [backwardLinkColumn.key]: expect.arrayContaining([
-                    homeRow1.name,
-                    homeRow2.name,
-                ]),
-                [backwardLookupColumn.key]: expect.arrayContaining([
-                    homeRow1.firstName,
-                    homeRow2.firstName
-                ]),
+                [foreignLevelColumn.key]: foreignRow1.authorityLevel.toString(),
+                [backwardLinkColumn.key]: expect.objectContaining({
+                    format: { cellType: "string" },
+                    items: expect.arrayContaining([
+                        { value: homeRow1.name, props: { _id: homeRow1._id } },
+                        { value: homeRow2.name, props: { _id: homeRow2._id } },
+                    ])
+                }),
+                [backwardLookupColumn.key]: expect.objectContaining({
+                    format: { cellType: "number" },
+                    items: expect.arrayContaining([
+                        { value: homeRow1.salary.toString(), props: { _id: homeRow1._id } },
+                        { value: homeRow2.salary.toString(), props: { _id: homeRow2._id } },
+                    ]),
+                })
             })
         ]))
+    })
+
+    test("changing a column's type also changes types of links and lookups", async () => {
+        const changedHomeColumns = await coreRequest<SerializedColumn[]>(
+            req.changeCellType(connId, homeTable.id, homeSalaryColumn.id, "string")
+        )
+        const changedForeignColumns = await coreRequest<SerializedColumn[]>(
+            req.changeCellType(connId, foreignTable.id, foreignLevelColumn.id, "string")
+        )
+        try {
+            expect(changedHomeColumns.length).toBe(2)
+            expect(changedHomeColumns[0]).toEqual({ ...homeSalaryColumn, cellType: "string" })
+            expect(changedHomeColumns[1]).toEqual({ ...backwardLookupColumn, cellTypeParameter: "string" })
+            expect(changedForeignColumns.length).toBe(2)
+            expect(changedForeignColumns[0]).toEqual({ ...foreignLevelColumn, cellType: "string" })
+            expect(changedForeignColumns[1]).toEqual({ ...lookupColumn, cellType: "string" })
+        } finally {
+            await coreRequest<SerializedColumn[]>(
+                req.changeCellType(connId, homeTable.id, homeSalaryColumn.id, "number")
+            )
+            await coreRequest<SerializedColumn[]>(
+                req.changeCellType(connId, foreignTable.id, foreignLevelColumn.id, "number")
+            )
+        }
     })
 
     test("automatically cleans up all artifacts of forward and backward links", async () => {

@@ -1,46 +1,38 @@
+import { AddPendingRow } from "@datagrid/Toolbar/ToolbarItems/AddRow/AddPendingRow"
 import CloseIcon from "@mui/icons-material/Close"
 import {
     Box,
-    Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
     Divider,
-    Stack,
-    Typography,
     Grid,
-    Tooltip,
     IconButton,
+    Stack,
+    Tooltip,
+    Typography,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
+import { useInputMask } from "hooks/useInputMask"
 import { useView } from "hooks/useView"
-import React, { useDebugValue, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
+import { RowMaskColumn } from "./Column"
+import { CommentSection } from "./Comments"
+import { RowMaskContextMenu } from "./ContextMenu"
 import { DevOverlay } from "./DevOverlay"
 import { AddColumnButton, AddLinkButton } from "./DialogActions"
-import { RowMaskColumn } from "./Column"
-import { RowMaskContextMenu } from "./ContextMenu"
-import { RowNavigator } from "./RowNavigator"
-import { useInputMask } from "hooks/useInputMask"
-import { CommentSection } from "./Comments"
-import { useTheme } from "@mui/material/styles"
-import { AddPendingRow } from "@datagrid/Toolbar/ToolbarItems/AddRow/AddPendingRow"
-import { Column } from "types/tables/rdg"
-import { ColumnGroup } from "@shared/input-masks/types"
 import { MakeInputMaskColumns } from "./InputMask"
-
-import VerifiedIcon from "@mui/icons-material/Verified"
-import RuleIcon from "@mui/icons-material/Rule"
-import { ConstraintsValid } from "./ConstraintsValid"
-import { ConstraintMismatches } from "./ConstraintMismatches"
-import { useConstraints } from "context/ConstraintsContext"
-import { useCheckRequiredInputs } from "hooks/useCheckRequiredInputs"
+import { RowNavigator } from "./RowNavigator"
 import DeleteIcon from "@mui/icons-material/Delete"
+import { useConstraints } from "context/ConstraintsContext"
 import { useRecordDraftSession } from "hooks/useRecordDraftSession"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import { Bookmark } from "@mui/icons-material"
+import { ConstraintMismatches } from "./ConstraintMismatches"
+import { ConstraintsValid } from "./ConstraintsValid"
 import { BookmarkButton } from "./Bookmark"
 
 export const RowMaskContainer: React.FC = () => {
@@ -92,7 +84,7 @@ export const RowMaskContainer: React.FC = () => {
     if (selectedRow == null) return null
 
     return (
-        <Dialog open fullWidth onClose={abort} keepMounted>
+        <Dialog open fullWidth onClose={abort}>
             <DialogTitle>
                 <Stack
                     direction="row"
@@ -152,9 +144,7 @@ export const RowMaskContainer: React.FC = () => {
                     </Tooltip>
                 </Stack>
             </DialogTitle>
-
             <Divider />
-
             <DialogContent>
                 <Grid container spacing={0}>
                     {/* columns */}
@@ -219,9 +209,7 @@ export const RowMaskContainer: React.FC = () => {
                     )}
                 </Grid>
             </DialogContent>
-
             <Divider />
-
             <DialogActions
                 sx={{
                     justifyContent: "space-evenly",
