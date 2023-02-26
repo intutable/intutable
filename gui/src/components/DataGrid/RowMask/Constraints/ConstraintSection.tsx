@@ -33,6 +33,8 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
     const { currentInputMask } = useInputMask()
     const theme = useTheme()
 
+    const [verboseLogCollapsed, setVerboseLogCollapsed] = useState<boolean>(true)
+
     return (
         <Box
             sx={{
@@ -97,6 +99,19 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
                                 </li>
                                 <li>Ausgeführt: 0/0 (Nicht implementiert)</li>
                             </ul>
+                            {/* <Typography
+                                onClick={() => setVerboseLogCollapsed(prev => !prev)}
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{
+                                    fontStyle: "italic",
+                                    textDecoration: "underline",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                {verboseLogCollapsed ? "mehr anzeigen" : "weniger anzeigen"}
+                            </Typography>
+                            {verboseLogCollapsed === false && <Box>{state.}</Box>} */}
                         </Box>
                     )}
 

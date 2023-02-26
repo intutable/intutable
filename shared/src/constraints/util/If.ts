@@ -1,6 +1,6 @@
 import { IfObjectNotation } from "./ObjectNotation"
 import { JSONizable } from "./JSONizable"
-import { ConstraintContextProps } from "./ConstraintContextProps"
+import { AppContext } from "./AppContext"
 
 /**
  * Interface for all If-Constructors
@@ -15,7 +15,7 @@ import { ConstraintContextProps } from "./ConstraintContextProps"
  */
 export interface If extends JSONizable<IfObjectNotation> {
     toJSON(): IfObjectNotation
-    validate(props: ConstraintContextProps): boolean | Promise<boolean>
+    validate(props: AppContext.State): boolean | Promise<boolean>
 }
 
 export interface ImplementsIf {

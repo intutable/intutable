@@ -17,4 +17,6 @@ export class Alert implements Do {
             alert: this.alert,
         }
     }
+
+    execute() {}
 }

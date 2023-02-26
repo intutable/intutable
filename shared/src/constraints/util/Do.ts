@@ -1,3 +1,4 @@
+import { AppContext } from "./AppContext"
 import { JSONizable } from "./JSONizable"
 import { DoObjectNotation } from "./ObjectNotation"
 
@@ -6,7 +7,7 @@ import { DoObjectNotation } from "./ObjectNotation"
  */
 export interface Do extends JSONizable<DoObjectNotation> {
     toJSON(): DoObjectNotation
-    // execute()
+    execute(hooks: AppContext.Dispatch): void | Promise<void>
 }
 
 export interface ImplementsDo {

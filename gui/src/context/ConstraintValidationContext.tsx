@@ -1,6 +1,7 @@
 import { IfCtorMap } from "@shared/constraints/ifs/"
+import { DoCtorMap } from "@shared/constraints/dos"
 import { ConditionIterIter } from "@shared/constraints/util/ConstraintStore"
-import type { ConstraintContextProps } from "@shared/constraints/util/ConstraintContextProps"
+import type { AppContext } from "@shared/constraints/util/AppContext"
 import { Mismatch } from "@shared/constraints/util/Mismatch"
 import { UNSAFE_ViewData } from "@shared/input-masks"
 import { useAPI } from "hooks/useAPI"
@@ -11,6 +12,7 @@ import { useView } from "hooks/useView"
 import React, { useEffect, useMemo, useReducer, useRef, useState } from "react"
 import { Row } from "types"
 import { useRowMask } from "./RowMaskContext"
+import { DoObjectNotation } from "@shared/constraints/util/ObjectNotation"
 // import hash from "stable-hash"
 
 // const compare = (a: Row, b: Row) => hash(a) === hash(b)
@@ -127,12 +129,15 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
     const { snackError, snackWarning, closeSnackbar } = useSnacki()
     const { userSettings } = useUserSettings()
     const { currentInputMask } = useInputMask()
-    const { props: contextProps } = useConstraintContextProps()
+    const { props: contextProps } = useAppContextState()
     const { rowMaskState, setSuppressRowChange } = useRowMask()
 
     // state
     const [state, dispatch] = useReducer(reducer, initialValidationState)
     const [loading, setLoading] = useState<boolean>(true)
+
+    const [test, setTest] = useState(false)
+    console.log("test:", test)
 
     const _validate = () => {}
 
@@ -187,16 +192,25 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                         "Only one condition supported since operators are not implemented yet."
                     )
 
-                const ctor = IfCtorMap.get(node.__ctor)
-                if (!ctor) throw new Error(`No ctor for ${node.__ctor}`)
+                const ifCtor = IfCtorMap.get(node.__ctor)
+                if (!ifCtor) throw new Error(`No ctor for ${node.__ctor}`)
 
-                const instance = node.__props ? new ctor(...node.__props) : new ctor() // BUG: probably a bug in here, see `Timeout.ts`
+                const instance = node.__props ? new ifCtor(...node.__props) : new ifCtor() // BUG: probably a bug in here, see `Timeout.ts`
                 const passed = await instance.validate(contextProps)
 
                 if (passed) {
                     // constraint succeeded, execute 'do's
                     if (constraint.executments.length > 0) {
-                        throw new Error("Not Implemented")
+                        const dos = constraint.executments as DoObjectNotation[]
+                        dos.forEach(exec => {
+                            const doCtor = DoCtorMap.get(exec.__ctor)
+                            if (!doCtor) throw new Error(`No ctor for ${node.__ctor}`)
+                            const instance = new doCtor()
+                            instance.execute({
+                                setTest,
+                            })
+                        })
+                        // throw new Error("Not Implemented")
                     }
                     report.succeeded = [...report.succeeded, constraint.name]
                 } else {
@@ -273,14 +287,14 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
     )
 }
 
-export const useConstraintContextProps = () => {
+export const useAppContextState = () => {
     const { project, table, view } = useAPI()
     const { data } = useView()
     const { userSettings } = useUserSettings()
     const { rowMaskState } = useRowMask()
     const { currentInputMask } = useInputMask()
 
-    const props: ConstraintContextProps | null = useMemo(() => {
+    const props: AppContext.State | null = useMemo(() => {
         if (
             !project ||
             !table ||

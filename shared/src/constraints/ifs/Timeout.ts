@@ -1,4 +1,4 @@
-import { ConstraintContextProps } from "../util/ConstraintContextProps"
+import { AppContext } from "../util/AppContext"
 import { If } from "../util/If"
 import { IfObjectNotation } from "../util/ObjectNotation"
 
@@ -18,8 +18,7 @@ export class Timeout implements If {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async validate(props: ConstraintContextProps): Promise<boolean> {
+    async validate(): Promise<boolean> {
         await delay(12000) // BUG: when using the argument `this.delay`, it won't work somehow
 
         return true

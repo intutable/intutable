@@ -165,7 +165,7 @@ const mask: InputMask = {
                 data: { __type: "if", __ctor: "AlwaysTrue" },
                 next: null,
             },
-            executments: [],
+            executments: [{ __type: "do", __ctor: "ToggleState" }],
             debugMessage: {
                 title: "Fehlernachricht",
                 severity: "error",

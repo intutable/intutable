@@ -55,9 +55,9 @@ export class Constraint extends ConstraintStore implements JSONizable<Constraint
         return this
     }
 
-    error(callback: (failingCondition: unknown) => Mismatch): this
-    error(mismatch: Mismatch): this
-    error(param: Mismatch | ((failingCondition: unknown) => Mismatch)): this {
+    debug(callback: (failingCondition: unknown) => Mismatch): this
+    debug(mismatch: Mismatch): this
+    debug(param: Mismatch | ((failingCondition: unknown) => Mismatch)): this {
         if (typeof param === "function") {
             this.debugMessage = param("not implemented")
         } else {
