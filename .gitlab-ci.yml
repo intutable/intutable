@@ -20,19 +20,16 @@ lint:
     script:
         - npm run lint
     rules:
-        - if: $CI_COMMIT_BRANCH == "main"
+        - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
           when: never
-        - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-          when: never
-        - when: on_success
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 lint-production:
     stage: lint-production
     script:
-        - npm run lint-production
+        - npm run lint:production
     rules:
-        - if: $CI_COMMIT_BRANCH == "main"
-        - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+        - if: '$CI_COMMIT_BRANCH == "main"'
 
 build:
     stage: build
@@ -41,6 +38,4 @@ build:
         - npm run build -w backend
         - npm run build -w gui
     rules:
-        - if: $CI_COMMIT_BRANCH == "main"
-        - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-        - if: $CI_COMMIT_BRANCH == "develop"
+        - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

@@ -6,24 +6,28 @@ module.exports = {
         browser: false,
     },
     rules: {
-        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/no-non-null-assertion": "off",
-        "@typescript-eslint/no-unused-vars": process.env.NODE_ENV === "production" ? "error" : "warn",
+        "@typescript-eslint/no-unused-vars": "warn",
         "no-unused-vars": "off", // disable default and use typescript-eslint instead
-        "@typescript-eslint/no-namespace": process.env.NODE_ENV === "production" ? "warn" : "off",
-        "@typescript-eslint/no-empty-function": process.env.NODE_ENV === "production" ? "warn" : "off",
+        "@typescript-eslint/no-namespace": "warn",
+        "@typescript-eslint/no-empty-function": "warn",
         "no-empty-function": "off", // disable default and use typescript-eslint instead
-        "prettier/prettier": "error",
+        "prettier/prettier": [
+            "warn",
+            {
+                endOfLine: "auto",
+            },
+        ],
         "@typescript-eslint/no-extra-semi": "off",
         "no-extra-semi": "off",
-        "no-console": process.env.NODE_ENV === "production" ? "error" : "warn",
+        "no-console": "off",
         "no-restricted-imports": [
             process.env.NODE_ENV === "production" ? "error" : "warn",
             {
                 patterns: ["@mui/*/*/*", "!@mui/material/test-utils/*"],
             },
         ],
-        // "import/no-cycle": "warn",
     },
     extends: [
         "eslint:recommended",

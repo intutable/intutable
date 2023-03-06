@@ -17,7 +17,9 @@
         "lint:fix": "npm run lint:fix -ws --if-present",
         "lint:production": "npm run lint:production -ws --if-present",
         "analyze": "npm run analyze -w gui",
-        "test": "npm run test -ws --if-present"
+        "test": "npm run test -ws --if-present",
+        "reset-db": "npm run reset -w database",
+        "clean-build": "npm run reset-db && npm run build"
     },
     "dependencies": {
         "@intutable/core": "^0.1.6",
