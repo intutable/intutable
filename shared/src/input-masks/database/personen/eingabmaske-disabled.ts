@@ -1,4 +1,4 @@
-import { InputMask } from "../types"
+import { InputMask } from "../../types"
 
 const mask: InputMask = {
     id: "2671254B-B69E-45C7-8E17-DC71F037059A",

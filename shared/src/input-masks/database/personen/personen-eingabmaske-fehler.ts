@@ -1,4 +1,4 @@
-import { InputMask } from "../types"
+import { InputMask } from "../../types"
 import Original from "./personen-eingabmaske"
 
 const mask: InputMask = {

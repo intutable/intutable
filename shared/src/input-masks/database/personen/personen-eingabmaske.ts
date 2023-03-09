@@ -1,7 +1,4 @@
-import { Alert } from "../../constraints/dos/Alert"
-import { AlwaysTrue } from "../../constraints/ifs/AlwaysTrue"
-import { Constraint } from "../../constraints/util/Constraint"
-import { InputMask } from "../types"
+import { InputMask } from "../../types"
 
 const mask: InputMask = {
     id: "804112D2-215A-4E52-8A54-AE1BCBE117F1",

@@ -1,4 +1,5 @@
 import { merge } from "@datagrid/RowMask/mergeInputMaskColumn"
+import { isLinkDefaultValue } from "@shared/input-masks/utils"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { useView, ViewHookOptions } from "hooks/useView"
@@ -7,7 +8,6 @@ import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
 import { useColumn } from "./useColumn"
 import { useInputMask } from "./useInputMask"
-
 import { useSnacki } from "./useSnacki"
 import { useSnapshot } from "./useSnapshot"
 import { useUndoManager } from "./useUndoManager"
@@ -56,10 +56,13 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         if (view && currentInputMask) {
             const merged = merge(view.columns, currentInputMask.columnProps)
             merged.forEach(inputMaskCol => {
-                if (inputMaskCol.defaultValue != null && inputMaskCol.defaultValue !== "") {
+                if (
+                    inputMaskCol.defaultValue &&
+                    inputMaskCol.defaultValue != null &&
+                    inputMaskCol.defaultValue !== ""
+                ) {
                     withDefaultValues[inputMaskCol.id] = inputMaskCol.defaultValue
                 }
-                // TODO: do we need to do some special treatment if the `inputMaskCol` is a (backdrop) link / lookup
             })
         }
 
