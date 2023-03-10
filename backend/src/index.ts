@@ -48,10 +48,8 @@ async function main() {
 
     try {
         // create some example data for testing, if none are present
-        ADMIN_ID = await getAdminId(connId)
-        if (ADMIN_ID === null) {
-            ADMIN_ID = await createAdmin(connId)
-            console.log("set up admin user")
+        const project_count = await core().events.request(select(connId, "projects"))
+        if (project_count.length === 0) {
             await createExampleSchema(connId, PM_ROLE_ID)
             await insertExampleData(connId)
             console.log("set up example schema")

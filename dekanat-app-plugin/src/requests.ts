@@ -18,6 +18,16 @@ export * from "./types/requests"
 
 export const CHANNEL = "dekanat-app-plugin"
 
+export function getProjects(connectionId: string, unusedRoleId: number, username: string) {
+    return {
+        channel: CHANNEL,
+        method: "getProjects",
+        connectionId,
+        unusedRoleId,
+        username,
+    }
+}
+
 /**
  * Create a table in the given project with the given name
  * Also created:
@@ -175,7 +185,7 @@ export function removeColumnFromTable(
  * All boolean values in the attributes are changed into ones and zeros,
  * other than that no transformation takes place.
  * Response: [SerializedColumn]{@link shared.dist.types/SerializedColumn}
- * An array of all columns that were changed.
+ * An array of all columns that were changed (table and view), with the specified one at position 0.
  */
 export function changeTableColumnAttributes(
     connectionId: string,
@@ -222,6 +232,33 @@ export function renameTableColumn(
     }
 }
 
+/**
+ * Change the cell type of a column. The reason this needs an extra method is that link and lookup
+ * columns pointing at it have to be updated. In particular, backward links and lookups cannot simply
+ * copy over the cellType, rather they have to keep track of their child column's cell type in an extra
+ * attribute.
+ * Response: {SerializedColumn[]} an array of all _table_ columns that were changed, with the specified one
+ * at position 0.
+ * Rules:
+ * R1 User-primary keys cannot have certain cell types (boolean, currency, select, multiselect, percentage)
+ * This is not enforced by the method, as the cell type infrastructure is managed by the GUI. Consult
+ * it for general info about cell types.
+ */
+export function changeCellType(
+    connectionId: string,
+    tableId: TableId,
+    columnId: SerializedColumn["id"],
+    newType: string
+) {
+    return {
+        channel: CHANNEL,
+        method: changeCellType.name,
+        connectionId,
+        tableId,
+        columnId,
+        newType,
+    }
+}
 /**
  * Get all data of a given table, both object and metadata.
  * Response: [TableData]{@link shared.types.TableData}

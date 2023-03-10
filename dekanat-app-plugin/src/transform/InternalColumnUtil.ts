@@ -5,7 +5,7 @@ import { inspect } from "util"
  * Internal columns are columns that should not be shipped to the frontend
  * but their data should be accessible in the row (just without a corresponding column, e.g. an index or id).
  *
- * Internal columns are identified by `column.isInternal`.
+ * Internal columns are identified by the meta column prop `isInternal`.
  */
 export class InternalColumnUtil {
     /**

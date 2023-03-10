@@ -41,6 +41,9 @@ import {
     defaultViewName,
     APP_TABLE_COLUMNS,
     immutableColumnAttributes,
+    COLUMN_INDEX_KEY,
+} from "shared/dist/api"
+import {
     idColumnAttributes,
     indexColumnAttributes,
     standardColumnAttributes,
@@ -51,11 +54,10 @@ import {
     lookupColumnAttributes,
     defaultTableRowOptions,
     defaultViewRowOptions,
-    COLUMN_INDEX_KEY,
-    doNotAggregate,
-    jsonbArrayAggregate,
-    firstAggregate,
-} from "shared/dist/api"
+    noAggregation,
+    backwardLinkAggregation,
+    firstItemAggregation,
+} from "./constants"
 
 import sanitizeName from "shared/dist/utils/sanitizeName"
 
@@ -92,6 +94,8 @@ import {
 import * as req from "./requests"
 import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
+import { can, getRoles } from "@intutable/user-permissions/dist/requests"
+import { ProjectDescriptor } from "@intutable/project-management/dist/types"
 
 let core: PluginLoader
 
@@ -107,6 +111,7 @@ export async function init(plugins: PluginLoader) {
         .on(req.removeColumnFromTable.name, removeColumnFromTable_)
         .on(req.changeTableColumnAttributes.name, changeTableColumnAttributes_)
         .on(req.renameTableColumn.name, renameTableColumn)
+        .on(req.changeCellType.name, changeCellType_)
         .on(req.getTableData.name, getTableData_)
         .on(req.createView.name, createView_)
         .on(req.renameView.name, renameView_)
@@ -122,9 +127,34 @@ export async function init(plugins: PluginLoader) {
         .on(perm.createUser.name, perm.createUser_)
         .on(perm.deleteUser.name, perm.deleteUser_)
         .on(perm.changeRole.name, perm.changeRole_)
+        .on("getProjects", getProjects)
         .on(req.createUserSettings.name, createUserSettings_)
         .on(req.getUserSettings.name, getUserSettings_)
         .on(req.updateUserSettings.name, updateUserSettings_)
+}
+
+async function getProjects(request: CoreRequest): Promise<ProjectDescriptor[]> {
+    const allProjects = (await core.events.request(
+        pm.getProjects(request.connectionId, request.unusedRoleId)
+    )) as ProjectDescriptor[]
+
+    const roleId = await core.events.request(getRoles(request.connectionId, "", request.username))
+    const permissions = await core.events.request(
+        can(request.connectionId, roleId[0], "read", "project", "", "")
+    )
+    const checkedProjects: ProjectDescriptor[] = []
+
+    if (permissions["isAllowed"] && permissions["conditions"] == "") {
+        return allProjects
+    }
+
+    for (const project of allProjects) {
+        if (permissions["conditions"].includes(project["name"])) {
+            checkedProjects.push(project)
+        }
+    }
+
+    return checkedProjects
 }
 
 function coreRequest<T = unknown>(req: CoreRequest): Promise<T> {
@@ -166,12 +196,12 @@ async function createTable(
         {
             parentColumnId: idxColumn.id,
             attributes: indexColumnAttributes(1),
-            outputFunc: doNotAggregate(),
+            outputFunc: noAggregation(),
         },
         {
             parentColumnId: nameColumn.id,
             attributes: standardColumnAttributes("Name", "string", 2, true),
-            outputFunc: doNotAggregate(),
+            outputFunc: noAggregation(),
         },
     ]
     const tableView = (await core.events.request(
@@ -232,7 +262,7 @@ async function createStandardColumn(
     )) as RawViewOptions
     const key = sanitizeName(column.name)
     const tableColumn = await core.events.request(
-        pm.createColumnInTable(connectionId, asTable(options.source).id, key)
+        pm.createColumnInTable(connectionId, asTable(options.source).id, key, ColumnType.text)
     )
     // add column to table and filter views
     const columnIndex = getNextColumnIndex(options.columnOptions)
@@ -246,7 +276,7 @@ async function createStandardColumn(
         {
             parentColumnId: tableColumn.id,
             attributes: allAttributes,
-            outputFunc: doNotAggregate(),
+            outputFunc: noAggregation(),
         },
         null,
         addToViews
@@ -356,7 +386,7 @@ async function createForwardLinkColumn(
     const linkColumn = await addColumnToTableView(
         connectionId,
         homeTableInfo.descriptor.id,
-        { parentColumnId: foreignUserPrimaryColumn.id, attributes, outputFunc: firstAggregate() },
+        { parentColumnId: foreignUserPrimaryColumn.id, attributes, outputFunc: firstItemAggregation() },
         join.id,
         addToViews
     )
@@ -379,7 +409,7 @@ async function createBackwardLinkColumn(
             parentColumnId: foreignKeyColumn.id,
             // the forward link column gets the next index, we just add 1 here to keep it short.
             attributes: foreignKeyColumnAttributes(forwardLinkColumnIndex + 1),
-            outputFunc: doNotAggregate(),
+            outputFunc: noAggregation(),
         })
     )
     const join = await coreRequest<JoinDescriptor>(
@@ -387,9 +417,11 @@ async function createBackwardLinkColumn(
             foreignSource: selectable.viewId(homeTableInfo.descriptor.id),
             on: [foreignIdColumn.parentColumnId, "=", foreignKeyViewColumn.id],
             columns: [],
+            preGroup: true,
         })
     )
     // add and return link column
+    const homeIdColumn = homeTableInfo.columns.find(c => c.name === "_id")!
     const homeUserPrimaryColumn = homeTableInfo.columns.find(
         c => c.attributes.isUserPrimaryKey! === 1
     )!
@@ -397,11 +429,16 @@ async function createBackwardLinkColumn(
         ((homeUserPrimaryColumn.attributes.displayName || homeUserPrimaryColumn.name) as string) +
         `(${homeTableInfo.descriptor.name})`
     const columnIndex = foreignTableInfo.columns.length
-    const attributes = backwardLinkColumnAttributes(displayName, columnIndex)
+    const cellTypeParameter = homeUserPrimaryColumn.attributes.cellType
+    const attributes = backwardLinkColumnAttributes(displayName, cellTypeParameter, columnIndex)
     const linkColumn = await addColumnToTableView(
         connectionId,
         foreignTableInfo.descriptor.id,
-        { parentColumnId: homeUserPrimaryColumn.id, attributes, outputFunc: jsonbArrayAggregate() },
+        {
+            parentColumnId: homeUserPrimaryColumn.id,
+            attributes,
+            outputFunc: backwardLinkAggregation(join, homeTableInfo, homeIdColumn),
+        },
         join.id,
         addToViews
     )
@@ -450,7 +487,6 @@ async function createLookupColumn(
             `other table ${otherTableId} has no column with ID ${column.foreignColumn}`
         )
 
-    const linkKind = linkColumn.attributes.kind === "link" ? LinkKind.Forward : LinkKind.Backward
     const columnIndex =
         Math.max(
             ...tableInfo.columns
@@ -458,8 +494,9 @@ async function createLookupColumn(
                 .map(c => c.attributes[COLUMN_INDEX_KEY])
         ) + 1
     const specifier = createRawSpecifierForLookupColumn(
-        linkKind,
-        otherTableInfo.descriptor,
+        tableInfo,
+        linkColumn,
+        otherTableInfo,
         parentColumn,
         columnIndex
     )
@@ -486,28 +523,33 @@ async function createLookupColumn(
 }
 
 function createRawSpecifierForLookupColumn(
-    kind: LinkKind,
-    otherTableDescriptor: TableDescriptor,
+    tableInfo: RawViewInfo,
+    linkColumn: RawViewColumnInfo,
+    otherTableInfo: RawViewInfo,
     parentColumn: RawViewColumnInfo,
     columnIndex: number
 ): ColumnSpecifier {
     // determine meta attributes
+    const linkKind = linkColumn.attributes.kind === "link" ? LinkKind.Forward : LinkKind.Backward
     const displayName =
         (parentColumn.attributes.displayName || parentColumn.name) +
-        `(${otherTableDescriptor.name})`
-    let contentType: string
+        `(${otherTableInfo.descriptor.name})`
+    const join = tableInfo.joins.find(j => j.id === linkColumn.joinId)!
+    const otherTableIdColumn = otherTableInfo.columns.find(c => c.name === "_id")!
     let attributes: Partial<DB.Column>
     let aggregateFunction: ColumnSpecifier["outputFunc"]
-    switch (kind) {
+    switch (linkKind) {
         case LinkKind.Forward:
-            contentType = parentColumn.attributes.cellType || "string"
-            attributes = lookupColumnAttributes(displayName, contentType, columnIndex)
-            aggregateFunction = firstAggregate()
+            attributes = lookupColumnAttributes(displayName, parentColumn, columnIndex)
+            aggregateFunction = firstItemAggregation()
             break
         case LinkKind.Backward:
-            contentType = parentColumn.attributes.cellType || "string"
-            attributes = backwardLookupColumnAttributes(displayName, contentType, columnIndex)
-            aggregateFunction = jsonbArrayAggregate()
+            attributes = backwardLookupColumnAttributes(displayName, parentColumn, columnIndex)
+            aggregateFunction = backwardLinkAggregation(
+                join,
+                otherTableInfo,
+                otherTableIdColumn
+            )
             break
     }
     return { parentColumnId: parentColumn.id, attributes, outputFunc: aggregateFunction }
@@ -780,6 +822,80 @@ async function renameTableColumn({
     const update = { name: newName }
     await changeTableColumnAttributes(connectionId, tableId, columnId, update)
     return { message: `column ${columnId} renamed to "${newName}"` }
+}
+
+async function changeCellType_({
+    connectionId,
+    tableId,
+    columnId,
+    newType,
+}): Promise<CoreResponse> {
+    const column = await coreRequest<RawViewColumnInfo>(
+        lvr.getColumnInfo(connectionId, columnId)
+    ).then(rawColumn => parser.parseColumn(rawColumn))
+    if (column.kind !== "standard")
+        return error("changeCellType", `cannot change type of non-standard column ${columnId}`)
+    return changeCellType(connectionId, tableId, columnId, newType)
+}
+async function changeCellType(
+    connectionId: string,
+    tableId: TableId,
+    columnId: SerializedColumn["id"],
+    newType: string
+): Promise<SerializedColumn[]> {
+    const tableInfo = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    const columnInfo = tableInfo.columns.find(c => c.id === columnId)
+    if (!columnInfo)
+        return error("changeCellType", `no such column ${columnId} in table ${tableId}`)
+    let newColumn: RawViewColumnInfo
+    // Backward links and lookups always have array-type row data. There is a special cellType
+    // for these arrays. It stays the same, so we have to leave it in place and instead change
+    // the type parameter (what the elements of the array are rendered with).
+    // We have decided that nested arrays will just be flattened, so there is no need to store meta
+    // levels (List<List<...<List<Int>...>> or something like that)
+    if (
+        columnInfo.attributes.kind === "backwardLink" ||
+        columnInfo.attributes.kind === "backwardLookup"
+    ) {
+        newColumn = await coreRequest<RawViewColumnInfo>(
+            lvr.changeColumnAttributes(connectionId, columnId, { cellTypeParameter: newType })
+        )
+        await changeColumnAttributesInViews(connectionId, tableId, columnId, {
+            cellTypeParameter: newType,
+        })
+    } else {
+        newColumn = await coreRequest<RawViewColumnInfo>(
+            lvr.changeColumnAttributes(connectionId, columnId, { cellType: newType })
+        )
+        await changeColumnAttributesInViews(connectionId, tableId, columnId, { cellType: newType })
+    }
+    const linkingColumns = tableInfo.columns.filter(
+        c => c.attributes.kind === "link" || c.attributes.kind === "backwardLink"
+    )
+    const joins = linkingColumns.map(c => tableInfo.joins.find(j => j.id === c.joinId)!)
+    const newChildColumns = await Promise.all(
+        joins.map(async join => {
+            const otherTableId = asView(join.foreignSource).id
+            const childColumns: RawViewColumnInfo[] = await getColumnsBasedOnForeignColumn(
+                connectionId,
+                otherTableId,
+                columnId
+            )
+            const newChildColumns: SerializedColumn[] = await Promise.all(
+                childColumns.map(c => changeCellType(connectionId, otherTableId, c.id, newType))
+            ).then(columnArrays => columnArrays.flat())
+            return newChildColumns
+        })
+    ).then(columnArrays => columnArrays.flat())
+    return [parser.parseColumn(newColumn)].concat(newChildColumns)
+}
+async function getColumnsBasedOnForeignColumn(
+    connectionId: string,
+    tableId: TableId,
+    columnId: SerializedColumn["id"]
+): Promise<RawViewColumnInfo[]> {
+    const info = await coreRequest<RawViewInfo>(lvr.getViewInfo(connectionId, tableId))
+    return info.columns.filter(c => c.parentColumnId === columnId && c.joinId !== null)
 }
 
 async function getTableData_({ connectionId, tableId }: CoreRequest): Promise<CoreResponse> {

@@ -174,6 +174,12 @@ export type MetaColumnProps = {
      */
     cellType: string
     /**
+     * Some cell types are parameterized, think List<Integer>. If a column had this type (both types are
+     * made up), then its {@link cellType} would be "list" and its `cellTypeParameter` would be
+     * "integer". If the type is concrete, then `cellTypeParameter` is null.
+     */
+    cellTypeParameter: string | null
+    /**
      * @property {number | null} index ordering position of the
      * column. Starts from 0, includes both ID and index. ID is index 0, index is index 1.
      * All other columns' indices can change.

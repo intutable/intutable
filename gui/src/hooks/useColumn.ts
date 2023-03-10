@@ -79,6 +79,20 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
         await mutate()
     }
 
+    const changeCellType = async (
+        column: Column.Deserialized | Column.Serialized,
+        newType: Column["cellType"]
+    ): Promise<void> => {
+        const tableId = table!.descriptor.id
+        const baseColumn = getTableColumn(column)
+        await fetcher({
+            url: `/api/table/${tableId}/column/${baseColumn!.id}/changeCellType`,
+            body: { newType },
+            method: "PATCH",
+        })
+        await mutate()
+    }
+
     // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const changeAttributes = async (
@@ -115,6 +129,7 @@ export const useColumn = (tableOptions?: TableHookOptions, viewOptions?: ViewHoo
         getTableColumn,
         createColumn,
         renameColumn,
+        changeCellType,
         changeAttributes,
         deleteColumn,
     }

@@ -20,7 +20,7 @@ import {
 } from "@mui/material"
 import { useTheme } from "@mui/system"
 import { useView } from "hooks/useView"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
 import { stringToColor } from "utils/stringToColor"
@@ -126,6 +126,39 @@ export const SelectMenu: React.FC<SelectMenuProps> = props => {
     )
 }
 
+export const MenuAddItemTextField: React.FC<{
+    label?: string
+    onAdd: (value: string) => void
+}> = props => {
+    const [input, setInput] = useState<string>("")
+
+    const handleEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        e.stopPropagation()
+        if (e.key === "Enter") props.onAdd(input)
+    }
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.stopPropagation()
+        if (input === "") return
+        props.onAdd(input)
+    }
+
+    return (
+        <MenuItem key="Select-Menu-Input">
+            <TextField
+                label={props.label ?? "Option hinzufügen"}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                size="small"
+                fullWidth
+                onKeyDown={handleEnter}
+            />
+            <IconButton size="small" sx={{ ml: 1 }} onClick={handleClick} disabled={input === ""}>
+                <AddOptionIcon fontSize="small" color={input === "" ? "disabled" : "primary"} />
+            </IconButton>
+        </MenuItem>
+    )
+}
 export class Select extends Cell {
     public brand = "select"
     public label = "Auswahlliste"
@@ -270,7 +303,6 @@ export class Select extends Cell {
             [data, props.column, props.content]
         )
 
-        const [input, setInput] = useState<string>("")
         const isEmpty = props.content == null || props.content === ""
         const noLabel = props.label == null || props.label === ""
 
@@ -349,34 +381,10 @@ export class Select extends Cell {
                         ))}
                     {disallowNewSelectValues === false && [
                         <Divider key="Select-Menu-Divider" />,
-                        <MenuItem key="Select-Menu-Input">
-                            <TextField
-                                label="Option hinzufügen"
-                                value={input}
-                                onChange={e => setInput(e.target.value)}
-                                size="small"
-                                fullWidth
-                                onKeyDown={e => {
-                                    e.stopPropagation()
-                                    if (e.key === "Enter") changeOption(input)
-                                }}
-                            />
-                            <IconButton
-                                size="small"
-                                sx={{ ml: 1 }}
-                                onClick={e => {
-                                    e.stopPropagation()
-                                    if (input === "") return
-                                    changeOption(input)
-                                }}
-                                disabled={input === ""}
-                            >
-                                <AddOptionIcon
-                                    fontSize="small"
-                                    color={input === "" ? "disabled" : "primary"}
-                                />
-                            </IconButton>
-                        </MenuItem>,
+                        <MenuAddItemTextField
+                            key="Select-Menu-Input"
+                            onAdd={value => changeOption(value)}
+                        />,
                     ]}
                 </MuiSelect>
                 <FormHelperText>

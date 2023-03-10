@@ -8,9 +8,11 @@ import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
 import { useColumn } from "./useColumn"
 import { useInputMask } from "./useInputMask"
+import { useSWRConfig } from "swr"
 import { useSnacki } from "./useSnacki"
 import { useSnapshot } from "./useSnapshot"
 import { useUndoManager } from "./useUndoManager"
+import Obj from "types/Obj"
 
 type Column = Column.Deserialized
 
@@ -34,6 +36,30 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     const { undoManager } = useUndoManager()
     const { captureSnapshot } = useSnapshot()
     const { currentInputMask } = useInputMask()
+    const { mutate } = useSWRConfig()
+
+    const updateTableCache = (optimisticTableData: unknown) => {
+        return mutate(
+            {
+                url: `/api/table/${table!.descriptor.id}`,
+                method: "GET",
+            },
+            optimisticTableData,
+            {
+                revalidate: false,
+            }
+        )
+    }
+    const updateRemote = (
+        method: "GET" | "POST" | "PATCH" | "DELETE",
+        data: string | Obj<unknown>
+    ) => {
+        return fetcher({
+            url: "/api/row",
+            method: method,
+            body: data,
+        })
+    }
 
     /**
      * Used for row reordering / drag n drop
@@ -82,23 +108,37 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         return { _id: row }
     }
 
-    // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     const deleteRow = async (row: { _id: number }): Promise<void> => {
-        await fetcher({
-            url: "/api/row",
-            body: {
+        const viewRowIndex = view!.rows.find(
+            (optimisticRow: Row) => optimisticRow._id === row._id
+        )!.index
+        const optimisticViewData = Object.assign({}, view)
+        optimisticViewData!.rows.splice(viewRowIndex, 1)
+
+        const tableRowIndex = table!.rows.find(
+            (optimisticRow: Row) => optimisticRow._id === row._id
+        )!.index
+        const optimisticTableData = Object.assign({}, table)
+        optimisticTableData!.rows.splice(tableRowIndex, 1)
+
+        mutate(
+            {
+                url: `/api/view/${view!.descriptor.id}`,
+                method: "GET",
+            },
+            updateRemote("DELETE", {
                 viewId: view!.descriptor.id,
                 rowsToDelete: row._id,
-            },
-            method: "DELETE",
-        })
-
-        await mutateTable()
-        await mutateView()
+            }).then(() => updateTableCache(optimisticTableData)),
+            {
+                optimisticData: optimisticViewData,
+                revalidate: false,
+                populateCache: false,
+            }
+        ).catch(() => snackError("Update fehlgeschlagen."))
     }
 
-    // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: `value` needs a (better) type
     /** only use outside rdg */
@@ -117,17 +157,32 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
             // throw Error("attempted to edit data of a different table")
         }
 
-        await fetcher({
-            url: "/api/row",
-            body: {
+        const optimisticViewData = Object.assign({}, view)
+        optimisticViewData!.rows.find((optimisticRow: Row) => optimisticRow._id === row._id)![
+            column.key
+        ] = updatedValue
+
+        const optimisticTableData = Object.assign({}, table)
+        optimisticTableData!.rows.find((optimisticRow: Row) => optimisticRow._id === row._id)![
+            column.key
+        ] = updatedValue
+
+        mutate(
+            {
+                url: `/api/view/${view!.descriptor.id}`,
+                method: "GET",
+            },
+            updateRemote("PATCH", {
                 viewId: view!.descriptor.id,
                 rowsToUpdate: row._id,
                 values: { [column.id]: serializedValue },
-            },
-            method: "PATCH",
-        })
-        await mutateTable()
-        await mutateView()
+            }).then(() => updateTableCache(optimisticTableData)),
+            {
+                optimisticData: optimisticViewData,
+                revalidate: false,
+                populateCache: false,
+            }
+        ).catch(() => snackError("Update fehlgeschlagen."))
 
         const snapshot = captureSnapshot({
             oldValue: previousSerialized as string,
@@ -139,7 +194,6 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         undoManager?.addMemento(snapshot)
     }
 
-    // TODO: the cache should be mutated differently
     // TODO: the state should be updated differently
     // TODO: `value` needs a (better) type
     /** only use within rdg */
@@ -166,17 +220,30 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
             // throw Error("attempted to edit data of a different table")
         }
 
-        await fetcher({
-            url: "/api/row",
-            body: {
+        mutate(
+            {
+                url: `/api/view/${view!.descriptor.id}`,
+                method: "GET",
+            },
+            updateRemote("PATCH", {
                 viewId: view!.descriptor.id,
                 rowsToUpdate: changedRow._id,
                 values: { [column.id]: serializedValue },
-            },
-            method: "PATCH",
-        })
-        await mutateTable()
-        await mutateView()
+            }).then(() =>
+                updateTableCache({
+                    ...table,
+                    rows: updatedRows,
+                })
+            ),
+            {
+                optimisticData: {
+                    ...view,
+                    rows: updatedRows,
+                },
+                revalidate: false,
+                populateCache: false,
+            }
+        ).catch(() => snackError("Update fehlgeschlagen."))
 
         const snapshot = captureSnapshot({
             oldValue: previousSerialized as string,
