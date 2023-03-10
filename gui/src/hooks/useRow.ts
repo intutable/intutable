@@ -1,5 +1,5 @@
 import { merge } from "@datagrid/RowMask/mergeInputMaskColumn"
-import { isLinkDefaultValue } from "@shared/input-masks/utils"
+// import { isLinkDefaultValue } from "@shared/input-masks/utils"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { useView, ViewHookOptions } from "hooks/useView"
