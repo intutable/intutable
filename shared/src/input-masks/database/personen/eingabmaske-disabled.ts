@@ -1,32 +1,21 @@
-import { InputMask } from "../types"
+import { InputMask } from "../../types"
 
 const mask: InputMask = {
-    id: "804112D2-215A-4E52-8A54-AE1BCBE117F1",
+    id: "2671254B-B69E-45C7-8E17-DC71F037059A",
     origin: {
         projectId: 1,
         tableName: "Personen",
     },
-    name: "Personen-Eingabemaske",
+    name: "Beispiel-Eingabemaske",
     description:
         "In der Tabelle 'Personen' sind alle Mitglieder der Fakultät für Mathematik und Informatik gelistet. Mit dieser Eingabemaske können beliebige Einträge der gesamten Tabelle hinzugefügt werden. Die Eingabemaske kann auf jede View angewandt werden.",
-    created: new Date(2022, 11, 15),
-    lastEdited: new Date(2023, 0, 15),
+    created: new Date(2023, 1, 12),
+    lastEdited: new Date(2023, 1, 12),
     addRecordButtonText: "Person hinzufügen",
     addRecordButtonIcon: "person_add",
     draftsCanBeDeleted: true,
-    comments: [
-        {
-            text: "Nachstehend die Änderungen, die dieser Eingabemaske hinzugefügt wurden!",
-            user: "Entwickler",
-            created: new Date(2023, 0, 15),
-            highlighted: true,
-        },
-        {
-            text: "Es wurde eine Gruppe aus den Spalten 'Titel'+'Vorname'+'Nachname' mit dem Gruppen-Label 'Name' erstellt und auf die Position '0' fixiert.",
-            user: "Gruppe 1",
-            created: new Date(2023, 0, 15),
-        },
-    ],
+    disabled: true, // <- only change
+    comments: [],
     active: true,
     groups: [
         {
@@ -56,16 +45,7 @@ const mask: InputMask = {
             ],
         },
     ],
-    components: [
-        // {
-        //     __component: "note",
-        //     index: 1,
-        //     text: "Rolle*: (Platzhalter)",
-        // },
-        // { __component: "note", index: 998, text: "Mitglied in: (Platzhalter)" },
-        // { __component: "divider", index: 999, label: "Dekanats View" },
-        // { __component: "note", index: 1000, text: "Frage: Was soll hier stehen?" },
-    ],
+    components: [],
     columnProps: [
         // Gruppe 1
         {
@@ -139,6 +119,6 @@ const mask: InputMask = {
             inputRequired: true,
         },
     ],
-    rules: [],
+    constraints: [],
 }
 export default mask

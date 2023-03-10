@@ -1,13 +1,16 @@
 import {
+    Box,
     CircularProgress,
     ListItem,
     ListItemText,
     Switch,
     ToggleButton,
     ToggleButtonGroup,
+    Tooltip,
+    Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { UserSettings, useUserSettings } from "hooks/useUserSettings"
+import { DefaultUserSettings, UserSettings, useUserSettings } from "hooks/useUserSettings"
 import { CollapsableList, CollapsableListDivider } from "../CollapsableList"
 
 export const InputMaskSettings: React.FC = () => {
@@ -15,42 +18,54 @@ export const InputMaskSettings: React.FC = () => {
     const theme = useTheme()
 
     return (
-        <CollapsableList label="Eingabemasken" description="Validierung, Dashboard">
+        <CollapsableList
+            label="Eingabemasken"
+            description="Validierung, Dashboard"
+            error={userSettings?.constraintValidation === "never"}
+        >
             {userSettings == null ? (
                 <CircularProgress />
             ) : (
                 <>
-                    <ListItem>
-                        <ListItemText sx={{ color: theme.palette.warning.dark }}>
-                            Validierung deaktivieren
-                        </ListItemText>
-                        <Switch
-                            checked={userSettings.enableConstrainValidation === false}
-                            onChange={e =>
-                                changeUserSetting({
-                                    enableConstrainValidation: e.target.checked === false,
-                                })
-                            }
-                        />
-                    </ListItem>
-
-                    <CollapsableListDivider />
-
-                    <ListItem>
+                    <ListItem sx={{ flexWrap: "wrap" }}>
                         <ListItemText>Validierung</ListItemText>
 
                         <ToggleButtonGroup
                             size="small"
-                            value={userSettings.constrainValidation}
+                            value={userSettings.constraintValidation}
                             exclusive
-                            onChange={(e, value: UserSettings["constrainValidation"] | null) =>
-                                changeUserSetting({ constrainValidation: value ?? "always" })
+                            onChange={(e, value: UserSettings["constraintValidation"] | null) =>
+                                changeUserSetting({
+                                    constraintValidation:
+                                        value ?? DefaultUserSettings.constraintValidation,
+                                })
                             }
                         >
-                            <ToggleButton value="always">Immer</ToggleButton>
+                            <ToggleButton value="never" color="error">
+                                Aus
+                            </ToggleButton>
+                            <ToggleButton value="always" disabled>
+                                Immer
+                            </ToggleButton>
                             <ToggleButton value="opening-closening">Öffnen/Schließen</ToggleButton>
                         </ToggleButtonGroup>
                     </ListItem>
+
+                    {userSettings.constraintValidation === "never" && (
+                        <Box sx={{ px: 2, my: 1, lineHeight: 0 }}>
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: theme.palette.error.main,
+                                    fontSize: "60%",
+                                    lineHeight: 1.2,
+                                }}
+                            >
+                                Achtung! Schalten Sie die Constraint-Validierung nur aus, wenn Sie
+                                sich sicher sind! Unerwartete Fehler können auftreten!
+                            </Typography>
+                        </Box>
+                    )}
 
                     <CollapsableListDivider />
 

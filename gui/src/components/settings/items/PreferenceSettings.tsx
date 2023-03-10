@@ -6,7 +6,7 @@ import {
     ToggleButton,
     ToggleButtonGroup,
 } from "@mui/material"
-import { UserSettings, useUserSettings } from "hooks/useUserSettings"
+import { DefaultUserSettings, UserSettings, useUserSettings } from "hooks/useUserSettings"
 import { CollapsableList, CollapsableListDivider } from "../CollapsableList"
 
 export const PreferenceSettings: React.FC = () => {
@@ -26,7 +26,9 @@ export const PreferenceSettings: React.FC = () => {
                             value={userSettings.preferredTheme}
                             exclusive
                             onChange={(e, value: UserSettings["preferredTheme"] | null) =>
-                                changeUserSetting({ preferredTheme: value ?? "system" })
+                                changeUserSetting({
+                                    preferredTheme: value ?? DefaultUserSettings.preferredTheme,
+                                })
                             }
                         >
                             <ToggleButton value="system">system</ToggleButton>

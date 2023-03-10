@@ -1,21 +1,32 @@
-import { InputMask } from "../types"
+import { InputMask } from "../../types"
 
 const mask: InputMask = {
-    id: "2671254B-B69E-45C7-8E17-DC71F037059A",
+    id: "804112D2-215A-4E52-8A54-AE1BCBE117F1",
     origin: {
         projectId: 1,
         tableName: "Personen",
     },
-    name: "Beispiel-Eingabemaske",
+    name: "Personen-Eingabemaske",
     description:
         "In der Tabelle 'Personen' sind alle Mitglieder der Fakultät für Mathematik und Informatik gelistet. Mit dieser Eingabemaske können beliebige Einträge der gesamten Tabelle hinzugefügt werden. Die Eingabemaske kann auf jede View angewandt werden.",
-    created: new Date(2023, 1, 12),
-    lastEdited: new Date(2023, 1, 12),
+    created: new Date(2022, 11, 15),
+    lastEdited: new Date(2023, 0, 15),
     addRecordButtonText: "Person hinzufügen",
     addRecordButtonIcon: "person_add",
     draftsCanBeDeleted: true,
-    disabled: true, // <- only change
-    comments: [],
+    comments: [
+        {
+            text: "Nachstehend die Änderungen, die dieser Eingabemaske hinzugefügt wurden!",
+            user: "Entwickler",
+            created: new Date(2023, 0, 15),
+            highlighted: true,
+        },
+        {
+            text: "Es wurde eine Gruppe aus den Spalten 'Titel'+'Vorname'+'Nachname' mit dem Gruppen-Label 'Name' erstellt und auf die Position '0' fixiert.",
+            user: "Gruppe 1",
+            created: new Date(2023, 0, 15),
+        },
+    ],
     active: true,
     groups: [
         {
@@ -45,7 +56,16 @@ const mask: InputMask = {
             ],
         },
     ],
-    components: [],
+    components: [
+        // {
+        //     __component: "note",
+        //     index: 1,
+        //     text: "Rolle*: (Platzhalter)",
+        // },
+        // { __component: "note", index: 998, text: "Mitglied in: (Platzhalter)" },
+        // { __component: "divider", index: 999, label: "Dekanats View" },
+        // { __component: "note", index: 1000, text: "Frage: Was soll hier stehen?" },
+    ],
     columnProps: [
         // Gruppe 1
         {
@@ -119,6 +139,60 @@ const mask: InputMask = {
             inputRequired: true,
         },
     ],
-    rules: [],
+    constraints: [
+        {
+            name: "Proof-of-Concept 2",
+            __type: "constraint",
+            __ctor: "Constraint",
+            conditions: {
+                __type: "node",
+                __ctor: "Node",
+                data: { __type: "if", __ctor: "Timeout", __props: [12000] },
+                next: null,
+            },
+            executments: [],
+        },
+        {
+            name: "Proof-of-Concept",
+            __type: "constraint",
+            __ctor: "Constraint",
+            conditions: {
+                __type: "node",
+                __ctor: "Node",
+                data: { __type: "if", __ctor: "AlwaysTrue" },
+                next: null,
+            },
+            executments: [{ __type: "do", __ctor: "ToggleState" }],
+            debugMessage: {
+                title: "Fehlernachricht",
+                severity: "error",
+                message: "Ein Problem mit Constrain X ist aufgetreten",
+                howToSolve: "Wenden Sie sich an den Entwickler",
+            },
+        },
+        {
+            name: "Proof-of-Concept 2",
+            __type: "constraint",
+            __ctor: "Constraint",
+            conditions: {
+                __type: "node",
+                __ctor: "Node",
+                data: { __type: "if", __ctor: "Timeout", __props: [12000] },
+                next: null,
+            },
+            executments: [],
+        },
+        // BUG: fetcher will throw if using this, source probably in `coreRequest`
+        // new Constraint("Proof-of-Concept")
+        //     .if(new AlwaysTrue())
+        //     .do(
+        //         new Alert({
+        //             severity: "warn",
+        //             title: "Test",
+        //             message: "Test",
+        //         })
+        //     )
+        //     .toJSON(),
+    ],
 }
 export default mask

@@ -1,3 +1,4 @@
+import { ConstraintObjectNotation } from "src/constraints/util/ObjectNotation"
 import { SerializedColumn, SerializedViewData } from "../types/tables/serialized"
 
 export type Comment = {
@@ -39,6 +40,14 @@ export type InputMaskColumnProps = {
     suppressInputLabel?: boolean
     /** @default false */
     disallowNewSelectValues?: boolean
+    /**
+     * When creating a new record, this will automatically insert this value.
+     *
+     * If the column is of another kind than 'standard', you probably want to
+     * set the default value for a link. In this case put the target row's id
+     * here.
+     */
+    defaultValue?: unknown
 }
 export type OverrideableColumnProps = Partial<
     Pick<SerializedColumn, "name" | "editable" | "frozen" | "index" | "hidden">
@@ -75,6 +84,9 @@ export type InputMask = {
     active: boolean
     /** @default false */
     disabled?: boolean
+    /** If specified, only eligible users can access. */
+    // TODO: implement
+    eligible?: { role: string }
     // -- actual specification --
     addRecordButtonText?: string
     addRecordButtonIcon?: string
@@ -82,7 +94,7 @@ export type InputMask = {
     groups: ColumnGroup[]
     columnProps: InputMaskColumn[]
     components: InputMaskComponents[]
-    rules: Rule[] // TODO: maybe rename to 'constraints'
+    constraints: ConstraintObjectNotation[]
 }
 
 /** only for development */

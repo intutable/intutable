@@ -42,8 +42,7 @@ export const useTable = (options?: TableHookOptions) => {
                   url: `/api/table/${tableToFetch.id}`,
                   method: "GET",
               }
-            : null,
-        options?.swrOptions
+            : null
     )
 
     return {

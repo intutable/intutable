@@ -1,12 +1,14 @@
+import { merge } from "@datagrid/RowMask/mergeInputMaskColumn"
+// import { isLinkDefaultValue } from "@shared/input-masks/utils"
 import { fetcher } from "api"
 import { TableHookOptions, useTable } from "hooks/useTable"
 import { useView, ViewHookOptions } from "hooks/useView"
 import { RowsChangeData } from "react-data-grid"
 import { Column, Row } from "types"
 import SerDes from "utils/SerDes"
-// import { useColumn } from "./useColumn"
+import { useColumn } from "./useColumn"
+import { useInputMask } from "./useInputMask"
 import { useSWRConfig } from "swr"
-
 import { useSnacki } from "./useSnacki"
 import { useSnapshot } from "./useSnapshot"
 import { useUndoManager } from "./useUndoManager"
@@ -33,6 +35,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     const { data: view, mutate: mutateView } = useView(viewOptions)
     const { undoManager } = useUndoManager()
     const { captureSnapshot } = useSnapshot()
+    const { currentInputMask } = useInputMask()
     const { mutate } = useSWRConfig()
 
     const updateTableCache = (optimisticTableData: unknown) => {
@@ -74,6 +77,21 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     const createRow = async (atIndex?: number): Promise<{ _id: number }> => {
+        // TODO: implement default values from input masks
+        const withDefaultValues: Record<number, unknown> = {}
+        if (view && currentInputMask) {
+            const merged = merge(view.columns, currentInputMask.columnProps)
+            merged.forEach(inputMaskCol => {
+                if (
+                    inputMaskCol.defaultValue &&
+                    inputMaskCol.defaultValue != null &&
+                    inputMaskCol.defaultValue !== ""
+                ) {
+                    withDefaultValues[inputMaskCol.id] = inputMaskCol.defaultValue
+                }
+            })
+        }
+
         // BUG: the endpoint is supposed to return data like `{ _id: 0}`
         // but somehow `row` is just a number
         // watch out for this bug

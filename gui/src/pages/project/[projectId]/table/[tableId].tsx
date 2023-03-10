@@ -16,6 +16,7 @@ import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
 import { HeaderSearchFieldProvider, useHeaderSearchField } from "context"
+
 import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
 import { APIQueries, parseQuery, useAPI } from "hooks/useAPI"
@@ -156,6 +157,7 @@ const TablePage: React.FC = () => {
                             <ToolbarItem.Connection status="connected" />
                         </Toolbar>
                     </Box>
+
                     <RowMaskContainer />
                 </Grid>
             </Grid>
@@ -189,9 +191,7 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
                     }
                     initialAppliedInputMask={props.inputMask}
                 >
-                    {/* <ConstraintsProvider> */}
                     <TablePage />
-                    {/* </ConstraintsProvider> */}
                 </RowMaskProvider>
             </HeaderSearchFieldProvider>
         </SelectedRowsContextProvider>
@@ -205,6 +205,10 @@ export const getServerSideProps = withSSRCatch(
             "tableId",
             "viewId",
         ])
+        if (projectId == null || tableId == null)
+            return {
+                notFound: true,
+            }
 
         const user = context.req.session.user
         if (user == null || user.isLoggedIn === false)
@@ -212,11 +216,7 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
-        if (projectId == null || tableId == null)
-            return {
-                notFound: true,
-            }
-
+        // TODO: put this inside `useAPI`
         if (viewId == null) {
             const viewList = await fetcher<ViewDescriptor[]>({
                 url: `/api/views/${tableId}`,
@@ -228,7 +228,7 @@ export const getServerSideProps = withSSRCatch(
             return {
                 redirect: {
                     destination: `/project/${projectId}/table/${tableId}?viewId=${defaultViewId}`,
-                    permanent: true,
+                    permanent: false,
                 },
             }
         }

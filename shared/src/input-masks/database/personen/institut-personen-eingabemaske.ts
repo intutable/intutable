@@ -1,4 +1,4 @@
-import { InputMask } from "../types"
+import { InputMask } from "../../types"
 
 const mask: InputMask = {
     id: "BFAA3C31-4C6C-41AD-BD2C-5845C8051CAE",
@@ -17,6 +17,6 @@ const mask: InputMask = {
     groups: [],
     columnProps: [],
     components: [],
-    rules: [],
+    constraints: [],
 }
 export default mask

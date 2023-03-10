@@ -3,27 +3,29 @@ import SyncIcon from "@mui/icons-material/Sync"
 import SyncDisabledIcon from "@mui/icons-material/SyncDisabled"
 import SyncProblemIcon from "@mui/icons-material/SyncProblem"
 import VerifiedIcon from "@mui/icons-material/Verified"
-
-import { Badge, Grow, IconButton, Tooltip, Zoom } from "@mui/material"
+import { LoadingButton } from "@mui/lab"
+import { Badge, Button, Grow, IconButton, Tooltip, Zoom } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import { useConstraints } from "context/ConstraintsContext"
+import { useConstraintValidation } from "context/ConstraintValidationContext"
+import { useInputMask } from "hooks/useInputMask"
+import { useUserSettings } from "hooks/useUserSettings"
+import ReValidateIcon from "@mui/icons-material/Replay"
 
-export type ConstraintsValidProps = {
-    onShowInvalidConstraints: () => void
-}
-
-export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
+export const ConstraintValidationButton: React.FC = () => {
     const theme = useTheme()
+    const { currentInputMask } = useInputMask()
+    const { state, loading, validate } = useConstraintValidation()
+    const { userSettings } = useUserSettings()
 
-    const { isValid, isSynchronising, loaded, error, constraintMismatches } = useConstraints()
+    if (currentInputMask == null) return null
 
     // if an error occured, always display it first
-    if (error != null)
+    if (state.runtimeErrors.length > 0)
         return (
             <Tooltip
                 arrow
                 placement="right"
-                title="Anscheinend ist ein Fehler aufgetreten 😕"
+                title="Ein Systemfehler ist aufgetreten. Ich konnte die Validierung nicht beenden 😕"
                 TransitionComponent={Zoom}
             >
                 <IconButton color="error">
@@ -33,7 +35,7 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
         )
 
     // if constraints are note loaded yet
-    if (loaded === false)
+    if (loading)
         return (
             <Tooltip
                 arrow
@@ -47,7 +49,7 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
             </Tooltip>
         )
 
-    if (isSynchronising)
+    if (state.isRunning)
         return (
             <>
                 <Tooltip
@@ -73,23 +75,33 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
             </>
         )
 
-    if (isValid === false)
+    if (
+        state.finished &&
+        (state.report!.failed.length > 0 ||
+            state.report!.interrupted.length > 0 ||
+            state.report!.mismatches.length > 0)
+    )
         return (
             <Tooltip
                 arrow
                 placement="right"
-                title="Oh, Mist! 😤 Einige deiner Eingaben kann ich nicht übernehmen, da sie Regeln verletzen 😬 (Klick auf mich für mehr.)"
+                title="Oh, Mist! 😤 Einige deiner Eingaben kann ich nicht übernehmen, da sie Regeln verletzen 😬"
                 TransitionComponent={Zoom}
             >
-                <IconButton color="error" onClick={props.onShowInvalidConstraints}>
-                    <Badge badgeContent={constraintMismatches.length} color="error">
+                <IconButton color="error">
+                    <Badge
+                        badgeContent={
+                            state.report!.failed.length + state.report!.interrupted.length
+                        }
+                        color="error"
+                    >
                         <RuleIcon />
                     </Badge>
                 </IconButton>
             </Tooltip>
         )
 
-    if (isValid)
+    if (state.finished && state.report!.succeeded.length === state.progress[1])
         return (
             <Tooltip
                 arrow
@@ -103,6 +115,24 @@ export const ConstraintsValid: React.FC<ConstraintsValidProps> = props => {
                     </IconButton>
                 </Grow>
             </Tooltip>
+        )
+
+    if (
+        userSettings?.constraintValidation === "opening-closening" &&
+        state.finished === false &&
+        state.isRunning === false
+    )
+        return (
+            <Button
+                size="small"
+                startIcon={<ReValidateIcon fontSize="small" />}
+                variant="outlined"
+                color="success"
+                disabled={state.isRunning}
+                onClick={() => validate()}
+            >
+                Validieren
+            </Button>
         )
 
     return null

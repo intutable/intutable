@@ -12,7 +12,7 @@ import { Column } from "types/tables/rdg"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
 
 import InfoIcon from "@mui/icons-material/Info"
-import { merge, MergedColumn } from "./merge"
+import { merge, MergedColumn } from "./mergeInputMaskColumn"
 import { useView } from "hooks/useView"
 
 import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown"

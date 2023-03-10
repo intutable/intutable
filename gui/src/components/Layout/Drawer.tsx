@@ -29,6 +29,7 @@ import { useRouter } from "next/router"
 import React from "react"
 import HistoryIcon from "@mui/icons-material/History"
 import DynamicFormIcon from "@mui/icons-material/DynamicForm"
+import DynamicFormOutlinedIcon from "@mui/icons-material/DynamicFormOutlined"
 
 const drawerWidth = 240
 
@@ -147,7 +148,7 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     <DrawerLink
                         text="Formulare"
                         url="/forms"
-                        nonActiveIcon={<DynamicFormIcon />}
+                        nonActiveIcon={<DynamicFormOutlinedIcon />}
                         activeIcon={<DynamicFormIcon />}
                     />
                 </>

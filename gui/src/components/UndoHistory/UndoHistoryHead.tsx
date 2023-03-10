@@ -14,6 +14,7 @@ import {
     Typography,
 } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
+import { Beta } from "components/Beta"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
 import { DispatchWithoutAction } from "react"
@@ -43,6 +44,7 @@ export const UndoHistoryHead: React.FC<{ forceUpdate: DispatchWithoutAction }> =
                     Änderungsverlauf der Sitzung{" "}
                 </Typography>
                 <HelperIcon title="Enthält nur Ihre Änderungen der aktuellen Browser-Session (nicht persistent)." />
+                <Beta />
             </Stack>
             <Box flexGrow={1} />
 

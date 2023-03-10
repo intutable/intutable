@@ -42,8 +42,8 @@ const Comment: React.FC<{ comment: Comment }> = ({ comment }) => {
             sx={{
                 borderRadius: theme.shape.borderRadius,
                 bgcolor: comment.highlighted
-                    ? theme.palette.warning.light
-                    : theme.palette.grey[200],
+                    ? theme.palette.warning.main
+                    : theme.palette.action.selected,
                 py: 0.8,
                 px: 1.5,
                 mb: 0.5,
