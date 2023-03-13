@@ -1,21 +1,28 @@
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
-import HomeIcon from "@mui/icons-material/Home"
-import HomeIconOutlined from "@mui/icons-material/HomeOutlined"
-import SettingsIcon from "@mui/icons-material/Settings"
-import SettingsIconOutlined from "@mui/icons-material/SettingsOutlined"
-import SupportAgentIcon from "@mui/icons-material/SupportAgent"
-import SupportAgentIconOutlined from "@mui/icons-material/SupportAgentOutlined"
-import WorkspacesIcon from "@mui/icons-material/Workspaces"
-import WorkspacesIconOutlined from "@mui/icons-material/WorkspacesOutlined"
-import DashboardIcon from "@mui/icons-material/Dashboard"
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined"
-import PeopleIcon from "@mui/icons-material/People"
-import PeopleIconOutlined from "@mui/icons-material/PeopleOutlined"
+import {
+    AccountTree,
+    AccountTreeOutlined,
+    ChevronLeft,
+    Dashboard,
+    DashboardOutlined,
+    DynamicForm,
+    DynamicFormOutlined,
+    History,
+    HistoryOutlined,
+    Home,
+    HomeOutlined,
+    People,
+    PeopleOutlined,
+    Settings,
+    SettingsOutlined,
+    SupportAgent,
+    SupportAgentOutlined,
+    Workspaces,
+    WorkspacesOutlined,
+} from "@mui/icons-material"
 import {
     Divider,
     Drawer as MuiDrawer,
     IconButton,
-    ListItem,
     ListItemButton,
     ListItemIcon,
     ListItemText,
@@ -27,9 +34,6 @@ import { RoleKind } from "@backend/permissions/types"
 import { useUser } from "auth"
 import { useRouter } from "next/router"
 import React from "react"
-import HistoryIcon from "@mui/icons-material/History"
-import DynamicFormIcon from "@mui/icons-material/DynamicForm"
-import DynamicFormOutlinedIcon from "@mui/icons-material/DynamicFormOutlined"
 
 const drawerWidth = 240
 
@@ -122,34 +126,40 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                 }}
             >
                 <IconButton onClick={props.toggle}>
-                    <ChevronLeftIcon />
+                    <ChevronLeft />
                 </IconButton>
             </Toolbar>
             <DrawerLink
                 text="Startseite"
                 url="/"
-                nonActiveIcon={<HomeIconOutlined />}
-                activeIcon={<HomeIcon />}
+                nonActiveIcon={<HomeOutlined />}
+                activeIcon={<Home />}
             />
             {user?.isLoggedIn && (
                 <>
                     <DrawerLink
                         text="Dashboard"
                         url="/dashboard"
-                        nonActiveIcon={<DashboardOutlinedIcon />}
-                        activeIcon={<DashboardIcon />}
+                        nonActiveIcon={<DashboardOutlined />}
+                        activeIcon={<Dashboard />}
                     />
                     <DrawerLink
                         text="Projekte"
                         url="/projects"
-                        nonActiveIcon={<WorkspacesIconOutlined />}
-                        activeIcon={<WorkspacesIcon />}
+                        nonActiveIcon={<WorkspacesOutlined />}
+                        activeIcon={<Workspaces />}
+                    />
+                    <DrawerLink
+                        text="Prozessverwaltung"
+                        url="/manage-workflows"
+                        nonActiveIcon={<AccountTreeOutlined />}
+                        activeIcon={<AccountTree />}
                     />
                     <DrawerLink
                         text="Formulare"
                         url="/forms"
-                        nonActiveIcon={<DynamicFormOutlinedIcon />}
-                        activeIcon={<DynamicFormIcon />}
+                        nonActiveIcon={<DynamicFormOutlined />}
+                        activeIcon={<DynamicForm />}
                     />
                 </>
             )}
@@ -157,8 +167,8 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                 <DrawerLink
                     text="Nutzerverwaltung"
                     url="/users"
-                    nonActiveIcon={<PeopleIconOutlined />}
-                    activeIcon={<PeopleIcon />}
+                    nonActiveIcon={<PeopleOutlined />}
+                    activeIcon={<People />}
                 />
             )}
             <Divider
@@ -170,22 +180,22 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                 <DrawerLink
                     text="Änderungsverlauf"
                     url="/history"
-                    nonActiveIcon={<HistoryIcon />}
-                    activeIcon={<HistoryIcon />}
+                    nonActiveIcon={<HistoryOutlined />}
+                    activeIcon={<History />}
                 />
             )}
             <DrawerLink
                 text="Service Desk"
                 url="/service-desk"
-                nonActiveIcon={<SupportAgentIconOutlined />}
-                activeIcon={<SupportAgentIcon />}
+                nonActiveIcon={<SupportAgentOutlined />}
+                activeIcon={<SupportAgent />}
             />
             {user?.isLoggedIn && (
                 <DrawerLink
                     text="Einstellungen"
                     url="/settings"
-                    nonActiveIcon={<SettingsIconOutlined />}
-                    activeIcon={<SettingsIcon />}
+                    nonActiveIcon={<SettingsOutlined />}
+                    activeIcon={<Settings />}
                 />
             )}
         </Drawer>
