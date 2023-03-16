@@ -1,0 +1,17 @@
+{
+    "showWorkflowCategories": true,
+    "customCategories": [
+        {
+            "name": "E-Mail",
+            "match": "email"
+        },
+        {
+            "name": "Professor",
+            "match": "Professor"
+        },
+        {
+            "name": "Dekanatsbüro",
+            "match": "Dekanatsbüro"
+        }
+    ]
+}

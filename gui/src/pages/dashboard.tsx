@@ -1,13 +1,13 @@
-import { Divider, Stack, Typography } from "@mui/material"
+import { Divider, Stack, Typography, Box } from "@mui/material"
 import { BookmarkedRecord } from "components/BookmarkedRecord"
 import { CollapsableSection } from "components/CollapsableSection"
 import { InputMaskCTACard } from "components/InputMaskCTACard"
 import MetaTitle from "components/MetaTitle"
 import { useBookmark } from "hooks/useBookmark"
-import { useUserSettings } from "hooks/useUserSettings"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import Head from "next/head"
 import { getServerSideProps as forms_getServerSideProps, InputMaskCallToActionCard } from "./forms"
+import NotificationCard from "components/NotificationCard"
 
 type DashboardProps = {
     cards: InputMaskCallToActionCard[]
@@ -17,6 +17,15 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
     props: DashboardProps
 ) => {
     const { bookmarks } = useBookmark()
+
+    const isDeansOffice = () => {
+        // TODO: Adjust for multiple users
+        return true
+    }
+    const isProfessor = () => {
+        // TODO: Adjust for multiple users
+        return true
+    }
 
     return (
         <>
@@ -58,6 +67,11 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                     ))}
                 </Stack>
             </CollapsableSection>
+            <Box sx={{ mt: 5, display: "flex" }}>
+                {isDeansOffice() && <NotificationCard type="deansOffice" />}
+                {isProfessor() && <NotificationCard type="professor" />}
+            </Box>
+            {/* <Maintenance /> */}
         </>
     )
 }
