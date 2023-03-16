@@ -86,7 +86,7 @@ export const MakeInputMaskColumns: React.FC<{ columns: Column[] }> = ({ columns 
                 if (isColumnGroup(item))
                     return (
                         <ColumnGroupComponent
-                            key={item.index}
+                            key={item.index + item.label}
                             group={item}
                             columns={columns.filter(column => columnIsInGroup(column, [item]))}
                         />
@@ -102,7 +102,7 @@ export const MakeInputMaskColumns: React.FC<{ columns: Column[] }> = ({ columns 
                             throw new Error("Unexpected input mask component")
                     }
 
-                if (isColumnItem(item)) return <RowMaskColumn key={item.index} column={item} />
+                if (isColumnItem(item)) return <RowMaskColumn key={item.id} column={item} />
 
                 throw new Error("Unexpected input mask item")
             })}
