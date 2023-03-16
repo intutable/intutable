@@ -20,7 +20,10 @@ import {
 } from "@mui/material"
 import { useState } from "react"
 
-const WorkflowMajorSteps = (props: { workflow: Workflow; setWorkflow: (workflow: Workflow) => void }) => {
+const WorkflowMajorSteps = (props: {
+    workflow: Workflow
+    setWorkflow: (workflow: Workflow) => void
+}) => {
     // --- States ---
     const [showAddMajorStepsDialog, setShowAddMajorStepsDialog] = useState(false)
     const [checkedMajorSteps, setCheckedMajorSteps] = useState<string[]>([])
@@ -78,7 +81,10 @@ const WorkflowMajorSteps = (props: { workflow: Workflow; setWorkflow: (workflow:
                 {props.workflow.majorsteps.length > 0 ? (
                     <List>
                         {props.workflow.majorsteps
-                            .map(stepId => props.workflow.steps.find(step => step._id === stepId) as Step)
+                            .map(
+                                stepId =>
+                                    props.workflow.steps.find(step => step._id === stepId) as Step
+                            )
                             .map(step => (
                                 <ListItem
                                     key={step._id}
@@ -88,10 +94,13 @@ const WorkflowMajorSteps = (props: { workflow: Workflow; setWorkflow: (workflow:
                                             {props.workflow.majorsteps.indexOf(step._id) > 0 ? (
                                                 <Tooltip title="Nach oben verschieben">
                                                     <IconButton
-                                                        onClick={() => moveMajorStep(step._id, "up")}
+                                                        onClick={() =>
+                                                            moveMajorStep(step._id, "up")
+                                                        }
                                                         edge="end"
+                                                        size="small"
                                                     >
-                                                        <ArrowUpward />
+                                                        <ArrowUpward fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             ) : (
@@ -99,18 +108,22 @@ const WorkflowMajorSteps = (props: { workflow: Workflow; setWorkflow: (workflow:
                                                     onClick={() => moveMajorStep(step._id, "up")}
                                                     edge="end"
                                                     disabled
+                                                    size="small"
                                                 >
-                                                    <ArrowUpward />
+                                                    <ArrowUpward fontSize="small" />
                                                 </IconButton>
                                             )}
                                             {props.workflow.majorsteps.indexOf(step._id) !==
                                             props.workflow.majorsteps.length - 1 ? (
                                                 <Tooltip title="Nach unten verschieben">
                                                     <IconButton
-                                                        onClick={() => moveMajorStep(step._id, "down")}
+                                                        onClick={() =>
+                                                            moveMajorStep(step._id, "down")
+                                                        }
                                                         edge="end"
+                                                        size="small"
                                                     >
-                                                        <ArrowDownward />
+                                                        <ArrowDownward fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             ) : (
@@ -118,13 +131,18 @@ const WorkflowMajorSteps = (props: { workflow: Workflow; setWorkflow: (workflow:
                                                     onClick={() => moveMajorStep(step._id, "down")}
                                                     edge="end"
                                                     disabled
+                                                    size="small"
                                                 >
-                                                    <ArrowDownward />
+                                                    <ArrowDownward fontSize="small" />
                                                 </IconButton>
                                             )}
                                             <Tooltip title="Aus Hauptschritten entfernen">
-                                                <IconButton onClick={() => removeMajorStep(step._id)} edge="end">
-                                                    <Remove />
+                                                <IconButton
+                                                    onClick={() => removeMajorStep(step._id)}
+                                                    edge="end"
+                                                    size="small"
+                                                >
+                                                    <Remove fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                         </>
@@ -169,7 +187,9 @@ const WorkflowMajorSteps = (props: { workflow: Workflow; setWorkflow: (workflow:
             <Dialog onClose={handleCancelMajorSteps} open={showAddMajorStepsDialog}>
                 <DialogTitle>Hauptschritte hinzufügen</DialogTitle>
                 <DialogContent>
-                    {!props.workflow.steps.filter(step => !props.workflow.majorsteps.includes(step._id)).length ? (
+                    {!props.workflow.steps.filter(
+                        step => !props.workflow.majorsteps.includes(step._id)
+                    ).length ? (
                         <Typography sx={{ m: 2 }} variant="body1">
                             Es sind keine Schritte verfügbar.
                         </Typography>
@@ -179,11 +199,19 @@ const WorkflowMajorSteps = (props: { workflow: Workflow; setWorkflow: (workflow:
                                 .filter(step => !props.workflow.majorsteps.includes(step._id))
                                 .map(step => (
                                     <ListItem key={step._id} disablePadding>
-                                        <ListItemButton onClick={() => handleMajorStepToggle(step._id)} dense>
+                                        <ListItemButton
+                                            onClick={() => handleMajorStepToggle(step._id)}
+                                            dense
+                                        >
                                             <ListItemIcon>
-                                                <Checkbox checked={checkedMajorSteps.includes(step._id)} />
+                                                <Checkbox
+                                                    checked={checkedMajorSteps.includes(step._id)}
+                                                />
                                             </ListItemIcon>
-                                            <ListItemText primary={step.name} secondary={step.description} />
+                                            <ListItemText
+                                                primary={step.name}
+                                                secondary={step.description}
+                                            />
                                         </ListItemButton>
                                     </ListItem>
                                 ))}
@@ -199,7 +227,11 @@ const WorkflowMajorSteps = (props: { workflow: Workflow; setWorkflow: (workflow:
                     >
                         Hinzufügen
                     </Button>
-                    <Button variant="outlined" onClick={handleCancelMajorSteps} startIcon={<Cancel />}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleCancelMajorSteps}
+                        startIcon={<Cancel />}
+                    >
                         Abbrechen
                     </Button>
                 </DialogActions>

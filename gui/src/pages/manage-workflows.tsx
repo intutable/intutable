@@ -8,7 +8,9 @@ import { useRouter } from "next/router"
 import { ContentPasteSearch, DesignServices } from "@mui/icons-material"
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined"
 
-const ManageWorkflows: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => <ManageWorkflowsPage />
+const ManageWorkflows: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => (
+    <ManageWorkflowsPage />
+)
 const ManageWorkflowsPage: React.FC = () => {
     // --- Hooks ---
     const router = useRouter()
@@ -40,44 +42,54 @@ const ManageWorkflowsPage: React.FC = () => {
                         sx={{
                             color: "primary.main",
                         }}
-                    ></InfoOutlinedIcon>
+                    />
                 </a>
             </Grid>
             <Box sx={{ width: 600, display: "block", marginLeft: "auto", marginRight: "auto" }}>
-                <Typography variant={"h4"} align="center">
+                <Typography variant={"h4"} align="center" gutterBottom>
                     Prozessverwaltung
                 </Typography>
+
                 <Divider />
 
-                <Box sx={{ mt: 2, display: "flex", justifyContent: "space-evenly" }}>
+                <Box sx={{ mt: 6, display: "flex", justifyContent: "space-evenly" }}>
                     <Card sx={{ maxWidth: 250 }} onClick={() => handleCardClick("activeWorkflows")}>
                         <CardActionArea>
                             <CardContent>
-                                <Box sx={{ mb: 2, display: "flex", justifyContent: "space-evenly" }}>
+                                <Box
+                                    sx={{ mb: 2, display: "flex", justifyContent: "space-evenly" }}
+                                >
                                     <ContentPasteSearch />
                                 </Box>
                                 <Typography gutterBottom variant="h5" align="center">
                                     Aktive Prozesse
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" align="center">
-                                    Anzeige und Verwaltung des aktuellen Status aller aktiven Prozesse. Sie können
-                                    Prozesse abbrechen, (ent-)sperren und löschen.
+                                    Anzeige und Verwaltung des aktuellen Status aller aktiven
+                                    Prozesse. Sie können Prozesse abbrechen, (ent-)sperren und
+                                    löschen.
                                 </Typography>
                             </CardContent>
                         </CardActionArea>
                     </Card>
-                    <Card sx={{ ml: 1, mr: 2, maxWidth: 250 }} onClick={() => handleCardClick("workflowTemplates")}>
+                    <Card
+                        sx={{ ml: 1, mr: 2, maxWidth: 250 }}
+                        onClick={() => handleCardClick("workflowTemplates")}
+                    >
                         <CardActionArea>
                             <CardContent>
-                                <Box sx={{ mb: 2, display: "flex", justifyContent: "space-evenly" }}>
+                                <Box
+                                    sx={{ mb: 2, display: "flex", justifyContent: "space-evenly" }}
+                                >
                                     <DesignServices />
                                 </Box>
                                 <Typography gutterBottom variant="h5" align="center">
                                     Prozessvorlagen
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" align="center">
-                                    Anzeige und Verwaltung aller Prozessvorlagen. Sie können neue Vorlagen anlegen und
-                                    bereits bestehende Vorlagen bearbeiten oder löschen.
+                                    Anzeige und Verwaltung aller Prozessvorlagen. Sie können neue
+                                    Vorlagen anlegen und bereits bestehende Vorlagen bearbeiten oder
+                                    löschen.
                                 </Typography>
                             </CardContent>
                         </CardActionArea>

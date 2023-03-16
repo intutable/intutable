@@ -30,9 +30,9 @@ import { withSessionSsr } from "auth"
 import { withSSRCatch } from "utils/withSSRCatch"
 import WorkflowInfo from "components/Workflow/WorkflowInfo"
 import { useSnackbar } from "notistack"
-const ManageActiveWorkflows: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => (
-    <ManageActiveWorkflowsPage />
-)
+const ManageActiveWorkflows: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = () => <ManageActiveWorkflowsPage />
 const ManageActiveWorkflowsPage: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar()
     const [workflow, setWorkflow] = useState<Workflow>()
@@ -44,8 +44,14 @@ const ManageActiveWorkflowsPage: React.FC = () => {
     }>()
     const [backdrop, setBackdrop] = useState(false)
     const dataFetchedRef = useRef(false)
-    const { getActiveWorkflows, getWorkflowProgress, abortWorkflow, blockWorkflow, deleteWorkflow, unblockWorkflow } =
-        useWorkflow()
+    const {
+        getActiveWorkflows,
+        getWorkflowProgress,
+        abortWorkflow,
+        blockWorkflow,
+        deleteWorkflow,
+        unblockWorkflow,
+    } = useWorkflow()
     const fetchData = async () => {
         setBackdrop(true)
         const data = await getActiveWorkflows()
@@ -72,15 +78,21 @@ const ManageActiveWorkflowsPage: React.FC = () => {
     }
     const updateStates = async (currentWorkflow: Workflow) => {
         // enhance history item with the step name for easier access during rendering
-        const history = currentWorkflow.history.map((historyItem: { stepId: string; completedat: number }) => {
-            const relatedStep = currentWorkflow.steps.find((step: Step) => step._id === historyItem.stepId)
-            return {
-                stepId: historyItem.stepId,
-                name: relatedStep ? relatedStep.name : "",
-                completedat: historyItem.completedat,
+        const history = currentWorkflow.history.map(
+            (historyItem: { stepId: string; completedat: number }) => {
+                const relatedStep = currentWorkflow.steps.find(
+                    (step: Step) => step._id === historyItem.stepId
+                )
+                return {
+                    stepId: historyItem.stepId,
+                    name: relatedStep ? relatedStep.name : "",
+                    completedat: historyItem.completedat,
+                }
             }
-        })
-        const activeSteps = currentWorkflow.steps.filter((step: Step) => step.state === ProcessState.Pending)
+        )
+        const activeSteps = currentWorkflow.steps.filter(
+            (step: Step) => step.state === ProcessState.Pending
+        )
         const majorSteps = await getWorkflowProgress(currentWorkflow._id)
         setWorkflow(currentWorkflow)
         setWorkflowProperties({
@@ -166,12 +178,15 @@ const ManageActiveWorkflowsPage: React.FC = () => {
     return (
         <Box sx={{ width: 1000, display: "block", marginLeft: "auto", marginRight: "auto" }}>
             <MetaTitle title="Verwaltung aktiver Prozesse" />
-            <Backdrop open={backdrop} sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}>
+            <Backdrop
+                open={backdrop}
+                sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}
+            >
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Box sx={{ m: 2, width: 1000 }}>
-                <Typography variant={"h4"} align="center">
-                    Verwaltung aktiver Prozesse
+                <Typography variant={"h4"} align="center" gutterBottom>
+                    Aktive Prozesse
                 </Typography>
                 <Divider />
                 {workflows.length ? (
@@ -193,15 +208,22 @@ const ManageActiveWorkflowsPage: React.FC = () => {
                         </Select>
                     </FormControl>
                 ) : (
-                    <Typography sx={{ mt: 2 }} variant="body1" align="center">
+                    <Typography sx={{ mt: 3 }} variant="body1" align="center">
                         Keine aktiven Prozesse verfügbar.
                     </Typography>
                 )}
                 {workflow && (
                     <>
-                        <Box style={{ display: "flex", justifyContent: "space-evenly" }} sx={{ mb: 2 }}>
+                        <Box
+                            style={{ display: "flex", justifyContent: "space-evenly" }}
+                            sx={{ mb: 2 }}
+                        >
                             {buttons.map(
-                                (button: { name: string; icon: ReactNode; clickHandler: () => Promise<void> }) => {
+                                (button: {
+                                    name: string
+                                    icon: ReactNode
+                                    clickHandler: () => Promise<void>
+                                }) => {
                                     return (
                                         <Button
                                             key={button.name + "-button"}
@@ -258,7 +280,10 @@ const ManageActiveWorkflowsPage: React.FC = () => {
                         <Divider />
                         <Stepper sx={{ m: 2 }} orientation="vertical">
                             {workflowProperties!.history.map((historyItem, index) => (
-                                <UIStep key={`historyStep-${index}-${historyItem.stepId}`} completed>
+                                <UIStep
+                                    key={`historyStep-${index}-${historyItem.stepId}`}
+                                    completed
+                                >
                                     <StepLabel>
                                         <Typography>{historyItem.name}</Typography>
                                         <Typography variant="body2" style={{ color: "grey" }}>
@@ -272,20 +297,22 @@ const ManageActiveWorkflowsPage: React.FC = () => {
                         <Typography variant="h6">Hauptschritte</Typography>
                         <Divider />
                         <Stepper sx={{ m: 2 }} alternativeLabel>
-                            {workflowProperties!.majorSteps.map((step: { name: string; state: ProcessState }) => {
-                                const stepProps: { completed: boolean; active: boolean } = {
-                                    completed: step.state === ProcessState.Completed,
-                                    active: step.state === ProcessState.Pending,
+                            {workflowProperties!.majorSteps.map(
+                                (step: { name: string; state: ProcessState }) => {
+                                    const stepProps: { completed: boolean; active: boolean } = {
+                                        completed: step.state === ProcessState.Completed,
+                                        active: step.state === ProcessState.Pending,
+                                    }
+                                    const labelProps: { error: boolean } = {
+                                        error: step.state === ProcessState.Blocked,
+                                    }
+                                    return (
+                                        <UIStep key={step.name} {...stepProps}>
+                                            <StepLabel {...labelProps}>{step.name}</StepLabel>
+                                        </UIStep>
+                                    )
                                 }
-                                const labelProps: { error: boolean } = {
-                                    error: step.state === ProcessState.Blocked,
-                                }
-                                return (
-                                    <UIStep key={step.name} {...stepProps}>
-                                        <StepLabel {...labelProps}>{step.name}</StepLabel>
-                                    </UIStep>
-                                )
-                            })}
+                            )}
                         </Stepper>
                     </>
                 )}

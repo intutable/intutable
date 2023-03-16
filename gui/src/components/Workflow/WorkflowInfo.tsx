@@ -51,6 +51,7 @@ const WorkflowInfo = (props: {
                         name="owner"
                         value={props.workflow.owner}
                         onChange={handleChange}
+                        size="small"
                     />
                 </FormControl>
             ) : (

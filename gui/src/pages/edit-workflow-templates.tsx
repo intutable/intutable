@@ -1,4 +1,4 @@
-import { Backdrop, Box, Button, CircularProgress, Divider, Typography } from "@mui/material"
+import { Backdrop, Box, Button, CircularProgress, Divider, Stack, Typography } from "@mui/material"
 import WorkflowInfo from "components/Workflow/WorkflowInfo"
 import MetaTitle from "components/MetaTitle"
 import type { InferGetServerSidePropsType, NextPage } from "next"
@@ -153,15 +153,15 @@ const EditWorkflowTemplatesPage: React.FC = () => {
                         }}
                     >
                         {workflow._id ? (
-                            <Typography variant={"h4"} align="center">
+                            <Typography variant={"h4"} align="center" gutterBottom>
                                 Prozessvorlage bearbeiten
                             </Typography>
                         ) : (
-                            <Typography variant={"h4"} align="center">
+                            <Typography variant={"h4"} align="center" gutterBottom>
                                 Prozessvorlage erstellen
                             </Typography>
                         )}
-                        <Divider sx={{ mb: 2 }} />
+                        <Divider sx={{ mb: 6 }} />
 
                         <Box sx={{ m: 2 }}>
                             {/* General */}
@@ -186,15 +186,21 @@ const EditWorkflowTemplatesPage: React.FC = () => {
 
                             <Box
                                 style={{ display: "flex", justifyContent: "center" }}
-                                sx={{ m: 2 }}
+                                sx={{ m: 2, mt: 8 }}
                             >
-                                <Button variant="contained" onClick={handleSubmit} sx={{ m: 2 }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleSubmit}
+                                    sx={{ m: 1 }}
+                                    color="success"
+                                >
                                     Speichern
                                 </Button>
                                 <Button
                                     variant="outlined"
                                     onClick={() => router.push("/manage-workflow-templates")}
-                                    sx={{ m: 2 }}
+                                    sx={{ m: 1 }}
+                                    color="error"
                                 >
                                     Abbrechen
                                 </Button>

@@ -18,15 +18,6 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
     const { bookmarks } = useBookmark()
 
-    const isDeansOffice = () => {
-        // TODO: Adjust for multiple users
-        return true
-    }
-    const isProfessor = () => {
-        // TODO: Adjust for multiple users
-        return true
-    }
-
     return (
         <>
             <MetaTitle title="Dashboard" />
@@ -39,9 +30,9 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
             <Typography variant={"h4"}>Dashboard</Typography>
             <Divider />
 
-            <CollapsableSection title="Dringend" defaultClosed>
+            {/* <CollapsableSection title="Dringend" defaultClosed>
                 <em>Coming Soon</em>
-            </CollapsableSection>
+            </CollapsableSection> */}
 
             <CollapsableSection title="Bookmarks" badgeCount={bookmarks?.length} badgeColor="info">
                 <Stack direction="row" sx={{ width: "100%" }} gap={4} flexWrap="wrap">
@@ -67,11 +58,13 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                     ))}
                 </Stack>
             </CollapsableSection>
-            <Box sx={{ mt: 5, display: "flex" }}>
-                {isDeansOffice() && <NotificationCard type="deansOffice" />}
-                {isProfessor() && <NotificationCard type="professor" />}
-            </Box>
-            {/* <Maintenance /> */}
+
+            <CollapsableSection title="Prozesse">
+                <Stack direction="row" sx={{ width: "100%" }} gap={4} flexWrap="wrap">
+                    <NotificationCard type="deansOffice" />
+                    <NotificationCard type="professor" />
+                </Stack>
+            </CollapsableSection>
         </>
     )
 }

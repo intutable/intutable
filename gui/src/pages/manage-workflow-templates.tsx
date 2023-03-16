@@ -22,13 +22,18 @@ import { withSessionSsr } from "auth"
 import { withSSRCatch } from "utils/withSSRCatch"
 import { useRouter } from "next/router"
 import { Add, Edit, ContentCopy, Delete } from "@mui/icons-material"
-const ManageWorkflowTemplates: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => (
-    <ManageWorkflowTemplatesPage />
-)
+const ManageWorkflowTemplates: NextPage<
+    InferGetServerSidePropsType<typeof getServerSideProps>
+> = () => <ManageWorkflowTemplatesPage />
 const ManageWorkflowTemplatesPage: React.FC = () => {
     // --- Hooks ---
-    const { getWorkflowTemplates, deleteWorkflow, copyWorkflow, activateWorkflowTemplate, deactivateWorkflowTemplate } =
-        useWorkflow()
+    const {
+        getWorkflowTemplates,
+        deleteWorkflow,
+        copyWorkflow,
+        activateWorkflowTemplate,
+        deactivateWorkflowTemplate,
+    } = useWorkflow()
     const router = useRouter()
 
     // --- States ---
@@ -82,16 +87,19 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
     return (
         <>
             <MetaTitle title="Verwaltung der Prozessvorlagen" />
-            <Backdrop open={backdrop} sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}>
+            <Backdrop
+                open={backdrop}
+                sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}
+            >
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Box sx={{ width: 800, display: "block", marginLeft: "auto", marginRight: "auto" }}>
-                <Typography variant={"h4"} align="center">
-                    Verwaltung der Prozessvorlagen
+                <Typography variant={"h4"} align="center" gutterBottom>
+                    Prozessvorlagen
                 </Typography>
                 <Divider />
 
-                <Box sx={{ m: 2 }}>
+                <Box sx={{ m: 6 }}>
                     {!workflowTemplates.length ? (
                         <Typography variant={"body1"} align="center">
                             Keine Prozessvorlagen verfügbar.
@@ -99,49 +107,77 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                     ) : (
                         <List>
                             {workflowTemplates.map(workflow => {
-                                const startStep = workflow.steps.find(step => step._id === workflow.startstep)!
+                                const startStep = workflow.steps.find(
+                                    step => step._id === workflow.startstep
+                                )!
                                 const activeWorkflow =
-                                    startStep.state === ProcessState.Pending && workflow.state === ProcessState.Pending
+                                    startStep.state === ProcessState.Pending &&
+                                    workflow.state === ProcessState.Pending
                                 return (
                                     <ListItem
                                         key={workflow._id}
                                         divider
                                         secondaryAction={
                                             <>
-                                                <Tooltip title={activeWorkflow ? "Aktiv" : "Inaktiv"}>
+                                                <Tooltip
+                                                    title={activeWorkflow ? "Aktiv" : "Inaktiv"}
+                                                >
                                                     <Switch
                                                         checked={activeWorkflow}
                                                         onChange={() =>
-                                                            handleActiveSwitchChange(workflow._id, activeWorkflow)
+                                                            handleActiveSwitchChange(
+                                                                workflow._id,
+                                                                activeWorkflow
+                                                            )
                                                         }
+                                                        size="small"
                                                     />
                                                 </Tooltip>
                                                 <Tooltip title="Bearbeiten">
-                                                    <IconButton onClick={() => handleEditClick(workflow._id)}>
-                                                        <Edit />
+                                                    <IconButton
+                                                        onClick={() =>
+                                                            handleEditClick(workflow._id)
+                                                        }
+                                                        size="small"
+                                                    >
+                                                        <Edit fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Kopieren">
-                                                    <IconButton onClick={() => handleCopyClick(workflow._id)}>
-                                                        <ContentCopy />
+                                                    <IconButton
+                                                        onClick={() =>
+                                                            handleCopyClick(workflow._id)
+                                                        }
+                                                        size="small"
+                                                    >
+                                                        <ContentCopy fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Löschen">
-                                                    <IconButton onClick={() => handleDeleteClick(workflow._id)}>
-                                                        <Delete />
+                                                    <IconButton
+                                                        onClick={() =>
+                                                            handleDeleteClick(workflow._id)
+                                                        }
+                                                        size="small"
+                                                        color="error"
+                                                    >
+                                                        <Delete fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             </>
                                         }
                                     >
-                                        <ListItemText primary={workflow.name} secondary={workflow.description} />
+                                        <ListItemText
+                                            primary={workflow.name}
+                                            secondary={workflow.description}
+                                        />
                                     </ListItem>
                                 )
                             })}
                         </List>
                     )}
                 </Box>
-                <Box sx={{ mt: 2 }} style={{ display: "flex", justifyContent: "center" }}>
+                <Box sx={{ mt: 6 }} style={{ display: "flex", justifyContent: "center" }}>
                     <Button
                         variant="outlined"
                         onClick={() => {
