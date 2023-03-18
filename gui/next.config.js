@@ -7,17 +7,16 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 /** @type {import('next').NextConfig} */
 module.exports = withBundleAnalyzer({
     reactStrictMode: true,
-    // compress: true,
     serverRuntimeConfig: {
         ironAuthSecret: process.env.IRON_AUTH_SECRET,
     },
     // publicRuntimeConfig: {},
-    // swcMinify: true, // experimental – does not work
     eslint: {
         dirs: ["src"],
         ignoreDuringBuilds: true,
     },
     compiler: { removeConsole: false },
+    // swcMinify: true, // <- somehow increases the first load
     experimental: {
         modularizeImports: {
             // components
