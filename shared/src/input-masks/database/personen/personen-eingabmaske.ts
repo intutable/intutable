@@ -141,7 +141,7 @@ const mask: InputMask = {
     ],
     constraints: [
         {
-            name: "Proof-of-Concept 2",
+            name: "Proof-of-Concept 0",
             __type: "constraint",
             __ctor: "Constraint",
             conditions: {
@@ -150,10 +150,10 @@ const mask: InputMask = {
                 data: { __type: "if", __ctor: "Timeout", __props: [12000] },
                 next: null,
             },
-            executments: [],
+            executments: [{ __type: "do", __ctor: "Snack", message: "Hallo" }],
         },
         {
-            name: "Proof-of-Concept",
+            name: "Proof-of-Concept 1",
             __type: "constraint",
             __ctor: "Constraint",
             conditions: {

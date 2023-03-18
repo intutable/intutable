@@ -125,7 +125,7 @@ type ConstraintValidationProviderProps = {
 }
 
 export const ConstraintValidationProvider: React.FC<ConstraintValidationProviderProps> = props => {
-    const { snackError, snackWarning, closeSnackbar } = useSnacki()
+    const { snackError, snackWarning, closeSnackbar, snackInfo } = useSnacki()
     const { userSettings } = useUserSettings()
     const { props: contextProps } = useAppContextState()
     const { setSuppressRowChange, row, inputMask } = useRowMask()
@@ -220,6 +220,9 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                             const instance = new doCtor()
                             instance.execute({
                                 setTest,
+                                snackInfo(message: string) {
+                                    snackInfo(message)
+                                },
                             })
                         })
                         // throw new Error("Not Implemented")

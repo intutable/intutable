@@ -1,4 +1,3 @@
-import { AlertType } from "../dos/Alert"
 import { ConstraintStore } from "./ConstraintStore"
 import { Do } from "./Do"
 import { If } from "./If"

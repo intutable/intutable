@@ -1,5 +1,5 @@
 import { ConditionIterIter } from "../constraints/util/ConstraintStore"
-import { Alert } from "../constraints/dos/Alert"
+import { Snack } from "../constraints/dos/Snack"
 import { AlwaysTrue } from "../constraints/ifs/AlwaysTrue"
 import { Constraint } from "../constraints/util/Constraint"
 
@@ -7,7 +7,7 @@ describe("Constraints", () => {
     it("should properly jsonize", () => {
         const constraint = new Constraint("Proof-of-Concept")
             .do(
-                new Alert({
+                new Snack({
                     severity: "warn",
                     title: "Test",
                     message: "Test",
@@ -20,14 +20,14 @@ describe("Constraints", () => {
     it("complex constraints should also properly jsonize", () => {
         const constraint = new Constraint("Proof-of-Concept")
             .do(
-                new Alert({
+                new Snack({
                     severity: "warn",
                     title: "Test",
                     message: "Test",
                 })
             )
             .do(
-                new Alert({
+                new Snack({
                     severity: "info",
                     title: "Test2",
                     message: "Test",
@@ -46,14 +46,14 @@ describe("Constraints", () => {
     it("should stringify and parse back", () => {
         const constraint = new Constraint("Proof-of-Concept")
             .do(
-                new Alert({
+                new Snack({
                     severity: "warn",
                     title: "Test",
                     message: "Test",
                 })
             )
             .do(
-                new Alert({
+                new Snack({
                     severity: "info",
                     title: "Test2",
                     message: "Test",
@@ -73,14 +73,14 @@ describe("Constraints", () => {
     it("can be traversed via the Condition Iterable Iterator", () => {
         const constraint = new Constraint("Proof-of-Concept")
             .do(
-                new Alert({
+                new Snack({
                     severity: "warn",
                     title: "Test",
                     message: "Test",
                 })
             )
             .do(
-                new Alert({
+                new Snack({
                     severity: "info",
                     title: "Test2",
                     message: "Test",

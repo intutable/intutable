@@ -16,5 +16,6 @@ export namespace AppContext {
     }
     export type Dispatch = {
         setTest: React.Dispatch<React.SetStateAction<boolean>>
+        snackInfo: (message: string) => void
     }
 }
