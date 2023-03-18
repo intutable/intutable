@@ -6,16 +6,8 @@ import MoveUpIcon from "@mui/icons-material/MoveUp"
 import PlaceIcon from "@mui/icons-material/Place"
 import RedoIcon from "@mui/icons-material/Redo"
 import UndoIcon from "@mui/icons-material/Undo"
-import {
-    alpha,
-    Box,
-    Chip,
-    IconButton,
-    TableCell,
-    TableRow,
-    TableRowProps,
-    Tooltip,
-} from "@mui/material"
+import { Box, Chip, IconButton, TableCell, TableRow, TableRowProps, Tooltip } from "@mui/material"
+import { alpha } from "@mui/system"
 import { useTheme } from "@mui/material/styles"
 import { useUndoManager } from "hooks/useUndoManager"
 import { useUserSettings } from "hooks/useUserSettings"
