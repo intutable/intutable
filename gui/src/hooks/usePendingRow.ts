@@ -8,7 +8,7 @@ import { useEffect, useState } from "react"
 export const usePendingRow = () => {
     const { createRow } = useRow()
     const { data } = useView()
-    const { rowMaskState, setRowMaskState } = useRowMask()
+    const { row, open } = useRowMask()
     const { addDraft } = useRecordDraftSession()
 
     const [pendingRow, setPendingRow] = useState<null | { _id: number }>(null)
@@ -17,16 +17,12 @@ export const usePendingRow = () => {
     useEffect(() => {
         if (pendingRow) {
             const includes = data?.rows.find(row => row._id === pendingRow._id)
-            if (
-                includes &&
-                rowMaskState.mode === "edit" &&
-                rowMaskState.row._id !== pendingRow._id
-            ) {
-                setRowMaskState({ mode: "edit", row: pendingRow })
+            if (includes && row && row._id !== pendingRow._id) {
+                open(pendingRow)
                 setPendingRow(null)
             }
         }
-    }, [data, pendingRow, rowMaskState, setRowMaskState])
+    }, [data, open, pendingRow, row])
 
     const createPendingRow = async () => {
         const response = await createRow()

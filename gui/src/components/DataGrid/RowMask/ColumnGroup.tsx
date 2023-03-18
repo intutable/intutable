@@ -1,20 +1,15 @@
 import { cellMap } from "@datagrid/Cells"
-import { Accordion, Badge, Box, Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material"
+import { Badge, Box, Grid, IconButton, Stack, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import type { ColumnGroup, FlexboxSizing, InputMaskColumnOrigin } from "@shared/input-masks/types"
+import type { ColumnGroup } from "@shared/input-masks/types"
 import { isColumnIdOrigin } from "@shared/input-masks/utils"
-
 import { useRowMask } from "context/RowMaskContext"
 import { useInputMask } from "hooks/useInputMask"
-import React, { useMemo } from "react"
-import { useState } from "react"
-import { Column } from "types/tables/rdg"
+import React, { useMemo, useState } from "react"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
-
 import InfoIcon from "@mui/icons-material/Info"
-import { merge, MergedColumn } from "./mergeInputMaskColumn"
 import { useView } from "hooks/useView"
-
+import { MergedColumn } from "./mergeInputMaskColumn"
 import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown"
 import { checkRequiredInputs } from "hooks/useCheckRequiredInputs"
 
@@ -25,8 +20,7 @@ export type ColumnGroupComponent = {
 }
 export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, group }) => {
     const theme = useTheme()
-    const { rowMaskState, appliedInputMask } = useRowMask()
-    const { currentInputMask } = useInputMask()
+    const { row, inputMask } = useRowMask()
     const { data: view } = useView()
     const [isHovering, setIsHovering] = useState<boolean>(false)
 
@@ -34,15 +28,12 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
     const [collapsed, setCollapsed] = useState<boolean>(group.collapsed ?? false)
 
     const missingRequiredInputsInGroup = useMemo(() => {
-        if (view == null || rowMaskState.mode !== "edit" || currentInputMask == null) return null
-        const row = view?.rows.find(row => row._id === rowMaskState.row._id)
-        if (row == null) return null
-
-        const missing = checkRequiredInputs(currentInputMask, row, columns)
+        if (!view || !row || !inputMask) return null
+        const missing = checkRequiredInputs(inputMask, row, columns)
         return missing
-    }, [columns, currentInputMask, rowMaskState, view])
+    }, [columns, inputMask, row, view])
 
-    if (rowMaskState.mode !== "edit" || !currentInputMask) return null
+    if (!row || !inputMask) return null
 
     return (
         <Box
@@ -123,8 +114,7 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
                         if (groupCol === undefined)
                             throw new Error("Could not find the column in the group!")
 
-                        const selectedRow = view?.rows.find(row => row._id === rowMaskState.row._id)
-                        if (selectedRow == null) return null
+                        const selectedRow = row
 
                         return (
                             <Grid

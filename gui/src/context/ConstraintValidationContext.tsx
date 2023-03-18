@@ -1,18 +1,17 @@
-import { IfCtorMap } from "@shared/constraints/ifs/"
 import { DoCtorMap } from "@shared/constraints/dos"
-import { ConditionIterIter } from "@shared/constraints/util/ConstraintStore"
+import { IfCtorMap } from "@shared/constraints/ifs/"
 import type { AppContext } from "@shared/constraints/util/AppContext"
+import { ConditionIterIter } from "@shared/constraints/util/ConstraintStore"
 import { Mismatch } from "@shared/constraints/util/Mismatch"
+import { DoObjectNotation } from "@shared/constraints/util/ObjectNotation"
 import { UNSAFE_ViewData } from "@shared/input-masks"
 import { useAPI } from "hooks/useAPI"
 import { useInputMask } from "hooks/useInputMask"
 import { useSnacki } from "hooks/useSnacki"
 import { useUserSettings } from "hooks/useUserSettings"
 import { useView } from "hooks/useView"
-import React, { useEffect, useMemo, useReducer, useRef, useState } from "react"
-import { Row } from "types"
+import React, { useEffect, useMemo, useReducer, useState } from "react"
 import { useRowMask } from "./RowMaskContext"
-import { DoObjectNotation } from "@shared/constraints/util/ObjectNotation"
 // import hash from "stable-hash"
 
 // const compare = (a: Row, b: Row) => hash(a) === hash(b)
@@ -128,39 +127,52 @@ type ConstraintValidationProviderProps = {
 export const ConstraintValidationProvider: React.FC<ConstraintValidationProviderProps> = props => {
     const { snackError, snackWarning, closeSnackbar } = useSnacki()
     const { userSettings } = useUserSettings()
-    const { currentInputMask } = useInputMask()
     const { props: contextProps } = useAppContextState()
-    const { rowMaskState, setSuppressRowChange } = useRowMask()
+    const { setSuppressRowChange, row, inputMask } = useRowMask()
 
     // state
     const [state, dispatch] = useReducer(reducer, initialValidationState)
     const [loading, setLoading] = useState<boolean>(true)
 
     const [test, setTest] = useState(false)
-    console.log("test:", test)
-
-    const _validate = () => {}
 
     // disallow changing row when running
     useEffect(() => {
         setSuppressRowChange(state.isRunning)
     }, [setSuppressRowChange, state.isRunning])
 
-    // useEffect(() => {
-    //     // if some data in contextProps was changed AND `state.finished === true`
-    //     // then reset the statet
-    //     dispatch({ type: "reset", payload: null })
-    // }, [contextProps])
+    // main effect
+    useEffect(() => {
+        if (
+            !userSettings ||
+            userSettings.constraintValidation === "never" ||
+            !inputMask ||
+            !row ||
+            !contextProps
+        )
+            return
+        else {
+            setLoading(false)
+        }
 
-    const validate = async () => {
+        if (state.finished) {
+            dispatch({ type: "reset", payload: null })
+        }
+
+        runValidationCycle()
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [row]) // TODO finally refactor rowMaskState and add listeners
+
+    const runValidationCycle = async () => {
         if (state.isRunning) {
             return
         }
         if (
             !userSettings ||
             userSettings.constraintValidation === "never" ||
-            currentInputMask === null ||
-            rowMaskState.mode === "closed" ||
+            !inputMask ||
+            !row ||
             !contextProps
         )
             return
@@ -168,7 +180,7 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         dispatch({
             type: "startValidation",
             payload: {
-                constraints: currentInputMask.constraints.length,
+                constraints: inputMask.constraints.length,
             },
         })
 
@@ -181,7 +193,7 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         }
         const begin = new Date()
 
-        for await (const [index, constraint] of currentInputMask.constraints.entries()) {
+        for await (const [index, constraint] of inputMask.constraints.entries()) {
             try {
                 const conditions = Array.from(new ConditionIterIter(constraint.conditions))
                 const node = conditions[0]
@@ -251,35 +263,12 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         })
     }
 
-    useEffect(() => {
-        setLoading(true) // TODO: <- is this correct
-        if (
-            !userSettings ||
-            userSettings.constraintValidation === "never" ||
-            currentInputMask === null ||
-            rowMaskState.mode === "closed" ||
-            !contextProps
-        )
-            return
-
-        setLoading(false) // TODO: where to put this?
-
-        // begin validation
-        // call validation
-        if (state.finished) {
-            dispatch({ type: "reset", payload: null })
-        }
-        validate()
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [rowMaskState])
-
     return (
         <ConstraintValidationContext.Provider
             value={{
                 state,
                 loading,
-                validate: _validate,
+                validate: runValidationCycle,
             }}
         >
             {props.children}
@@ -291,25 +280,18 @@ export const useAppContextState = () => {
     const { project, table, view } = useAPI()
     const { data } = useView()
     const { userSettings } = useUserSettings()
-    const { rowMaskState } = useRowMask()
+    const { row } = useRowMask()
     const { currentInputMask } = useInputMask()
 
     const props: AppContext.State | null = useMemo(() => {
-        if (
-            !project ||
-            !table ||
-            !view ||
-            !data ||
-            !userSettings ||
-            !currentInputMask ||
-            rowMaskState.mode === "closed"
-        )
+        if (!project || !table || !view || !data || !userSettings || !currentInputMask || !row)
             return null
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { inputMasks, ...viewData } = data as unknown as UNSAFE_ViewData
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { constraints, ...inputMask } = currentInputMask
-        const row = data.rows.find(r => r._id === rowMaskState.row._id)
-        if (!row) throw new Error("Row not found")
+        if (!row) throw new Error("Row mask not open")
 
         return {
             project,
@@ -319,7 +301,7 @@ export const useAppContextState = () => {
             data: viewData,
             currentRecord: row,
         }
-    }, [currentInputMask, data, project, rowMaskState, table, userSettings, view])
+    }, [currentInputMask, data, project, row, table, userSettings, view])
 
     return {
         props,

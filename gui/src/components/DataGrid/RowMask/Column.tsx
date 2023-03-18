@@ -1,13 +1,12 @@
 import { cellMap } from "@datagrid/Cells"
 import { ColumnAttributesWindow } from "@datagrid/renderers/HeaderRenderer/ColumnAttributesWindow"
 import EditIcon from "@mui/icons-material/Edit"
-import { Box, Divider, IconButton, Stack, Typography } from "@mui/material"
+import { Box, IconButton, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
-import React, { useEffect, useMemo, useRef, useState } from "react"
-import { Column } from "types"
-import KeyIcon from "@mui/icons-material/Key"
 import { useView } from "hooks/useView"
+import React, { useMemo, useState } from "react"
+import { Column } from "types"
 import { MergedColumn } from "./mergeInputMaskColumn"
 
 export const ColumnAttributesWindowButton: React.FC<{
@@ -38,17 +37,17 @@ export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) =>
     const theme = useTheme()
     const { data: view } = useView()
     const [isHovering, setIsHovering] = useState<boolean>(false)
-    const { rowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
-    const isInputMask = selectedInputMask !== null
+    const { row, inputMask } = useRowMask()
+    const isInputMask = inputMask != null
 
     // BUG: this causes the input component to rerender every time a state is changed
     const cell = useMemo(() => cellMap.instantiate(column), [column])
     const Icon = React.memo(cell.icon)
     const Input = React.memo(cell.ExposedInput)
 
-    if (rowMaskState.mode !== "edit" || view == null) return null
+    if (!row || view == null) return null
 
-    const selectedRow = view.rows.find(row => row._id === rowMaskState.row._id)
+    const selectedRow = row
     if (selectedRow == null) return null
 
     const content = selectedRow[column.key]

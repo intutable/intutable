@@ -1,17 +1,16 @@
+import { HiddenColumnsMenuItem } from "@datagrid/Toolbar/ToolbarItems/HiddenColumns/HiddenColumns"
+import CheckIcon from "@mui/icons-material/Check"
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
+import ShareIcon from "@mui/icons-material/Share"
 import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
+import { isViewIdOrigin, isViewNameOrigin } from "@shared/input-masks/utils"
+import { useAPI } from "context"
 import { useRowMask } from "context/RowMaskContext"
 import { useRow } from "hooks/useRow"
 import { useSnacki } from "hooks/useSnacki"
-import React, { useState } from "react"
-import { HiddenColumnsMenuItem } from "@datagrid/Toolbar/ToolbarItems/HiddenColumns/HiddenColumns"
-import CheckIcon from "@mui/icons-material/Check"
 import { useView } from "hooks/useView"
-import { useInputMask } from "hooks/useInputMask"
-import ShareIcon from "@mui/icons-material/Share"
-import { useAPI } from "context"
-import { isViewIdOrigin, isViewNameOrigin } from "@shared/input-masks/utils"
+import React, { useState } from "react"
 
 export type RowMaskContextMenuProps = {
     commentSectionOpen: boolean
@@ -25,8 +24,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const { snackError, snackSuccess } = useSnacki()
     const { deleteRow: _deleteRow } = useRow()
     const { data: view } = useView()
-    const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
-    const { currentInputMask } = useInputMask()
+    const { row, inputMask } = useRowMask()
     const { project, table } = useAPI()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
@@ -37,8 +35,8 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const closeContextMenu = () => setAnchorEL(null)
 
     const deleteRow = async () => {
-        if (rowMaskState.mode !== "edit" || view == null) return
-        const selectedRow = view.rows.find(row => row._id === rowMaskState.row._id)
+        if (!row || view == null) return
+        const selectedRow = row
         if (selectedRow == null) return
         try {
             await _deleteRow(selectedRow)
@@ -51,15 +49,14 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
 
     const createShareLink = () => {
         try {
-            if (!project || !table || !currentInputMask || rowMaskState.mode === "closed" || !view)
-                throw new Error()
+            if (!project || !table || !inputMask || !row || !view) throw new Error()
             // TODO: this might be not appropriate
             const viewParam =
-                isViewIdOrigin(currentInputMask.origin) || isViewNameOrigin(currentInputMask.origin)
+                isViewIdOrigin(inputMask.origin) || isViewNameOrigin(inputMask.origin)
                     ? `&viewId=${view.descriptor.id}`
                     : ""
             const link =
-                `${window.location.origin}/project/${project.id}/table/${table.id}?inputMask=${currentInputMask.id}&record=${rowMaskState.row._id}` +
+                `${window.location.origin}/project/${project.id}/table/${table.id}?inputMask=${inputMask.id}&record=${row._id}` +
                 viewParam
             navigator.clipboard.writeText(link)
             snackSuccess("Link in die Zwischenablage kopiert!")
@@ -88,24 +85,22 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                 }}
             >
                 <MenuList>
-                    {selectedInputMask == null && <HiddenColumnsMenuItem />}
+                    {inputMask == null && <HiddenColumnsMenuItem />}
 
-                    {selectedInputMask != null &&
-                        currentInputMask &&
-                        currentInputMask.comments.length > 0 && (
-                            <>
-                                <MenuItem onClick={props.toggleCommentSection}>
-                                    {props.commentSectionOpen && (
-                                        <ListItemIcon>
-                                            <CheckIcon fontSize="small" />
-                                        </ListItemIcon>
-                                    )}
-                                    <ListItemText>Kommentare</ListItemText>
-                                </MenuItem>
-                            </>
-                        )}
+                    {inputMask && inputMask.comments.length > 0 && (
+                        <>
+                            <MenuItem onClick={props.toggleCommentSection}>
+                                {props.commentSectionOpen && (
+                                    <ListItemIcon>
+                                        <CheckIcon fontSize="small" />
+                                    </ListItemIcon>
+                                )}
+                                <ListItemText>Kommentare</ListItemText>
+                            </MenuItem>
+                        </>
+                    )}
 
-                    {selectedInputMask != null && currentInputMask && (
+                    {inputMask && (
                         <>
                             <MenuItem onClick={props.toggleConstrainSection}>
                                 {props.constraintSectionOpen && (
@@ -118,7 +113,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                         </>
                     )}
 
-                    {selectedInputMask != null && (
+                    {inputMask && (
                         <MenuItem onClick={createShareLink}>
                             <ListItemIcon>
                                 <ShareIcon fontSize="small" />
@@ -127,7 +122,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                         </MenuItem>
                     )}
 
-                    {rowMaskState.mode === "edit" && (
+                    {row && (
                         <MenuItem sx={{ color: theme.palette.warning.main }} onClick={deleteRow}>
                             <ListItemText>Eintrag Löschen</ListItemText>
                         </MenuItem>

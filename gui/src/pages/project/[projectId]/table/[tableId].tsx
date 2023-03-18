@@ -186,10 +186,8 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
         <SelectedRowsContextProvider>
             <HeaderSearchFieldProvider>
                 <RowMaskProvider
-                    initialRowMaskState={
-                        props.openRow ? { mode: "edit", row: { _id: props.openRow } } : undefined
-                    }
-                    initialAppliedInputMask={props.inputMask}
+                    row={props.openRow ? { _id: props.openRow } : undefined}
+                    inputMask={props.inputMask ? { id: props.inputMask } : undefined}
                 >
                     <TablePage />
                 </RowMaskProvider>

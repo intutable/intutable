@@ -2,13 +2,11 @@ import CloseIcon from "@mui/icons-material/Close"
 import { Box, DialogTitle, Divider, IconButton, Stack, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
-import { useInputMask } from "hooks/useInputMask"
 import { useView } from "hooks/useView"
 import React from "react"
 import { RowMaskContextMenu } from "./ContextMenu"
 import { DevOverlay } from "./DevOverlay"
 import { RowNavigator } from "./RowNavigator"
-
 import DeleteIcon from "@mui/icons-material/Delete"
 import { useConstraintValidation } from "context/ConstraintValidationContext"
 import { useRecordDraftSession } from "hooks/useRecordDraftSession"
@@ -31,9 +29,8 @@ export const Header: React.FC<HeaderProps> = props => {
     const theme = useTheme()
     const { snackWarning, snackError } = useSnacki()
     const { data } = useView()
-    const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
-    const { currentInputMask } = useInputMask()
-    const isInputMask = selectedInputMask != null
+    const { row, close, inputMask } = useRowMask()
+    const isInputMask = inputMask != null
     const { state } = useConstraintValidation()
     const { deleteRow } = useRow()
     const { isDraft } = useRecordDraftSession()
@@ -48,13 +45,9 @@ export const Header: React.FC<HeaderProps> = props => {
         }
     }
 
-    const abort = () => {
-        // if (isValid === false)
-        //     alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
-        setRowMaskState({ mode: "closed" })
-    }
+    const abort = () => close()
 
-    if (rowMaskState.mode === "closed" || data == null) return null
+    if (!row || !data) return null
 
     return (
         <DialogTitle>
@@ -64,7 +57,8 @@ export const Header: React.FC<HeaderProps> = props => {
                     alignItems: "center",
                 }}
             >
-                {rowMaskState.mode === "edit" && <RowNavigator />}
+                <RowNavigator />
+
                 <Typography sx={{ ml: 2 }}>Zeile {selectedRow.index}</Typography>
                 <Box flexGrow={1} />
 
@@ -80,7 +74,7 @@ export const Header: React.FC<HeaderProps> = props => {
 
                 <Divider orientation="vertical" flexItem sx={{ mx: 2 }} variant="middle" />
 
-                {isInputMask && currentInputMask?.draftsCanBeDeleted && isDraft(selectedRow) && (
+                {isInputMask && inputMask?.draftsCanBeDeleted && isDraft(selectedRow) && (
                     <Tooltip arrow placement="bottom" title="Entwurf löschen" enterDelay={1000}>
                         <IconButton
                             size="small"
