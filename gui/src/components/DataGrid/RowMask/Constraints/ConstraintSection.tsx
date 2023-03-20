@@ -115,13 +115,10 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
                         </Box>
                     )}
 
-                    {state.finished && state.report!.mismatches.length > 0 && (
+                    {state.finished && state.report!.log.length > 0 && (
                         <Box marginTop={10}>
                             <Divider>
-                                <Badge
-                                    badgeContent={state.report!.mismatches.length}
-                                    color="warning"
-                                >
+                                <Badge badgeContent={state.report!.log.length} color="warning">
                                     <Typography color="warning" variant="overline">
                                         Mismatches
                                     </Typography>
@@ -129,7 +126,7 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
                             </Divider>
 
                             <Stack direction="column">
-                                {state.report!.mismatches.map((mismatch, i) => (
+                                {state.report!.log.map((mismatch, i) => (
                                     <DebugMismatch key={mismatch.title + i} mismatch={mismatch} />
                                 ))}
                             </Stack>

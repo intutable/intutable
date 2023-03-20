@@ -14,7 +14,9 @@ export class Timeout implements If {
         return {
             __type: "if",
             __ctor: this.constructor.name,
-            __props: [this.delay],
+            __props: {
+                delay: this.delay,
+            },
         }
     }
 

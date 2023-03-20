@@ -5,6 +5,7 @@ import { JSONizable } from "./JSONizable"
 import { Mismatch } from "./Mismatch"
 import { ConstraintObjectNotation } from "./ObjectNotation"
 import { Operator } from "./Operator"
+import { v4 as uuidv4 } from "uuid"
 
 /**
  * ### Syntactical Sugar / Fluent Wizard
@@ -12,15 +13,18 @@ import { Operator } from "./Operator"
 export class Constraint extends ConstraintStore implements JSONizable<ConstraintObjectNotation> {
     private debugMessage?: Mismatch
 
+    private uuid: string
+
     constructor(private name: string, private options?: { priority?: number }) {
         super()
+        this.uuid = uuidv4()
     }
 
     /** Converts the constrait and all of its nodes to object notations */
     toJSON(): ConstraintObjectNotation {
         return {
+            id: this.uuid,
             __type: "constraint",
-            __ctor: this.constructor.name,
             name: this.name,
             // priority: this.options?.priority,
             conditions: this.head.toJSON(),

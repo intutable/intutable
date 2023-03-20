@@ -20,7 +20,7 @@ type ValidationReport = {
     /** Constraints that not passed */
     failed: string[]
     /** All mismatches by constraints that not passed and registered debug mismatches */
-    mismatches: (Mismatch & { constraint: string })[]
+    log: SerializedLogEntry[]
     succeeded: string[]
     /** If an error occured during validation  */
     interrupted: string[]
@@ -188,7 +188,7 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
             succeeded: [],
             failed: [],
             interrupted: [],
-            mismatches: [],
+            log: [],
             time: 0,
         }
         const begin = new Date()
@@ -207,7 +207,9 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                 const ifCtor = IfCtorMap.get(node.__ctor)
                 if (!ifCtor) throw new Error(`No ctor for ${node.__ctor}`)
 
-                const instance = node.__props ? new ifCtor(...node.__props) : new ifCtor() // BUG: probably a bug in here, see `Timeout.ts`
+                const instance = node.__props
+                    ? new ifCtor(...Object.values(node.__props))
+                    : new ifCtor() // BUG: probably a bug in here, see `Timeout.ts`
                 const passed = await instance.validate(contextProps)
 
                 if (passed) {
@@ -217,11 +219,16 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                         dos.forEach(exec => {
                             const doCtor = DoCtorMap.get(exec.__ctor)
                             if (!doCtor) throw new Error(`No ctor for ${node.__ctor}`)
-                            const instance = new doCtor()
+                            const instance = exec.__props
+                                ? new doCtor(...Object.values(exec.__props))
+                                : new doCtor() // TODO: inject props
                             instance.execute({
                                 setTest,
                                 snackInfo(message: string) {
                                     snackInfo(message)
+                                },
+                                addLogEntry(log: SerializedLogEntry) {
+                                    report.log = [...report.log, log]
                                 },
                             })
                         })
@@ -230,9 +237,10 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                     report.succeeded = [...report.succeeded, constraint.name]
                 } else {
                     // constraint failed (mismatch), show debug instructions to the user
+                    /** @deprecated */
                     if (constraint.debugMessage)
-                        report.mismatches = [
-                            ...report.mismatches,
+                        report.log = [
+                            ...report.log,
                             { ...constraint.debugMessage, constraint: constraint.name },
                         ]
 

@@ -13,12 +13,10 @@ export type NodeObjectNotation<T> = {
 
 export type ConstraintObjectNotation = {
     __type: "constraint"
-    __ctor: string
+    id: string
     name: string
-    priority?: number
     conditions: NodeObjectNotation<IfObjectNotation | OperatorObjectNotation>
     executments: DoObjectNotation[]
-    debugMessage?: Mismatch
 }
 
 export type OperatorObjectNotation = {
@@ -27,16 +25,14 @@ export type OperatorObjectNotation = {
     operator: OperatorType
 }
 
-export type IfObjectNotation = {
+export type IfObjectNotation<P = Record<string, unknown>> = {
     __type: "if"
     __ctor: string
-    __props?: unknown[]
-    [key: string]: unknown
+    __props?: P
 }
 
-export type DoObjectNotation = {
+export type DoObjectNotation<P = Record<string, unknown>> = {
     __type: "do"
     __ctor: string
-    __props?: unknown[]
-    [key: string]: unknown
+    __props?: P
 }

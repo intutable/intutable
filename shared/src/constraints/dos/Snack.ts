@@ -9,7 +9,9 @@ export class Snack implements Do {
         return {
             __type: "do",
             __ctor: this.constructor.name,
-            message: this.message,
+            __props: {
+                message: this.message,
+            },
         }
     }
 
