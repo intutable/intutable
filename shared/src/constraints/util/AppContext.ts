@@ -4,7 +4,7 @@ import { Row, SerializedViewData } from "../../types"
 import type { InputMask } from "../../input-masks/types"
 import { SerializedLogEntry } from "../dos/Log/Log"
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
+// TODO: if the constraints are imported and executed inside the frontend, we can directly use hooks and their states instead of forwarding them here
 export namespace AppContext {
     export type State = {
         project: ProjectDescriptor
