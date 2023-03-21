@@ -25,14 +25,18 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
     const { snackError } = useSnacki()
 
     const { open: headerOpen, openSearchField, closeSearchField } = useHeaderSearchField()
-    const { deleteColumn } = useColumn()
+    const { deleteColumn, changeAttributes } = useColumn()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         setAnchorEL(e.currentTarget)
+        changeAttributes(headerRendererProps.column, { resizable: false }) // TODO: only set resizable false in cache not on the backend
     }
-    const closeContextMenu = () => setAnchorEL(null)
+    const closeContextMenu = () => {
+        setAnchorEL(null)
+        changeAttributes(headerRendererProps.column, { resizable: true })
+    }
 
     const toggleHeaderSearchbar = () => {
         if (headerOpen) closeSearchField()
