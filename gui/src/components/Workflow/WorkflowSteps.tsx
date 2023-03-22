@@ -9,7 +9,14 @@ import {
     AutomaticStepTemplate,
     TimeUnit,
 } from "@intutable/process-manager/dist/types"
-import { Add, StarBorder, Star, Cancel, Build, Create, ContentCopy, ExpandMore } from "@mui/icons-material"
+import AddIcon from "@mui/icons-material/Add"
+import BuildIcon from "@mui/icons-material/Build"
+import CancelIcon from "@mui/icons-material/Cancel"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
+import CreateIcon from "@mui/icons-material/Create"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import StarIcon from "@mui/icons-material/Star"
+import StarBorderIcon from "@mui/icons-material/StarBorder"
 import {
     Typography,
     Divider,
@@ -52,12 +59,15 @@ const WorkflowSteps = (props: {
 
     // --- States ---
     const [showAddStepsDialog, setShowAddStepsDialog] = useState(false)
-    const [availableSteps, setAvailableSteps] = useState<{ assignment: { id: string; name: string }; steps: Step[] }[]>(
+    const [availableSteps, setAvailableSteps] = useState<
+        { assignment: { id: string; name: string }; steps: Step[] }[]
+    >([])
+    const [availableStepsFlat, setAvailableStepsFlat] = useState<Step[]>([])
+    const [automaticStepTemplates, setAutomaticStepTemplates] = useState<AutomaticStepTemplate[]>(
         []
     )
-    const [availableStepsFlat, setAvailableStepsFlat] = useState<Step[]>([])
-    const [automaticStepTemplates, setAutomaticStepTemplates] = useState<AutomaticStepTemplate[]>([])
-    const [activeAutomaticStepTemplate, setActiveAutomaticStepTemplate] = useState<AutomaticStepTemplate>()
+    const [activeAutomaticStepTemplate, setActiveAutomaticStepTemplate] =
+        useState<AutomaticStepTemplate>()
     const [checkedSteps, setCheckedSteps] = useState<Step[]>([])
     const [showCreateStepDialog, setShowCreateStepDialog] = useState(false)
     // const [steps, setSteps] = useState<Step[]>([])
@@ -76,7 +86,9 @@ const WorkflowSteps = (props: {
         props.setBackdrop(true)
         setAutomaticStepTemplates((await getAutomaticStepTemplates()) || [])
         const workflowTemplates = (await getWorkflowTemplates()) || []
-        setAvailableStepsFlat(workflowTemplates.map(workflowTemplate => workflowTemplate.steps).flat())
+        setAvailableStepsFlat(
+            workflowTemplates.map(workflowTemplate => workflowTemplate.steps).flat()
+        )
         setAvailableSteps(
             workflowTemplates.map(workflowTemplate => {
                 return {
@@ -178,7 +190,15 @@ const WorkflowSteps = (props: {
     }
     const handleChange = (evt: { target: { name: string; value: unknown } }) => {
         const name = evt.target.name
-        const value = evt.target.value
+        let value = evt.target.value
+
+        if (name === "responsible" && typeof value === "string") {
+            if (value === "") {
+                value = null
+            } else {
+                value = parseInt(value)
+            }
+        }
 
         setStepTemplate({
             ...stepTemplate,
@@ -186,9 +206,8 @@ const WorkflowSteps = (props: {
         })
 
         if (name === "trigger") {
-            const selectedAutomaticStepTemplate: AutomaticStepTemplate | undefined = automaticStepTemplates.filter(
-                stepTemplate => stepTemplate.trigger === value
-            )[0]
+            const selectedAutomaticStepTemplate: AutomaticStepTemplate | undefined =
+                automaticStepTemplates.filter(stepTemplate => stepTemplate.trigger === value)[0]
             setActiveAutomaticStepTemplate(selectedAutomaticStepTemplate || {})
         }
     }
@@ -205,7 +224,9 @@ const WorkflowSteps = (props: {
         })
     }
 
-    const handleDataChange = (evt: { target: { type: string; name: string; value: string } } | null) => {
+    const handleDataChange = (
+        evt: { target: { type: string; name: string; value: string } } | null
+    ) => {
         if (evt) {
             const newData: Record<string, string | number> = stepTemplate.data || {}
             if (evt.target.type === "datetime-local") {
@@ -253,11 +274,15 @@ const WorkflowSteps = (props: {
                 _id: stepTemplate._id,
                 name: stepTemplate.name,
                 description: stepTemplate.description,
-                type: stepTemplate.type === StepType.Automatic ? StepType.Manual : StepType.Automatic,
+                type:
+                    stepTemplate.type === StepType.Automatic ? StepType.Manual : StepType.Automatic,
                 trigger: "",
                 state: ProcessState.NotStarted,
                 responsible: undefined,
-                delay: stepTemplate.type === StepType.Manual ? { value: 0, unit: "Minuten" as TimeUnit } : undefined,
+                delay:
+                    stepTemplate.type === StepType.Manual
+                        ? { value: 0, unit: "Minuten" as TimeUnit }
+                        : undefined,
                 data: {},
             })
         } else {
@@ -269,7 +294,10 @@ const WorkflowSteps = (props: {
                 trigger: "",
                 state: ProcessState.NotStarted,
                 responsible: undefined,
-                delay: stepTemplate.type === StepType.Automatic ? { value: 0, unit: "Minuten" as TimeUnit } : undefined,
+                delay:
+                    stepTemplate.type === StepType.Automatic
+                        ? { value: 0, unit: "Minuten" as TimeUnit }
+                        : undefined,
                 data: {},
             })
         }
@@ -282,9 +310,8 @@ const WorkflowSteps = (props: {
     const editStep = (step: Step) => {
         setStepTemplate(JSON.parse(JSON.stringify(step)))
         setShowCreateStepDialog(true)
-        const automaticStepTemplate: AutomaticStepTemplate | undefined = automaticStepTemplates.find(
-            stepTemplate => stepTemplate.trigger === step.trigger
-        )
+        const automaticStepTemplate: AutomaticStepTemplate | undefined =
+            automaticStepTemplates.find(stepTemplate => stepTemplate.trigger === step.trigger)
         if (automaticStepTemplate) {
             setActiveAutomaticStepTemplate(automaticStepTemplate)
         }
@@ -328,7 +355,7 @@ const WorkflowSteps = (props: {
                             variant="outlined"
                             name="responsible"
                             type="number"
-                            value={stepTemplate.responsible || ""}
+                            value={stepTemplate.responsible}
                             onChange={handleChange}
                             InputProps={{
                                 inputProps: { min: 0 },
@@ -340,7 +367,10 @@ const WorkflowSteps = (props: {
             case StepType.Automatic:
                 return (
                     <>
-                        <Box sx={{ mt: 2 }} style={{ display: "flex", justifyContent: "space-evenly" }}>
+                        <Box
+                            sx={{ mt: 2 }}
+                            style={{ display: "flex", justifyContent: "space-evenly" }}
+                        >
                             <TextField
                                 key="data-delay"
                                 sx={{ width: "75%", pr: "1em" }}
@@ -410,72 +440,79 @@ const WorkflowSteps = (props: {
                                         float: "right",
                                     }}
                                 ></InfoOutlinedIcon>
-                                {activeAutomaticStepTemplate.helptext.split("\n").map((line: string, index: number) => {
-                                    return (
-                                        <span key={`info-line-${index}`}>
-                                            {line}
-                                            <br />
-                                        </span>
-                                    )
-                                })}
+                                {activeAutomaticStepTemplate.helptext
+                                    .split("\n")
+                                    .map((line: string, index: number) => {
+                                        return (
+                                            <span key={`info-line-${index}`}>
+                                                {line}
+                                                <br />
+                                            </span>
+                                        )
+                                    })}
                             </Box>
                         ) : (
                             ""
                         )}
 
                         {activeAutomaticStepTemplate &&
-                            Object.keys(activeAutomaticStepTemplate.data).map((dataFieldName, index) => {
-                                const dataField: DataFieldProperties = activeAutomaticStepTemplate.data[dataFieldName]
-                                let value = (stepTemplate.data && stepTemplate.data[dataFieldName]) || ""
-                                let rows = 1
+                            Object.keys(activeAutomaticStepTemplate.data).map(
+                                (dataFieldName, index) => {
+                                    const dataField: DataFieldProperties =
+                                        activeAutomaticStepTemplate.data[dataFieldName]
+                                    let value =
+                                        (stepTemplate.data && stepTemplate.data[dataFieldName]) ||
+                                        ""
+                                    let rows = 1
 
-                                // Workaround as MUI Textfield seems bugged with multiline:
-                                // Needs explicit 'rows'-property
-                                if (typeof value === "string" && dataField.multiline) {
-                                    rows = (value.match(/\n/g) || []).length + 1
-                                }
-                                const textFieldProps: {
-                                    required?: boolean
-                                    multiline?: boolean
-                                    rows: number
-                                    type?: string
-                                } = {
-                                    required: dataField.required,
-                                    multiline: dataField.multiline,
-                                    rows: rows,
-                                    type: dataField.type,
-                                }
+                                    // Workaround as MUI Textfield seems bugged with multiline:
+                                    // Needs explicit 'rows'-property
+                                    if (typeof value === "string" && dataField.multiline) {
+                                        rows = (value.match(/\n/g) || []).length + 1
+                                    }
+                                    const textFieldProps: {
+                                        required?: boolean
+                                        multiline?: boolean
+                                        rows: number
+                                        type?: string
+                                    } = {
+                                        required: dataField.required,
+                                        multiline: dataField.multiline,
+                                        rows: rows,
+                                        type: dataField.type,
+                                    }
 
-                                if (dataField.type === "datetime-local" && value) {
-                                    value = new Date(value).toISOString()
-                                    value = value.substring(0, value.length - 8)
-                                }
+                                    if (dataField.type === "datetime-local" && value) {
+                                        value = new Date(value).toISOString()
+                                        value = value.substring(0, value.length - 8)
+                                    }
 
-                                return dataField.helpText ? (
-                                    <TextField
-                                        key={`data-${dataFieldName}-${index}`}
-                                        sx={{ mt: 2 }}
-                                        label={dataField.name}
-                                        helperText={<>{dataField.helpText}</>}
-                                        variant="outlined"
-                                        name={dataFieldName}
-                                        value={value}
-                                        onChange={handleDataChange}
-                                        {...textFieldProps}
-                                    />
-                                ) : (
-                                    <TextField
-                                        key={`data-${dataFieldName}-${index}`}
-                                        sx={{ mt: 2 }}
-                                        label={dataField.name}
-                                        variant="outlined"
-                                        name={dataFieldName}
-                                        value={value}
-                                        onChange={handleDataChange}
-                                        {...textFieldProps}
-                                    />
-                                )
-                            })}
+                                    return dataField.helpText ? (
+                                        <TextField
+                                            key={`data-${dataFieldName}-${index}`}
+                                            sx={{ mt: 2 }}
+                                            label={dataField.name}
+                                            helperText={<>{dataField.helpText}</>}
+                                            variant="outlined"
+                                            name={dataFieldName}
+                                            value={value}
+                                            onChange={handleDataChange}
+                                            {...textFieldProps}
+                                        />
+                                    ) : (
+                                        <TextField
+                                            key={`data-${dataFieldName}-${index}`}
+                                            sx={{ mt: 2 }}
+                                            label={dataField.name}
+                                            variant="outlined"
+                                            name={dataFieldName}
+                                            value={value}
+                                            onChange={handleDataChange}
+                                            {...textFieldProps}
+                                        />
+                                    )
+                                }
+                            )}
                     </>
                 )
         }
@@ -487,11 +524,12 @@ const WorkflowSteps = (props: {
     const timeUnits = ["Minuten", "Stunden", "Tage", "Wochen", "Monate", "Jahre"]
 
     const checkCreateStepCompletion = () => {
-        const generalAttributesComplete = stepTemplate.name && stepTemplate.description && stepTemplate.trigger
+        const generalAttributesComplete =
+            stepTemplate.name && stepTemplate.description && stepTemplate.trigger
         let specificAttributesComplete
 
         if (stepTemplate.type === StepType.Manual) {
-            specificAttributesComplete = !!stepTemplate.responsible
+            specificAttributesComplete = true
         } else {
             specificAttributesComplete =
                 activeAutomaticStepTemplate &&
@@ -518,30 +556,34 @@ const WorkflowSteps = (props: {
                                     <>
                                         <Tooltip title="Bearbeiten">
                                             <IconButton onClick={() => editStep(step)}>
-                                                <Create />
+                                                <CreateIcon />
                                             </IconButton>
                                         </Tooltip>
                                         <Tooltip title="Kopieren">
                                             <IconButton onClick={() => copyStep(step)}>
-                                                <ContentCopy />
+                                                <ContentCopyIcon />
                                             </IconButton>
                                         </Tooltip>
                                         {!props.workflow.majorsteps.includes(step._id) ? (
                                             <Tooltip title="Zu Hauptschritten hinzufügen">
-                                                <IconButton onClick={() => addToMajorSteps(step._id)}>
-                                                    <StarBorder />
+                                                <IconButton
+                                                    onClick={() => addToMajorSteps(step._id)}
+                                                >
+                                                    <StarBorderIcon />
                                                 </IconButton>
                                             </Tooltip>
                                         ) : (
                                             <Tooltip title="Von Hauptschritten entfernen">
-                                                <IconButton onClick={() => removeMajorStep(step._id)}>
-                                                    <Star />
+                                                <IconButton
+                                                    onClick={() => removeMajorStep(step._id)}
+                                                >
+                                                    <StarIcon />
                                                 </IconButton>
                                             </Tooltip>
                                         )}
                                         <Tooltip title="Entfernen">
                                             <IconButton onClick={() => removeStep(step._id)}>
-                                                <Cancel />
+                                                <CancelIcon />
                                             </IconButton>
                                         </Tooltip>
                                     </>
@@ -573,10 +615,18 @@ const WorkflowSteps = (props: {
                 )}
 
                 <Box sx={{ mt: 2 }} style={{ display: "flex", justifyContent: "space-evenly" }}>
-                    <Button variant="outlined" onClick={() => setShowAddStepsDialog(true)} startIcon={<Add />}>
+                    <Button
+                        variant="outlined"
+                        onClick={() => setShowAddStepsDialog(true)}
+                        startIcon={<AddIcon />}
+                    >
                         Schritte hinzufügen
                     </Button>
-                    <Button variant="outlined" onClick={() => setShowCreateStepDialog(true)} startIcon={<Build />}>
+                    <Button
+                        variant="outlined"
+                        onClick={() => setShowCreateStepDialog(true)}
+                        startIcon={<BuildIcon />}
+                    >
                         Schritt erstellen
                     </Button>
                 </Box>
@@ -609,16 +659,23 @@ const WorkflowSteps = (props: {
                             .map(step => {
                                 return (
                                     <Accordion key={step.assignment.id} variant="outlined">
-                                        <AccordionSummary expandIcon={<ExpandMore />}>
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                             <Typography>{`Workflow: ${step.assignment.name}`}</Typography>
                                         </AccordionSummary>
                                         <AccordionDetails>
                                             <List>
                                                 {step.steps.map(step => (
                                                     <ListItem key={step._id} disablePadding>
-                                                        <ListItemButton onClick={() => handleStepToggle(step)} dense>
+                                                        <ListItemButton
+                                                            onClick={() => handleStepToggle(step)}
+                                                            dense
+                                                        >
                                                             <ListItemIcon>
-                                                                <Checkbox checked={checkedSteps.includes(step)} />
+                                                                <Checkbox
+                                                                    checked={checkedSteps.includes(
+                                                                        step
+                                                                    )}
+                                                                />
                                                             </ListItemIcon>
                                                             <ListItemText
                                                                 primary={step.name}
@@ -638,23 +695,33 @@ const WorkflowSteps = (props: {
                             steps = steps.concat(step.steps)
                         })
                         const matchingSteps = steps.filter(step => {
-                            const sSearchText = [step.name, step.description, step.trigger].join(" ").toUpperCase()
+                            const sSearchText = [step.name, step.description, step.trigger]
+                                .join(" ")
+                                .toUpperCase()
                             return sSearchText.includes(stepCategory.match.toUpperCase())
                         })
                         return (
                             <Accordion key={stepCategory.name} variant="outlined">
-                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                     <Typography>{stepCategory.name}</Typography>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <List>
                                         {matchingSteps.map(step => (
                                             <ListItem key={step._id} disablePadding>
-                                                <ListItemButton onClick={() => handleStepToggle(step)} dense>
+                                                <ListItemButton
+                                                    onClick={() => handleStepToggle(step)}
+                                                    dense
+                                                >
                                                     <ListItemIcon>
-                                                        <Checkbox checked={checkedSteps.includes(step)} />
+                                                        <Checkbox
+                                                            checked={checkedSteps.includes(step)}
+                                                        />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={step.name} secondary={step.description} />
+                                                    <ListItemText
+                                                        primary={step.name}
+                                                        secondary={step.description}
+                                                    />
                                                 </ListItemButton>
                                             </ListItem>
                                         ))}
@@ -664,18 +731,24 @@ const WorkflowSteps = (props: {
                         )
                     })}
                     <Accordion variant="outlined">
-                        <AccordionSummary expandIcon={<ExpandMore />}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                             <Typography>Alle Schritte</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             <List>
                                 {availableStepsFlat.map(step => (
                                     <ListItem key={step._id} disablePadding>
-                                        <ListItemButton onClick={() => handleStepToggle(step)} dense>
+                                        <ListItemButton
+                                            onClick={() => handleStepToggle(step)}
+                                            dense
+                                        >
                                             <ListItemIcon>
                                                 <Checkbox checked={checkedSteps.includes(step)} />
                                             </ListItemIcon>
-                                            <ListItemText primary={step.name} secondary={step.description} />
+                                            <ListItemText
+                                                primary={step.name}
+                                                secondary={step.description}
+                                            />
                                         </ListItemButton>
                                     </ListItem>
                                 ))}
@@ -687,18 +760,24 @@ const WorkflowSteps = (props: {
                     <Button
                         variant="contained"
                         onClick={handleAddSteps}
-                        startIcon={<Add />}
+                        startIcon={<AddIcon />}
                         disabled={!checkedSteps.length}
                     >
                         Hinzufügen
                     </Button>
-                    <Button variant="outlined" onClick={handleCancelSteps} startIcon={<Cancel />}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleCancelSteps}
+                        startIcon={<CancelIcon />}
+                    >
                         Abbrechen
                     </Button>
                 </DialogActions>
             </Dialog>
             <Dialog onClose={handleCreateCancelSteps} open={showCreateStepDialog}>
-                <DialogTitle>{stepTemplate._id ? "Schritt bearbeiten" : "Schritt erstellen"}</DialogTitle>
+                <DialogTitle>
+                    {stepTemplate._id ? "Schritt bearbeiten" : "Schritt erstellen"}
+                </DialogTitle>
                 <DialogContent sx={{ width: 600 }}>
                     <FormControl fullWidth>
                         <div style={{ display: "flex", justifyContent: "center" }}>
@@ -738,12 +817,16 @@ const WorkflowSteps = (props: {
                     <Button
                         variant="contained"
                         onClick={handleCreateStep}
-                        startIcon={stepTemplate._id ? <Build /> : <Create />}
+                        startIcon={stepTemplate._id ? <BuildIcon /> : <CreateIcon />}
                         disabled={!checkCreateStepCompletion()}
                     >
                         {stepTemplate._id ? "Bearbeiten" : "Erstellen"}
                     </Button>
-                    <Button variant="outlined" onClick={handleCreateCancelSteps} startIcon={<Cancel />}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleCreateCancelSteps}
+                        startIcon={<CancelIcon />}
+                    >
                         Abbrechen
                     </Button>
                 </DialogActions>

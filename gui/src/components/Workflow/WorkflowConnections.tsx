@@ -1,5 +1,9 @@
 import { Step, Workflow } from "@intutable/process-manager/dist/types"
-import { Add, ExpandMore, LinkOff, AddLink, Cancel } from "@mui/icons-material"
+import AddIcon from "@mui/icons-material/Add"
+import AddLinkIcon from "@mui/icons-material/AddLink"
+import CancelIcon from "@mui/icons-material/Cancel"
+import LinkOffIcon from "@mui/icons-material/LinkOff"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import {
     Typography,
     Divider,
@@ -24,7 +28,10 @@ import {
 } from "@mui/material"
 import { useState } from "react"
 
-const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow: Workflow) => void }) => {
+const WorkflowConnections = (props: {
+    workflow: Workflow
+    setWorkflow: (workflow: Workflow) => void
+}) => {
     // --- States ---
     const [showAddConnectionDialog, setShowAddConnectionDialog] = useState(false)
     const [newConnection, setNewConnection] = useState({
@@ -35,7 +42,9 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
     const removeConnectionStep = (sourceStepId: string, destinationStepId: string) => {
         const existingConnections = props.workflow.connections
         const sourceStepConnections = existingConnections[sourceStepId]
-        const remainingConnections = sourceStepConnections.filter(stepId => stepId !== destinationStepId)
+        const remainingConnections = sourceStepConnections.filter(
+            stepId => stepId !== destinationStepId
+        )
 
         if (remainingConnections.length > 0) {
             props.setWorkflow({
@@ -92,14 +101,18 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                 <Divider sx={{ mb: 2 }} />
                 {Object.keys(props.workflow.connections).length > 0 ? (
                     Object.keys(props.workflow.connections).map(sourceStepId => {
-                        const sourceStep = props.workflow.steps.find(step => step._id === sourceStepId) as Step
+                        const sourceStep = props.workflow.steps.find(
+                            step => step._id === sourceStepId
+                        ) as Step
                         const destinationSteps = props.workflow.connections[sourceStepId].map(
                             destinationStepId =>
-                                props.workflow.steps.find(step => step._id === destinationStepId) as Step
+                                props.workflow.steps.find(
+                                    step => step._id === destinationStepId
+                                ) as Step
                         )
                         return (
                             <Accordion key={sourceStepId} variant="outlined">
-                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                     <Typography>{sourceStep.name}</Typography>
                                 </AccordionSummary>
                                 <AccordionDetails>
@@ -119,7 +132,7 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                                                             }
                                                             edge="end"
                                                         >
-                                                            <LinkOff />
+                                                            <LinkOffIcon />
                                                         </IconButton>
                                                     </Tooltip>
                                                 }
@@ -154,23 +167,29 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                                                             {props.workflow.steps
                                                                 .filter(step => {
                                                                     const isSourceStep =
-                                                                        step._id === newConnection.sourceStepId
+                                                                        step._id ===
+                                                                        newConnection.sourceStepId
 
                                                                     if (isSourceStep) {
                                                                         return false
                                                                     }
                                                                     const doesExist = !!(
                                                                         props.workflow.connections[
-                                                                            newConnection.sourceStepId
+                                                                            newConnection
+                                                                                .sourceStepId
                                                                         ] &&
                                                                         props.workflow.connections[
-                                                                            newConnection.sourceStepId
+                                                                            newConnection
+                                                                                .sourceStepId
                                                                         ].includes(step._id)
                                                                     )
                                                                     return !doesExist
                                                                 })
                                                                 .map(step => (
-                                                                    <MenuItem key={step._id} value={step._id}>
+                                                                    <MenuItem
+                                                                        key={step._id}
+                                                                        value={step._id}
+                                                                    >
                                                                         {step.name} ({step._id})
                                                                     </MenuItem>
                                                                 ))}
@@ -184,7 +203,7 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                                                         sx={{ mt: 2 }}
                                                     >
                                                         <Button
-                                                            startIcon={<Add />}
+                                                            startIcon={<AddIcon />}
                                                             onClick={handleAddConnection}
                                                             disabled={
                                                                 !(
@@ -196,7 +215,7 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                                                             Hinzufügen
                                                         </Button>
                                                         <Button
-                                                            startIcon={<Cancel />}
+                                                            startIcon={<CancelIcon />}
                                                             onClick={() => {
                                                                 setNewConnection({
                                                                     sourceStepId: "",
@@ -218,7 +237,7 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                                                             ["sourceStepId"]: sourceStep._id,
                                                         })
                                                     }}
-                                                    startIcon={<Add />}
+                                                    startIcon={<AddIcon />}
                                                 >
                                                     Verbindung hinzufügen
                                                 </Button>
@@ -239,7 +258,7 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                         sx={{ mt: 2 }}
                         variant="outlined"
                         onClick={() => setShowAddConnectionDialog(true)}
-                        startIcon={<AddLink />}
+                        startIcon={<AddLinkIcon />}
                         disabled={props.workflow.steps.length < 2}
                     >
                         Verbindung hinzufügen
@@ -285,8 +304,12 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                                             return false
                                         }
                                         const doesExist = !!(
-                                            props.workflow.connections[newConnection.sourceStepId] &&
-                                            props.workflow.connections[newConnection.sourceStepId].includes(step._id)
+                                            props.workflow.connections[
+                                                newConnection.sourceStepId
+                                            ] &&
+                                            props.workflow.connections[
+                                                newConnection.sourceStepId
+                                            ].includes(step._id)
                                         )
                                         return !doesExist
                                     })
@@ -303,12 +326,16 @@ const WorkflowConnections = (props: { workflow: Workflow; setWorkflow: (workflow
                     <Button
                         variant="contained"
                         onClick={handleAddConnection}
-                        startIcon={<Add />}
+                        startIcon={<AddIcon />}
                         disabled={!(newConnection.sourceStepId && newConnection.destinationStepId)}
                     >
                         Hinzufügen
                     </Button>
-                    <Button variant="outlined" onClick={handleCancelConnection} startIcon={<Cancel />}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleCancelConnection}
+                        startIcon={<CancelIcon />}
+                    >
                         Abbrechen
                     </Button>
                 </DialogActions>
