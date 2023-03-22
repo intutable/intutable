@@ -16,9 +16,20 @@ const WorkflowInfo = (props: {
 }) => {
     // --- Functions ---
     const handleChange = (evt: { target: { name: string; value: unknown } }) => {
+        const name = evt.target.name
+        let value = evt.target.value
+
+        if (name === "owner" && typeof value === "string") {
+            if (value === "") {
+                value = null
+            } else {
+                value = parseInt(value)
+            }
+        }
+
         props.setWorkflow({
             ...props.workflow,
-            [evt.target.name]: evt.target.value,
+            [name]: value,
         })
     }
     return (

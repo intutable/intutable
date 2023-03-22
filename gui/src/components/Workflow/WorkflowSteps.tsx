@@ -190,7 +190,15 @@ const WorkflowSteps = (props: {
     }
     const handleChange = (evt: { target: { name: string; value: unknown } }) => {
         const name = evt.target.name
-        const value = evt.target.value
+        let value = evt.target.value
+
+        if (name === "responsible" && typeof value === "string") {
+            if (value === "") {
+                value = null
+            } else {
+                value = parseInt(value)
+            }
+        }
 
         setStepTemplate({
             ...stepTemplate,
@@ -347,7 +355,7 @@ const WorkflowSteps = (props: {
                             variant="outlined"
                             name="responsible"
                             type="number"
-                            value={stepTemplate.responsible || ""}
+                            value={stepTemplate.responsible}
                             onChange={handleChange}
                             InputProps={{
                                 inputProps: { min: 0 },
@@ -521,7 +529,7 @@ const WorkflowSteps = (props: {
         let specificAttributesComplete
 
         if (stepTemplate.type === StepType.Manual) {
-            specificAttributesComplete = !!stepTemplate.responsible
+            specificAttributesComplete = true
         } else {
             specificAttributesComplete =
                 activeAutomaticStepTemplate &&
