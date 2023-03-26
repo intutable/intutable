@@ -92,7 +92,9 @@ export class ClipboardUtil implements ClipboardEvents {
                 return targetRow
             }
 
-            throw new Error("update this code")
+            if (targetColumn.kind !== "standard") {
+                throw new Error("In die ausgewählte Spalte kann nicht kopiert werden.")
+            }
 
             callback?.()
             return {
