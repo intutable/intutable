@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "@intutable/core": "^0.1.6",
-        "@intutable/database": "^4.0.0",
+        "@intutable/database": "4.0.0",
         "@intutable/http": "^0.2.0",
         "@intutable/http-cors": "^0.1.0",
         "@intutable/lazy-views": "^7.0.0",
