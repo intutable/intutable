@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "@intutable/core": "^0.1.6",
-        "@intutable/database": "^4.0.0",
+        "@intutable/database": "4.0.0",
         "@intutable/http": "^0.2.0",
         "@intutable/http-cors": "^0.1.0",
         "@intutable/lazy-views": "^7.0.0",
@@ -40,6 +40,7 @@
     },
     "devDependencies": {
         "@types/jest": "^27.4.1",
+        "@types/uuid": "^9.0.1",
         "@typescript-eslint/eslint-plugin": "^5.10.2",
         "cross-env": "^7.0.3",
         "eslint": "^8.18.0",

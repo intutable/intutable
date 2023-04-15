@@ -52,10 +52,9 @@ async function main() {
         if (project_count.length === 0) {
             await createExampleSchema(connId, PM_ROLE_ID)
             await insertExampleData(connId)
-            console.log("set up example schema")
+            console.log("no projects found, set up example schema")
         } else {
-            console.log("admin user already present")
-            console.log("skipped creating example schema")
+            console.log("projects found, skipped creating example schema")
         }
     } finally {
         await core().events.request(closeConnection(connId))
