@@ -12,7 +12,7 @@ import {
     ListItemText,
     Typography,
 } from "@mui/material"
-import { PostAdd } from "@mui/icons-material"
+import PostAddIcon from "@mui/icons-material/PostAdd"
 import { NotificationItem } from "@intutable/process-manager/dist/types"
 import { useWorkflow } from "hooks/useWorkflow"
 
@@ -72,7 +72,7 @@ const NotificationCard = (props: { type: string }) => {
                                                 {" "}
                                                 {/* TODO: onclick */}
                                                 <ListItemIcon>
-                                                    <PostAdd />
+                                                    <PostAddIcon />
                                                 </ListItemIcon>
                                                 <ListItemText
                                                     primary={item.workflow}

@@ -16,7 +16,10 @@ import {
  * to determine the current workflow.
  */
 export const useWorkflow = () => {
-    const doWorkflowStep = async (trigger?: string, workflowIds?: string | string[]): Promise<string[]> => {
+    const doWorkflowStep = async (
+        trigger?: string,
+        workflowIds?: string | string[]
+    ): Promise<string[]> => {
         return await fetcher({
             url: "/api/workflow",
             method: "PATCH",
@@ -61,7 +64,9 @@ export const useWorkflow = () => {
      *     ...
      * ]
      */
-    const getWorkflowProgress = async (workflowId: string): Promise<{ name: string; state: ProcessState }[]> => {
+    const getWorkflowProgress = async (
+        workflowId: string
+    ): Promise<{ name: string; state: ProcessState }[]> => {
         return await fetcher({
             url: "/api/workflow",
             method: "POST",
@@ -72,7 +77,10 @@ export const useWorkflow = () => {
         })
     }
 
-    const manipulateWorkflowState = async (workflowId: string, method: string): Promise<PMResponse> => {
+    const manipulateWorkflowState = async (
+        workflowId: string,
+        method: string
+    ): Promise<PMResponse> => {
         return await fetcher({
             url: "/api/workflow",
             method: "POST",
