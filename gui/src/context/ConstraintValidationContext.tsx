@@ -141,7 +141,7 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         setSuppressRowChange(state.isRunning)
     }, [setSuppressRowChange, state.isRunning])
 
-    // main effect
+    // main effect that automatically triggers validation cycles
     useEffect(() => {
         if (
             !userSettings ||

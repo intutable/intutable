@@ -1,7 +1,7 @@
 import { InputMask } from "@shared/input-masks/types"
 import { useSnacki } from "hooks/useSnacki"
 import { useView } from "hooks/useView"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Row } from "types"
 import { useInputMask } from "hooks/useInputMask"
 
@@ -28,9 +28,6 @@ const initialState: RowMaskContextProps = {
 const RowMaskContext = React.createContext<RowMaskContextProps>(initialState)
 
 export const useRowMask = () => React.useContext(RowMaskContext)
-
-// TODO: implement event bus
-export const useRowMaskObserver = () => {}
 
 type RowMaskProviderProps = {
     row?: { _id: Row["_id"] }
@@ -95,4 +92,32 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
             {props.children}
         </RowMaskContext.Provider>
     )
+}
+
+/** Subscribe to events emitted on the row mask context. */
+export const useRowMaskObserver = () => {
+    const previousRowState = useRef()
+    const previousInputMaskState = useRef()
+
+    const { row, inputMask } = useRowMask()
+
+    useEffect(() => {}, [])
+
+    /**
+     * events
+     *
+     * -- row based --
+     * row mask opened
+     * row mask closed
+     * row inside the row mask changed
+     *
+     * -- input mask based --
+     * input mask applied
+     * input mask unmounted
+     * input mask changed to different input mask
+     */
+
+    return {
+        on: {},
+    }
 }
