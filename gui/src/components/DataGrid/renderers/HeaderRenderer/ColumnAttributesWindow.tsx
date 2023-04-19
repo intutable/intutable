@@ -8,6 +8,9 @@ import {
     ListItemText,
     MenuItem,
 } from "@mui/material"
+import { useLockedColumns } from "context/LockedColumnsContext"
+import { useColumn } from "hooks/useColumn"
+import { useView } from "hooks/useView"
 import React, { useState } from "react"
 import { HeaderRendererProps } from "react-data-grid"
 import { Column, Row } from "types"
@@ -21,6 +24,14 @@ type ColumnAttributesWindowProps = {
 export const ColumnAttributesWindow: React.FC<ColumnAttributesWindowProps> = props => {
     const { open, onClose, column } = props
 
+    const { data: view } = useView()
+    const original = view?.columns.find(c => c.id === column.id)
+    if (!original) return <>Fehler</>
+    const nonLockedColumn: Column.Serialized = {
+        ...column,
+        resizable: original.resizable,
+    }
+
     return (
         <Dialog open={open} onClose={() => onClose()}>
             <DialogTitle>Eigenschaften</DialogTitle>
@@ -31,7 +42,7 @@ export const ColumnAttributesWindow: React.FC<ColumnAttributesWindowProps> = pro
                 <Property.Editable column={column} />
                 <Property.Sortable column={column} />
                 <Property.Frozen column={column} />
-                <Property.Resizable column={column} />
+                <Property.Resizable column={nonLockedColumn} />
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => onClose()}>Schließen</Button>

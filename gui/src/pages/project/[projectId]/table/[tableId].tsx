@@ -16,6 +16,7 @@ import MetaTitle from "components/MetaTitle"
 import { TableNavigator } from "components/TableNavigator"
 import { ViewNavigator } from "components/ViewNavigator"
 import { HeaderSearchFieldProvider, useHeaderSearchField } from "context"
+import { LockedColumnsProvider, useLockedColumns } from "context/LockedColumnsContext"
 
 import { RowMaskProvider } from "context/RowMaskContext"
 import { SelectedRowsContextProvider, useSelectedRows } from "context/SelectedRowsContext"
@@ -39,6 +40,8 @@ import { withSSRCatch } from "utils/withSSRCatch"
 const TablePage: React.FC = () => {
     const theme = useTheme()
     const { snackError, snack } = useSnacki()
+
+    const { mergeWithLocked } = useLockedColumns()
 
     const { selectedRows, setSelectedRows } = useSelectedRows()
     const { cellNavigationMode } = useCellNavigation()
@@ -114,10 +117,10 @@ const TablePage: React.FC = () => {
                         <DataGrid
                             className={"rdg-" + theme.palette.mode + " fill-grid"}
                             rows={data.rows}
-                            columns={[
+                            columns={mergeWithLocked([
                                 SelectColumn,
                                 ...data.columns.filter(column => column.hidden !== true),
-                            ]}
+                            ])}
                             components={{
                                 // noRowsFallback: <NoRowsFallback />, // BUG: does not work with columns but no rows bc css
                                 rowRenderer: RowRenderer,
@@ -191,7 +194,9 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
                     }
                     initialAppliedInputMask={props.inputMask}
                 >
-                    <TablePage />
+                    <LockedColumnsProvider>
+                        <TablePage />
+                    </LockedColumnsProvider>
                 </RowMaskProvider>
             </HeaderSearchFieldProvider>
         </SelectedRowsContextProvider>
