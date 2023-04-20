@@ -43,16 +43,17 @@ const ManageWorkflowsPage: React.FC = () => {
                         sx={{
                             color: "primary.main",
                         }}
-                    ></InfoOutlinedIcon>
+                    />
                 </a>
             </Grid>
             <Box sx={{ width: 600, display: "block", marginLeft: "auto", marginRight: "auto" }}>
-                <Typography variant={"h4"} align="center">
+                <Typography variant={"h4"} align="center" gutterBottom>
                     Prozessverwaltung
                 </Typography>
+
                 <Divider />
 
-                <Box sx={{ mt: 2, display: "flex", justifyContent: "space-evenly" }}>
+                <Box sx={{ mt: 6, display: "flex", justifyContent: "space-evenly" }}>
                     <Card sx={{ maxWidth: 250 }} onClick={() => handleCardClick("activeWorkflows")}>
                         <CardActionArea>
                             <CardContent>

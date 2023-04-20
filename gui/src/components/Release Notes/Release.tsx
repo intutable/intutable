@@ -1,4 +1,5 @@
-import { Box, Button, Chip, Stack, Typography, Paper, Container, useTheme } from "@mui/material"
+import { Box, Button, Chip, Stack, Typography, Paper, Container } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
 import { VersionTag } from "types/VersionTag"

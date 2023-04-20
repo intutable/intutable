@@ -1,18 +1,19 @@
-import { IfCtorMap } from "@shared/constraints/ifs/"
+import { ViewData } from "@intutable/lazy-views"
 import { DoCtorMap } from "@shared/constraints/dos"
-import { ConditionIterIter } from "@shared/constraints/util/ConstraintStore"
+import { LogItem } from "@shared/constraints/dos/Log"
+import { IfCtorMap } from "@shared/constraints/ifs/"
 import type { AppContext } from "@shared/constraints/util/AppContext"
-import { Mismatch } from "@shared/constraints/util/Mismatch"
+import { ConditionIterIter } from "@shared/constraints/util/ConstraintStore"
+import { DoObjectNotation } from "@shared/constraints/util/ObjectNotation"
 import { UNSAFE_ViewData } from "@shared/input-masks"
+import { InputMask } from "@shared/input-masks/types"
 import { useAPI } from "hooks/useAPI"
 import { useInputMask } from "hooks/useInputMask"
 import { useSnacki } from "hooks/useSnacki"
 import { useUserSettings } from "hooks/useUserSettings"
 import { useView } from "hooks/useView"
-import React, { useEffect, useMemo, useReducer, useRef, useState } from "react"
-import { Row } from "types"
+import React, { useEffect, useMemo, useReducer, useState } from "react"
 import { useRowMask } from "./RowMaskContext"
-import { DoObjectNotation } from "@shared/constraints/util/ObjectNotation"
 // import hash from "stable-hash"
 
 // const compare = (a: Row, b: Row) => hash(a) === hash(b)
@@ -21,7 +22,7 @@ type ValidationReport = {
     /** Constraints that not passed */
     failed: string[]
     /** All mismatches by constraints that not passed and registered debug mismatches */
-    mismatches: (Mismatch & { constraint: string })[]
+    log: LogItem[]
     succeeded: string[]
     /** If an error occured during validation  */
     interrupted: string[]
@@ -126,41 +127,54 @@ type ConstraintValidationProviderProps = {
 }
 
 export const ConstraintValidationProvider: React.FC<ConstraintValidationProviderProps> = props => {
-    const { snackError, snackWarning, closeSnackbar } = useSnacki()
+    const { snackError, snackWarning, closeSnackbar, snackInfo } = useSnacki()
     const { userSettings } = useUserSettings()
-    const { currentInputMask } = useInputMask()
     const { props: contextProps } = useAppContextState()
-    const { rowMaskState, setSuppressRowChange } = useRowMask()
+    const { setSuppressRowChange, row, inputMask } = useRowMask()
 
     // state
     const [state, dispatch] = useReducer(reducer, initialValidationState)
     const [loading, setLoading] = useState<boolean>(true)
 
     const [test, setTest] = useState(false)
-    console.log("test:", test)
-
-    const _validate = () => {}
 
     // disallow changing row when running
     useEffect(() => {
         setSuppressRowChange(state.isRunning)
     }, [setSuppressRowChange, state.isRunning])
 
-    // useEffect(() => {
-    //     // if some data in contextProps was changed AND `state.finished === true`
-    //     // then reset the statet
-    //     dispatch({ type: "reset", payload: null })
-    // }, [contextProps])
+    // main effect that automatically triggers validation cycles
+    useEffect(() => {
+        if (
+            !userSettings ||
+            userSettings.constraintValidation === "never" ||
+            !inputMask ||
+            !row ||
+            !contextProps
+        )
+            return
+        else {
+            setLoading(false)
+        }
 
-    const validate = async () => {
+        if (state.finished) {
+            dispatch({ type: "reset", payload: null })
+        }
+
+        runValidationCycle()
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [row]) // TODO finally refactor rowMaskState and add listeners
+
+    const runValidationCycle = async () => {
         if (state.isRunning) {
             return
         }
         if (
             !userSettings ||
             userSettings.constraintValidation === "never" ||
-            currentInputMask === null ||
-            rowMaskState.mode === "closed" ||
+            !inputMask ||
+            !row ||
             !contextProps
         )
             return
@@ -168,7 +182,7 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         dispatch({
             type: "startValidation",
             payload: {
-                constraints: currentInputMask.constraints.length,
+                constraints: inputMask.constraints.length,
             },
         })
 
@@ -176,12 +190,12 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
             succeeded: [],
             failed: [],
             interrupted: [],
-            mismatches: [],
+            log: [],
             time: 0,
         }
         const begin = new Date()
 
-        for await (const [index, constraint] of currentInputMask.constraints.entries()) {
+        for await (const [index, constraint] of inputMask.constraints.entries()) {
             try {
                 const conditions = Array.from(new ConditionIterIter(constraint.conditions))
                 const node = conditions[0]
@@ -195,7 +209,9 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                 const ifCtor = IfCtorMap.get(node.__ctor)
                 if (!ifCtor) throw new Error(`No ctor for ${node.__ctor}`)
 
-                const instance = node.__props ? new ifCtor(...node.__props) : new ifCtor() // BUG: probably a bug in here, see `Timeout.ts`
+                const instance = node.__props
+                    ? new ifCtor(...Object.values(node.__props))
+                    : new ifCtor() // BUG: probably a bug in here, see `Timeout.ts`
                 const passed = await instance.validate(contextProps)
 
                 if (passed) {
@@ -205,9 +221,17 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                         dos.forEach(exec => {
                             const doCtor = DoCtorMap.get(exec.__ctor)
                             if (!doCtor) throw new Error(`No ctor for ${node.__ctor}`)
-                            const instance = new doCtor()
+                            const instance = exec.__props
+                                ? new doCtor(...Object.values(exec.__props))
+                                : new doCtor() // TODO: inject props
                             instance.execute({
                                 setTest,
+                                snackInfo(message: string) {
+                                    snackInfo(message)
+                                },
+                                log(log: LogItem) {
+                                    report.log = [...report.log, log]
+                                },
                             })
                         })
                         // throw new Error("Not Implemented")
@@ -215,9 +239,10 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                     report.succeeded = [...report.succeeded, constraint.name]
                 } else {
                     // constraint failed (mismatch), show debug instructions to the user
+                    /** @deprecated */
                     if (constraint.debugMessage)
-                        report.mismatches = [
-                            ...report.mismatches,
+                        report.log = [
+                            ...report.log,
                             { ...constraint.debugMessage, constraint: constraint.name },
                         ]
 
@@ -251,35 +276,12 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
         })
     }
 
-    useEffect(() => {
-        setLoading(true) // TODO: <- is this correct
-        if (
-            !userSettings ||
-            userSettings.constraintValidation === "never" ||
-            currentInputMask === null ||
-            rowMaskState.mode === "closed" ||
-            !contextProps
-        )
-            return
-
-        setLoading(false) // TODO: where to put this?
-
-        // begin validation
-        // call validation
-        if (state.finished) {
-            dispatch({ type: "reset", payload: null })
-        }
-        validate()
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [rowMaskState])
-
     return (
         <ConstraintValidationContext.Provider
             value={{
                 state,
                 loading,
-                validate: _validate,
+                validate: runValidationCycle,
             }}
         >
             {props.children}
@@ -288,38 +290,29 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
 }
 
 export const useAppContextState = () => {
-    const { project, table, view } = useAPI()
+    const { project, table } = useAPI()
     const { data } = useView()
     const { userSettings } = useUserSettings()
-    const { rowMaskState } = useRowMask()
+    const { row } = useRowMask()
     const { currentInputMask } = useInputMask()
 
     const props: AppContext.State | null = useMemo(() => {
-        if (
-            !project ||
-            !table ||
-            !view ||
-            !data ||
-            !userSettings ||
-            !currentInputMask ||
-            rowMaskState.mode === "closed"
-        )
-            return null
+        if (!project || !table || !data || !userSettings || !currentInputMask || !row) return null
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { inputMasks, ...viewData } = data as unknown as UNSAFE_ViewData
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { constraints, ...inputMask } = currentInputMask
-        const row = data.rows.find(r => r._id === rowMaskState.row._id)
-        if (!row) throw new Error("Row not found")
+        if (!row) throw new Error("Row mask not open")
 
         return {
             project,
             table,
-            view,
-            inputMask,
-            data: viewData,
-            currentRecord: row,
+            view: data as unknown as ViewData,
+            inputMask: inputMask as InputMask,
+            record: row,
         }
-    }, [currentInputMask, data, project, rowMaskState, table, userSettings, view])
+    }, [currentInputMask, data, project, row, table, userSettings])
 
     return {
         props,

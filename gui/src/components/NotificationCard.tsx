@@ -48,9 +48,10 @@ const NotificationCard = (props: { type: string }) => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
     return (
         <>
-            <Card sx={{ maxWidth: 500, m: 2 }}>
+            <Card sx={{ maxWidth: "500px" }}>
                 {isDeansOffice() && <CardHeader title="ToDos" subheader="Sekretariatsansicht" />}
                 {isProfessor() && <CardHeader title="ToDos" subheader="Professoransicht" />}
                 <CardContent>
@@ -89,7 +90,7 @@ const NotificationCard = (props: { type: string }) => {
                                 })
                             ) : (
                                 <ListItem>
-                                    <ListItemText primary={"Aktuell gibt es keine ToDos."} />
+                                    <ListItemText primary={"Aktuell gibt es keine ToDos 🥳."} />
                                 </ListItem>
                             )}
                         </List>

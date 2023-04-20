@@ -19,7 +19,7 @@ const GET = withCatchingAPIRoute(async (req, res) => {
 
     let recreationTries = 0
 
-    const get = async () => {
+    const get = async (): Promise<UserSettings> => {
         const settings_serialized = await withReadWriteConnection(user, async sessionID =>
             coreRequest<string>(getUserSettings(sessionID, user.id), user.authCookie)
         )
@@ -31,14 +31,15 @@ const GET = withCatchingAPIRoute(async (req, res) => {
                 : settings_serialized
             // case: not created yet
             if (result.length === 0) throw new UserSettings_NoDBDocumentYetCreated()
-            return res.status(200).json(result[0].settings)
+            return result[0].settings
         } else {
             throw new Error("Could not get the user's settings")
         }
     }
 
     try {
-        await get()
+        const settings = await get()
+        return res.status(200).json(settings)
     } catch (error) {
         // user's settings row not yet created
         if (error instanceof UserSettings_NoDBDocumentYetCreated) {
@@ -53,7 +54,8 @@ const GET = withCatchingAPIRoute(async (req, res) => {
                     user.authCookie
                 )
 
-                return await get()
+                const settings = await get()
+                return res.status(200).json(settings)
             })
         }
 
@@ -79,7 +81,7 @@ const PATCH = withCatchingAPIRoute(async (req, res) => {
         )
     )
 
-    res.status(200).send({})
+    res.status(200).json(update)
 })
 
 export default withSessionRoute(

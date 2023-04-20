@@ -1,5 +1,6 @@
 import Expand from "@mui/icons-material/ExpandMore"
-import { alpha, Box, Divider, List, ListSubheader, Paper, Stack, Typography } from "@mui/material"
+import { Box, Divider, List, ListSubheader, Paper, Stack, Typography } from "@mui/material"
+import { alpha } from "@mui/system"
 import { useTheme } from "@mui/material/styles"
 import { useState } from "react"
 

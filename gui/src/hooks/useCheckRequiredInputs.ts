@@ -1,10 +1,9 @@
 import { InputMask } from "@shared/input-masks/types"
 import { isColumnIdOrigin } from "@shared/input-masks/utils"
 import { useRowMask } from "context/RowMaskContext"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { Row } from "types"
 import { Column } from "types/tables/rdg"
-import { useInputMask } from "./useInputMask"
 import { useView } from "./useView"
 
 const getRequiredInputsInInputMask = (inputMask: InputMask, columns: Column[]): Column[] =>
@@ -47,8 +46,7 @@ export const checkRequiredInputs = (
 }
 
 export const useCheckRequiredInputs = () => {
-    const { currentInputMask } = useInputMask()
-    const { rowMaskState } = useRowMask()
+    const { row, inputMask } = useRowMask()
     const { data: view } = useView()
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -56,13 +54,9 @@ export const useCheckRequiredInputs = () => {
 
     const missingInputs = useMemo(() => {
         // try {
-        if (currentInputMask && rowMaskState.mode === "edit") {
+        if (inputMask && row && view) {
             // setIsLoading(true)
-            if (view == null) throw new Error("Could not load view when checking required inputs.")
-            const row = view.rows.find(row => row._id === rowMaskState.row._id)
-            if (row == null) throw new Error("Could not find row when checking required inputs.")
-
-            return checkRequiredInputs(currentInputMask, row, view.columns)
+            return checkRequiredInputs(inputMask, row, view.columns)
         } else return []
         // } catch (error) {
         //     setError(error as Error)
@@ -70,7 +64,7 @@ export const useCheckRequiredInputs = () => {
         // } finally {
         //     setIsLoading(false)
         // }
-    }, [currentInputMask, rowMaskState, view])
+    }, [inputMask, row, view])
 
     return {
         isValid: missingInputs.length === 0,

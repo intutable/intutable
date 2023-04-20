@@ -1,6 +1,7 @@
 import { IfObjectNotation } from "./ObjectNotation"
 import { JSONizable } from "./JSONizable"
 import { AppContext } from "./AppContext"
+import { CallingConstraint } from "./Constraint"
 
 /**
  * Interface for all If-Constructors
@@ -14,6 +15,7 @@ import { AppContext } from "./AppContext"
  * into the constructor later and `validate` was called again.
  */
 export interface If extends JSONizable<IfObjectNotation> {
+    caller: CallingConstraint
     toJSON(): IfObjectNotation
     validate(props: AppContext.State): boolean | Promise<boolean>
 }

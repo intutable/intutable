@@ -79,7 +79,7 @@ export const ConstraintValidationButton: React.FC = () => {
         state.finished &&
         (state.report!.failed.length > 0 ||
             state.report!.interrupted.length > 0 ||
-            state.report!.mismatches.length > 0)
+            state.report!.log.length > 0)
     )
         return (
             <Tooltip

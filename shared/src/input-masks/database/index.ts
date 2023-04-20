@@ -14,4 +14,4 @@ const cache: InputMask[] = [
 ]
 
 /** Get all input masks */
-export const getAll = () => cache as unknown as InputMask[]
+export const getAll = () => cache.filter(mask => mask.active)

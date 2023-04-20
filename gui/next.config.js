@@ -7,26 +7,32 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 /** @type {import('next').NextConfig} */
 module.exports = withBundleAnalyzer({
     reactStrictMode: true,
-    // compress: true,
     serverRuntimeConfig: {
         ironAuthSecret: process.env.IRON_AUTH_SECRET,
     },
     // publicRuntimeConfig: {},
-    // swcMinify: true, // experimental – does not work
     eslint: {
         dirs: ["src"],
         ignoreDuringBuilds: true,
     },
     compiler: { removeConsole: false },
-    // experimental: {
-    // should improve the mui imports but does not work yet
-    // modularizeImports: {
-    //     "@mui/material/?(((\\w*)?/?)*)": {
-    //         transform: "@mui/material/{{ matches.[1] }}/{{member}}",
-    //     },
-    //     "@mui/icons-material/?(((\\w*)?/?)*)": {
-    //         transform: "@mui/icons-material/{{ matches.[1] }}/{{member}}",
-    //     },
-    // },
-    // },
+    // swcMinify: true, // <- somehow increases the first load
+    experimental: {
+        modularizeImports: {
+            // components
+            "@mui/material": {
+                transform: "@mui/material/{{member}}",
+            },
+            // "@mui/material/?(((\\w*)?/?)*)": {
+            //     transform: "@mui/material/{{ matches.[1] }}/{{member}}",
+            // },
+            // icons
+            "@mui/icons-material": {
+                transform: "@mui/icons-material/{{member}}",
+            },
+            // "@mui/icons-material/?(((\\w*)?/?)*)": {
+            //     transform: "@mui/icons-material/{{ matches.[1] }}/{{member}}",
+            // },
+        },
+    },
 })

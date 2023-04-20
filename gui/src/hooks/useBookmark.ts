@@ -1,12 +1,11 @@
 import { cellMap } from "@datagrid/Cells"
-import { Column } from "types"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { useRowMask } from "context/RowMaskContext"
 import { useAPI } from "hooks/useAPI"
 import { useView } from "hooks/useView"
 import { Row, TableDescriptor, ViewDescriptor } from "types"
 import { UrlObject } from "url"
 import { useUserSettings } from "./useUserSettings"
-import { useRowMask } from "context/RowMaskContext"
 
 export type Bookmark = {
     project: ProjectDescriptor
@@ -20,7 +19,7 @@ export type Bookmark = {
 export const useBookmark = () => {
     const { project, table, view } = useAPI()
     const { data } = useView()
-    const { appliedInputMask } = useRowMask()
+    const { inputMask } = useRowMask()
     const { userSettings, changeUserSetting } = useUserSettings()
 
     const isBookmarked = (row: { _id: number }): Bookmark | null => {
@@ -47,7 +46,7 @@ export const useBookmark = () => {
             query: {
                 viewId: view.id,
                 record: props.row._id,
-                ...(appliedInputMask && { inputMask: appliedInputMask }),
+                ...(inputMask && { inputMask: inputMask.id }),
             },
         }
 

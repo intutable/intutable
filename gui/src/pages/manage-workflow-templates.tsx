@@ -97,12 +97,12 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Box sx={{ width: 800, display: "block", marginLeft: "auto", marginRight: "auto" }}>
-                <Typography variant={"h4"} align="center">
-                    Verwaltung der Prozessvorlagen
+                <Typography variant={"h4"} align="center" gutterBottom>
+                    Prozessvorlagen
                 </Typography>
                 <Divider />
 
-                <Box sx={{ m: 2 }}>
+                <Box sx={{ m: 6 }}>
                     {!workflowTemplates.length ? (
                         <Typography variant={"body1"} align="center">
                             Keine Prozessvorlagen verfügbar.
@@ -133,6 +133,7 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                                                                 activeWorkflow
                                                             )
                                                         }
+                                                        size="small"
                                                     />
                                                 </Tooltip>
                                                 <Tooltip title="Bearbeiten">
@@ -140,8 +141,9 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                                                         onClick={() =>
                                                             handleEditClick(workflow._id)
                                                         }
+                                                        size="small"
                                                     >
-                                                        <EditIcon />
+                                                        <EditIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Kopieren">
@@ -149,8 +151,9 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                                                         onClick={() =>
                                                             handleCopyClick(workflow._id)
                                                         }
+                                                        size="small"
                                                     >
-                                                        <ContentCopyIcon />
+                                                        <ContentCopyIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Löschen">
@@ -158,8 +161,10 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                                                         onClick={() =>
                                                             handleDeleteClick(workflow._id)
                                                         }
+                                                        size="small"
+                                                        color="error"
                                                     >
-                                                        <DeleteIcon />
+                                                        <DeleteIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             </>
@@ -175,7 +180,7 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                         </List>
                     )}
                 </Box>
-                <Box sx={{ mt: 2 }} style={{ display: "flex", justifyContent: "center" }}>
+                <Box sx={{ mt: 6 }} style={{ display: "flex", justifyContent: "center" }}>
                     <Button
                         variant="outlined"
                         onClick={() => {

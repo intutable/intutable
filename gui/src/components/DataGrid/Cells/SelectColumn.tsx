@@ -15,16 +15,13 @@ import { useRowMask } from "context/RowMaskContext"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SelectFormatter = (props: { isCellSelected: any; row: any }) => {
-    const { setRowMaskState } = useRowMask()
+    const { open } = useRowMask()
     const [isRowSelected, onRowSelectionChange] = useRowSelection()
 
     const [isHovering, setIsHovering] = useState<boolean>(false)
 
     const expandRow = () => {
-        setRowMaskState({
-            mode: "edit",
-            row: { _id: props.row._id },
-        })
+        open(props.row as Row)
     }
 
     return (

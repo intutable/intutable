@@ -3,20 +3,22 @@ import { CallingConstraint } from "../util/Constraint"
 import { Do } from "../util/Do"
 import { DoObjectNotation } from "../util/ObjectNotation"
 
-export class ToggleState implements Do {
+export class Snack implements Do {
     public caller: CallingConstraint
 
-    constructor() {}
+    constructor(public message: string) {}
 
     toJSON(): DoObjectNotation {
         return {
             __type: "do",
             __ctor: this.constructor.name,
             caller: this.caller,
+            __props: [this.message],
         }
     }
 
-    execute(hooks: AppContext.Dispatch) {
-        hooks.setTest(true)
+    execute(props: AppContext.Dispatch) {
+        const { snackInfo } = props
+        snackInfo("Hallo Test")
     }
 }

@@ -102,8 +102,9 @@ const WorkflowMajorSteps = (props: {
                                                             moveMajorStep(step._id, "up")
                                                         }
                                                         edge="end"
+                                                        size="small"
                                                     >
-                                                        <ArrowUpwardIcon />
+                                                        <ArrowUpwardIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             ) : (
@@ -111,8 +112,9 @@ const WorkflowMajorSteps = (props: {
                                                     onClick={() => moveMajorStep(step._id, "up")}
                                                     edge="end"
                                                     disabled
+                                                    size="small"
                                                 >
-                                                    <ArrowUpwardIcon />
+                                                    <ArrowUpwardIcon fontSize="small" />
                                                 </IconButton>
                                             )}
                                             {props.workflow.majorsteps.indexOf(step._id) !==
@@ -123,8 +125,9 @@ const WorkflowMajorSteps = (props: {
                                                             moveMajorStep(step._id, "down")
                                                         }
                                                         edge="end"
+                                                        size="small"
                                                     >
-                                                        <ArrowDownwardIcon />
+                                                        <ArrowDownwardIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             ) : (
@@ -132,8 +135,9 @@ const WorkflowMajorSteps = (props: {
                                                     onClick={() => moveMajorStep(step._id, "down")}
                                                     edge="end"
                                                     disabled
+                                                    size="small"
                                                 >
-                                                    <ArrowDownwardIcon />
+                                                    <ArrowDownwardIcon fontSize="small" />
                                                 </IconButton>
                                             )}
                                             <Tooltip title="Aus Hauptschritten entfernen">
@@ -141,7 +145,7 @@ const WorkflowMajorSteps = (props: {
                                                     onClick={() => removeMajorStep(step._id)}
                                                     edge="end"
                                                 >
-                                                    <RemoveIcon />
+                                                    <RemoveIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                         </>

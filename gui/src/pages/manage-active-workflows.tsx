@@ -188,8 +188,8 @@ const ManageActiveWorkflowsPage: React.FC = () => {
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Box sx={{ m: 2, width: 1000 }}>
-                <Typography variant={"h4"} align="center">
-                    Verwaltung aktiver Prozesse
+                <Typography variant={"h4"} align="center" gutterBottom>
+                    Aktive Prozesse
                 </Typography>
                 <Divider />
                 {workflows.length ? (
@@ -211,7 +211,7 @@ const ManageActiveWorkflowsPage: React.FC = () => {
                         </Select>
                     </FormControl>
                 ) : (
-                    <Typography sx={{ mt: 2 }} variant="body1" align="center">
+                    <Typography sx={{ mt: 3 }} variant="body1" align="center">
                         Keine aktiven Prozesse verfügbar.
                     </Typography>
                 )}

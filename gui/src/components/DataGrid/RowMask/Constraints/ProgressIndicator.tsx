@@ -25,7 +25,7 @@ export const ProgressIndicator: React.FC = () => {
         (state.report &&
             (state.report.failed.length > 0 ||
                 state.report.interrupted.length > 0 ||
-                state.report.mismatches.length > 0))
+                state.report.log.length > 0))
     /** When ALL constraints passed */
     const success = state.report && state.report.succeeded.length === state.progress[1]
     const internalState: "failure" | "success" | "running" | Error =

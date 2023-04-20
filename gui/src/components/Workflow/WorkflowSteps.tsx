@@ -439,7 +439,7 @@ const WorkflowSteps = (props: {
                                     sx={{
                                         float: "right",
                                     }}
-                                ></InfoOutlinedIcon>
+                                />
                                 {activeAutomaticStepTemplate.helptext
                                     .split("\n")
                                     .map((line: string, index: number) => {
@@ -556,12 +556,12 @@ const WorkflowSteps = (props: {
                                     <>
                                         <Tooltip title="Bearbeiten">
                                             <IconButton onClick={() => editStep(step)}>
-                                                <CreateIcon />
+                                                <CreateIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                         <Tooltip title="Kopieren">
                                             <IconButton onClick={() => copyStep(step)}>
-                                                <ContentCopyIcon />
+                                                <ContentCopyIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                         {!props.workflow.majorsteps.includes(step._id) ? (
@@ -569,7 +569,7 @@ const WorkflowSteps = (props: {
                                                 <IconButton
                                                     onClick={() => addToMajorSteps(step._id)}
                                                 >
-                                                    <StarBorderIcon />
+                                                    <StarBorderIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                         ) : (
@@ -577,13 +577,13 @@ const WorkflowSteps = (props: {
                                                 <IconButton
                                                     onClick={() => removeMajorStep(step._id)}
                                                 >
-                                                    <StarIcon />
+                                                    <StarIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                         )}
                                         <Tooltip title="Entfernen">
                                             <IconButton onClick={() => removeStep(step._id)}>
-                                                <CancelIcon />
+                                                <CancelIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                     </>

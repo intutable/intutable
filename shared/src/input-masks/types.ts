@@ -41,10 +41,12 @@ export type InputMaskColumnProps = {
     /** @default false */
     disallowNewSelectValues?: boolean
     /**
+     * // TODO: implement
+     *
      * When creating a new record, this will automatically insert this value.
      *
      * If the column is of another kind than 'standard', you probably want to
-     * set the default value for a link. In this case put the target row's id
+     * set the default value for a link. In this case put the targets row id
      * here.
      */
     defaultValue?: unknown

@@ -5,11 +5,11 @@ import { isTableIdOrigin, isTableNameOrigin, isViewIdOrigin } from "@shared/inpu
 import React from "react"
 
 export const DevOverlay: React.FC = () => {
-    const { appliedInputMask, setInputMask } = useRowMask()
+    const { inputMask, apply } = useRowMask()
     const { inputMasks } = useInputMask()
 
     const handleChange = (inputMaskId: string) =>
-        setInputMask(inputMaskId === "none" ? null : inputMaskId)
+        apply(inputMaskId === "none" ? "none" : { id: inputMaskId })
 
     return (
         <FormControl size="small" sx={{ mr: 2 }} color="warning">
@@ -17,7 +17,7 @@ export const DevOverlay: React.FC = () => {
             <Select
                 labelId="dev-overlay"
                 id="dev-overlay"
-                value={appliedInputMask || "none"}
+                value={inputMask?.id || "none"}
                 label="Maske"
                 onChange={e => handleChange(e.target.value)}
             >

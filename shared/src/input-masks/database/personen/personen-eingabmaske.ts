@@ -141,47 +141,59 @@ const mask: InputMask = {
     ],
     constraints: [
         {
-            name: "Proof-of-Concept 2",
+            name: "Proof-of-Concept 0",
             __type: "constraint",
-            __ctor: "Constraint",
+            id: "62DF434C-BA2C-4AB6-8D56-48D7FA08DF3A",
             conditions: {
                 __type: "node",
                 __ctor: "Node",
-                data: { __type: "if", __ctor: "Timeout", __props: [12000] },
+                data: {
+                    __type: "if",
+                    __ctor: "Timeout",
+                    __props: [12000],
+                    caller: {
+                        id: "62DF434C-BA2C-4AB6-8D56-48D7FA08DF3A",
+                        name: "Proof-of-Concept 0",
+                    },
+                },
                 next: null,
             },
-            executments: [],
+            executments: [
+                {
+                    __type: "do",
+                    __ctor: "Snack",
+                    __props: ["Hallo"],
+                    caller: {
+                        id: "62DF434C-BA2C-4AB6-8D56-48D7FA08DF3A",
+                        name: "Proof-of-Concept 0",
+                    },
+                },
+            ],
         },
-        {
-            name: "Proof-of-Concept",
-            __type: "constraint",
-            __ctor: "Constraint",
-            conditions: {
-                __type: "node",
-                __ctor: "Node",
-                data: { __type: "if", __ctor: "AlwaysTrue" },
-                next: null,
-            },
-            executments: [{ __type: "do", __ctor: "ToggleState" }],
-            debugMessage: {
-                title: "Fehlernachricht",
-                severity: "error",
-                message: "Ein Problem mit Constrain X ist aufgetreten",
-                howToSolve: "Wenden Sie sich an den Entwickler",
-            },
-        },
-        {
-            name: "Proof-of-Concept 2",
-            __type: "constraint",
-            __ctor: "Constraint",
-            conditions: {
-                __type: "node",
-                __ctor: "Node",
-                data: { __type: "if", __ctor: "Timeout", __props: [12000] },
-                next: null,
-            },
-            executments: [],
-        },
+        // {
+        //     name: "Proof-of-Concept 1",
+        //     __type: "constraint",
+        //     id: "",
+        //     conditions: {
+        //         __type: "node",
+        //         __ctor: "Node",
+        //         data: { __type: "if", __ctor: "AlwaysTrue" },
+        //         next: null,
+        //     },
+        //     executments: [{ __type: "do", __ctor: "ToggleState" }],
+        // },
+        // {
+        //     name: "Proof-of-Concept 2",
+        //     id: "",
+        //     __type: "constraint",
+        //     conditions: {
+        //         __type: "node",
+        //         __ctor: "Node",
+        //         data: { __type: "if", __ctor: "Timeout", __props: [12000] },
+        //         next: null,
+        //     },
+        //     executments: [],
+        // },
         // BUG: fetcher will throw if using this, source probably in `coreRequest`
         // new Constraint("Proof-of-Concept")
         //     .if(new AlwaysTrue())

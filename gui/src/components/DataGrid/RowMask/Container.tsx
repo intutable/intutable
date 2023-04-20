@@ -10,9 +10,7 @@ import {
     Grid,
     Stack,
 } from "@mui/material"
-import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
-import { useInputMask } from "hooks/useInputMask"
 import { useView } from "hooks/useView"
 import React, { useState } from "react"
 import { ColumnUtility } from "utils/column utils/ColumnUtility"
@@ -23,19 +21,15 @@ import { MakeInputMaskColumns } from "./InputMask"
 
 import Link from "components/Link"
 import { ConstraintValidationProvider } from "context/ConstraintValidationContext"
-import { useSnacki } from "hooks/useSnacki"
 import { useUserSettings } from "hooks/useUserSettings"
 import { ConstraintSection } from "./Constraints/ConstraintSection"
 import { ConstraintValidationButton } from "./Constraints/ConstraintValidationButton"
 import { Header } from "./RowMaskContainerHead"
 
 export const RowMaskContainer: React.FC = () => {
-    const theme = useTheme()
-    const { snackWarning, snackError } = useSnacki()
     const { data } = useView()
-    const { rowMaskState, setRowMaskState, appliedInputMask: selectedInputMask } = useRowMask()
-    const { currentInputMask } = useInputMask()
-    const isInputMask = selectedInputMask != null
+    const { row, close, inputMask } = useRowMask()
+    const isInputMask = inputMask != null
     const { userSettings } = useUserSettings()
     // const { isValid } = useConstraintValidation()
 
@@ -46,17 +40,12 @@ export const RowMaskContainer: React.FC = () => {
 
     const [constraintSectionOpen, setConstraintSectionOpen] = useState<boolean>(true)
 
-    const abort = () => {
-        // if (isValid === false)
-        //     alert("Die Eingaben sind nicht gültig. Bitte korrigieren Sie die Fehler.")
-        setRowMaskState({ mode: "closed" })
-    }
+    const abort = () => close()
 
-    if (rowMaskState.mode === "closed" || data == null) return null
+    if (!row || data == null) return null
     const nonHidden = data.columns.filter(column => column.hidden !== true)
     const columns = nonHidden
-    const selectedRow = data.rows.find(row => row._id === rowMaskState.row._id)
-    if (selectedRow == null) return null
+    const selectedRow = row
 
     return (
         <ConstraintValidationProvider>
@@ -169,9 +158,7 @@ export const RowMaskContainer: React.FC = () => {
                         justifyContent: "space-evenly",
                     }}
                 >
-                    <AddPendingRow
-                        text={isInputMask ? currentInputMask?.addRecordButtonText : undefined}
-                    />
+                    <AddPendingRow text={isInputMask ? inputMask.addRecordButtonText : undefined} />
                     {isInputMask === false && (
                         <>
                             <Divider flexItem variant="middle" orientation="vertical" />
