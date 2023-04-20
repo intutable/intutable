@@ -4,10 +4,12 @@ import SearchIcon from "@mui/icons-material/Search"
 import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useHeaderSearchField } from "context"
+import { useLockedColumns } from "context/LockedColumnsContext"
 import { useColumn } from "hooks/useColumn"
 import { useSnacki } from "hooks/useSnacki"
-import React, { useState } from "react"
-import { HeaderRendererProps } from "react-data-grid"
+import React, { useEffect, useRef, useState } from "react"
+import { CalculatedColumn, HeaderRendererProps } from "react-data-grid"
+
 import { Row } from "types"
 import { AddLookup } from "./AddLookup"
 import { ColumnAttributesWindowButton } from "./ColumnAttributesWindow"
@@ -23,16 +25,23 @@ export const ColumnContextMenu: React.FC<ColumnContextMenuProps> = props => {
 
     const theme = useTheme()
     const { snackError } = useSnacki()
+    const { lock, free } = useLockedColumns()
 
     const { open: headerOpen, openSearchField, closeSearchField } = useHeaderSearchField()
-    const { deleteColumn } = useColumn()
+    const { deleteColumn, changeAttributes } = useColumn()
 
     const [anchorEL, setAnchorEL] = useState<Element | null>(null)
     const openContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (props.headerRendererProps.column.resizable) lock(props.headerRendererProps.column) // HACK
+
         e.preventDefault()
         setAnchorEL(e.currentTarget)
     }
-    const closeContextMenu = () => setAnchorEL(null)
+    const closeContextMenu = async () => {
+        free(props.headerRendererProps.column) // HACK
+
+        setAnchorEL(null)
+    }
 
     const toggleHeaderSearchbar = () => {
         if (headerOpen) closeSearchField()

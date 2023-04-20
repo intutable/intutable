@@ -5,7 +5,8 @@ import React from "react"
 import { withSessionSsr } from "auth"
 import { withSSRCatch } from "utils/withSSRCatch"
 import { useRouter } from "next/router"
-import { ContentPasteSearch, DesignServices } from "@mui/icons-material"
+import ContentPasteSearchIcon from "@mui/icons-material/ContentPasteSearch"
+import DesignServicesIcon from "@mui/icons-material/DesignServices"
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined"
 
 const ManageWorkflows: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = () => (
@@ -59,7 +60,7 @@ const ManageWorkflowsPage: React.FC = () => {
                                 <Box
                                     sx={{ mb: 2, display: "flex", justifyContent: "space-evenly" }}
                                 >
-                                    <ContentPasteSearch />
+                                    <ContentPasteSearchIcon />
                                 </Box>
                                 <Typography gutterBottom variant="h5" align="center">
                                     Aktive Prozesse
@@ -81,7 +82,7 @@ const ManageWorkflowsPage: React.FC = () => {
                                 <Box
                                     sx={{ mb: 2, display: "flex", justifyContent: "space-evenly" }}
                                 >
-                                    <DesignServices />
+                                    <DesignServicesIcon />
                                 </Box>
                                 <Typography gutterBottom variant="h5" align="center">
                                     Prozessvorlagen

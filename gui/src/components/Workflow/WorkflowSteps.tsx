@@ -9,16 +9,14 @@ import {
     AutomaticStepTemplate,
     TimeUnit,
 } from "@intutable/process-manager/dist/types"
-import {
-    Add,
-    StarBorder,
-    Star,
-    Cancel,
-    Build,
-    Create,
-    ContentCopy,
-    ExpandMore,
-} from "@mui/icons-material"
+import AddIcon from "@mui/icons-material/Add"
+import BuildIcon from "@mui/icons-material/Build"
+import CancelIcon from "@mui/icons-material/Cancel"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
+import CreateIcon from "@mui/icons-material/Create"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import StarIcon from "@mui/icons-material/Star"
+import StarBorderIcon from "@mui/icons-material/StarBorder"
 import {
     Typography,
     Divider,
@@ -192,7 +190,15 @@ const WorkflowSteps = (props: {
     }
     const handleChange = (evt: { target: { name: string; value: unknown } }) => {
         const name = evt.target.name
-        const value = evt.target.value
+        let value = evt.target.value
+
+        if (name === "responsible" && typeof value === "string") {
+            if (value === "") {
+                value = null
+            } else {
+                value = parseInt(value)
+            }
+        }
 
         setStepTemplate({
             ...stepTemplate,
@@ -349,7 +355,7 @@ const WorkflowSteps = (props: {
                             variant="outlined"
                             name="responsible"
                             type="number"
-                            value={stepTemplate.responsible || ""}
+                            value={stepTemplate.responsible}
                             onChange={handleChange}
                             InputProps={{
                                 inputProps: { min: 0 },
@@ -523,7 +529,7 @@ const WorkflowSteps = (props: {
         let specificAttributesComplete
 
         if (stepTemplate.type === StepType.Manual) {
-            specificAttributesComplete = !!stepTemplate.responsible
+            specificAttributesComplete = true
         } else {
             specificAttributesComplete =
                 activeAutomaticStepTemplate &&
@@ -549,40 +555,35 @@ const WorkflowSteps = (props: {
                                 secondaryAction={
                                     <>
                                         <Tooltip title="Bearbeiten">
-                                            <IconButton onClick={() => editStep(step)} size="small">
-                                                <Create fontSize="small" />
+                                            <IconButton onClick={() => editStep(step)}>
+                                                <CreateIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                         <Tooltip title="Kopieren">
-                                            <IconButton onClick={() => copyStep(step)} size="small">
-                                                <ContentCopy fontSize="small" />
+                                            <IconButton onClick={() => copyStep(step)}>
+                                                <ContentCopyIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                         {!props.workflow.majorsteps.includes(step._id) ? (
                                             <Tooltip title="Zu Hauptschritten hinzufügen">
                                                 <IconButton
                                                     onClick={() => addToMajorSteps(step._id)}
-                                                    size="small"
                                                 >
-                                                    <StarBorder fontSize="small" />
+                                                    <StarBorderIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                         ) : (
                                             <Tooltip title="Von Hauptschritten entfernen">
                                                 <IconButton
                                                     onClick={() => removeMajorStep(step._id)}
-                                                    size="small"
                                                 >
-                                                    <Star fontSize="small" />
+                                                    <StarIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                         )}
                                         <Tooltip title="Entfernen">
-                                            <IconButton
-                                                onClick={() => removeStep(step._id)}
-                                                size="small"
-                                            >
-                                                <Cancel fontSize="small" />
+                                            <IconButton onClick={() => removeStep(step._id)}>
+                                                <CancelIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                     </>
@@ -617,14 +618,14 @@ const WorkflowSteps = (props: {
                     <Button
                         variant="outlined"
                         onClick={() => setShowAddStepsDialog(true)}
-                        startIcon={<Add />}
+                        startIcon={<AddIcon />}
                     >
                         Schritte hinzufügen
                     </Button>
                     <Button
                         variant="outlined"
                         onClick={() => setShowCreateStepDialog(true)}
-                        startIcon={<Build />}
+                        startIcon={<BuildIcon />}
                     >
                         Schritt erstellen
                     </Button>
@@ -658,7 +659,7 @@ const WorkflowSteps = (props: {
                             .map(step => {
                                 return (
                                     <Accordion key={step.assignment.id} variant="outlined">
-                                        <AccordionSummary expandIcon={<ExpandMore />}>
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                             <Typography>{`Workflow: ${step.assignment.name}`}</Typography>
                                         </AccordionSummary>
                                         <AccordionDetails>
@@ -701,7 +702,7 @@ const WorkflowSteps = (props: {
                         })
                         return (
                             <Accordion key={stepCategory.name} variant="outlined">
-                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                     <Typography>{stepCategory.name}</Typography>
                                 </AccordionSummary>
                                 <AccordionDetails>
@@ -730,7 +731,7 @@ const WorkflowSteps = (props: {
                         )
                     })}
                     <Accordion variant="outlined">
-                        <AccordionSummary expandIcon={<ExpandMore />}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                             <Typography>Alle Schritte</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
@@ -759,12 +760,16 @@ const WorkflowSteps = (props: {
                     <Button
                         variant="contained"
                         onClick={handleAddSteps}
-                        startIcon={<Add />}
+                        startIcon={<AddIcon />}
                         disabled={!checkedSteps.length}
                     >
                         Hinzufügen
                     </Button>
-                    <Button variant="outlined" onClick={handleCancelSteps} startIcon={<Cancel />}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleCancelSteps}
+                        startIcon={<CancelIcon />}
+                    >
                         Abbrechen
                     </Button>
                 </DialogActions>
@@ -812,7 +817,7 @@ const WorkflowSteps = (props: {
                     <Button
                         variant="contained"
                         onClick={handleCreateStep}
-                        startIcon={stepTemplate._id ? <Build /> : <Create />}
+                        startIcon={stepTemplate._id ? <BuildIcon /> : <CreateIcon />}
                         disabled={!checkCreateStepCompletion()}
                     >
                         {stepTemplate._id ? "Bearbeiten" : "Erstellen"}
@@ -820,7 +825,7 @@ const WorkflowSteps = (props: {
                     <Button
                         variant="outlined"
                         onClick={handleCreateCancelSteps}
-                        startIcon={<Cancel />}
+                        startIcon={<CancelIcon />}
                     >
                         Abbrechen
                     </Button>

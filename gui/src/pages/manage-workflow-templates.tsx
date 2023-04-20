@@ -21,7 +21,10 @@ import React from "react"
 import { withSessionSsr } from "auth"
 import { withSSRCatch } from "utils/withSSRCatch"
 import { useRouter } from "next/router"
-import { Add, Edit, ContentCopy, Delete } from "@mui/icons-material"
+import AddIcon from "@mui/icons-material/Add"
+import EditIcon from "@mui/icons-material/Edit"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
+import DeleteIcon from "@mui/icons-material/Delete"
 const ManageWorkflowTemplates: NextPage<
     InferGetServerSidePropsType<typeof getServerSideProps>
 > = () => <ManageWorkflowTemplatesPage />
@@ -140,7 +143,7 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                                                         }
                                                         size="small"
                                                     >
-                                                        <Edit fontSize="small" />
+                                                        <EditIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Kopieren">
@@ -150,7 +153,7 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                                                         }
                                                         size="small"
                                                     >
-                                                        <ContentCopy fontSize="small" />
+                                                        <ContentCopyIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Löschen">
@@ -161,7 +164,7 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                                                         size="small"
                                                         color="error"
                                                     >
-                                                        <Delete fontSize="small" />
+                                                        <DeleteIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             </>
@@ -183,7 +186,7 @@ const ManageWorkflowTemplatesPage: React.FC = () => {
                         onClick={() => {
                             router.push("/edit-workflow-templates")
                         }}
-                        startIcon={<Add />}
+                        startIcon={<AddIcon />}
                     >
                         Prozessvorlage erstellen
                     </Button>

@@ -31,29 +31,29 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
     const { deleteRow, onRowReorder, createRow } = useRow()
 
     // draggable
-    const [{ isDragging }, drag] = useDrag({
-        type: "ROW_DRAG",
-        item: { index: props.rowIdx },
-        collect: monitor => ({
-            isDragging: monitor.isDragging(),
-        }),
-    })
+    // const [{ isDragging }, drag] = useDrag({
+    //     type: "ROW_DRAG",
+    //     item: { index: props.rowIdx },
+    //     collect: monitor => ({
+    //         isDragging: monitor.isDragging(),
+    //     }),
+    // })
 
-    const [{ isOver }, drop] = useDrop({
-        accept: "ROW_DRAG",
-        drop({ index }: { index: number }) {
-            onRowReorder(index, props.rowIdx)
-        },
-        collect: monitor => ({
-            isOver: monitor.isOver(),
-            canDrop: monitor.canDrop(),
-        }),
-    })
+    // const [{ isOver }, drop] = useDrop({
+    //     accept: "ROW_DRAG",
+    //     drop({ index }: { index: number }) {
+    //         onRowReorder(index, props.rowIdx)
+    //     },
+    //     collect: monitor => ({
+    //         isOver: monitor.isOver(),
+    //         canDrop: monitor.canDrop(),
+    //     }),
+    // })
 
-    const className = clsx(props.className, {
-        [rowDraggingClassname]: isDragging,
-        [rowOverClassname(theme.palette.mode)]: isOver,
-    })
+    // const className = clsx(props.className, {
+    //     [rowDraggingClassname]: isDragging,
+    //     [rowOverClassname(theme.palette.mode)]: isOver,
+    // })
 
     // context menu
 
@@ -93,13 +93,13 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
     return (
         <>
             <GridRow
-                ref={ref => {
-                    if (ref) drag(ref.children[1])
-                    drop(ref)
-                }}
+                // ref={ref => {
+                //     if (ref) drag(ref.children[1])
+                //     drop(ref)
+                // }}
                 onContextMenu={handleOpenContextMenu}
                 {...props}
-                className={className}
+                // className={className}
             />
             <Menu
                 elevation={0}

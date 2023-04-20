@@ -19,7 +19,10 @@ import {
     Typography,
 } from "@mui/material"
 import PendingActionsOutlinedIcon from "@mui/icons-material/PendingActionsOutlined"
-import { Delete, RemoveCircle, ArrowRight, Cancel } from "@mui/icons-material"
+import ArrowRightIcon from "@mui/icons-material/ArrowRight"
+import CancelIcon from "@mui/icons-material/Cancel"
+import DeleteIcon from "@mui/icons-material/Delete"
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle"
 import MetaTitle from "components/MetaTitle"
 import type { InferGetServerSidePropsType, NextPage } from "next"
 import { ReactNode, useEffect, useRef, useState } from "react"
@@ -115,7 +118,7 @@ const ManageActiveWorkflowsPage: React.FC = () => {
         if (workflow.state !== ProcessState.Aborted && workflow.state !== ProcessState.Completed) {
             buttons.push({
                 name: "Abbrechen",
-                icon: <Cancel />,
+                icon: <CancelIcon />,
                 clickHandler: async () => {
                     setBackdrop(true)
                     const response: PMResponse = await abortWorkflow(workflow._id)
@@ -130,7 +133,7 @@ const ManageActiveWorkflowsPage: React.FC = () => {
             if (workflow.state !== ProcessState.Blocked) {
                 buttons.push({
                     name: "Sperren",
-                    icon: <RemoveCircle />,
+                    icon: <RemoveCircleIcon />,
                     clickHandler: async () => {
                         setBackdrop(true)
                         const response: PMResponse = await blockWorkflow(workflow._id)
@@ -145,7 +148,7 @@ const ManageActiveWorkflowsPage: React.FC = () => {
             } else {
                 buttons.push({
                     name: "Entsperren",
-                    icon: <ArrowRight />,
+                    icon: <ArrowRightIcon />,
                     clickHandler: async () => {
                         setBackdrop(true)
                         const response: PMResponse = await unblockWorkflow(workflow._id)
@@ -161,7 +164,7 @@ const ManageActiveWorkflowsPage: React.FC = () => {
         }
         buttons.push({
             name: "Löschen",
-            icon: <Delete />,
+            icon: <DeleteIcon />,
             clickHandler: async () => {
                 setBackdrop(true)
                 const response: PMResponse = await deleteWorkflow(workflow._id)

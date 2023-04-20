@@ -1,5 +1,9 @@
 import { Step, Workflow } from "@intutable/process-manager/dist/types"
-import { Remove, ArrowUpward, ArrowDownward, Add, Cancel } from "@mui/icons-material"
+import AddIcon from "@mui/icons-material/Add"
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward"
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward"
+import CancelIcon from "@mui/icons-material/Cancel"
+import RemoveIcon from "@mui/icons-material/Remove"
 import {
     Typography,
     Divider,
@@ -100,7 +104,7 @@ const WorkflowMajorSteps = (props: {
                                                         edge="end"
                                                         size="small"
                                                     >
-                                                        <ArrowUpward fontSize="small" />
+                                                        <ArrowUpwardIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             ) : (
@@ -110,7 +114,7 @@ const WorkflowMajorSteps = (props: {
                                                     disabled
                                                     size="small"
                                                 >
-                                                    <ArrowUpward fontSize="small" />
+                                                    <ArrowUpwardIcon fontSize="small" />
                                                 </IconButton>
                                             )}
                                             {props.workflow.majorsteps.indexOf(step._id) !==
@@ -123,7 +127,7 @@ const WorkflowMajorSteps = (props: {
                                                         edge="end"
                                                         size="small"
                                                     >
-                                                        <ArrowDownward fontSize="small" />
+                                                        <ArrowDownwardIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             ) : (
@@ -133,16 +137,15 @@ const WorkflowMajorSteps = (props: {
                                                     disabled
                                                     size="small"
                                                 >
-                                                    <ArrowDownward fontSize="small" />
+                                                    <ArrowDownwardIcon fontSize="small" />
                                                 </IconButton>
                                             )}
                                             <Tooltip title="Aus Hauptschritten entfernen">
                                                 <IconButton
                                                     onClick={() => removeMajorStep(step._id)}
                                                     edge="end"
-                                                    size="small"
                                                 >
-                                                    <Remove fontSize="small" />
+                                                    <RemoveIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                         </>
@@ -177,7 +180,7 @@ const WorkflowMajorSteps = (props: {
                         sx={{ mt: 2 }}
                         variant="outlined"
                         onClick={() => setShowAddMajorStepsDialog(true)}
-                        startIcon={<Add />}
+                        startIcon={<AddIcon />}
                         disabled={!props.workflow.steps.length}
                     >
                         Hauptschritte hinzufügen
@@ -222,7 +225,7 @@ const WorkflowMajorSteps = (props: {
                     <Button
                         variant="contained"
                         onClick={handleAddMajorSteps}
-                        startIcon={<Add />}
+                        startIcon={<AddIcon />}
                         disabled={!checkedMajorSteps.length}
                     >
                         Hinzufügen
@@ -230,7 +233,7 @@ const WorkflowMajorSteps = (props: {
                     <Button
                         variant="outlined"
                         onClick={handleCancelMajorSteps}
-                        startIcon={<Cancel />}
+                        startIcon={<CancelIcon />}
                     >
                         Abbrechen
                     </Button>
