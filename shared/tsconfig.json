@@ -1,7 +1,7 @@
 {
     "include": [
         "./src/**/*.ts"
-, "src/constraints/dos/Log/Log.tsx"    ],
+, "src/constraints/dos/Log/Log.ts"    ],
     "compilerOptions": {
         "sourceMap": true,
         "moduleResolution": "node",

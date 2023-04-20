@@ -2,7 +2,7 @@ import type { ViewData, ViewDescriptor } from "@intutable/lazy-views"
 import type { ProjectDescriptor, TableDescriptor } from "@intutable/project-management/dist/types"
 import { Row, SerializedViewData } from "../../types"
 import type { InputMask } from "../../input-masks/types"
-import type { SerializedLogEntry } from "../dos/Log/Log"
+import { LogItem } from "../dos/Log"
 
 /**
  * If the constraints were imported and executed only inside the frontend,
@@ -31,6 +31,6 @@ export namespace AppContext {
     export type Dispatch = {
         setTest: React.Dispatch<React.SetStateAction<boolean>>
         snackInfo: (message: string) => void
-        addLogEntry: (logEntry: SerializedLogEntry) => void
+        log: (item: LogItem) => void
     }
 }

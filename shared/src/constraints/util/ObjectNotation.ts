@@ -1,6 +1,5 @@
-import { Operator, OperatorType } from "./Operator"
-import { Node } from "./ConstraintStore"
-import { Mismatch } from "./Mismatch"
+import { CallingConstraint } from "./Constraint"
+import { OperatorType } from "./Operator"
 
 export type NodeType = "constraint" | "if" | "do" | "operator"
 
@@ -25,14 +24,16 @@ export type OperatorObjectNotation = {
     operator: OperatorType
 }
 
-export type IfObjectNotation<P = Record<string, unknown>> = {
+export type IfObjectNotation<P = unknown[]> = {
     __type: "if"
     __ctor: string
     __props?: P
+    caller: CallingConstraint
 }
 
-export type DoObjectNotation<P = Record<string, unknown>> = {
+export type DoObjectNotation<P = unknown[]> = {
     __type: "do"
     __ctor: string
     __props?: P
+    caller: CallingConstraint
 }

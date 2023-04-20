@@ -14,7 +14,7 @@ import { useTheme } from "@mui/material/styles"
 import CloseIcon from "@mui/icons-material/Close"
 import { Beta } from "components/Beta"
 import { ProgressIndicator } from "./ProgressIndicator"
-import { DebugMismatch } from "./DebugMismatch"
+import { DebugMismatch } from "./LogItem"
 import { useUserSettings } from "hooks/useUserSettings"
 import WarningIcon from "@mui/icons-material/Warning"
 import { useInputMask } from "hooks/useInputMask"
@@ -126,8 +126,9 @@ export const ConstraintSection: React.FC<ConstraintSectionProps> = props => {
                             </Divider>
 
                             <Stack direction="column">
-                                {state.report!.log.map((mismatch, i) => (
-                                    <DebugMismatch key={mismatch.title + i} mismatch={mismatch} />
+                                {state.report!.log.map((log, i) => (
+                                    // <DebugMismatch key={log.title + i} mismatch={log} />
+                                    <>{log.title}</>
                                 ))}
                             </Stack>
                         </Box>

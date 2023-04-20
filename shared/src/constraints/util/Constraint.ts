@@ -2,8 +2,7 @@ import { ConstraintStore } from "./ConstraintStore"
 import { Do } from "./Do"
 import { If } from "./If"
 import { JSONizable } from "./JSONizable"
-import { Mismatch } from "./Mismatch"
-import { ConstraintObjectNotation } from "./ObjectNotation"
+import { ConstraintObjectNotation, DoObjectNotation, IfObjectNotation } from "./ObjectNotation"
 import { Operator } from "./Operator"
 import { v4 as uuidv4 } from "uuid"
 
@@ -11,11 +10,9 @@ import { v4 as uuidv4 } from "uuid"
  * ### Syntactical Sugar / Fluent Wizard
  */
 export class Constraint extends ConstraintStore implements JSONizable<ConstraintObjectNotation> {
-    private debugMessage?: Mismatch
-
     private uuid: string
 
-    constructor(private name: string, private options?: { priority?: number }) {
+    constructor(private name: string) {
         super()
         this.uuid = uuidv4()
     }
@@ -23,23 +20,33 @@ export class Constraint extends ConstraintStore implements JSONizable<Constraint
     /** Converts the constrait and all of its nodes to object notations */
     toJSON(): ConstraintObjectNotation {
         return {
-            id: this.uuid,
             __type: "constraint",
+            id: this.uuid,
             name: this.name,
-            // priority: this.options?.priority,
             conditions: this.head.toJSON(),
             executments: this.doList,
-            debugMessage: this.debugMessage,
         }
     }
 
     if(conditional: If): this {
+        conditional.caller = {
+            id: this.uuid,
+            name: this.name,
+        }
         this.insertIfAtEnd(conditional)
         return this
     }
 
-    // BUG: operators are not yet correctly implemented, do not use them
+    do(execute: Do) {
+        execute.caller = {
+            id: this.uuid,
+            name: this.name,
+        }
+        this.addDo(execute)
+        return this
+    }
 
+    // TODO: implement callable operators
     get or(): this {
         this.insertOperatorAtEnd(new Operator("or"))
         return this
@@ -52,21 +59,9 @@ export class Constraint extends ConstraintStore implements JSONizable<Constraint
         this.insertOperatorAtEnd(new Operator("xor"))
         return this
     }
+}
 
-    do(execute: Do) {
-        this.addDo(execute)
-        return this
-    }
-
-    debug(callback: (failingCondition: unknown) => Mismatch): this
-    debug(mismatch: Mismatch): this
-    debug(param: Mismatch | ((failingCondition: unknown) => Mismatch)): this {
-        if (typeof param === "function") {
-            this.debugMessage = param("not implemented")
-        } else {
-            this.debugMessage = param
-        }
-
-        return this
-    }
+export type CallingConstraint = {
+    id: string
+    name: string
 }

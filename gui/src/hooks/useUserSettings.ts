@@ -37,7 +37,7 @@ export const DefaultUserSettings: UserSettings = {
     preferredTheme: "system",
     undoCacheLimit: 20,
     enableUndoCache: true,
-    constraintValidation: "opening-closening",
+    constraintValidation: "never",
     saveMismatchingRecords: true,
 }
 

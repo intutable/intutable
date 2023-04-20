@@ -1,4 +1,5 @@
 import { AppContext } from "../util/AppContext"
+import { CallingConstraint } from "../util/Constraint"
 import { Do } from "../util/Do"
 import { DoObjectNotation } from "../util/ObjectNotation"
 
@@ -15,15 +16,16 @@ export type Suggestion = {
  * Suggest a value for a field.
  */
 export class Suggest implements Do {
+    public caller: CallingConstraint
+
     constructor(public suggestion: Suggestion) {}
 
     toJSON(): DoObjectNotation {
         return {
             __type: "do",
             __ctor: this.constructor.name,
-            __props: {
-                suggestion: this.suggestion,
-            },
+            __props: [this.suggestion],
+            caller: this.caller,
         }
     }
 

@@ -1,10 +1,12 @@
+import { ViewData } from "@intutable/lazy-views"
 import { DoCtorMap } from "@shared/constraints/dos"
+import { LogItem } from "@shared/constraints/dos/Log"
 import { IfCtorMap } from "@shared/constraints/ifs/"
 import type { AppContext } from "@shared/constraints/util/AppContext"
 import { ConditionIterIter } from "@shared/constraints/util/ConstraintStore"
-import { Mismatch } from "@shared/constraints/util/Mismatch"
 import { DoObjectNotation } from "@shared/constraints/util/ObjectNotation"
 import { UNSAFE_ViewData } from "@shared/input-masks"
+import { InputMask } from "@shared/input-masks/types"
 import { useAPI } from "hooks/useAPI"
 import { useInputMask } from "hooks/useInputMask"
 import { useSnacki } from "hooks/useSnacki"
@@ -20,7 +22,7 @@ type ValidationReport = {
     /** Constraints that not passed */
     failed: string[]
     /** All mismatches by constraints that not passed and registered debug mismatches */
-    log: SerializedLogEntry[]
+    log: LogItem[]
     succeeded: string[]
     /** If an error occured during validation  */
     interrupted: string[]
@@ -227,7 +229,7 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
                                 snackInfo(message: string) {
                                     snackInfo(message)
                                 },
-                                addLogEntry(log: SerializedLogEntry) {
+                                log(log: LogItem) {
                                     report.log = [...report.log, log]
                                 },
                             })
@@ -288,15 +290,14 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
 }
 
 export const useAppContextState = () => {
-    const { project, table, view } = useAPI()
+    const { project, table } = useAPI()
     const { data } = useView()
     const { userSettings } = useUserSettings()
     const { row } = useRowMask()
     const { currentInputMask } = useInputMask()
 
     const props: AppContext.State | null = useMemo(() => {
-        if (!project || !table || !view || !data || !userSettings || !currentInputMask || !row)
-            return null
+        if (!project || !table || !data || !userSettings || !currentInputMask || !row) return null
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { inputMasks, ...viewData } = data as unknown as UNSAFE_ViewData
@@ -307,12 +308,11 @@ export const useAppContextState = () => {
         return {
             project,
             table,
-            view,
-            inputMask,
-            data: viewData,
-            currentRecord: row,
+            view: data as unknown as ViewData,
+            inputMask: inputMask as InputMask,
+            record: row,
         }
-    }, [currentInputMask, data, project, row, table, userSettings, view])
+    }, [currentInputMask, data, project, row, table, userSettings])
 
     return {
         props,
