@@ -1,25 +1,13 @@
-import {
-    Badge,
-    Box,
-    Button,
-    Container,
-    Divider,
-    Fade,
-    IconButton,
-    Stack,
-    Typography,
-} from "@mui/material"
-import { useConstraintValidation } from "context/ConstraintValidationContext"
-import { useTheme } from "@mui/material/styles"
 import CloseIcon from "@mui/icons-material/Close"
+import { Badge, Box, Divider, IconButton, Stack, Typography } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { Beta } from "components/Beta"
-import { ProgressIndicator } from "./ProgressIndicator"
-import { DebugMismatch } from "./LogItem"
-import { useUserSettings } from "hooks/useUserSettings"
-import WarningIcon from "@mui/icons-material/Warning"
+import { useConstraintValidation } from "context/ConstraintValidationContext"
 import { useInputMask } from "hooks/useInputMask"
-import { ManualRetry } from "./ManualRetry"
+import { useUserSettings } from "hooks/useUserSettings"
 import { useState } from "react"
+import { ManualRetry } from "./ManualRetry"
+import { ProgressIndicator } from "./ProgressIndicator"
 
 const formatTime = (timeInMs: number) => {}
 
