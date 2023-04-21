@@ -27,7 +27,7 @@ export const useInputMask = () => {
 
     return {
         inputMasks,
-        /** @deprecated */
+        /** @deprecated Use `inputMask` from `useRowMask` instead */
         currentInputMask: inputMask,
         // columns,
     }
