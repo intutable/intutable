@@ -17,12 +17,31 @@ const Home: NextPage = () => {
     const { userSettings } = useUserSettings()
     const theme = useTheme()
 
+    const BG = (
+        <Box
+            sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%) scale(1.8)",
+                opacity: 0.4,
+                // filter: "blur(px)",
+            }}
+        >
+            <Image
+                src={theme.palette.mode === "dark" ? LogoWhite : LogoDark}
+                alt="Logo der Fakultät für Mathematik und Informatik der Universität Heidelberg"
+            />
+        </Box>
+    )
+
     if (user == null || user.isLoggedIn === false)
         return (
             <>
                 <Typography>
                     Bitte <Link href="/login">melden</Link> Sie sich an!
                 </Typography>
+                {BG}
                 <QuickLinks />
             </>
         )
@@ -49,21 +68,7 @@ const Home: NextPage = () => {
                 Universität Heidelberg 🙋‍♂️
             </Typography>
 
-            <Box
-                sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%) scale(1.8)",
-                    opacity: 0.4,
-                    // filter: "blur(px)",
-                }}
-            >
-                <Image
-                    src={theme.palette.mode === "dark" ? LogoWhite : LogoDark}
-                    alt="Logo der Fakultät für Mathematik und Informatik der Universität Heidelberg"
-                />
-            </Box>
+            {BG}
 
             {/* Quick Links */}
             <QuickLinks />

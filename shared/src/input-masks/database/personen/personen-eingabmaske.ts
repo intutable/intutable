@@ -98,6 +98,7 @@ const mask: InputMask = {
             inputRequired: true,
             inputPlaceholderText: "Land",
             suppressInputLabel: true,
+            defaultValue: "Deutschland",
         },
         {
             origin: { name: "PLZ" },

@@ -13,6 +13,9 @@ import { useSnacki } from "./useSnacki"
 import { useSnapshot } from "./useSnapshot"
 import { useUndoManager } from "./useUndoManager"
 import Obj from "types/Obj"
+import { useRowMask } from "context/RowMaskContext"
+import { InputMask } from "@shared/input-masks/types"
+import { ViewData } from "types/tables/rdg"
 
 type Column = Column.Deserialized
 
@@ -35,7 +38,7 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     const { data: view, mutate: mutateView } = useView(viewOptions)
     const { undoManager } = useUndoManager()
     const { captureSnapshot } = useSnapshot()
-    const { currentInputMask } = useInputMask()
+    const { inputMask } = useRowMask()
     const { mutate } = useSWRConfig()
 
     const updateTableCache = (optimisticTableData: unknown) => {
@@ -77,29 +80,18 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
 
     // TODO: the cache should be mutated differently
     const createRow = async (atIndex?: number): Promise<{ _id: number }> => {
-        // TODO: implement default values from input masks
-        const withDefaultValues: Record<number, unknown> = {}
-        if (view && currentInputMask) {
-            const merged = merge(view.columns, currentInputMask.columnProps)
-            merged.forEach(inputMaskCol => {
-                if (
-                    inputMaskCol.defaultValue &&
-                    inputMaskCol.defaultValue != null &&
-                    inputMaskCol.defaultValue !== ""
-                ) {
-                    withDefaultValues[inputMaskCol.id] = inputMaskCol.defaultValue
-                }
-            })
-        }
+        // if a input mask and it has default values for columns specified
+        // those will be added to the creation here
+        const defaultValues =
+            view && inputMask ? getDefaultValues({ viewData: view, inputMask }) : {}
 
         // BUG: the endpoint is supposed to return data like `{ _id: 0}`
-        // but somehow `row` is just a number
-        // watch out for this bug
+        // but somehow `row` is just a number, watch out for this bug
         const row: number = await fetcher({
             url: "/api/row",
             body: {
                 viewId: view!.descriptor.id,
-                values: {},
+                values: defaultValues,
                 atIndex,
             },
         })
@@ -262,4 +254,19 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
         updateRow,
         updateRow_RDG,
     }
+}
+
+/** util */
+const getDefaultValues = (view: {
+    viewData: ViewData
+    inputMask: InputMask
+}): Record<string, unknown> => {
+    const { viewData, inputMask } = view
+    const withDefaultValues: Record<string, unknown> = {}
+    const merged = merge(viewData.columns, inputMask.columnProps)
+    merged.forEach(col => {
+        if (col.defaultValue && col.defaultValue !== "")
+            withDefaultValues[col.id] = col.defaultValue
+    })
+    return withDefaultValues
 }

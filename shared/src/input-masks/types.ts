@@ -41,8 +41,6 @@ export type InputMaskColumnProps = {
     /** @default false */
     disallowNewSelectValues?: boolean
     /**
-     * // TODO: implement
-     *
      * When creating a new record, this will automatically insert this value.
      *
      * If the column is of another kind than 'standard', you probably want to
