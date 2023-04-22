@@ -8,6 +8,7 @@ import type { InferGetServerSidePropsType, NextPage } from "next"
 import Head from "next/head"
 import { getServerSideProps as forms_getServerSideProps, InputMaskCallToActionCard } from "./forms"
 import NotificationCard from "components/NotificationCard"
+import { IncompleteUserSettingsWarning } from "components/IncompleteUserSettingsWarning"
 
 type DashboardProps = {
     cards: InputMaskCallToActionCard[]
@@ -27,6 +28,7 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                     href="https://fonts.googleapis.com/icon?family=Material+Icons"
                 />
             </Head>
+            <IncompleteUserSettingsWarning />
             <Typography variant={"h4"}>Dashboard</Typography>
             <Divider />
 

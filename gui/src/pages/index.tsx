@@ -9,6 +9,7 @@ import { Greeting } from "components/Greeting"
 import Image from "next/image"
 import { useTheme } from "@mui/material/styles"
 import { QuickLinks } from "components/QuickLinks"
+import { IncompleteUserSettingsWarning } from "components/IncompleteUserSettingsWarning"
 
 const Home: NextPage = () => {
     const { user } = useUser()
@@ -34,6 +35,7 @@ const Home: NextPage = () => {
                     alt="Logo der Fakultät für Mathematik und Informatik der Universität Heidelberg"
                     layout="fill"
                     objectFit="contain"
+                    priority
                     // placeholder="blur"
                 />
             ) : (
@@ -42,6 +44,7 @@ const Home: NextPage = () => {
                     alt="Logo der Fakultät für Mathematik und Informatik der Universität Heidelberg"
                     layout="fill"
                     objectFit="contain"
+                    priority
                     // placeholder="blur"
                 />
             )}
@@ -63,15 +66,7 @@ const Home: NextPage = () => {
         <>
             <MetaTitle title="Startseite" />
 
-            {(userSettings?.firstName === "" ||
-                userSettings?.lastName === "" ||
-                userSettings?.sex === "") && (
-                <Alert severity="warning" sx={{ mb: 6 }}>
-                    Sie haben noch nicht alle persönlichen Daten angegeben. Bitte vervollständigen
-                    Sie diese unter{" "}
-                    <Link href="/settings">Einstellungen &#8250; Benutzerkonto</Link>.
-                </Alert>
-            )}
+            <IncompleteUserSettingsWarning />
 
             <Greeting variant="h4" />
 
