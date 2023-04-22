@@ -60,6 +60,7 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
         setRow(props[0])
     }
 
+    // the whole row based on the id in the state `row`
     const filteredRow = useMemo(() => {
         if (!view || !row) return null
         const filtered = view.rows.find(r => r._id === row._id)
@@ -68,14 +69,13 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
         return filtered
     }, [row, view])
 
+    // the whole input mask based on the id in the state `inputMask`
     const filteredInputMask = useMemo(() => {
         if (!inputMasks || !inputMask) return undefined
-        const filtered = inputMasks.find(mask => mask.id === inputMask.id)
+        const filtered = inputMasks.find(mask => mask.id === inputMask.id) // BUG: <-- maybe here
+        console.log("filtered", inputMasks)
         if (!filtered)
-            throw new Error(
-                "Row Mask: Could not find the selected input mask in the input masks: " +
-                    inputMask.id
-            )
+            throw new Error("Row Mask: Could not find the specified input mask: " + inputMask.id)
         return filtered
     }, [inputMask, inputMasks])
 
