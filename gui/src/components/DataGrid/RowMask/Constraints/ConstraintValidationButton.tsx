@@ -11,7 +11,7 @@ import { useInputMask } from "hooks/useInputMask"
 import { useUserSettings } from "hooks/useUserSettings"
 import ReValidateIcon from "@mui/icons-material/Replay"
 
-export const ConstraintValidationButton: React.FC = () => {
+export const ConstraintValidationButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
     const theme = useTheme()
     const { currentInputMask } = useInputMask()
     const { state, loading, validate } = useConstraintValidation()
@@ -28,7 +28,7 @@ export const ConstraintValidationButton: React.FC = () => {
                 title="Ein Systemfehler ist aufgetreten. Ich konnte die Validierung nicht beenden 😕"
                 TransitionComponent={Zoom}
             >
-                <IconButton color="error">
+                <IconButton color="error" onClick={onClick}>
                     <SyncProblemIcon />
                 </IconButton>
             </Tooltip>
@@ -43,7 +43,7 @@ export const ConstraintValidationButton: React.FC = () => {
                 title="Keine Sorge, es geht gleich los. Ich muss noch ein paar Daten laden 😆"
                 TransitionComponent={Zoom}
             >
-                <IconButton color="warning">
+                <IconButton color="warning" onClick={onClick}>
                     <SyncDisabledIcon />
                 </IconButton>
             </Tooltip>
@@ -58,7 +58,7 @@ export const ConstraintValidationButton: React.FC = () => {
                     title="Ich überprüfe schnell deine Änderungen, damit alles mit rechten Dingen zugeht 🤓"
                     TransitionComponent={Zoom}
                 >
-                    <IconButton color="info">
+                    <IconButton color="info" onClick={onClick}>
                         <SyncIcon
                             sx={{
                                 animation: "spin 3s linear infinite",
@@ -88,7 +88,7 @@ export const ConstraintValidationButton: React.FC = () => {
                 title="Oh, Mist! 😤 Einige deiner Eingaben kann ich nicht übernehmen, da sie Regeln verletzen 😬"
                 TransitionComponent={Zoom}
             >
-                <IconButton color="error">
+                <IconButton color="error" onClick={onClick}>
                     <Badge
                         badgeContent={
                             state.report!.failed.length + state.report!.interrupted.length
@@ -110,7 +110,7 @@ export const ConstraintValidationButton: React.FC = () => {
                 TransitionComponent={Zoom}
             >
                 <Grow in>
-                    <IconButton color="success">
+                    <IconButton color="success" onClick={onClick}>
                         <VerifiedIcon />
                     </IconButton>
                 </Grow>
@@ -129,7 +129,11 @@ export const ConstraintValidationButton: React.FC = () => {
                 variant="outlined"
                 color="success"
                 disabled={state.isRunning}
-                onClick={() => validate()}
+                onClick={() => {
+                    if (onClick) onClick()
+
+                    validate()
+                }}
             >
                 Validieren
             </Button>

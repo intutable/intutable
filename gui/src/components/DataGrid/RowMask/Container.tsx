@@ -39,7 +39,7 @@ export const RowMaskContainer: React.FC = () => {
     // const { ...state } = useCheckRequiredInputs()
     // console.log(state)
 
-    const [constraintSectionOpen, setConstraintSectionOpen] = useState<boolean>(true)
+    const [constraintSectionOpen, setConstraintSectionOpen] = useState<boolean>(false)
 
     const abort = () => close()
 
@@ -163,7 +163,9 @@ export const RowMaskContainer: React.FC = () => {
                             right: 10,
                         }}
                     >
-                        <ConstraintValidationButton />
+                        <ConstraintValidationButton
+                            onClick={() => setConstraintSectionOpen(prev => !prev)}
+                        />
                     </Box>
                 </DialogActions>
             </Dialog>
