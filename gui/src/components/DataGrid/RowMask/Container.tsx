@@ -25,6 +25,7 @@ import { useUserSettings } from "hooks/useUserSettings"
 import { ConstraintSection } from "./Constraints/ConstraintSection"
 import { ConstraintValidationButton } from "./Constraints/ConstraintValidationButton"
 import { Header } from "./RowMaskContainerHead"
+import { TurnedOffConstraintValidationAlert } from "./TurnedOffConstraintValidationAlert"
 
 export const RowMaskContainer: React.FC = () => {
     const { data } = useView()
@@ -65,19 +66,7 @@ export const RowMaskContainer: React.FC = () => {
 
                 <Divider />
 
-                {userSettings?.constraintValidation === "never" && isInputMask && (
-                    <Box sx={{ px: 5, my: 3 }}>
-                        <Alert severity="error" variant="filled">
-                            <AlertTitle>
-                                Achtung! Ihre Constraint-Validierung ist ausgeschaltet.
-                            </AlertTitle>
-                            Schalten Sie diese nur aus, wenn Sie sich sicher sind. Unerwartete
-                            Fehler können auftreten! Unter{" "}
-                            <Link href="/settings">Einstellungen &#8250; Eingabemasken</Link> können
-                            Sie die Constraint-Validierung wieder einschalten.
-                        </Alert>
-                    </Box>
-                )}
+                <TurnedOffConstraintValidationAlert />
 
                 <DialogContent>
                     <Stack direction="row">
