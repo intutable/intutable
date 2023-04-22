@@ -219,7 +219,8 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
-        // TODO: put this inside `useAPI`
+        // select the first view if none specified
+        // BUG: but this resets other url params like `inputMask`
         if (viewId == null) {
             const viewList = await fetcher<ViewDescriptor[]>({
                 url: `/api/views/${tableId}`,
