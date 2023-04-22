@@ -12,9 +12,7 @@ export const sessionOptions: IronSessionOptions = {
     cookieOptions: {
         // httpOnly: false,
         // sameSite: "lax",
-        // secure: true should be used in production (HTTPS) but can't be used in development (HTTP)
-        // secure: process.env.NODE_ENV === "production",
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
     },
 }
 
