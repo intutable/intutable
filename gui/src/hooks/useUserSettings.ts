@@ -14,6 +14,7 @@ export type UserSettings = {
     firstName: string
     lastName: string
     // --- user preferences ---
+    /** informal greeting on landing page */
     disableFunnyGreetings: boolean
     preferredTheme: "system" | "dark" | "light"
     // --- undo cache ---
@@ -21,7 +22,10 @@ export type UserSettings = {
     undoCacheLimit: number
     // --- constraint validation ---
     constraintValidation: "always" | "opening-closening" | "never"
+    /** if constraints fail, the record will be shown at the dashboard until all constraints pass */
     saveMismatchingRecords: boolean // TODO: rename 'rememberFailedConstraints'
+    /** if constraints are turned off an alert will be shown, this 'acknowledges' (turns off) the alert */
+    acknowledgedConstraintDangers: boolean
     // --- features ---
     bookmarkedRecords: Bookmark[]
 }
@@ -39,6 +43,7 @@ export const DefaultUserSettings: UserSettings = {
     enableUndoCache: true,
     constraintValidation: "never",
     saveMismatchingRecords: true,
+    acknowledgedConstraintDangers: false,
 }
 
 // TODO: connect to db ✅
@@ -62,16 +67,38 @@ export const useUserSettings = () => {
             : null
     )
 
-    // console.log(userSettings)
+    const resetDependentSettings = (
+        update: Partial<{ [key in keyof UserSettings]: UserSettings[key] }>
+    ): Partial<{ [key in keyof UserSettings]: UserSettings[key] }> => {
+        const dependencies: Partial<{ [key in keyof UserSettings]: UserSettings[key] }> = {}
+
+        // when constraint validation is turned off but gets turned on again,
+        // the acknowledged alert will be reset
+        if (
+            "constraintValidation" in update &&
+            userSettings?.constraintValidation === "never" &&
+            update.constraintValidation !== "never"
+        ) {
+            if (userSettings?.acknowledgedConstraintDangers) {
+                dependencies["acknowledgedConstraintDangers"] = false
+            }
+        }
+
+        return dependencies
+    }
 
     const changeUserSetting = async (
         update: Partial<{ [key in keyof UserSettings]: UserSettings[key] }>
     ) => {
         if (userSettings == null) return
+
         const newSettingsObject: UserSettings = {
             ...userSettings,
             ...update,
+            ...resetDependentSettings(update),
         }
+
+        console.log(newSettingsObject)
         await fetcher({
             url: "/api/user/settings",
             body: {
@@ -79,6 +106,7 @@ export const useUserSettings = () => {
             },
             method: "PATCH",
         })
+
         await mutateUserSettings()
     }
 
