@@ -28,7 +28,7 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                     href="https://fonts.googleapis.com/icon?family=Material+Icons"
                 />
             </Head>
-            <IncompleteUserSettingsWarning />
+
             <Typography variant={"h4"}>Dashboard</Typography>
             <Divider />
 

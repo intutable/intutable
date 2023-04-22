@@ -66,8 +66,6 @@ const Home: NextPage = () => {
         <>
             <MetaTitle title="Startseite" />
 
-            <IncompleteUserSettingsWarning />
-
             <Greeting variant="h4" />
 
             <Divider />

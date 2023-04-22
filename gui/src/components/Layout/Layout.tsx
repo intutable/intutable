@@ -1,5 +1,6 @@
 import { Box } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
+import { IncompleteUserSettingsWarning } from "components/IncompleteUserSettingsWarning"
 import React from "react"
 import Header from "./Header"
 
@@ -23,6 +24,7 @@ const Layout: React.FC<LayoutProps> = props => {
                     overflow: "auto",
                 }}
             >
+                <IncompleteUserSettingsWarning />
                 {props.children}
             </Box>
         </Box>
