@@ -22,7 +22,7 @@ export const DevOverlay: React.FC = () => {
                 onChange={e => handleChange(e.target.value)}
             >
                 <MenuItem value="none">Keine</MenuItem>
-                {inputMasks.map(inputMask => (
+                {inputMasks?.map(inputMask => (
                     <MenuItem key={inputMask.id} value={inputMask.id}>
                         {inputMask.name} (
                         {isTableIdOrigin(inputMask.origin) || isTableNameOrigin(inputMask.origin)
