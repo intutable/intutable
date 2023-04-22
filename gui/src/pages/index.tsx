@@ -7,8 +7,6 @@ import { ReleaseNotification } from "components/Release Notes/ReleaseNotificatio
 import { useUserSettings } from "hooks/useUserSettings"
 import { Greeting } from "components/Greeting"
 import Image from "next/image"
-import LogoWhite from "public/logo/logo-de-white.svg"
-import LogoDark from "public/logo/logo-de.svg"
 import { useTheme } from "@mui/material/styles"
 import { QuickLinks } from "components/QuickLinks"
 
@@ -25,13 +23,28 @@ const Home: NextPage = () => {
                 left: "50%",
                 transform: "translate(-50%, -50%) scale(1.8)",
                 opacity: 0.4,
+                width: "30%",
+                height: "30%",
                 // filter: "blur(px)",
             }}
         >
-            <Image
-                src={theme.palette.mode === "dark" ? LogoWhite : LogoDark}
-                alt="Logo der Fakultät für Mathematik und Informatik der Universität Heidelberg"
-            />
+            {theme.palette.mode === "dark" ? (
+                <Image
+                    src="/logo/logo-de-white.svg"
+                    alt="Logo der Fakultät für Mathematik und Informatik der Universität Heidelberg"
+                    layout="fill"
+                    objectFit="contain"
+                    // placeholder="blur"
+                />
+            ) : (
+                <Image
+                    src="/logo/logo-de.svg"
+                    alt="Logo der Fakultät für Mathematik und Informatik der Universität Heidelberg"
+                    layout="fill"
+                    objectFit="contain"
+                    // placeholder="blur"
+                />
+            )}
         </Box>
     )
 

@@ -2,7 +2,7 @@ import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from "@mui/mater
 import { useRouter } from "next/router"
 import { localeDateString, MONTHS } from "utils/date"
 import { ReleaseProps } from "./Release"
-import { releases } from "public/releases"
+import { releases } from "assets/releases"
 const byDate = (a: ReleaseProps, b: ReleaseProps) => b.date.getTime() - a.date.getTime()
 import { useTheme } from "@mui/material/styles"
 

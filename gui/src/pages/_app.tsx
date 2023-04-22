@@ -46,7 +46,7 @@ const MyApp = (props: MyAppProps) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <meta charSet="utf-8" />
                 {/* Favicons */}
-                <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+                <link rel="shortcut icon" href="/favicon.ico" />
                 {/* Safari Tab Bar Style */}
                 <meta name="theme-color" content={theme.palette.primary.main} />
             </Head>

@@ -1,6 +1,6 @@
 import { ReleaseProps } from "components/Release Notes/Release"
 import type { GetStaticPaths, GetStaticProps, InferGetStaticPropsType, NextPage } from "next"
-import { releases } from "public/releases"
+import { releases } from "assets/releases"
 import { ParsedUrlQuery } from "querystring"
 import { VersionTag } from "types/VersionTag"
 import Release from "components/Release Notes/Release"
