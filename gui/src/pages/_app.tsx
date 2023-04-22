@@ -103,7 +103,7 @@ const MyApp = (props: MyAppProps) => {
 //     if (err) return { ...componentProps, err }
 
 //     // otherwise continue
-//     return { ...componentProps }
+//     return { ...componentProps } // or return inside `pageProps`
 // }
 
 export default MyApp
