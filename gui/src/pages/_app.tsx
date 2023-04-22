@@ -57,7 +57,11 @@ const MyApp = (props: MyAppProps) => {
                     use: [logger, deserializeView],
                     onError: err => console.error(err),
                     // suspense: true, // not supported for ssr as of now
-                    revalidateOnFocus: false,
+                    // TODO: figure out
+                    // revalidateIfStale: true, // revalidate when ?
+                    // revalidateOnMount: false, // this would revalidate when a component is mounted (better not turn off, causes unwanted behaviour)
+                    // revalidateOnFocus: false, // this would revalidate when the tab gets re-focused
+                    // revalidateOnReconnect: true, // revalidate if the browser lost network connection
                 }}
             >
                 <ThemeProvider theme={theme}>

@@ -77,12 +77,12 @@ const TableCard: React.FC<TableCardProps> = props => {
     const handleCloseContextMenu = () => setAnchorEL(null)
 
     const handleOnClick = () => {
-        const defaultView = views![0]
+        // const defaultView = views![0]
         const url: UrlObject = {
             pathname: `/project/${props.project.id}/table/${props.table.id}`,
-            query: {
-                viewId: defaultView.id,
-            },
+            // query: {
+            //     viewId: defaultView.id,
+            // },
         }
         const as = `/project/${props.project.id}/table/${props.table.id}`
         router.push(url, as)
