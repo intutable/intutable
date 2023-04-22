@@ -55,9 +55,17 @@ const Dashboard: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
 
             <CollapsableSection title="Eingabemasken" defaultClosed>
                 <Stack direction="row" sx={{ width: "100%" }} gap={4} flexWrap="wrap">
-                    {props.cards.map(card => (
-                        <InputMaskCTACard key={card.inputMask.id} card={card} />
-                    ))}
+                    {props.cards
+                        .sort((a, b) =>
+                            a.inputMask.disabled === b.inputMask.disabled
+                                ? 0
+                                : a.inputMask.disabled
+                                ? 1
+                                : -1
+                        )
+                        .map(card => (
+                            <InputMaskCTACard key={card.inputMask.id} card={card} />
+                        ))}
                 </Stack>
             </CollapsableSection>
 
