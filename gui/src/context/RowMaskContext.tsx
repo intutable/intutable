@@ -35,6 +35,8 @@ type RowMaskProviderProps = {
     children: React.ReactNode
 }
 
+// BUG: when switching between tables, reset the view, input mask etc.
+
 export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     const { data: view } = useView()
     const { inputMasks } = useInputMask()
