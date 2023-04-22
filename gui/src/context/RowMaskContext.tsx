@@ -30,8 +30,8 @@ const RowMaskContext = React.createContext<RowMaskContextProps>(initialState)
 export const useRowMask = () => React.useContext(RowMaskContext)
 
 type RowMaskProviderProps = {
-    row?: { _id: Row["_id"] }
-    inputMask?: { id: InputMask["id"] }
+    row?: { _id: Row["_id"] } | null
+    inputMask?: { id: InputMask["id"] } | null
     children: React.ReactNode
 }
 
@@ -43,12 +43,16 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     const { snackError } = useSnacki()
 
     const [row, setRow] = useState<{ _id: Row["_id"] } | null>(props.row ?? null)
-    const [inputMask, _setInputMask] = useState<{ id: InputMask["id"] } | null | undefined>(
-        props.inputMask
+    const [inputMask, _setInputMask] = useState<{ id: InputMask["id"] } | null>(
+        props.inputMask ?? null
     )
     const [suppressRowChange, setSuppressRowChange] = useState<boolean>(
         initialState.suppressRowChange
     )
+
+    useEffect(() => {
+        console.log("row mask state change:", { row, inputMask })
+    }, [row, inputMask])
 
     const _setRow: typeof setRow = (...props: Parameters<typeof setRow>) => {
         if (suppressRowChange) {
@@ -72,10 +76,12 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     // the whole input mask based on the id in the state `inputMask`
     const filteredInputMask = useMemo(() => {
         if (!inputMasks || !inputMask) return undefined
-        const filtered = inputMasks.find(mask => mask.id === inputMask.id) // BUG: <-- maybe here
-        console.log("filtered", inputMasks)
-        if (!filtered)
-            throw new Error("Row Mask: Could not find the specified input mask: " + inputMask.id)
+        const filtered = inputMasks.find(mask => mask.id === inputMask.id)
+        if (!filtered) {
+            _setInputMask(null)
+            return null
+            // throw new Error("Row Mask: Could not find the specified input mask: " + inputMask.id)
+        }
         return filtered
     }, [inputMask, inputMasks])
 
@@ -86,7 +92,7 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
                 open: row => _setRow(row),
                 close: () => _setRow(null),
                 inputMask: filteredInputMask,
-                apply: mask => _setInputMask(mask === "none" ? undefined : mask),
+                apply: mask => _setInputMask(mask === "none" ? null : mask),
                 suppressRowChange,
                 setSuppressRowChange,
             }}
@@ -97,6 +103,7 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
 }
 
 /** Subscribe to events emitted on the row mask context. */
+// TODO: implement for Constraints
 export const useRowMaskObserver = () => {
     const previousRowState = useRef()
     const previousInputMaskState = useRef()
