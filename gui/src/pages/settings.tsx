@@ -33,8 +33,6 @@ export const getServerSideProps = withSSRCatch(
     withSessionSsr(async context => {
         const user = context.req.session.user
 
-        console.log("user", user)
-
         if (user == null || user.isLoggedIn === false)
             return {
                 notFound: true,
