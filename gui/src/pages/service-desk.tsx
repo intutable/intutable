@@ -1,4 +1,4 @@
-import { Alert, Box, Divider, Paper, Tooltip, Typography } from "@mui/material"
+import { Alert, Box, Button, Divider, Paper, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import MetaTitle from "components/MetaTitle"
 import { ReleaseList } from "components/Release Notes/ReleaseList"
@@ -6,8 +6,10 @@ import type { NextPage } from "next"
 import { supportedFeatures } from "assets/supportedFeatures"
 import SupportedFeatures from "components/SupportedFeatures"
 import { CollapsableSection } from "components/CollapsableSection"
+import { Router, useRouter } from "next/router"
 
 const ServiceDesk: NextPage = () => {
+    const router = useRouter()
     const theme = useTheme()
     return (
         <>
@@ -90,6 +92,14 @@ const ServiceDesk: NextPage = () => {
 
             <CollapsableSection title="Versionsverlauf" defaultClosed>
                 <ReleaseList />
+            </CollapsableSection>
+
+            <CollapsableSection title="Wiki" defaultClosed>
+                <ul>
+                    <li>
+                        <Button onClick={() => router.push("/wiki")}>Wiki</Button>
+                    </li>
+                </ul>
             </CollapsableSection>
         </>
     )
