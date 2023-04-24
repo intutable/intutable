@@ -61,7 +61,7 @@ const MyApp = (props: MyAppProps) => {
                     // TODO: figure out
                     // revalidateIfStale: true, // revalidate when ?
                     // revalidateOnMount: false, // this would revalidate when a component is mounted (better not turn off, causes unwanted behaviour)
-                    // revalidateOnFocus: false, // this would revalidate when the tab gets re-focused
+                    revalidateOnFocus: false, // this would revalidate when the tab gets re-focused
                     // revalidateOnReconnect: true, // revalidate if the browser lost network connection
                 }}
             >
