@@ -19,6 +19,20 @@ export const ConstraintValidationButton: React.FC<{ onClick?: () => void }> = ({
 
     if (currentInputMask == null) return null
 
+    if (userSettings?.constraintValidation === "never")
+        return (
+            <Tooltip
+                arrow
+                placement="right"
+                title="Constraints wurden deaktiviert."
+                TransitionComponent={Zoom}
+            >
+                <IconButton color="error" onClick={onClick}>
+                    <SyncDisabledIcon />
+                </IconButton>
+            </Tooltip>
+        )
+
     // if an error occured, always display it first
     if (state.runtimeErrors.length > 0)
         return (
