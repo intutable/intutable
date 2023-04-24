@@ -185,8 +185,6 @@ type PageProps = {
 const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
     props: PageProps
 ) => {
-    console.log("render TablePage", { props })
-
     return (
         <SelectedRowsContextProvider>
             <HeaderSearchFieldProvider>
