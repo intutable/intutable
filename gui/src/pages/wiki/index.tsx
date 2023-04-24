@@ -1,29 +1,25 @@
-import { Alert, Box, Chip, Divider, Stack, Typography } from "@mui/material"
+import { Box, Chip, Stack, Typography } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import { useUser, withSessionSsr } from "auth"
 import MetaTitle from "components/MetaTitle"
-import Link from "components/Link"
-import type { NextPage } from "next"
-import { ReleaseNotification } from "components/Release Notes/ReleaseNotification"
 import { useUserSettings } from "hooks/useUserSettings"
-import { Greeting } from "components/Greeting"
-import Image from "next/image"
-import { useTheme } from "@mui/material/styles"
-import { QuickLinks } from "components/QuickLinks"
-import { IncompleteUserSettingsWarning } from "components/IncompleteUserSettingsWarning"
+import type { NextPage } from "next"
+import { useRouter } from "next/router"
 import { withSSRCatch } from "utils/withSSRCatch"
 
 export type MarkdownPage = {
     /** path to the .md file */
     file: string
     title: string
-    url: string
+    /** arbitrary */
+    slug: string
 }
 
 export const WikiPages: MarkdownPage[] = [
     {
         file: "shared/input-masks/README.md",
         title: "Eingabemasken",
-        url: "/wiki/input-masks",
+        slug: "input-masks",
     },
 ]
 
@@ -32,9 +28,7 @@ export const WikiBadge: React.FC = () => (
 )
 
 const Wiki: NextPage = () => {
-    const { user } = useUser()
-    const { userSettings } = useUserSettings()
-    const theme = useTheme()
+    const router = useRouter()
 
     return (
         <>
@@ -48,7 +42,9 @@ const Wiki: NextPage = () => {
             <Box>
                 <ul>
                     {WikiPages.map(page => (
-                        <li key={page.url}>{page.title}</li>
+                        <li key={page.url} onClick={() => router.push(page.url)}>
+                            {page.title}
+                        </li>
                     ))}
                 </ul>
             </Box>

@@ -1,23 +1,18 @@
-import { Alert, Box, Chip, Divider, Stack, Typography } from "@mui/material"
-import { useUser, withSessionSsr } from "auth"
+import { Stack, Typography } from "@mui/material"
+import { withSessionSsr } from "auth"
 import MetaTitle from "components/MetaTitle"
-import Link from "components/Link"
-import type { NextPage } from "next"
-import { ReleaseNotification } from "components/Release Notes/ReleaseNotification"
-import { useUserSettings } from "hooks/useUserSettings"
-import { Greeting } from "components/Greeting"
-import Image from "next/image"
-import { useTheme } from "@mui/material/styles"
-import { QuickLinks } from "components/QuickLinks"
-import { IncompleteUserSettingsWarning } from "components/IncompleteUserSettingsWarning"
-import { withSSRCatch } from "utils/withSSRCatch"
+import * as fse from "fs-extra"
 import { parseQuery } from "hooks/useAPI"
-import { WikiBadge } from "."
+import type { NextPage } from "next"
+import { withSSRCatch } from "utils/withSSRCatch"
+import { MarkdownPage, WikiBadge, WikiPages } from "."
 
-const WikiPage: NextPage = () => {
-    const { user } = useUser()
-    const { userSettings } = useUserSettings()
-    const theme = useTheme()
+type WikiPageProps = MarkdownPage & {
+    content: string
+}
+
+const WikiPage: NextPage = props => {
+    console.log(props)
 
     return (
         <>
@@ -31,8 +26,17 @@ const WikiPage: NextPage = () => {
     )
 }
 
-export const getServerSideProps = withSSRCatch(
+export const getStaticPaths = withSSRCatch(
     withSessionSsr(async context => {
+        return {
+            paths: WikiPages.map(page => ({ params: { wikipage: page.slug } })),
+            fallback: false,
+        }
+    })
+)
+
+export const getStaticProps = withSSRCatch(
+    withSessionSsr<WikiPageProps>(async context => {
         const user = context.req.session.user
         if (user == null || user.isLoggedIn === false)
             return {
@@ -41,10 +45,26 @@ export const getServerSideProps = withSSRCatch(
 
         const { wikipage } = parseQuery<{ wikipage: string }>(context.query, ["wikipage"])
 
-        // TODO: load file and export markdown as string
+        const page = WikiPages.find(page => page.url === wikipage)
+        if (page == null)
+            return {
+                notFound: true,
+            }
 
-        return {
-            props: {},
+        try {
+            // load file and export markdown as string
+            const file = await fse.readFile(page.file)
+            const content = file.toString()
+            return {
+                props: {
+                    ...page,
+                    content,
+                },
+            }
+        } catch (error) {
+            return {
+                notFound: true,
+            }
         }
     })
 )
