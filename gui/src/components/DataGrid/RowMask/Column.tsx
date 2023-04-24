@@ -5,7 +5,7 @@ import { Box, IconButton, Stack, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useRowMask } from "context/RowMaskContext"
 import { useView } from "hooks/useView"
-import React, { useMemo, useState } from "react"
+import React, { useId, useMemo, useState } from "react"
 import { Column } from "types"
 import { MergedColumn } from "./mergeInputMaskColumn"
 
@@ -36,11 +36,9 @@ export const ColumnAttributesWindowButton: React.FC<{
 export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) => {
     const theme = useTheme()
     const { data: view } = useView()
-    const [isHovering, setIsHovering] = useState<boolean>(false)
     const { row, inputMask } = useRowMask()
     const isInputMask = inputMask != null
 
-    // BUG: this causes the input component to rerender every time a state is changed
     const cell = useMemo(() => cellMap.instantiate(column), [column])
     const Icon = React.memo(cell.icon)
     const Input = React.memo(cell.ExposedInput)
@@ -55,8 +53,6 @@ export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) =>
     return (
         <>
             <Box
-                onMouseEnter={() => setIsHovering(true)}
-                onMouseLeave={() => setIsHovering(false)}
                 sx={{
                     bgcolor: "inherit",
                     "&:hover": {
@@ -68,6 +64,11 @@ export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) =>
                     py: 1.5,
                     boxSizing: "border-box",
                     position: "relative",
+                    ...(isInputMask === false && {
+                        "&:hover .ColumnAttributesWindowButton": {
+                            display: "block",
+                        },
+                    }),
                 }}
             >
                 <Stack
@@ -116,7 +117,6 @@ export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) =>
                         content={content}
                         row={selectedRow}
                         column={column}
-                        hoveringOnParent={isHovering}
                         placeholder={column.inputPlaceholderText}
                         label={
                             column.suppressInputLabel !== true ? (column.name as string) : undefined
@@ -125,19 +125,16 @@ export const RowMaskColumn: React.FC<{ column: MergedColumn }> = ({ column }) =>
                     />
 
                     {/* edit icon */}
-                    {isInputMask === false && (
-                        <>
-                            <Box sx={{ flexGrow: 1 }} />
-                            {isHovering && (
-                                <>
-                                    {/* {column.kind === "link" && <AddLookupButton />} */}
-                                    <ColumnAttributesWindowButton
-                                        column={column as Column.Serialized}
-                                    />
-                                </>
-                            )}
-                        </>
-                    )}
+                    <Box
+                        className="ColumnAttributesWindowButton"
+                        sx={{
+                            display: "none",
+                        }}
+                    >
+                        <Box sx={{ flexGrow: 1 }} />
+                        {/* {column.kind === "link" && <AddLookupButton />} */}
+                        <ColumnAttributesWindowButton column={column as Column.Serialized} />
+                    </Box>
                 </Stack>
             </Box>
         </>

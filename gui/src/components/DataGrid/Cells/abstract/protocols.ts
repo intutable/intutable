@@ -48,7 +48,6 @@ export type ExposedInputProps<T = unknown, R = Record<string, unknown>> = {
     content: T
     row: Row
     column: Column.Deserialized | CalculatedColumn<Row>
-    hoveringOnParent: boolean
     forwardProps?: R
     forwardSX?: SxProps<Theme>
     /** @default false */

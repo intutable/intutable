@@ -22,7 +22,6 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
     const theme = useTheme()
     const { row, inputMask } = useRowMask()
     const { data: view } = useView()
-    const [isHovering, setIsHovering] = useState<boolean>(false)
 
     const collapsable = group.collapsable ?? false
     const [collapsed, setCollapsed] = useState<boolean>(group.collapsed ?? false)
@@ -37,8 +36,6 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
 
     return (
         <Box
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
             sx={{
                 bgcolor: "inherit",
                 "&:hover": {
@@ -135,7 +132,6 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
                                             ? (column.name as string)
                                             : undefined
                                     }
-                                    hoveringOnParent={isHovering}
                                     required={column.inputRequired}
                                 />
                             </Grid>
