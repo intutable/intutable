@@ -16,7 +16,7 @@ export const useInputMask = () => {
     const { inputMask } = useRowMask()
 
     const view = data ? (data as unknown as UNSAFE_ViewData) : null
-    const inputMasks = view ? view.inputMasks : []
+    const inputMasks = view ? view.inputMasks : null
     // const columns = view ? overrideColumns(view., currentInputMask) : null
 
     // const overriden: ViewData | null = currentInputMask ? overrideColumns(view.columns, currentInputMask) : null
@@ -26,6 +26,7 @@ export const useInputMask = () => {
     // TODO: dont let them revalidate, since they are read only
 
     return {
+        /** @deprecated unstable */
         inputMasks,
         /** @deprecated Use `inputMask` from `useRowMask` instead */
         currentInputMask: inputMask,

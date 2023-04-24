@@ -9,6 +9,12 @@ const userRoute = async (req: NextApiRequest, res: NextApiResponse) => {
         if (req.session == null || req.session.user == null) throw new Error("No session")
 
         const user = await getCurrentUser(req.session.user.authCookie)
+
+        // discrepancy between session and backend
+        if (user == null && req.session.user.isLoggedIn) {
+            req.session.destroy()
+        }
+
         if (user == null)
             return res.json({
                 isLoggedIn: false,

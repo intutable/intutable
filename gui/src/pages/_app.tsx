@@ -7,7 +7,8 @@ import { deserializeView, logger } from "api/middelware"
 import Layout from "components/Layout/Layout"
 import { UndoContextProvider } from "context/UndoContext"
 import { useUserSettings } from "hooks/useUserSettings"
-import type { AppProps } from "next/app"
+import type { AppContext, AppProps } from "next/app"
+import App from "next/app"
 import Head from "next/head"
 import { SnackbarProvider } from "notistack"
 import React, { useMemo } from "react"
@@ -46,7 +47,7 @@ const MyApp = (props: MyAppProps) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <meta charSet="utf-8" />
                 {/* Favicons */}
-                <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+                <link rel="shortcut icon" href="/favicon.ico" />
                 {/* Safari Tab Bar Style */}
                 <meta name="theme-color" content={theme.palette.primary.main} />
             </Head>
@@ -57,7 +58,11 @@ const MyApp = (props: MyAppProps) => {
                     use: [logger, deserializeView],
                     onError: err => console.error(err),
                     // suspense: true, // not supported for ssr as of now
-                    revalidateOnFocus: false,
+                    // TODO: figure out
+                    // revalidateIfStale: true, // revalidate when ?
+                    // revalidateOnMount: false, // this would revalidate when a component is mounted (better not turn off, causes unwanted behaviour)
+                    revalidateOnFocus: false, // this would revalidate when the tab gets re-focused
+                    // revalidateOnReconnect: true, // revalidate if the browser lost network connection
                 }}
             >
                 <ThemeProvider theme={theme}>
@@ -82,5 +87,23 @@ const MyApp = (props: MyAppProps) => {
         </CacheProvider>
     )
 }
+
+// BUG: if there are some UI bugs regarding the theme
+// (e.g. entering the landing page after first load)
+// then this might be the cause
+// TODO: does not work together with mui like this
+// MyApp.getInitialProps = async (appContext: AppContext) => {
+//     const {
+//         ctx: { err },
+//     } = appContext
+//     const componentProps = await App.getInitialProps(appContext)
+
+//     // Return early if there is an error
+//     // pass the error to the error page
+//     if (err) return { ...componentProps, err }
+
+//     // otherwise continue
+//     return { ...componentProps } // or return inside `pageProps`
+// }
 
 export default MyApp

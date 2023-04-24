@@ -1,7 +1,7 @@
 import { Alert, Box, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import Link from "components/Link"
-import { releases } from "public/releases"
+import { releases } from "assets/releases"
 import { ReleaseProps } from "./Release"
 const byDate = (a: ReleaseProps, b: ReleaseProps) => b.date.getTime() - a.date.getTime()
 const getLatestRelease = (releases: ReleaseProps[]) => releases.sort(byDate)[0]

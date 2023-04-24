@@ -37,7 +37,7 @@ export const TableNavigator: React.FC = () => {
     return (
         <>
             <ToggleButtonGroup
-                value={currentTable!.id}
+                value={currentTable?.id}
                 exclusive
                 onChange={changeTable}
                 color="primary"

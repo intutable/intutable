@@ -103,12 +103,7 @@ export const InputMaskCTACard: React.FC<{ card: InputMaskCallToActionCard }> = (
             <CardActions sx={{ justifyContent: "flex-end" }}>
                 <Button
                     size="small"
-                    onClick={() =>
-                        router.push(
-                            card.url,
-                            typeof card.url === "string" ? card.url : card.url.pathname!
-                        )
-                    }
+                    onClick={() => router.push(card.url)}
                     disabled={card.inputMask.disabled}
                 >
                     Einträge ansehen

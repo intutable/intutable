@@ -221,7 +221,7 @@ const ProjectList: React.FC = () => {
         }
     }
 
-    if (error) return <>Error</>
+    if (error) return <>Error: {Object.prototype.toString.call(makeError(error))}</>
     if (projects == null) return <CircularProgress />
 
     return (

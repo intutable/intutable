@@ -189,8 +189,8 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
         <SelectedRowsContextProvider>
             <HeaderSearchFieldProvider>
                 <RowMaskProvider
-                    row={props.openRow ? { _id: props.openRow } : undefined}
-                    inputMask={props.inputMask ? { id: props.inputMask } : undefined}
+                    row={props.openRow ? { _id: props.openRow } : null}
+                    inputMask={props.inputMask ? { id: props.inputMask } : null}
                 >
                     <LockedColumnsProvider>
                         <TablePage />
@@ -219,7 +219,8 @@ export const getServerSideProps = withSSRCatch(
                 notFound: true,
             }
 
-        // TODO: put this inside `useAPI`
+        // select the first view if none specified
+        // BUG: but this resets other url params like `inputMask`
         if (viewId == null) {
             const viewList = await fetcher<ViewDescriptor[]>({
                 url: `/api/views/${tableId}`,

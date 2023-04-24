@@ -3,7 +3,7 @@ import { useTheme } from "@mui/material/styles"
 import MetaTitle from "components/MetaTitle"
 import { ReleaseList } from "components/Release Notes/ReleaseList"
 import type { NextPage } from "next"
-import { supportedFeatures } from "public/supportedFeatures"
+import { supportedFeatures } from "assets/supportedFeatures"
 import SupportedFeatures from "components/SupportedFeatures"
 import { CollapsableSection } from "components/CollapsableSection"
 

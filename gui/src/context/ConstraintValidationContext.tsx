@@ -134,7 +134,9 @@ export const ConstraintValidationProvider: React.FC<ConstraintValidationProvider
 
     // state
     const [state, dispatch] = useReducer(reducer, initialValidationState)
-    const [loading, setLoading] = useState<boolean>(true)
+    const [loading, setLoading] = useState<boolean>(
+        userSettings ? (userSettings?.constraintValidation !== "never" ? true : false) : true
+    )
 
     const [test, setTest] = useState(false)
 

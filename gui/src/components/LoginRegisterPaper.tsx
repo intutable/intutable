@@ -2,7 +2,7 @@ import React from "react"
 import { Paper as MUIPaper, Box, Stack, Typography, Button, CircularProgress } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import Image from "next/image"
-import BGImage from "public/login-bg.jpg"
+
 import Link, { CombinedLinkProps } from "components/Link"
 
 type PaperProps = {
@@ -51,12 +51,12 @@ export const LoginRegisterPaper: React.FC<PaperProps> = props => {
                         }
                     `}</style>
                     <Image
-                        src={BGImage}
+                        src="/login-bg.jpg"
                         alt="Hintergrund Bild"
                         layout="fill"
                         objectFit="cover"
                         objectPosition="20% 50%"
-                        placeholder="blur"
+                        // placeholder="blur"
                         className="login-page-bg-img"
                     />
                     <Typography

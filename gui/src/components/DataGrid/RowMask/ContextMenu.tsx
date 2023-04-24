@@ -50,14 +50,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
     const createShareLink = () => {
         try {
             if (!project || !table || !inputMask || !row || !view) throw new Error()
-            // TODO: this might be not appropriate
-            const viewParam =
-                isViewIdOrigin(inputMask.origin) || isViewNameOrigin(inputMask.origin)
-                    ? `&viewId=${view.descriptor.id}`
-                    : ""
-            const link =
-                `${window.location.origin}/project/${project.id}/table/${table.id}?inputMask=${inputMask.id}&record=${row._id}` +
-                viewParam
+            const link = `${window.location.origin}/project/${project.id}/table/${table.id}?inputMask=${inputMask.id}&record=${row._id}&viewId=${view.descriptor.id}`
             navigator.clipboard.writeText(link)
             snackSuccess("Link in die Zwischenablage kopiert!")
         } catch (error) {
