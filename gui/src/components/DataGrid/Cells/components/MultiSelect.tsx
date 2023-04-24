@@ -306,7 +306,9 @@ export class MultiSelect extends Cell {
                         <Divider key="Select-Menu-Divider" />,
                         <MenuAddItemTextField
                             key="Select-Menu-Input"
-                            onAdd={value => (props.content ? [...props.content, value] : [value])}
+                            onAdd={value =>
+                                handleChange(props.content ? [...props.content, value] : [value])
+                            }
                         />,
                     ]}
                 </MuiSelect>
