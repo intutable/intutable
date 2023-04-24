@@ -50,10 +50,6 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
         initialState.suppressRowChange
     )
 
-    useEffect(() => {
-        console.log("row mask state change:", { row, inputMask })
-    }, [row, inputMask])
-
     const _setRow: typeof setRow = (...props: Parameters<typeof setRow>) => {
         if (suppressRowChange) {
             snackError(

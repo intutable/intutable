@@ -134,6 +134,7 @@ export const MenuAddItemTextField: React.FC<{
 
     const handleEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
         e.stopPropagation()
+        if (input === "") return
         if (e.key === "Enter") props.onAdd(input)
     }
 
@@ -159,6 +160,7 @@ export const MenuAddItemTextField: React.FC<{
         </MenuItem>
     )
 }
+
 export class Select extends Cell {
     public brand = "select"
     public label = "Auswahlliste"

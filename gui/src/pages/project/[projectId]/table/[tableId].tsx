@@ -203,18 +203,18 @@ const Page: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
 
 export const getServerSideProps = withSSRCatch(
     withSessionSsr(async context => {
+        const user = context.req.session.user
+        if (user == null || user.isLoggedIn === false)
+            return {
+                notFound: true,
+            }
+
         const { projectId, tableId, viewId } = parseQuery<APIQueries>(context.query, [
             "projectId",
             "tableId",
             "viewId",
         ])
         if (projectId == null || tableId == null)
-            return {
-                notFound: true,
-            }
-
-        const user = context.req.session.user
-        if (user == null || user.isLoggedIn === false)
             return {
                 notFound: true,
             }
