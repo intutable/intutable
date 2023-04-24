@@ -22,6 +22,7 @@ import { useView } from "hooks/useView"
 import { useMemo, useRef, useState } from "react"
 import { FormatterProps } from "react-data-grid"
 import { Column, Row } from "types"
+import { arraysAreEqual } from "utils/arraysAreEqual"
 import { stringToColor } from "utils/stringToColor"
 import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
@@ -206,6 +207,7 @@ export class MultiSelect extends Cell {
         const theme = useTheme()
 
         const handleChange = async (selected: string[]) => {
+            if (props.content && arraysAreEqual(selected, props.content)) return
             try {
                 const reset = selected.includes("--KEINE-AUSWAHL--")
                 await updateRow(props.column, props.row, reset ? null : selected)

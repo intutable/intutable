@@ -45,8 +45,11 @@ export class Num extends NumericCell {
             if (Num.isValid(e.target.value)) setValue(e.target.value)
         }
 
+        const hasChanged = (): boolean => value !== props.content
+
         const handleBlur = async () => {
             try {
+                if (hasChanged() === false) return
                 await updateRow(props.column, props.row, value)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
@@ -60,7 +63,7 @@ export class Num extends NumericCell {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 onKeyDown={e => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && hasChanged()) {
                         e.preventDefault()
                         handleBlur()
                     }
