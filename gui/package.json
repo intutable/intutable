@@ -42,6 +42,8 @@
         "react-dnd": "^16.0.0",
         "react-dnd-html5-backend": "^16.0.0",
         "react-dom": "^18.0.0",
+        "react-markdown": "^8.0.7",
+        "remark-gfm": "^3.0.1",
         "swr": "^2.0.3",
         "tmp": "^0.2.1",
         "uuid": "^9.0.0"

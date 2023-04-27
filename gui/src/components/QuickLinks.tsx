@@ -1,9 +1,9 @@
-import { Box, Button, ButtonGroup, Divider, Stack, Paper } from "@mui/material"
-import SosIcon from "@mui/icons-material/Sos"
-import SettingsIcon from "@mui/icons-material/Settings"
 import ExternalLinkIcon from "@mui/icons-material/OpenInNew"
-import { useRouter } from "next/router"
+import SettingsIcon from "@mui/icons-material/Settings"
+import SosIcon from "@mui/icons-material/Sos"
+import { Button, ButtonGroup, Paper } from "@mui/material"
 import { useUser } from "auth"
+import { useRouter } from "next/router"
 
 export const QuickLinks: React.FC = () => {
     const router = useRouter()
@@ -38,7 +38,7 @@ export const QuickLinks: React.FC = () => {
                 </Button>
                 <Button
                     endIcon={<ExternalLinkIcon fontSize="small" />}
-                    onClick={() => window.open("https://www.mathi.uni-heidelberg.de", "_blank")}
+                    onClick={() => router.push("/wiki")}
                 >
                     Leitfaden
                 </Button>
