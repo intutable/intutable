@@ -1,72 +1,69 @@
-import { Stack, Typography } from "@mui/material"
-import { withSessionSsr } from "auth"
+import { Breadcrumbs, Stack, Typography } from "@mui/material"
+import Link from "components/Link"
 import MetaTitle from "components/MetaTitle"
+import { getBadges, getTypeBadge } from "components/Wiki/Badges"
 import * as fse from "fs-extra"
-import { parseQuery } from "hooks/useAPI"
-import type { NextPage } from "next"
-import { withSSRCatch } from "utils/withSSRCatch"
-import { MarkdownPage, WikiBadge, WikiPages } from "."
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next"
+import { useRouter } from "next/router"
+import ReactMakdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import { MarkdownPage, WikiPages } from "."
 
 type WikiPageProps = MarkdownPage & {
     content: string
 }
 
-const WikiPage: NextPage = props => {
-    console.log(props)
+const WikiPage: NextPage<WikiPageProps> = props => {
+    const router = useRouter()
 
     return (
         <>
-            <MetaTitle title="Wiki" />
+            <MetaTitle title={props.title} />
 
-            <Stack direction="row" alignItems="center" gap={2}>
-                <Typography variant={"h4"}>Wiki</Typography>
-                <WikiBadge />
+            <Breadcrumbs separator="›">
+                <Link href="/wiki" muiLinkProps={{ underline: "hover" }}>
+                    Wiki
+                </Link>
+                <Typography>{props.title}</Typography>
+            </Breadcrumbs>
+
+            <Stack direction="row" alignItems="center" gap={1} marginTop={3} marginBottom={8}>
+                <Typography variant={"h4"}>{props.title}</Typography>
+                {getTypeBadge(props.type)}
+                {props.badge && getBadges(props.badge)}
             </Stack>
+
+            <ReactMakdown remarkPlugins={[remarkGfm]}>{props.content}</ReactMakdown>
         </>
     )
 }
 
-export const getStaticPaths = withSSRCatch(
-    withSessionSsr(async context => {
+export const getStaticPaths: GetStaticPaths = () => {
+    return {
+        paths: WikiPages.map(page => ({ params: { wikipage: page.slug } })),
+        fallback: false, // <- allows only the paths above to be rendered
+    }
+}
+
+export const getStaticProps: GetStaticProps = async context => {
+    try {
+        const { wikipage } = context.params as { wikipage: string; [key: string]: unknown }
+        const page = WikiPages.find(page => page.slug === wikipage) // get full page object
+        if (!page) throw new Error(`Wiki page not found: ${wikipage}`)
+        const file = await fse.readFile(page.file, "utf8") // load file
+        const content = file.toString() // get markdown
+
         return {
-            paths: WikiPages.map(page => ({ params: { wikipage: page.slug } })),
-            fallback: false,
+            props: {
+                ...page,
+                content,
+            },
         }
-    })
-)
-
-export const getStaticProps = withSSRCatch(
-    withSessionSsr<WikiPageProps>(async context => {
-        const user = context.req.session.user
-        if (user == null || user.isLoggedIn === false)
-            return {
-                notFound: true,
-            }
-
-        const { wikipage } = parseQuery<{ wikipage: string }>(context.query, ["wikipage"])
-
-        const page = WikiPages.find(page => page.url === wikipage)
-        if (page == null)
-            return {
-                notFound: true,
-            }
-
-        try {
-            // load file and export markdown as string
-            const file = await fse.readFile(page.file)
-            const content = file.toString()
-            return {
-                props: {
-                    ...page,
-                    content,
-                },
-            }
-        } catch (error) {
-            return {
-                notFound: true,
-            }
+    } catch (error) {
+        return {
+            notFound: true,
         }
-    })
-)
+    }
+}
 
 export default WikiPage

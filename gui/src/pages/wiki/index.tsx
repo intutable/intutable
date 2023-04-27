@@ -1,49 +1,101 @@
-import { Box, Chip, Stack, Typography } from "@mui/material"
-import { useTheme } from "@mui/material/styles"
-import { useUser, withSessionSsr } from "auth"
+import { Box, Button, Stack, Typography } from "@mui/material"
+import { withSessionSsr } from "auth"
 import MetaTitle from "components/MetaTitle"
-import { useUserSettings } from "hooks/useUserSettings"
+import { getTypeBadge, WikiBadge } from "components/Wiki/Badges"
+import { Header } from "components/Wiki/Header"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
+import path from "path"
+import { useState } from "react"
 import { withSSRCatch } from "utils/withSSRCatch"
 
 export type MarkdownPage = {
     /** path to the .md file */
     file: string
     title: string
-    /** arbitrary */
+    /** arbitrary but unique, text based or just a uuid */
     slug: string
+    type: "user-guide" | "technical-documentation"
+    badge?: ("wiki" | "beta")[]
 }
 
 export const WikiPages: MarkdownPage[] = [
     {
-        file: "shared/input-masks/README.md",
+        file: path.join(process.cwd(), "/src/pages/wiki/pages/Projects-Tables-Views.md"),
+        title: "Projekte, Tabellen und Views",
+        slug: "projects-tables-views",
+        type: "user-guide",
+    },
+    {
+        file: path.join(process.cwd(), "/src/pages/wiki/pages/InputMasks.md"),
         title: "Eingabemasken",
-        slug: "input-masks",
+        slug: "input-masks-technical-documentation",
+        type: "technical-documentation",
+        badge: ["beta"],
+    },
+    {
+        file: path.join(process.cwd(), "/src/pages/wiki/pages/Constraints-UserGuide.md"),
+        title: "Constraints",
+        slug: "how-to-constraints",
+        type: "user-guide",
+        badge: ["beta"],
+    },
+    {
+        file: path.join(
+            process.cwd(),
+            "/src/pages/wiki/pages/Constraints-TechnicalDocumentation.md"
+        ),
+        title: "Constraints",
+        slug: "constraints-technical-documentation",
+        type: "technical-documentation",
+        badge: ["beta"],
+    },
+    {
+        file: path.join(process.cwd(), "/src/pages/wiki/pages/ProcessManagement.md"),
+        title: "Prozessmanagement",
+        slug: "process-management",
+        type: "user-guide",
+    },
+    {
+        file: path.join(process.cwd(), "/src/pages/wiki/pages/Permissions.md"),
+        title: "Nutzerrechte",
+        slug: "permissions",
+        type: "technical-documentation",
+        badge: ["beta"],
     },
 ]
 
-export const WikiBadge: React.FC = () => (
-    <Chip variant="outlined" label="Wiki" color="primary" size="small" sx={{ cursor: "help" }} />
-)
+/** Only pages with the types inside the array will show up */
+export type WikiPageTypeFilter = ("user-guide" | "technical-documentation")[]
 
 const Wiki: NextPage = () => {
     const router = useRouter()
+
+    const [filter, setFilter] = useState<WikiPageTypeFilter>([])
 
     return (
         <>
             <MetaTitle title="Wiki" />
 
-            <Stack direction="row" alignItems="center" gap={2}>
+            <Stack direction="row" alignItems="center" gap={2} marginBottom={5}>
                 <Typography variant={"h4"}>Wiki</Typography>
                 <WikiBadge />
             </Stack>
 
             <Box>
+                <Header filter={filter} setFilter={setFilter} />
                 <ul>
-                    {WikiPages.map(page => (
-                        <li key={page.url} onClick={() => router.push(page.url)}>
-                            {page.title}
+                    {WikiPages.filter(page => {
+                        if (filter.length === 0) return true
+                        return filter.includes(page.type)
+                    }).map(page => (
+                        <li key={page.slug}>
+                            <Stack direction="row" alignItems="center" gap={2}>
+                                <Button onClick={() => router.push(`/wiki/${page.slug}`)}>
+                                    {page.title}
+                                </Button>
+                                {getTypeBadge(page.type)}
+                            </Stack>
                         </li>
                     ))}
                 </ul>
