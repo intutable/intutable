@@ -3,8 +3,6 @@ import { useTheme } from "@mui/material/styles"
 import MetaTitle from "components/MetaTitle"
 import { ReleaseList } from "components/Release Notes/ReleaseList"
 import type { NextPage } from "next"
-import { supportedFeatures } from "assets/supportedFeatures"
-import SupportedFeatures from "components/SupportedFeatures"
 import { CollapsableSection } from "components/CollapsableSection"
 
 const ServiceDesk: NextPage = () => {
@@ -39,20 +37,6 @@ const ServiceDesk: NextPage = () => {
                         schnellste Hilfe zu erhalten!
                     </li>
                 </ul>
-            </CollapsableSection>
-
-            <CollapsableSection title="Status zukünftiger Features" defaultClosed>
-                <ul>
-                    <li>
-                        Hier sehen Sie eine Liste möglicher Features, die in Zukunft in die App
-                        integriert werden.
-                    </li>
-                    <li>
-                        Wenn Sie selbst eine Idee für ein neues Feature oder Änderungswünsche haben,
-                        kontaktiern Sie uns gerne!
-                    </li>
-                </ul>
-                <SupportedFeatures features={supportedFeatures} />
             </CollapsableSection>
 
             <CollapsableSection title="Bekannte Bugs" defaultClosed>
