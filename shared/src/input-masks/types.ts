@@ -59,11 +59,6 @@ export type Divider = { __component: "divider"; index: number; label?: string }
 export type Note = { __component: "note"; index: number; text: string; headline?: string }
 export type InputMaskComponents = Divider | Note
 
-export type Rule = {
-    [key in keyof SerializedColumn]?: Permission
-}
-export type Permission = unknown
-
 export type InputMask = {
     // -- meta --
     /** unique identifier; pass a uuuidv4 to this */
