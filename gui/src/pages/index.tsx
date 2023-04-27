@@ -3,7 +3,7 @@ import { useUser } from "auth"
 import MetaTitle from "components/MetaTitle"
 import Link from "components/Link"
 import type { NextPage } from "next"
-import { ReleaseNotification } from "components/ReleaseNotification"
+
 import { useUserSettings } from "hooks/useUserSettings"
 import { Greeting } from "components/Greeting"
 import Image from "next/image"
