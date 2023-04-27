@@ -30,9 +30,6 @@ export type UserSettings = {
     acknowledgedConstraintDangers: boolean
     // --- features ---
     bookmarkedRecords: Bookmark[]
-    // TODO: check if there's a new version
-    // then just reset to null
-    acknowledgedReleaseNotes: VersionTag | null
 }
 
 // dont delete, will be used for initial values
@@ -49,7 +46,6 @@ export const DefaultUserSettings: UserSettings = {
     constraintValidation: "never",
     saveMismatchingRecords: true,
     acknowledgedConstraintDangers: false,
-    acknowledgedReleaseNotes: null,
 }
 
 // TODO: connect to db ✅
