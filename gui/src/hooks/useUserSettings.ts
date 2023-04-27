@@ -6,6 +6,8 @@ import { useUser } from "auth"
 import useSWR from "swr"
 import { Row } from "types"
 import { Bookmark } from "components/DataGrid/RowMask/Bookmark"
+import { VersionTag } from "types/VersionTag"
+import { useEffect } from "react"
 
 export type UserSettings = {
     // --- user account ---
@@ -28,6 +30,9 @@ export type UserSettings = {
     acknowledgedConstraintDangers: boolean
     // --- features ---
     bookmarkedRecords: Bookmark[]
+    // TODO: check if there's a new version
+    // then just reset to null
+    acknowledgedReleaseNotes: VersionTag | null
 }
 
 // dont delete, will be used for initial values
@@ -44,6 +49,7 @@ export const DefaultUserSettings: UserSettings = {
     constraintValidation: "never",
     saveMismatchingRecords: true,
     acknowledgedConstraintDangers: false,
+    acknowledgedReleaseNotes: null,
 }
 
 // TODO: connect to db ✅

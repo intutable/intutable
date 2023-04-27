@@ -6,6 +6,8 @@ import { ReleaseProps } from "./Release"
 const byDate = (a: ReleaseProps, b: ReleaseProps) => b.date.getTime() - a.date.getTime()
 const getLatestRelease = (releases: ReleaseProps[]) => releases.sort(byDate)[0]
 
+// TODO:
+
 export const ReleaseNotification: React.FC = () => {
     const latestRelease = getLatestRelease(releases)
     const theme = useTheme()

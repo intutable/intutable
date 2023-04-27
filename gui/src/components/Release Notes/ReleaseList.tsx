@@ -5,6 +5,20 @@ import { ReleaseProps } from "./Release"
 import { releases } from "assets/releases"
 const byDate = (a: ReleaseProps, b: ReleaseProps) => b.date.getTime() - a.date.getTime()
 import { useTheme } from "@mui/material/styles"
+import { VersionTag } from "types/VersionTag"
+
+export type Release = {
+    version: VersionTag
+    title: string
+    date: Date
+    /** optional release notes page */
+    releaseNotes?: {
+        /** path to a release notes file in markdown format */
+        file: string
+        /** arbitrary but unique */
+        slug: string
+    }
+}
 
 export const ReleaseList: React.FC = () => {
     return (
