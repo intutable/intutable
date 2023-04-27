@@ -1,7 +1,6 @@
 import { Alert, Box, Button, Divider, Paper, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import MetaTitle from "components/MetaTitle"
-import { ReleaseList } from "components/Release Notes/ReleaseList"
 import type { NextPage } from "next"
 import { CollapsableSection } from "components/CollapsableSection"
 import { Router, useRouter } from "next/router"
@@ -75,7 +74,9 @@ const ServiceDesk: NextPage = () => {
             </CollapsableSection>
 
             <CollapsableSection title="Versionsverlauf" defaultClosed>
-                <ReleaseList />
+                <Button onClick={() => router.push("/changelog")}>
+                    Änderungsprotokoll (CHANGELOG)
+                </Button>
             </CollapsableSection>
 
             <CollapsableSection title="Wiki" defaultClosed>

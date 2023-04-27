@@ -1,16 +1,19 @@
 import { Alert, Box, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import Link from "components/Link"
-import { releases } from "assets/releases"
-import { ReleaseProps } from "./Release"
+
+import { useEffect } from "react"
 const byDate = (a: ReleaseProps, b: ReleaseProps) => b.date.getTime() - a.date.getTime()
 const getLatestRelease = (releases: ReleaseProps[]) => releases.sort(byDate)[0]
-
-// TODO:
 
 export const ReleaseNotification: React.FC = () => {
     const latestRelease = getLatestRelease(releases)
     const theme = useTheme()
+
+    useEffect(() => {
+        // reset `acknowledgedReleaseNotes` in user settings once a new version is available
+        const lastAcknowledgedRelease = null
+    }, [])
 
     if (releases.length === 0) return null
 
