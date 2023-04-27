@@ -47,7 +47,9 @@ export const InputMaskSettings: React.FC = () => {
                             <ToggleButton value="always" disabled>
                                 Immer
                             </ToggleButton>
-                            <ToggleButton value="opening-closening">Öffnen/Schließen</ToggleButton>
+                            <ToggleButton value="opening-closening" disabled>
+                                Öffnen/Schließen
+                            </ToggleButton>
                         </ToggleButtonGroup>
                     </ListItem>
 
