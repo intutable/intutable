@@ -293,7 +293,9 @@ export class Select extends Cell {
 
         const changeOption = async (value: string) => {
             try {
-                await updateRow(props.column, props.row, value === "" ? null : value)
+                const val = value === "" ? null : value
+                if (val === props.content) return
+                await updateRow(props.column, props.row, val)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
             }

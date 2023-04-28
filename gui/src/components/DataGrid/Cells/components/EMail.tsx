@@ -80,12 +80,14 @@ export class EMail extends Cell {
 
         const [value, setValue] = useState(props.content ?? "")
         const isEmpty = value == null || value === ""
+        const hasChanged = (): boolean => value !== props.content
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
         const handleBlur = async () => {
             if (EMail.isValid(value) === false) return
             try {
+                if (hasChanged() === false) return
                 await updateRow(props.column, props.row, value)
             } catch (e) {
                 snackError("Der Wert konnte nicht geändert werden")
@@ -98,7 +100,7 @@ export class EMail extends Cell {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 onKeyDown={e => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && hasChanged()) {
                         e.preventDefault()
                         handleBlur()
                     }

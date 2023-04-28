@@ -121,10 +121,12 @@ export class Time extends TempusCell {
 
             const [content, setContent] = useState(props.content)
             const isEmpty = content == null
+            const hasChanged = (): boolean => content !== props.content
 
             const handleChange = async (value: number | null) => {
                 if (Time.isValid(value)) setContent(value)
                 try {
+                    if (hasChanged() === false) return
                     await updateRow(props.column, props.row, value)
                 } catch (e) {
                     snackError("Der Wert konnte nicht geändert werden")
