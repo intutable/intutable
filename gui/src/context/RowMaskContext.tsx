@@ -64,9 +64,16 @@ export const RowMaskProvider: React.FC<RowMaskProviderProps> = props => {
     const filteredRow = useMemo(() => {
         if (!view || !row) return null
         const filtered = view.rows.find(r => r._id === row._id)
-        if (!filtered)
-            throw new Error("Row Mask: Could not find the selected row in the view: " + row._id)
+        if (!filtered) {
+            // this might occur when the user deletes a row while the row mask is open
+            // instead of throwing, just select the nearest row
+            // throw new Error("Row Mask: Could not find the selected row in the view: " + row._id)
+            const nearestRow = view.rows[0] // since we have no index (only the id), just select the first one
+            _setRow({ _id: nearestRow._id })
+            return nearestRow
+        }
         return filtered
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [row, view])
 
     // the whole input mask based on the id in the state `inputMask`
