@@ -104,47 +104,51 @@ export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, 
                 )}
             </Stack>
 
-            {(collapsed === false || collapsable === false) && (
-                <Grid container spacing={1}>
-                    {columns.sort(ColumnUtility.sortByIndex).map(column => {
-                        const cell = cellMap.instantiate(column)
-                        // const Icon = cell.icon
-                        const Input = React.memo(cell.ExposedInput)
+            <Grid
+                container
+                spacing={1}
+                sx={{
+                    display: collapsed === false || collapsable === false ? null : "none",
+                }}
+            >
+                {columns.sort(ColumnUtility.sortByIndex).map(column => {
+                    const cell = cellMap.instantiate(column)
+                    // const Icon = cell.icon
+                    const Input = React.memo(cell.ExposedInput)
 
-                        const groupCol = group.columns.find(col =>
-                            isColumnIdOrigin(col) ? col.id === column.id : col.name === column.name
-                        )
-                        if (groupCol === undefined)
-                            throw new Error("Could not find the column in the group!")
+                    const groupCol = group.columns.find(col =>
+                        isColumnIdOrigin(col) ? col.id === column.id : col.name === column.name
+                    )
+                    if (groupCol === undefined)
+                        throw new Error("Could not find the column in the group!")
 
-                        const selectedRow = row
+                    const selectedRow = row
 
-                        return (
-                            <Grid
-                                item
-                                xs={parseInt(groupCol.size)}
-                                key={column.id}
-                                sx={{
-                                    overflow: "hidden",
-                                }}
-                            >
-                                <Input
-                                    content={selectedRow[column.key]}
-                                    row={selectedRow}
-                                    column={column}
-                                    placeholder={column.inputPlaceholderText}
-                                    label={
-                                        column.suppressInputLabel !== true
-                                            ? (column.name as string)
-                                            : undefined
-                                    }
-                                    required={column.inputRequired}
-                                />
-                            </Grid>
-                        )
-                    })}
-                </Grid>
-            )}
+                    return (
+                        <Grid
+                            item
+                            xs={parseInt(groupCol.size)}
+                            key={column.id}
+                            sx={{
+                                overflow: "hidden",
+                            }}
+                        >
+                            <Input
+                                content={selectedRow[column.key]}
+                                row={selectedRow}
+                                column={column}
+                                placeholder={column.inputPlaceholderText}
+                                label={
+                                    column.suppressInputLabel !== true
+                                        ? (column.name as string)
+                                        : undefined
+                                }
+                                required={column.inputRequired}
+                            />
+                        </Grid>
+                    )
+                })}
+            </Grid>
         </Box>
     )
 }
