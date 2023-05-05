@@ -21,12 +21,13 @@ export type ColumnGroupComponent = {
 export const ColumnGroupComponent: React.FC<ColumnGroupComponent> = ({ columns, group }) => {
     const theme = useTheme()
     const { row, inputMask } = useRowMask()
-    const { data: view } = useView({
-        swrOptions: {
-            // revalidateOnMount: false,
-            // revalidateIfStale: false,
-        },
-    })
+    const { data: view } = useView()
+    // const { data: view } = useView({
+    //     swrOptions: {
+    //         // revalidateOnMount: false,
+    //         // revalidateIfStale: false,
+    //     },
+    // })
 
     const collapsable = group.collapsable ?? false
     const [collapsed, setCollapsed] = useState<boolean>(group.collapsed ?? false)
