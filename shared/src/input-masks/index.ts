@@ -28,3 +28,5 @@ export const getInputMasksFor = (view: ViewInfo): InputMask[] => {
     // filter inactive input masks
     return match.filter(inputMask => inputMask.active)
 }
+
+export const getInputMask = (id: string) => DB.getAll().find(inputMask => inputMask.id === id)
