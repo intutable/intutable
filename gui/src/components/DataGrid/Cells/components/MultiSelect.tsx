@@ -247,6 +247,8 @@ export class MultiSelect extends Cell {
                     onChange={e => handleChange(e.target.value as string[])}
                     multiple
                     multiline
+                    autoFocus={this.column.isUserPrimaryKey}
+                    id={"row-mask-field-" + this.column.id}
                     displayEmpty={noLabel}
                     renderValue={values => {
                         if (isEmpty)

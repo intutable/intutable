@@ -165,6 +165,8 @@ export class DateCell extends TempusCell {
                             <TextField
                                 size="small"
                                 fullWidth
+                                autoFocus={this.column.isUserPrimaryKey}
+                                id={"row-mask-field-" + this.column.id}
                                 required={props.required}
                                 label={props.label}
                                 placeholder={

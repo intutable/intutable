@@ -62,6 +62,8 @@ export class Num extends NumericCell {
                 type="number"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                autoFocus={this.column.isUserPrimaryKey}
+                id={"row-mask-field-" + this.column.id}
                 onKeyDown={e => {
                     if (e.key === "Enter" && hasChanged()) {
                         e.preventDefault()

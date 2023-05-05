@@ -228,6 +228,8 @@ export class BackwardLink extends Cell {
                     value={listItems.map(item => item.value).join(", ")}
                     disabled={this.column.editable === false}
                     label={props.label}
+                    autoFocus={this.column.isUserPrimaryKey}
+                    id={"row-mask-field-" + this.column.id}
                     required={props.required}
                     onClick={() => setMenuOpen(true)}
                     InputProps={{

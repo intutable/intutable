@@ -125,6 +125,8 @@ export class Bool extends Cell {
                             checked={value}
                             onChange={this.isReadonlyComponent ? undefined : handleChange}
                             readOnly={this.isReadonlyComponent}
+                            autoFocus={this.column.isUserPrimaryKey}
+                            id={"row-mask-field-" + this.column.id}
                             disabled={this.column.editable === false || this.isReadonlyComponent}
                         />
                     }

@@ -63,6 +63,8 @@ export class Text extends Cell {
                         handleBlur()
                     }
                 }}
+                autoFocus={this.column.isUserPrimaryKey}
+                id={"row-mask-field-" + this.column.id}
                 fullWidth
                 value={value}
                 disabled={this.column.editable === false}
