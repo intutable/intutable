@@ -20,10 +20,6 @@ export const AddPendingRow: React.FC<{ text?: string }> = ({ text }) => {
         }
     }
 
-    useEffect(() => {
-        console.log("pending:", pending)
-    }, [pending])
-
     return (
         <>
             <LoadingButton

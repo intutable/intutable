@@ -95,10 +95,11 @@ export class Bool extends Cell {
         const { snackError } = useSnacki()
 
         const [value, setValue] = React.useState(props.content)
+        const hasChanged = (): boolean => value !== props.content
 
         const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
             setValue(e.target.checked)
-            if (e.target.checked !== value) {
+            if (hasChanged()) {
                 try {
                     await updateRow(props.column, props.row, e.target.checked)
                 } catch (e) {

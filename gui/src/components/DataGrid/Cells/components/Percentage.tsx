@@ -120,6 +120,7 @@ export class Percentage extends NumericCell {
 
         const [percentage, setValue] = useState(props.content)
         const isEmpty = percentage == null || (percentage as unknown) === ""
+        const hasChanged = (): boolean => percentage !== props.content
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = e.target.value
@@ -136,7 +137,10 @@ export class Percentage extends NumericCell {
             }
 
             // validate
-            if (parsedValue === null || Percentage.isValid(parsedValue)) setValue(parsedValue)
+            if (parsedValue === null || Percentage.isValid(parsedValue)) {
+                if (hasChanged() === false) return
+                setValue(parsedValue)
+            }
         }
 
         const handleBlur = async () => {
@@ -154,7 +158,7 @@ export class Percentage extends NumericCell {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 onKeyDown={e => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && hasChanged()) {
                         e.preventDefault()
                         handleBlur()
                     }

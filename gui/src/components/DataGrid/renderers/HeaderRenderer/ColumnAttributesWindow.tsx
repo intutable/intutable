@@ -27,6 +27,7 @@ export const ColumnAttributesWindow: React.FC<ColumnAttributesWindowProps> = pro
     const { data: view } = useView()
     const original = view?.columns.find(c => c.id === column.id)
     if (!original) return <>Fehler</>
+    // fixes a bug
     const nonLockedColumn: Column.Serialized = {
         ...column,
         resizable: original.resizable,
