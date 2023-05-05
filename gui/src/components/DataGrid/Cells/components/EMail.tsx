@@ -109,6 +109,8 @@ export class EMail extends Cell {
                 disabled={this.column.editable === false}
                 label={props.label}
                 fullWidth
+                autoFocus={this.column.isUserPrimaryKey}
+                id={"row-mask-field-" + this.column.id}
                 required={props.required}
                 InputProps={{
                     endAdornment: (

@@ -113,6 +113,8 @@ export class Hyperlink extends Cell {
                     }
                 }}
                 value={value}
+                autoFocus={this.column.isUserPrimaryKey}
+                id={"row-mask-field-" + this.column.id}
                 disabled={this.column.editable === false}
                 label={props.label}
                 fullWidth

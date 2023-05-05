@@ -328,6 +328,8 @@ export class Select extends Cell {
                     value={props.content ?? ""}
                     onChange={e => changeOption(e.target.value)}
                     displayEmpty={noLabel}
+                    autoFocus={this.column.isUserPrimaryKey}
+                    id={"row-mask-field-" + this.column.id}
                     renderValue={value => {
                         if (isEmpty)
                             return (
