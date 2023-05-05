@@ -39,7 +39,9 @@ export class Text extends Cell {
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)
 
-        const hasChanged = (): boolean => value !== props.content
+        // make sure null is the same as ""
+        const hasChanged = (): boolean =>
+            props.content == null && value === "" ? false : value !== props.content
 
         const handleBlur = async () => {
             try {
