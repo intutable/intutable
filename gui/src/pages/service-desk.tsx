@@ -14,28 +14,14 @@ const ServiceDesk: NextPage = () => {
             <Typography variant={"h4"}>Service Desk</Typography>
             <Divider />
 
-            <CollapsableSection title="Schnelle Hilfe">
-                <Alert severity="error" variant="filled">
-                    Wir Entwickler entschuldigen uns für die Unannehmlichkeiten, die durch mögliche
-                    Fehler in der Software entstanden sind. Wenn Sie schnelle Hilfe benötigen, dann
-                    kontaktieren Sie uns bitte umgehend.
-                </Alert>
+            <CollapsableSection title="Support">
+                <Typography marginBottom={2}>Bitte kontaktieren Sie uns bei Problemen.</Typography>
                 <ul>
                     <li>
-                        Ticket eröffnen (langsam):{" "}
+                        Schreiben Sie uns eine Mail:{" "}
                         <a href="mailto:contact-project+intutable-dekanat-app-30881788-issue-@incoming.gitlab.com">
                             contact-project+intutable-dekanat-app-30881788-issue-@incoming.gitlab.com
                         </a>
-                    </li>
-                    <li>
-                        Entwickler kontaktieren (dringend):{" "}
-                        <a href="mailto:01faenge_notieren@icloud.com">
-                            01faenge_notieren@icloud.com
-                        </a>
-                    </li>
-                    <li>
-                        Telefon (Notfall): Kontaktieren Sie einen der HiWis telefonisch, um
-                        schnellste Hilfe zu erhalten!
                     </li>
                 </ul>
             </CollapsableSection>
@@ -77,14 +63,6 @@ const ServiceDesk: NextPage = () => {
                 <Button onClick={() => router.push("/changelog")}>
                     Änderungsprotokoll (CHANGELOG)
                 </Button>
-            </CollapsableSection>
-
-            <CollapsableSection title="Wiki" defaultClosed>
-                <ul>
-                    <li>
-                        <Button onClick={() => router.push("/wiki")}>Wiki</Button>
-                    </li>
-                </ul>
             </CollapsableSection>
         </>
     )

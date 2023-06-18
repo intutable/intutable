@@ -71,14 +71,14 @@ export type WikiPageTypeFilter = ("user-guide" | "technical-documentation")[]
 const Wiki: NextPage = () => {
     const router = useRouter()
 
-    const [filter, setFilter] = useState<WikiPageTypeFilter>([])
+    const [filter, setFilter] = useState<WikiPageTypeFilter>(["user-guide"])
 
     return (
         <>
-            <MetaTitle title="Wiki" />
+            <MetaTitle title="Manual" />
 
             <Stack direction="row" alignItems="center" gap={2} marginBottom={5}>
-                <Typography variant={"h4"}>Wiki</Typography>
+                <Typography variant={"h4"}>Manual</Typography>
                 <WikiBadge />
             </Stack>
 
@@ -103,19 +103,5 @@ const Wiki: NextPage = () => {
         </>
     )
 }
-
-export const getServerSideProps = withSSRCatch(
-    withSessionSsr(async context => {
-        const user = context.req.session.user
-        if (user == null || user.isLoggedIn === false)
-            return {
-                notFound: true,
-            }
-
-        return {
-            props: {},
-        }
-    })
-)
 
 export default Wiki
