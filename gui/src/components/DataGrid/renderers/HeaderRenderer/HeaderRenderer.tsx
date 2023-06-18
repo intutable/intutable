@@ -45,41 +45,6 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     whiteSpace: "nowrap",
                 }}
             >
-                {/* Prefix Icon Link Column */}
-                <PrefixIcon
-                    open={column.kind === "link"}
-                    title={`Verlinkte Spalte. (Ursprung: Primärspalte aus Tabelle '${
-                        foreignTable ? foreignTable.name : "Lädt..."
-                    }'.)`}
-                    iconButtonProps={{
-                        onClick: navigateToTable,
-                        disabled: foreignTable == null,
-                    }}
-                >
-                    <LinkIcon
-                        sx={{
-                            fontSize: "90%",
-                        }}
-                    />
-                </PrefixIcon>
-                {/* Prefix Icon Backward Link Column */}
-                <PrefixIcon
-                    open={column.kind === "backwardLink"}
-                    title={`Verlinkte Spalte. (Ursprung: Primärspalte aus Tabelle '${
-                        foreignTable ? foreignTable.name : "Lädt..."
-                    }'.)`}
-                    iconButtonProps={{
-                        onClick: navigateToTable,
-                        disabled: foreignTable == null,
-                    }}
-                >
-                    <LinkIcon
-                        sx={{
-                            fontSize: "90%",
-                        }}
-                    />
-                </PrefixIcon>
-
                 {/* Prefix Icon Primary Column */}
                 <PrefixIcon
                     open={column.isUserPrimaryKey === true}
@@ -88,6 +53,45 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                     <KeyIcon
                         sx={{
                             fontSize: "80%",
+                        }}
+                    />
+                </PrefixIcon>
+
+                <Box
+                    sx={{
+                        flex: 1,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                    }}
+                >
+                    <Stack direction="row" gap={0.3} alignItems="center">
+                        <Icon fontSize="small" />
+                        <Tooltip title={props.column.name} arrow>
+                            <Typography
+                                sx={{
+                                    fontWeight: "bold",
+                                }}
+                            >
+                                {props.column.name}
+                            </Typography>
+                        </Tooltip>
+                    </Stack>
+                </Box>
+
+                {/* Prefix Icon (Backward) Link Column */}
+                <PrefixIcon
+                    open={column.kind === "link" || column.kind === "backwardLink"}
+                    title={`Verlinkte Spalte. (Ursprung: Primärspalte aus Tabelle '${
+                        foreignTable ? foreignTable.name : "Lädt..."
+                    }'.)`}
+                    iconButtonProps={{
+                        onClick: navigateToTable,
+                        disabled: foreignTable == null,
+                    }}
+                >
+                    <LinkIcon
+                        sx={{
+                            fontSize: "90%",
                         }}
                     />
                 </PrefixIcon>
@@ -103,25 +107,6 @@ export const HeaderRenderer: React.FC<HeaderRendererProps<Row>> = props => {
                         }}
                     />
                 </PrefixIcon>
-
-                <Box
-                    sx={{
-                        flex: 1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                    }}
-                >
-                    <Tooltip title={props.column.name}>
-                        <Typography
-                            sx={{
-                                fontWeight: "bold",
-                            }}
-                        >
-                            <Icon fontSize="small" />
-                            {props.column.name}
-                        </Typography>
-                    </Tooltip>
-                </Box>
 
                 <Box>
                     {/* <Tooltip title="Filter">
