@@ -96,7 +96,7 @@ const PATCH = withCatchingAPIRoute(async (req, res) => {
 const DELETE = withCatchingAPIRoute(async (req, res) => {
     const { viewId, rowsToDelete } = req.body as {
         viewId: ViewId | TableId
-        rowsToDelete: number | number[]
+        rowsToDelete: number | number[] // <- ids – not indices!
     }
     const user = req.session.user!
 
