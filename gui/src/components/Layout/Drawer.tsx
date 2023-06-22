@@ -32,6 +32,7 @@ import { RoleKind } from "@backend/permissions/types"
 import { useUser } from "auth"
 import { useRouter } from "next/router"
 import React from "react"
+import ManualIcon from "@mui/icons-material/MenuBook"
 
 const drawerWidth = 240
 
@@ -182,6 +183,12 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                     activeIcon={<HistoryIcon />}
                 />
             )}
+            <DrawerLink
+                text="Manual"
+                url="/wiki"
+                nonActiveIcon={<ManualIcon />}
+                activeIcon={<ManualIcon />}
+            />
             <DrawerLink
                 text="Service Desk"
                 url="/service-desk"

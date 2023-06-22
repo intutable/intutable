@@ -42,6 +42,7 @@ import { Cell } from "../abstract/Cell"
 import { ExposedInputProps } from "../abstract/protocols"
 import { cellMap } from "../index"
 import { HelperTooltip } from "./Text"
+import DatasetLinkedOutlinedIcon from "@mui/icons-material/DatasetLinkedOutlined"
 
 type BacklinkItemProps = { _id: number }
 type FormattedListItem<T> = Omit<ListItem<T>, "value"> & { value: string }
@@ -98,8 +99,8 @@ const formatItems = <T,>(list: List<T>): FormattedListItem<T>[] => {
 
 export class BackwardLink extends Cell {
     public brand = "backward-link"
-    public label = "Liste"
-    public icon = ListIcon
+    public label = "Backward-Liste"
+    public icon = DatasetLinkedOutlinedIcon
     public canBeUserPrimaryKey = false
 
     constructor(column: Column.Serialized) {
