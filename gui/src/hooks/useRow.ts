@@ -101,34 +101,18 @@ export const useRow = (tableOptions?: TableHookOptions, viewOptions?: ViewHookOp
     }
 
     // TODO: the state should be updated differently
-    const deleteRow = async (row: { _id: number }): Promise<void> => {
-        const viewRowIndex = view!.rows.find(
-            (optimisticRow: Row) => optimisticRow._id === row._id
-        )!.index
-        const optimisticViewData = Object.assign({}, view)
-        optimisticViewData!.rows.splice(viewRowIndex, 1)
-
-        const tableRowIndex = table!.rows.find(
-            (optimisticRow: Row) => optimisticRow._id === row._id
-        )!.index
-        const optimisticTableData = Object.assign({}, table)
-        optimisticTableData!.rows.splice(tableRowIndex, 1)
-
-        mutate(
-            {
-                url: `/api/view/${view!.descriptor.id}`,
-                method: "GET",
-            },
-            updateRemote("DELETE", {
+    const deleteRow = async (row: Row): Promise<void> => {
+        await fetcher({
+            url: "/api/row",
+            method: "DELETE",
+            body: {
                 viewId: view!.descriptor.id,
                 rowsToDelete: row._id,
-            }).then(() => updateTableCache(optimisticTableData)),
-            {
-                optimisticData: optimisticViewData,
-                revalidate: false,
-                populateCache: false,
-            }
-        ).catch(() => snackError("Update fehlgeschlagen."))
+            },
+        })
+
+        await mutateTable()
+        await mutateView()
     }
 
     // TODO: the state should be updated differently

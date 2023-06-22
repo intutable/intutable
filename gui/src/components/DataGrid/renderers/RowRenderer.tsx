@@ -65,30 +65,23 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
     }
     const handleCloseContextMenu = () => setAnchorEL(null)
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleDeleteRow = useCallback(
-        async (index: number, row: Row) => {
-            try {
-                handleCloseContextMenu()
-                await deleteRow(row)
-            } catch (error) {
-                enqueueSnackbar("Die Zeile konnte nicht gelöscht werden.")
-            }
-        },
-        [deleteRow, enqueueSnackbar]
-    )
+    const handleDeleteRow = async () => {
+        try {
+            await deleteRow(props.row)
+            handleCloseContextMenu()
+        } catch (error) {
+            enqueueSnackbar("Die Zeile konnte nicht gelöscht werden.")
+        }
+    }
 
-    const handleCreateRow = useCallback(
-        async (atIndex: number) => {
-            try {
-                await createRow(atIndex)
-                handleCloseContextMenu()
-            } catch (error) {
-                enqueueSnackbar("Es konnte keine Zeile eingefügt werden.")
-            }
-        },
-        [createRow, enqueueSnackbar]
-    )
+    const handleCreateRow = async (atIndex: number) => {
+        try {
+            await createRow(atIndex)
+            handleCloseContextMenu()
+        } catch (error) {
+            enqueueSnackbar("Es konnte keine Zeile eingefügt werden.")
+        }
+    }
 
     return (
         <>
@@ -114,16 +107,16 @@ const _RowRenderer = (props: RowRendererProps<Row>) => {
                     },
                 }}
             >
-                <MenuItem onClick={handleCreateRow.bind(null, props.rowIdx)}>
+                <MenuItem onClick={() => handleCreateRow(props.rowIdx)}>
                     Zeile oberhalb einfügen
                 </MenuItem>
                 <MenuItem
-                    onClick={handleDeleteRow.bind(null, props.rowIdx, props.row)}
+                    onClick={() => handleDeleteRow()}
                     sx={{ color: theme.palette.warning.main }}
                 >
                     Zeile löschen
                 </MenuItem>
-                <MenuItem onClick={handleCreateRow.bind(null, props.rowIdx + 1)}>
+                <MenuItem onClick={() => handleCreateRow(props.rowIdx + 1)}>
                     Zeile unterhalb einfügen
                 </MenuItem>
             </Menu>
