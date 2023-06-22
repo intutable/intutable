@@ -24,20 +24,19 @@ import {
     Validatable,
 } from "./protocols"
 
-const StyledInputElement = styled("input")`
-    width: 100%;
-    font-size: 1rem;
-    font-family: Roboto, sans-serif;
-    font-weight: 400;
-    line-height: 1.4375em;
-    background: transparent;
-    padding: 6px 10px;
-    color: #20262d;
-
-    &:focus {
-        outline: none;
-    }
-`
+const StyledInputElement = styled("input")(({ theme }) => ({
+    width: "100%",
+    fontSize: "1rem",
+    fontFamily: "Roboto, sans-serif",
+    fontWeight: 400,
+    lineHeight: "1.4375em",
+    background: "transparent",
+    padding: "6px 10px",
+    color: theme.palette.text.primary,
+    "&:focus": {
+        outline: "none",
+    },
+}))
 
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
 
