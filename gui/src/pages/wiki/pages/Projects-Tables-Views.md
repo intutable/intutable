@@ -1,5 +1,3 @@
-_Die Dokumentation befindet zzt. noch im OneNote und wird in Kürze migriert._
-
 ## Projekte
 
 _TBA_

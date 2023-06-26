@@ -21,6 +21,12 @@ export type MarkdownPage = {
 
 export const WikiPages: MarkdownPage[] = [
     {
+        file: path.join(process.cwd(), "/src/pages/wiki/pages/UserAccount.md"),
+        title: "Nutzerkonto",
+        slug: "user-account",
+        type: "user-guide",
+    },
+    {
         file: path.join(process.cwd(), "/src/pages/wiki/pages/Introducion.md"),
         title: "Einführung",
         slug: "introduction",
