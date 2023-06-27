@@ -380,13 +380,17 @@ async function createForwardLinkColumn(
     )!
     const displayName =
         ((foreignUserPrimaryColumn.attributes.displayName ||
-            foreignUserPrimaryColumn.name) as string) + `(${foreignTableInfo.descriptor.name})`
+            foreignUserPrimaryColumn.name) as string) + ` (${foreignTableInfo.descriptor.name})`
     const columnIndex = homeTableInfo.columns.length
     const attributes = linkColumnAttributes(displayName, columnIndex)
     const linkColumn = await addColumnToTableView(
         connectionId,
         homeTableInfo.descriptor.id,
-        { parentColumnId: foreignUserPrimaryColumn.id, attributes, outputFunc: firstItemAggregation() },
+        {
+            parentColumnId: foreignUserPrimaryColumn.id,
+            attributes,
+            outputFunc: firstItemAggregation(),
+        },
         join.id,
         addToViews
     )
@@ -427,7 +431,7 @@ async function createBackwardLinkColumn(
     )!
     const displayName =
         ((homeUserPrimaryColumn.attributes.displayName || homeUserPrimaryColumn.name) as string) +
-        `(${homeTableInfo.descriptor.name})`
+        ` (${homeTableInfo.descriptor.name})`
     const columnIndex = foreignTableInfo.columns.length
     const cellTypeParameter = homeUserPrimaryColumn.attributes.cellType
     const attributes = backwardLinkColumnAttributes(displayName, cellTypeParameter, columnIndex)
@@ -533,7 +537,7 @@ function createRawSpecifierForLookupColumn(
     const linkKind = linkColumn.attributes.kind === "link" ? LinkKind.Forward : LinkKind.Backward
     const displayName =
         (parentColumn.attributes.displayName || parentColumn.name) +
-        `(${otherTableInfo.descriptor.name})`
+        ` (${otherTableInfo.descriptor.name})`
     const join = tableInfo.joins.find(j => j.id === linkColumn.joinId)!
     const otherTableIdColumn = otherTableInfo.columns.find(c => c.name === "_id")!
     let attributes: Partial<DB.Column>
@@ -545,11 +549,7 @@ function createRawSpecifierForLookupColumn(
             break
         case LinkKind.Backward:
             attributes = backwardLookupColumnAttributes(displayName, parentColumn, columnIndex)
-            aggregateFunction = backwardLinkAggregation(
-                join,
-                otherTableInfo,
-                otherTableIdColumn
-            )
+            aggregateFunction = backwardLinkAggregation(join, otherTableInfo, otherTableIdColumn)
             break
     }
     return { parentColumnId: parentColumn.id, attributes, outputFunc: aggregateFunction }
