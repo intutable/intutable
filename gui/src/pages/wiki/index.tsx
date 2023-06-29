@@ -45,23 +45,23 @@ export const WikiPages: MarkdownPage[] = [
         type: "technical-documentation",
         badge: ["beta"],
     },
-    {
-        file: path.join(process.cwd(), "/src/pages/wiki/pages/Constraints-UserGuide.md"),
-        title: "Constraints",
-        slug: "how-to-constraints",
-        type: "user-guide",
-        badge: ["beta"],
-    },
-    {
-        file: path.join(
-            process.cwd(),
-            "/src/pages/wiki/pages/Constraints-TechnicalDocumentation.md"
-        ),
-        title: "Constraints",
-        slug: "constraints-technical-documentation",
-        type: "technical-documentation",
-        badge: ["beta"],
-    },
+    // {
+    //     file: path.join(process.cwd(), "/src/pages/wiki/pages/Constraints-UserGuide.md"),
+    //     title: "Constraints",
+    //     slug: "how-to-constraints",
+    //     type: "user-guide",
+    //     badge: ["beta"],
+    // },
+    // {
+    //     file: path.join(
+    //         process.cwd(),
+    //         "/src/pages/wiki/pages/Constraints-TechnicalDocumentation.md"
+    //     ),
+    //     title: "Constraints",
+    //     slug: "constraints-technical-documentation",
+    //     type: "technical-documentation",
+    //     badge: ["beta"],
+    // },
     {
         file: path.join(process.cwd(), "/src/pages/wiki/pages/ProcessManagement.md"),
         title: "Prozessmanagement",

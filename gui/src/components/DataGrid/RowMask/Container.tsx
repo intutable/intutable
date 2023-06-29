@@ -66,7 +66,7 @@ export const RowMaskContainer: React.FC = () => {
 
                 <Divider />
 
-                <TurnedOffConstraintValidationAlert />
+                {/* <TurnedOffConstraintValidationAlert /> */}
 
                 <DialogContent>
                     <Stack direction="row">
@@ -113,7 +113,7 @@ export const RowMaskContainer: React.FC = () => {
                             )}
                         </Grid>
                         {/* constraints section */}
-                        {constraintSectionOpen && isInputMask && (
+                        {/* {constraintSectionOpen && isInputMask && (
                             <Box>
                                 <Stack
                                     sx={{
@@ -136,7 +136,7 @@ export const RowMaskContainer: React.FC = () => {
                                     </Box>
                                 </Stack>
                             </Box>
-                        )}
+                        )} */}
                     </Stack>
                 </DialogContent>
 
