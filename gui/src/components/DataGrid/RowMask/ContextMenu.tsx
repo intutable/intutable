@@ -93,7 +93,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                         </>
                     )}
 
-                    {inputMask && (
+                    {/* {inputMask && (
                         <>
                             <MenuItem onClick={props.toggleConstrainSection}>
                                 {props.constraintSectionOpen && (
@@ -104,7 +104,7 @@ export const RowMaskContextMenu: React.FC<RowMaskContextMenuProps> = props => {
                                 <ListItemText>Constraints</ListItemText>
                             </MenuItem>
                         </>
-                    )}
+                    )} */}
 
                     {inputMask && (
                         <MenuItem onClick={createShareLink}>

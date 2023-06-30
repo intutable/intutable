@@ -21,9 +21,15 @@ export type MarkdownPage = {
 
 export const WikiPages: MarkdownPage[] = [
     {
-        file: path.join(process.cwd(), "/src/pages/wiki/pages/Projects-Tables-Views.md"),
-        title: "Projekte, Tabellen und Views",
-        slug: "projects-tables-views",
+        file: path.join(process.cwd(), "/src/pages/wiki/pages/UserAccount.md"),
+        title: "Nutzerkonto",
+        slug: "user-account",
+        type: "user-guide",
+    },
+    {
+        file: path.join(process.cwd(), "/src/pages/wiki/pages/Introduction.md"),
+        title: "Einführung",
+        slug: "introduction",
         type: "user-guide",
     },
     {
@@ -33,34 +39,35 @@ export const WikiPages: MarkdownPage[] = [
         type: "technical-documentation",
         badge: ["beta"],
     },
-    {
-        file: path.join(process.cwd(), "/src/pages/wiki/pages/Constraints-UserGuide.md"),
-        title: "Constraints",
-        slug: "how-to-constraints",
-        type: "user-guide",
-        badge: ["beta"],
-    },
-    {
-        file: path.join(
-            process.cwd(),
-            "/src/pages/wiki/pages/Constraints-TechnicalDocumentation.md"
-        ),
-        title: "Constraints",
-        slug: "constraints-technical-documentation",
-        type: "technical-documentation",
-        badge: ["beta"],
-    },
+    // {
+    //     file: path.join(process.cwd(), "/src/pages/wiki/pages/Constraints-UserGuide.md"),
+    //     title: "Constraints",
+    //     slug: "how-to-constraints",
+    //     type: "user-guide",
+    //     badge: ["beta"],
+    // },
+    // {
+    //     file: path.join(
+    //         process.cwd(),
+    //         "/src/pages/wiki/pages/Constraints-TechnicalDocumentation.md"
+    //     ),
+    //     title: "Constraints",
+    //     slug: "constraints-technical-documentation",
+    //     type: "technical-documentation",
+    //     badge: ["beta"],
+    // },
     {
         file: path.join(process.cwd(), "/src/pages/wiki/pages/ProcessManagement.md"),
         title: "Prozessmanagement",
         slug: "process-management",
         type: "user-guide",
+        badge: ["beta"],
     },
     {
         file: path.join(process.cwd(), "/src/pages/wiki/pages/Permissions.md"),
         title: "Nutzerrechte",
         slug: "permissions",
-        type: "technical-documentation",
+        type: "user-guide",
         badge: ["beta"],
     },
 ]
