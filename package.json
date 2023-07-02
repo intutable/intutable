@@ -11,6 +11,7 @@
     ],
     "scripts": {
         "build": "npm run build -w dekanat-app-plugin && npm run build -w backend && npm run build -w database && npm run build -w gui",
+        "build:database": "npm run build -w database",
         "start": "concurrently --kill-others \"npm run start -w database\" \"npm run start -w backend\" \"npm run start -w gui\"",
         "dev": "npm run build -w database && concurrently --kill-others \"npm run start -w database\" \"npm run dev -w backend\" \"npm run dev -w gui\"",
         "lint": "npm run lint -ws --if-present",
