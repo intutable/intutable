@@ -4,7 +4,7 @@ import process from "process"
 import { Core, EventSystem } from "@intutable/core"
 import { openConnection, closeConnection, select, insert } from "@intutable/database/dist/requests"
 import { getConfig } from "shared/dist/config"
-import { schemaSetup } from "@backend/requests"
+import { schemaSetup } from "dekanat-app-plugin/dist/initialSchema"
 
 import { setCore, getCore as core, getCore } from "./core";
 import { createExampleSchema, insertExampleData } from "./example/load"
