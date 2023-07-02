@@ -96,6 +96,7 @@ import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
 import { can, getRoles } from "@intutable/user-permissions/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { initSchemaSetup } from "./initialSchema";
 
 let core: PluginLoader
 
@@ -131,6 +132,8 @@ export async function init(plugins: PluginLoader) {
         .on(req.createUserSettings.name, createUserSettings_)
         .on(req.getUserSettings.name, getUserSettings_)
         .on(req.updateUserSettings.name, updateUserSettings_)
+
+    initSchemaSetup(core)
 }
 
 async function getProjects(request: CoreRequest): Promise<ProjectDescriptor[]> {
