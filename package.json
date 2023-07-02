@@ -33,6 +33,7 @@
         "@intutable/project-management": "^3.0.0",
         "@intutable/user-authentication": "^3.0.0",
         "@intutable/user-permissions": "^0.5.0",
+        "@intutable/web-import": "^1.1.0",
         "concurrently": "^7.3.0",
         "date-fns": "^2.29.1",
         "next": "^12.3.4",
