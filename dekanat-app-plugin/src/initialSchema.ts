@@ -5,10 +5,14 @@ import {
     createStandardColumn,
     createTable,
     LinkColumnSpecifier,
-    StandardColumnSpecifier
-} from "./requests";
+    StandardColumnSpecifier,
+    createRow,
+} from "./requests"
 import { createProject, getProjects } from "@intutable/project-management/dist/requests"
 import { ProjectDescriptor, TableDescriptor } from "@intutable/project-management/dist/types"
+import { fetchFacultyLSF } from "@intutable/web-import/dist/requests"
+import { PersonData } from "@intutable/web-import/dist/scrapers/resources"
+import { insert, openConnection } from "@intutable/database/dist/requests";
 
 const ROLE_ID = 0
 let projectId = 0
@@ -104,6 +108,8 @@ async function createInitialSchemaSetup(request: CoreRequest): Promise<CoreRespo
 
     await createTableAbwesenheiten(connectionId)
     console.log("Table created: Abwesenheiten")
+
+    insertLSFData(connectionId)
 
     return {}
 }
@@ -285,7 +291,7 @@ async function createTableKontaktdaten(connectionId) {
         createStandardColumn(
             connectionId,
             table.id,
-            createStandardColumnSpecifier("Telefonnummer", "number")
+            createStandardColumnSpecifier("Telefonnummer", "string")
         )
     )
     await core.events.request(
@@ -634,4 +640,42 @@ function createLinkColumnSpecifier(foreignTableId) {
         foreignTable: foreignTableId,
     }
     return c
+}
+
+async function insertLSFData(connectionId) {
+   /*
+    @example ```
+insert("tableName", { first_name: "Max", last_name: "Muster", age: 42 })
+```
+        ```
+insert("tableName", [{ first_name: "Max", last_name: "Messer", age: 42 },
+                    { first_name: "Maria", last_name: "Gabel", age: 23 },
+                    { first_name: "Markus", last_name: "Löffel", age: 23 }
+])
+```
+*/
+    console.log("Start fetching LSF data ...")
+    const persons: PersonData[] = await core.events.request(fetchFacultyLSF(110000))
+    console.log("Finished fetching LSF data")
+
+    const connId = await core.events.request(openConnection("admin", "admin"))
+        .then(({ connectionId }) => connectionId)
+
+    let i = 0
+    let personenCounter = 1
+    for(const person of persons) {
+        console.log("Inserting person " + personenCounter + " of " + persons.length + 1)
+        await core.events.request(insert(connId, "p1_personen",
+            {index: i, nachname: person.name, vorname: person.vorname, akademischer_grad: person.titel, primary_mail: person.mail}))
+        
+        await core.events.request(insert(connId, "p1_kontaktdaten",
+            {index:i, "j#1_fk": personenCounter, mail: person.mail, telefonnummer: person.telefon}))
+
+        personenCounter++
+        i++
+    }
+
+
+
+
 }
