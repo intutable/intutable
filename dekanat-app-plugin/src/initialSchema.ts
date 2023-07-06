@@ -116,16 +116,9 @@ async function createInitialSchemaSetup(request: CoreRequest): Promise<CoreRespo
 
 async function createTablePersonen(connectionId) {
     const table: TableDescriptor = await core.events.request(
-        createTable(connectionId, ROLE_ID, projectId, "Personen", "Uni ID")
+        createTable(connectionId, ROLE_ID, projectId, "Personen", "Nachname")
     )
     personenTableId = table.id
-    await core.events.request(
-        createStandardColumn(
-            connectionId,
-            table.id,
-            createStandardColumnSpecifier("Nachname", "string")
-        )
-    )
     await core.events.request(
         createStandardColumn(
             connectionId,
@@ -138,6 +131,13 @@ async function createTablePersonen(connectionId) {
             connectionId,
             table.id,
             createStandardColumnSpecifier("Akademischer Grad", "select")
+        )
+    )
+    await core.events.request(
+        createStandardColumn(
+            connectionId,
+            table.id,
+            createStandardColumnSpecifier("Uni ID", "string")
         )
     )
     await core.events.request(
@@ -663,19 +663,75 @@ insert("tableName", [{ first_name: "Max", last_name: "Messer", age: 42 },
 
     let i = 0
     let personenCounter = 1
+
+    // First the adresses
+    const adresses: Adresse[] = cleanAdressen(persons)
+
+
+
+    for(const adress of adresses) {
+        await core.events.request(insert(connId, "p1_adressen",
+            {index: i, name: adress.strasse, hausnummer: adress.hausnummer, plz: adress.plz, ort: adress.ort}))
+    }
+
     for(const person of persons) {
+        if(person.name === "N.N.") {
+            continue
+        }
         console.log("Inserting person " + personenCounter + " of " + persons.length + 1)
         await core.events.request(insert(connId, "p1_personen",
-            {index: i, nachname: person.name, vorname: person.vorname, akademischer_grad: person.titel, primary_mail: person.mail}))
-        
-        await core.events.request(insert(connId, "p1_kontaktdaten",
-            {index:i, "j#1_fk": personenCounter, mail: person.mail, telefonnummer: person.telefon}))
+            {index: i, name: person.name, vorname: person.vorname, akademischer_grad: person.titel, primary_mail: person.mail}))
+
+        let hausnummer = 0
+        let strasse = ""
+
+        if(person.strasse !== "") {
+            hausnummer = parseInt(person.strasse.match(/\d+/)[0])
+            strasse = person.strasse.match(/\D+/)[0]
+            const adressId = adresses.find(e => e.strasse === strasse && e.hausnummer === hausnummer).id
+
+            await core.events.request(insert(connId, "p1_kontaktdaten",
+                {index:i, "j#1_fk": personenCounter, mail: person.mail, telefonnummer: person.telefon, "j#6_fk": adressId, raumnummer: person.dienstzimmer}))
+        } else {
+            await core.events.request(insert(connId, "p1_kontaktdaten",
+                {index:i, "j#1_fk": personenCounter, mail: person.mail, telefonnummer: person.telefon, raumnummer: person.dienstzimmer}))
+        }
 
         personenCounter++
         i++
     }
+}
 
+function cleanAdressen(persons: PersonData[]) {
+    const adresses: Adresse[] = []
+    let adressenCounter = 2
 
+    const firstHausnummer = persons[0].strasse.match(/\d+/)[0]
+    const firstStrasse = persons[0].strasse.match(/\D+/)[0]
+    adresses.push({id: 1, strasse: firstStrasse, hausnummer: parseInt(firstHausnummer), ort: persons[0].ort, plz: parseInt(persons[0].plz.trim())})
 
+    for(const person of persons) {
+        if(person.strasse === "") {
+            continue
+        }
+        const hausnummer = parseInt(person.strasse.match(/\d+/)[0])
+        const strasse = person.strasse.match(/\D+/)[0]
 
+        const alreadyExists = adresses.some(e => e.strasse === strasse && e.hausnummer === hausnummer)
+
+        if(!alreadyExists) {
+            adresses.push({id: adressenCounter, strasse: strasse, hausnummer: hausnummer, ort: person.ort, plz: parseInt(person.plz.trim())})
+            adressenCounter++
+        }
+    }
+
+    return adresses
+}
+
+interface Adresse {
+    id: number,
+    strasse: string,
+    hausnummer: number,
+    plz: number,
+    ort: string
 }
