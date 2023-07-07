@@ -1,33 +1,38 @@
-import { InputMask } from "../../types"
+import { InputMask } from "../types"
 
 const mask: InputMask = {
-    id: "2671254B-B69E-45C7-8E17-DC71F037059A",
+    id: "804112D2-215A-4E52-8A54-AE1BCBE117F1",
     origin: {
         projectId: 1,
         tableName: "Personen",
     },
-    name: "Beispiel-Eingabemaske",
+    name: "Personen-Eingabemaske",
     description:
         "In der Tabelle 'Personen' sind alle Mitglieder der Fakultät für Mathematik und Informatik gelistet. Mit dieser Eingabemaske können beliebige Einträge der gesamten Tabelle hinzugefügt werden. Die Eingabemaske kann auf jede View angewandt werden.",
-    created: new Date(2023, 1, 12),
-    lastEdited: new Date(2023, 1, 12),
+    created: new Date(2022, 11, 15),
+    lastEdited: new Date(2023, 6, 7),
     addRecordButtonText: "Person hinzufügen",
     addRecordButtonIcon: "person_add",
     draftsCanBeDeleted: true,
-    disabled: true, // <- only change
     comments: [],
     active: true,
     groups: [
         {
             label: "Name",
             index: 0,
-            tooltip: "Ich bin ein Hinweis!",
             columns: [
-                { name: "Titel", size: "3" },
+                { name: "Akademischer Grad", size: "3" },
                 { name: "Vorname", size: "4" },
                 { name: "Nachname", size: "5" },
             ],
         },
+        // {
+        //     label: "Uni-Daten",
+        //     index: 1,
+        //     columns: [
+        //         {name: "", size }
+        //     ]
+        // },
         {
             label: "Adresse",
             index: 2,
@@ -45,7 +50,16 @@ const mask: InputMask = {
             ],
         },
     ],
-    components: [],
+    components: [
+        // {
+        //     __component: "note",
+        //     index: 1,
+        //     text: "Rolle*: (Platzhalter)",
+        // },
+        // { __component: "note", index: 998, text: "Mitglied in: (Platzhalter)" },
+        // { __component: "divider", index: 999, label: "Dekanats View" },
+        // { __component: "note", index: 1000, text: "Frage: Was soll hier stehen?" },
+    ],
     columnProps: [
         // Gruppe 1
         {
@@ -78,6 +92,7 @@ const mask: InputMask = {
             inputRequired: true,
             inputPlaceholderText: "Land",
             suppressInputLabel: true,
+            defaultValue: "Deutschland",
         },
         {
             origin: { name: "PLZ" },
@@ -119,6 +134,72 @@ const mask: InputMask = {
             inputRequired: true,
         },
     ],
-    constraints: [],
+    constraints: [
+        {
+            name: "Proof-of-Concept 0",
+            __type: "constraint",
+            id: "62DF434C-BA2C-4AB6-8D56-48D7FA08DF3A",
+            conditions: {
+                __type: "node",
+                __ctor: "Node",
+                data: {
+                    __type: "if",
+                    __ctor: "Timeout",
+                    __props: [12000],
+                    caller: {
+                        id: "62DF434C-BA2C-4AB6-8D56-48D7FA08DF3A",
+                        name: "Proof-of-Concept 0",
+                    },
+                },
+                next: null,
+            },
+            executments: [
+                {
+                    __type: "do",
+                    __ctor: "Snack",
+                    __props: ["Hallo"],
+                    caller: {
+                        id: "62DF434C-BA2C-4AB6-8D56-48D7FA08DF3A",
+                        name: "Proof-of-Concept 0",
+                    },
+                },
+            ],
+        },
+        // {
+        //     name: "Proof-of-Concept 1",
+        //     __type: "constraint",
+        //     id: "",
+        //     conditions: {
+        //         __type: "node",
+        //         __ctor: "Node",
+        //         data: { __type: "if", __ctor: "AlwaysTrue" },
+        //         next: null,
+        //     },
+        //     executments: [{ __type: "do", __ctor: "ToggleState" }],
+        // },
+        // {
+        //     name: "Proof-of-Concept 2",
+        //     id: "",
+        //     __type: "constraint",
+        //     conditions: {
+        //         __type: "node",
+        //         __ctor: "Node",
+        //         data: { __type: "if", __ctor: "Timeout", __props: [12000] },
+        //         next: null,
+        //     },
+        //     executments: [],
+        // },
+        // BUG: fetcher will throw if using this, source probably in `coreRequest`
+        // new Constraint("Proof-of-Concept")
+        //     .if(new AlwaysTrue())
+        //     .do(
+        //         new Alert({
+        //             severity: "warn",
+        //             title: "Test",
+        //             message: "Test",
+        //         })
+        //     )
+        //     .toJSON(),
+    ],
 }
 export default mask
