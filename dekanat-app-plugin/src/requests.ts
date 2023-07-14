@@ -42,7 +42,7 @@ export function getProjects(connectionId: string, unusedRoleId: number, username
  * Response: {@link types.TableDescriptor} name and ID of the newly
  * created table.
  */
-export function createTable(connectionId: string, roleId: number, projectId: number, name: string) {
+export function createTable(connectionId: string, roleId: number, projectId: number, name: string, defaultColumnName="Name") {
     return {
         channel: CHANNEL,
         method: createTable.name,
@@ -50,6 +50,7 @@ export function createTable(connectionId: string, roleId: number, projectId: num
         roleId,
         projectId,
         name,
+        defaultColumnName   // HACK! see function implementation for details
     }
 }
 

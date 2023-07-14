@@ -96,6 +96,7 @@ import { error, errorSync, ErrorCode } from "./error"
 import * as perm from "./permissions/requests"
 import { can, getRoles } from "@intutable/user-permissions/dist/requests"
 import { ProjectDescriptor } from "@intutable/project-management/dist/types"
+import { initSchemaSetup } from "./initialSchema";
 
 let core: PluginLoader
 
@@ -131,6 +132,8 @@ export async function init(plugins: PluginLoader) {
         .on(req.createUserSettings.name, createUserSettings_)
         .on(req.getUserSettings.name, getUserSettings_)
         .on(req.updateUserSettings.name, updateUserSettings_)
+
+    initSchemaSetup(core)
 }
 
 async function getProjects(request: CoreRequest): Promise<ProjectDescriptor[]> {
@@ -167,14 +170,16 @@ async function createTable_({
     roleId,
     projectId,
     name,
+    defaultColumnName
 }: CoreRequest): Promise<CoreResponse> {
-    return createTable(connectionId, roleId, projectId, name)
+    return createTable(connectionId, roleId, projectId, name, defaultColumnName)
 }
 async function createTable(
     connectionId: string,
     roleId: number,
     projectId: number,
-    name: string
+    name: string,
+    defaultColumnName: string   // HACK! Default column name needs to get set clean inside of PM/View Plugin.
 ): Promise<TableDescriptor> {
     const internalName = sanitizeName(name)
     const existingTables = (await core.events.request(
@@ -200,7 +205,7 @@ async function createTable(
         },
         {
             parentColumnId: nameColumn.id,
-            attributes: standardColumnAttributes("Name", "string", 2, true),
+            attributes: standardColumnAttributes(defaultColumnName, "string", 2, true),    // HACK part 2
             outputFunc: noAggregation(),
         },
     ]

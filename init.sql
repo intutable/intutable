@@ -154,7 +154,9 @@ INSERT INTO roles(_id, description)
 
 INSERT INTO permissions("roleId", "action", "subject", "subjectName", "conditions")
     VALUES
-    (0, 'read', 'project', '', '');
+    (0, 'read', 'project', '', ''),
+    (1, 'read', 'project', '', ''),
+    (2, 'read', 'project', '', '');
 
 
 

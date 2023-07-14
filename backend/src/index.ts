@@ -4,8 +4,9 @@ import process from "process"
 import { Core, EventSystem } from "@intutable/core"
 import { openConnection, closeConnection, select, insert } from "@intutable/database/dist/requests"
 import { getConfig } from "shared/dist/config"
+import { schemaSetup } from "dekanat-app-plugin/dist/initialSchema"
 
-import { setCore, getCore as core } from "./core"
+import { setCore, getCore as core, getCore } from "./core";
 import { createExampleSchema, insertExampleData } from "./example/load"
 
 const PLUGIN_PATHS = [
@@ -50,9 +51,12 @@ async function main() {
         // create some example data for testing, if none are present
         const project_count = await core().events.request(select(connId, "projects"))
         if (project_count.length === 0) {
-            await createExampleSchema(connId, PM_ROLE_ID)
-            await insertExampleData(connId)
             console.log("no projects found, set up example schema")
+            await getCore().events.request(
+                schemaSetup(connId)
+            )
+            //await createExampleSchema(connId, PM_ROLE_ID)
+            //await insertExampleData(connId)
         } else {
             console.log("projects found, skipped creating example schema")
         }

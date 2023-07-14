@@ -49,6 +49,7 @@ export type InputMaskColumnProps = {
      */
     defaultValue?: unknown
 }
+
 export type OverrideableColumnProps = Partial<
     Pick<SerializedColumn, "name" | "editable" | "frozen" | "index" | "hidden">
 >
@@ -75,6 +76,7 @@ export type InputMask = {
     description: string
     created: Date
     lastEdited: Date
+    /** @deprecated – instead define a property for columns that allows moving from it from the normal space to the comment section  */
     comments: Comment[]
     active: boolean
     /** @default false */

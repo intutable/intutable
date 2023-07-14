@@ -1,5 +1,5 @@
-import AccountTreeIcon from "@mui/icons-material/AccountTree"
-import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined"
+import AssignmentIcon from "@mui/icons-material/Assignment"
+import AssignmentIconOutlined from "@mui/icons-material/AssignmentOutlined"
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
 import DashboardIcon from "@mui/icons-material/Dashboard"
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined"
@@ -143,33 +143,33 @@ const DrawerBar: React.FC<DrawerProps> = props => {
                         activeIcon={<DashboardIcon />}
                     />
                     <DrawerLink
+                        text="Formulare"
+                        url="/forms"
+                        activeIcon={<AssignmentIcon />}
+                        nonActiveIcon={<AssignmentIconOutlined />}
+                    />
+                    <DrawerLink
+                        text="Prozessverwaltung"
+                        url="/manage-workflows"
+                        activeIcon={<DynamicFormIcon />}
+                        nonActiveIcon={<DynamicFormOutlinedIcon />}
+                    />
+                    <DrawerLink
                         text="Projekte"
                         url="/projects"
                         nonActiveIcon={<WorkspacesOutlinedIcon />}
                         activeIcon={<WorkspacesIcon />}
                     />
-                    <DrawerLink
-                        text="Prozessverwaltung"
-                        url="/manage-workflows"
-                        nonActiveIcon={<AccountTreeOutlinedIcon />}
-                        activeIcon={<AccountTreeIcon />}
-                    />
-                    <DrawerLink
-                        text="Formulare"
-                        url="/forms"
-                        nonActiveIcon={<DynamicFormOutlinedIcon />}
-                        activeIcon={<DynamicFormIcon />}
-                    />
                 </>
             )}
-            {user?.isLoggedIn && user?.role.roleKind === RoleKind.Admin && (
+            {/* {user?.isLoggedIn && user?.role.roleKind === RoleKind.Admin && (
                 <DrawerLink
                     text="Nutzerverwaltung"
                     url="/users"
                     nonActiveIcon={<PeopleOutlinedIcon />}
                     activeIcon={<PeopleIcon />}
                 />
-            )}
+            )} */}
             <Divider
                 sx={{
                     flexGrow: 100,

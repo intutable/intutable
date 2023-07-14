@@ -11,6 +11,7 @@
     ],
     "scripts": {
         "build": "npm run build -w dekanat-app-plugin && npm run build -w backend && npm run build -w database && npm run build -w gui",
+        "build:database": "npm run build -w database",
         "start": "concurrently --kill-others \"npm run start -w database\" \"npm run start -w backend\" \"npm run start -w gui\"",
         "dev": "npm run build -w database && concurrently --kill-others \"npm run start -w database\" \"npm run dev -w backend\" \"npm run dev -w gui\"",
         "lint": "npm run lint -ws --if-present",
@@ -32,6 +33,7 @@
         "@intutable/project-management": "^3.0.0",
         "@intutable/user-authentication": "^3.0.0",
         "@intutable/user-permissions": "^0.5.0",
+        "@intutable/web-import": "^1.1.0",
         "concurrently": "^7.3.0",
         "date-fns": "^2.29.1",
         "next": "^12.3.4",
