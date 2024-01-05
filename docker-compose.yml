@@ -1,0 +1,56 @@
+version: "3.3"
+
+services:
+  dekanat-database:
+    build:
+      context: ./tools/database-tools/
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=db
+    volumes:
+      - dekanat-data:/var/lib/postgresql/data 
+
+  # intutable-ui:
+  #   image: ./apps/intutable-ui/
+  #   container_name: intutable-ui
+  #   restart: always
+  #   build:
+  #     context: ./apps/intutable-ui/
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   entrypoint:
+  #     - NODE_ENV=dev
+  #   networks:
+  #     - intutable-intercontainer-network
+
+  # intutable-backend-service
+
+  # intutable-docs: 
+
+  # nginx:
+    
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+
+volumes:
+  dekanat-data:
+  pgadmin-data:
+  
+# networks:
+#   intutable-intercontainer-network:
+#     external: true

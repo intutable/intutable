@@ -1,0 +1,12 @@
+#!/bin/bash
+
+authcookie=$1
+
+if [[ $authcookie == "" ]]
+then
+    >&2 echo -n 'error: logout: no session cookie provided '
+    >&2 echo '(usage: ./logout <cookie>)'
+else
+    headers='Cookie: '$authcookie
+    curl -i http://localhost:8080/logout -X POST -H "$headers"
+fi

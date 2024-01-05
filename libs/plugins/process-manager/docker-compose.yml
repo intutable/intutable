@@ -1,0 +1,22 @@
+version: '3.3'
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: postgres
+    container_name: process_manager_postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: node
+    depends_on:
+      - postgres
+
+volumes:
+  db-data:

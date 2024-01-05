@@ -1,0 +1,23 @@
+{
+    "name": "shared",
+    "version": "0.1.0",
+    "description": "source code shared across frontend and backend.",
+    "private": true,
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "lint": "npx eslint \"src/**\"",
+        "test": "jest",
+        "format": "npx prettier \"src/**\" --check"
+    },
+    "dependencies": {
+        "@intutable-org/database": "*",
+        "@intutable-org/lazy-views": "*"
+    },
+    "devDependencies": {
+        "@intutable-org/eslint-config": "*",
+        "@types/jest": "^29.4.0",
+        "jest": "^29.4.3",
+        "ts-jest": "^29.0.5"
+    }
+}

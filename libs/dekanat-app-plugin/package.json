@@ -1,0 +1,31 @@
+{
+    "name": "@intutable-org/dekanat-app-plugin",
+    "version": "0.1.0",
+    "description": "A core plugin for maintaining dekanat-app's data structures and abstractions",
+    "private": true,
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "test": "docker-compose up -d && npm run build && npx jest; docker-compose down --volumes",
+        "build:db": "docker-compose build --pull",
+        "lint": "npx eslint \"src/**\"",
+        "format": "npx prettier \"src/**\" --check"
+    },
+    "dependencies": {
+        "shared": "*",
+        "@intutable-org/core": "*",
+        "@intutable-org/database": "*",
+        "@intutable-org/http": "*",
+        "@intutable-org/http-cors": "*",
+        "@intutable-org/lazy-views": "*",
+        "@intutable-org/project-management": "*",
+        "@intutable-org/user-permissions": "*",
+        "@intutable-org/user-authentication": "*",
+        "@intutable-org/web-import": "*"
+    },
+    "devDependencies": {
+        "@intutable-org/eslint-config": "*"
+    }
+}

@@ -1,1 +1,30 @@
-{}
+/**
+ * Custom rules for the intutable monorepo
+ * =======================================
+ *
+ * The following rules are intended to be used by every
+ * contributor of this project.
+ *
+ * Feel free to modify settings as you like for yourself.
+ * But do NOT publicly commit changes to this file.
+ */
+
+{
+    // eslint / prettier
+    "eslint.enable": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "eslint.workingDirectories": [
+        { "pattern": "./apps/*/" },
+        { "pattern": "./libs/*/" },
+        { "pattern": "./libs/plugins/*/" },
+        { "pattern": "./tools/*/" }
+    ],
+    // typescript
+    "typescript.inlayHints.parameterNames.enabled": "all",
+    "typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+    "typescript.inlayHints.parameterTypes.enabled": true,
+    "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+    "typescript.inlayHints.variableTypes.enabled": true,
+    "typescript.inlayHints.enumMemberValues.enabled": true
+}

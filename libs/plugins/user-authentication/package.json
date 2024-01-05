@@ -1,0 +1,41 @@
+{
+    "name": "@intutable-org/user-authentication",
+    "version": "0.1.0",
+    "description": "user authentication plugin for intutable",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "lint": "npx eslint \"src/**\"",
+        "test-ci": "npm run build && npx jest --color=true",
+        "test": "docker-compose build && docker-compose up --abort-on-container-exit; npm run db:clean",
+        "db:clean": "docker rm user-authentication_postgres; docker volume rm user-authentication_db-data",
+        "db:up": "docker-compose build --pull && docker-compose up postgres",
+        "db:down": "docker-compose down --volumes",
+        "server:start": "npm run build && node ./dist/main.js",
+        "format": "npx prettier \"src/**\" --check"
+    },
+    "dependencies": {
+        "@intutable-org/core": "*",
+        "@intutable-org/database": "*",
+        "@intutable-org/http": "*",
+        "argon2": "^0.28.2",
+        "express": "^4.17.1",
+        "express-session": "^1.17.2",
+        "passport": "^0.5.0",
+        "passport-local": "^1.0.0"
+    },
+    "devDependencies": {
+        "@intutable-org/eslint-config": "*",
+        "@types/express": "^4.17.13",
+        "@types/express-session": "^1.17.4",
+        "@types/jest": "^27.0.2",
+        "@types/passport": "^1.0.7",
+        "@types/passport-local": "^1.0.34",
+        "jest": "^27.2.4",
+        "ts-jest": "^27.0.5",
+        "typescript": "^4.4.3",
+        "prettier": "3.x"
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "ext": "ts",
+    "watch": [
+        "./src",
+        "../../libs/dekanat-app-plugin/src",
+        "../../libs/shared/src",
+        "../../libs/core/src"
+    ],
+    "exec": "npm run build -w dekanat-app-plugin -w intutable && npm run start"
+}

@@ -1,0 +1,6 @@
+[book]
+authors = ["Intutable"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Intutable Dev Docs"
