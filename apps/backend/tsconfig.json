@@ -1,0 +1,24 @@
+{
+    "extends": "../../tsconfig.json",
+    "exclude": ["node_modules", "dist", "out", "tests", "__tests__"],
+    "include": ["src"],
+    "compilerOptions": {
+        // manual override needed, see tsconfig.json
+        "outDir": "./dist",  
+        "rootDir": "./src"
+    },
+    "references": [
+        { "path": "../../libs/core" },
+        { "path": "../../libs/dekanat-app-plugin" },
+        { "path": "../../libs/shared" },
+        { "path": "../../libs/plugins/http" },
+        { "path": "../../libs/plugins/http-cors" },
+        { "path": "../../libs/plugins/database" },
+        { "path": "../../libs/plugins/lazy-views" },
+        { "path": "../../libs/plugins/user-permissions" },
+        { "path": "../../libs/plugins/project-management" },
+        { "path": "../../libs/plugins/web-import" },
+        { "path": "../../libs/plugins/mail-plugin" },
+        { "path": "../../libs/plugins/process-manager" }
+    ]
+}

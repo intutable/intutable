@@ -1,0 +1,27 @@
+{
+    "name": "@intutable-org/project-management",
+    "version": "0.1.0",
+    "description": "Plugin for managing projects and SQL metadata",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "lint": "npx eslint \"src/**\"",
+        "format": "npx prettier \"src/**\" --check",
+        "test-ci": "npm run build && npx jest --color=true",
+        "test": "docker-compose build && docker-compose up --abort-on-container-exit"
+    },
+    "dependencies": {
+        "@intutable-org/core": "*",
+        "@intutable-org/database": "*"
+    },
+    "devDependencies": {
+        "@intutable-org/eslint-config": "*",
+        "@types/jest": "^27.0.2",
+        "jest": "^27.2.4",
+        "ts-jest": "^27.0.5",
+        "typescript": "^4.4.3",
+        "prettier": "3.x"
+    }
+}

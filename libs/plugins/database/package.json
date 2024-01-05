@@ -1,0 +1,23 @@
+{
+    "name": "@intutable-org/database",
+    "version": "0.1.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "lint": "npx eslint \"src/**\"",
+        "format": "npx prettier \"src/**\" --check",
+        "test-ci": "npm run build && np x jest --runInBand",
+        "test": "docker-compose build --pull && docker-compose up --abort-on-container-exit"
+    },
+    "dependencies": {
+        "@intutable-org/core": "*",
+        "knex": "^1.0.7",
+        "knex-schema-inspector": "^1.6.0",
+        "pg": "^8.7.1"
+    },
+    "devDependencies": {
+        "@intutable-org/eslint-config": "*"
+    }
+}

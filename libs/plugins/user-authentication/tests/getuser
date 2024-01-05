@@ -1,0 +1,20 @@
+#!/bin/bash
+# Send a request into the core to check whether a login succeeded.
+# usage:
+# $ authcookie=$(./login <username> <password>)
+# $ ./getuser $authcookie
+
+authcookie=$1
+
+if [[ -z $authcookie ]] # if param is unset
+then
+   >&2 echo 'getuser: cannot authenticate without cookie. Usage:'
+   >&2 echo '    $ cookie=$(./login <username> <password>)'
+   >&2 echo '    $ ./getuser $cookie'
+else 
+    headers=$'Content-Type: application/json\r\nCookie: '$authcookie
+    curl -i http://localhost:8080/request/user-authentication/getCurrentUser \
+         -X POST \
+         -H "$headers" \
+         -d '{}'
+fi

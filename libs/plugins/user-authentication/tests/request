@@ -1,0 +1,32 @@
+#!/bin/bash
+# Send a request into the core to check whether a login succeeded.
+# usage:
+# $ ./request $<cookie> <method> <jsonbody>
+# OR
+# $ ./request $<cookie> <channel> <method> <jsonbody>
+
+authcookie=$1
+method=$2
+if [[ -z $4 ]]
+then
+    channel=user-authentication
+    method=$2
+    body=$3
+else
+    channel=$2
+    method=$3
+    body=$4
+fi
+
+if [[ -z $authcookie ]] # if param is unset
+then
+   >&2 echo 'getuser: cannot authenticate without cookie. Usage:'
+   >&2 echo '    $ cookie=$(./login <username> <password>)'
+   >&2 echo '    $ ./getuser $cookie'
+else 
+    headers=$'Content-Type: application/json\r\nCookie: '$authcookie
+    curl -i http://localhost:8080/request/$channel/$method \
+         -X POST \
+         -H "$headers" \
+         -d "$body"
+fi

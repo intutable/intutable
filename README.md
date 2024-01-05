@@ -1,82 +1,40 @@
 # Intutable
 
-## Description
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/intutable)
 
-No-code tool for building CRUD apps.
+<!-- [![GitLab latest release](https://badgen.net/gitlab/release/NickBusey/HomelabOS/)](https://github.com/intutable/intutable/-/releases) -->
 
-Built on [Intutable Core](https://gitlab.com/intutable/core/) and Next JS.
+> **Read our docs!** 📖💡 (See below.)
 
-## What Does This App Do?
+This is the monorepo for the Intutable project: A full stack application with a dedicated web interface and a plugin-based backend architecture for the [Faculty of Mathematics and Computer Science](https://www.mathinf.uni-heidelberg.de/en) at [Heidelberg University](https://www.uni-heidelberg.de/en). It is developed to be used by the administration of the faculty for management and organization purposes.
 
-dekanat-app is a highly configurable tool for keeping track of employees,
-committees, and institutions of the Faculty for Mathematics and Computer
-Science. More than a typical database app, it allows users to
-configure the tables and relationships between them.
-Key features in development include (similarly configurable) workflows
-for modeling processes like hiring and admission of doctoral students,
-import and export with the LSF and various file formats, and a fine-grained
-system of permissions in accordance with tight data protection regulations.
+## 🔧 Installation
 
-## Getting Started
-### Installation
+First step is to clone this repository. Then you have multiple options to install the project and get it running.
 
-1. Clone the repo
-2. `cd dekanat-app`
-3. `npm install`
-4.  - Dev mode:
-      `npm run build` (only needed once)  
-      `npm run dev`
-    - Production mode:  
-      `npm run build`  
-      `npm run start`
-    - `npm run reset -w database` resets the database
+### Node.js
 
-### Updating
-Changes occasionally warrant changes to the database schema. If you are
-updating an existing instance to a new version, search the changelog for
-all instances of database schema changes between the version you have
-and the version you want. Initially, we preserve the original
-schema-creating statements in `init.sql` and, on a new release,
-append a sequence of statements to the end of the file that will update
-the database to the new version. That way, you can directly run these
-on your existing instance of the database to update it, but the script
-as a whole also produces a fully-functioning database from scratch
-for development.
-On each new release, we will compact these updates (i.e. remove them and
-rewrite the original statements at the top of the file) in order to
-avoid `init.sql` becoming too much spaghetti. So, if you have to jump
-several versions, then look at the `init.sql` of each version throughout
-the Git history to get all the necessary updating code.
+The unpretentious way to get started is to install and use Node.js and NPM. Your next steps are to read the docs and understand how this monorepo is structured and how to start all applications and services.
 
-### Usage
-After starting the app, navigate to its location at
-`http://localhost:3000` in the browser. In dev mode, a default user with
-the e-mail admin@dekanat.de and the password "password" is created. Log in
-and you will see the projects page with one project named "Fakultät MathInf".
-Click on it, then click on the "Personen" table. This table page is the 
-center of the application. Try to create, edit, and delete some rows and
-columns. If you want to create or delete tables, you must go back to the
-project's page. The button on the very left of the toolbar allows you to
-create views, in which you can add filters to limit the data displayed.
+We recommend using [nvm](https://github.com/nvm-sh/nvm). This little tool helps you to manage multiple Node.js versions simultaneously on your machine and prevents version conflicts. You can install it by following the instructions on their GitHub page.
 
-## Documentation
+Make sure to pick the right Node.js and NPM version. The currently required versions can be found in the [`package.json`](./package.json) file in `engines`. These settings further more enforce the correct versions when working with this project.
 
-There is a high-level overview of the application's structure in /docs/dev.
+### 🐳 Docker
 
-## [Semver](https://semver.org) for Non-API Designs
+Nonetheless, we highly advise you to use Docker. This is the most comfortable and harmless way to get all services up and running. You can find more information about how to install Docker and Docker Compose [here](https://docs.docker.com/get-docker/).
 
-Given **x**.**y**.**z** (MAJOR.MINOR.PATCH):
+Further more, some of our services are only available in Docker. Make sure to consult our docs for further information about how to use Docker with this project.
 
--   **x** -> resdesigns of UI/X; backwards incompatible changes of e.g. export/import algorithms, routines, features related to user data and stuff like that
--   **y** -> new but backwards compatible features (starting at e.g. changing a button or adding one); code changes without visual effect to the user (e.g. performance improvments, cleaning code or rewriting code etc.)
--   **z** -> backwards comptabile bug fixes
+## 📖 Docs
 
-**Note**: Prereleases like Alphas and Betas must conform to [semver specifications](https://semver.org/#spec-item-11).
+> **<u>Read the Docs</u>**: Run `npm run docs:open` within your locally cloned repository to open the docs in your browser.
 
-Since those tags like `-alpha.1` are only syntactically specified by semver, the semantics are up to the user. Our »TypeScript Template Literal Type« `VersionTag` defines three tags:
+Please read the docs thoroughly before contributing any changes or opening issues. These contain information not only about the project itself, but also about the development process, tools we use, common questions and problems, first steps etc.
 
--   **-alpha** or **-alpha.n** (where `n` is a number) ->
--   **-beta** or **-beta.n** (where `n` is a number) ->
--   **-rc** or **-rc.n** (where `n` is a number) ->
+Our documentation is built with [mdBook](https://github.com/rust-lang/mdBook). Make sure to install it in order to build the docs locally and render them inside your browser. Read more about installing mdBook [here](https://rust-lang.github.io/mdBook/guide/installation.html). Alternatively, you can find the same markdown files in [`./docs/`](./docs).
 
-Remember to bump versions in multiple package.json files: './package.json' and './gui/package.json'.
+## License
+
+See our license [here](./LICENSE), which applies to this whole monorepository.

@@ -1,0 +1,33 @@
+{
+    "name": "@intutable-org/backend",
+    "version": "0.1.0",
+    "private": true,
+    "main ": "dist/index.js",
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "lint": "npx eslint \"src/**\"",
+        "format": "npx prettier \"src/**\" --check",
+        "start": "node dist/index.js",
+        "_dev": "ts-node ./src/index.ts",
+        "dev": "npx nodemon -c nodemon.json dev",
+        "test": "jest __tests__"
+    },
+    "dependencies": {
+        "shared": "*",
+        "@intutable-org/core": "*",
+        "@intutable-org/dekanat-app-plugin": "*",
+        "@intutable-org/database": "*",
+        "@intutable-org/http": "*",
+        "@intutable-org/http-cors": "*",
+        "@intutable-org/lazy-views": "*",
+        "@intutable-org/user-permissions": "*",
+        "@intutable-org/project-management": "*",
+        "@intutable-org/web-import": "*",
+        "@intutable-org/mail-plugin": "*",
+        "@intutable-org/process-manager": "*"
+    },
+    "devDependencies": {
+        "@intutable-org/eslint-config": "*"
+    }
+}

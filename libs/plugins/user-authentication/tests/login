@@ -1,0 +1,22 @@
+#!/bin/bash
+# Log in to the core with the authentication plug-in.
+# usage: authcookie=$(./login <username> <password>)
+
+USERNAME=$1
+PASSWORD=$2
+
+response=$(curl -i http://localhost:8080/login \
+          -X POST \
+          -H "Content-Type: application/x-www-form-urlencoded" \
+          -d "username=$USERNAME&password=$PASSWORD")
+
+if [[ $response == *"secret"* ]]
+then
+    >&2 echo 'login successful'
+else
+    >&2 echo 'login failed'
+fi
+
+authcookie=$(echo $response | grep Set-Cookie | tr " " "\n" | tr -d ";" | grep connect.sid)
+
+echo $authcookie

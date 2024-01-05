@@ -1,0 +1,49 @@
+// WARNING: Do NOT change anything unless you know what you are doing.
+// Especially what defaults your are changing and how several properties affect each other.
+// Do NOT explicitly set defaults, keep them implicit.
+
+{
+    // this option needs to be repeated in each inherted config
+    "exclude": ["node_modules", "dist", "out", "tests", "__tests__"],
+    "compilerOptions": {
+        "composite": true,
+        "target": "ES2020",
+        "module": "commonjs",
+        "strict": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "baseUrl": ".",
+
+        "sourceMap": true, // for debugging
+        "declarationMap": true, // for debugging
+
+        // this option needs to be repeated in each inherted config
+        // see https://github.com/microsoft/TypeScript/issues/29172
+        "outDir": "./dist"
+    },
+
+    // keep 'files' empty!
+    // https://www.typescriptlang.org/docs/handbook/project-references.html#overall-structure
+    "files": [],
+    // and reference leaf-projects here
+    "references": [
+        { "path": "./apps/backend/" },
+        { "path": "./apps/intutable-ui/" },
+        { "path": "./libs/core/" },
+        { "path": "./libs/dekanat-app-plugin/" },
+        { "path": "./libs/shared/" },
+        { "path": "./libs/plugins/database/" },
+        { "path": "./libs/plugins/http/" },
+        { "path": "./libs/plugins/http-cors/" },
+        { "path": "./libs/plugins/lazy-views/" },
+        { "path": "./libs/plugins/mail-plugin/" },
+        { "path": "./libs/plugins/process-manager/" },
+        { "path": "./libs/plugins/project-management/" },
+        { "path": "./libs/plugins/user-authentication/" },
+        { "path": "./libs/plugins/user-permissions/" },
+        { "path": "./libs/plugins/web-import/" },
+    ]
+}

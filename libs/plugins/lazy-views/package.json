@@ -1,0 +1,32 @@
+{
+    "name": "@intutable-org/lazy-views",
+    "version": "0.1.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "lint": "npx eslint \"src/**\"",
+        "format": "npx prettier \"src/**\" --check",
+        "gen-docs": "npx typedoc --out docs/codedocs src",
+        "test-ci": "npm run build && npx jest --runInBand=true",
+        "test": "docker-compose build && docker-compose up --abort-on-container-exit; npm run db:clean",
+        "db:clean": "docker rm lazy-views_postgres; docker volume rm lazy-views_db-data"
+    },
+    "dependencies": {
+        "@intutable-org/core": "*",
+        "@intutable-org/database": "*",
+        "@intutable-org/project-management": "*",
+        "knex": "^1.0.7"
+    },
+    "devDependencies": {
+        "@intutable-org/eslint-config": "*",
+        "typescript": "^4.4.3",
+        "@types/jest": "^27.0.2",
+        "jest": "^27.2.4",
+        "ts-jest": "^27.0.5",
+        "prettier": "3x",
+        "rimraf": "3.0.0",
+        "typedoc": "0.22"
+    }
+}

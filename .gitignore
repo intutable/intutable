@@ -3,6 +3,8 @@
 /**/node_modules
 /**/dist
 /**/tsconfig.tsbuildinfo
-gui/.next/
-gui/.swc/
-gui/analytics/**
+.next
+.swc
+/analytics/
+.turbo
+.eslintcache

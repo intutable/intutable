@@ -1,0 +1,28 @@
+{
+    "name": "@intutable-org/process-manager",
+    "version": "0.1.0",
+    "description": "Process manager consisting of workflows",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "lint": "npx eslint \"src/**\"",
+        "format": "npx prettier \"src/**\" --check",
+        "test": "docker-compose build && docker-compose up --abort-on-container-exit; npm run db:clean",
+        "db:clean": "docker rm process-manager_postgres; docker volume rm process-manager_db-data"
+    },
+    "dependencies": {
+        "@intutable-org/core": "*",
+        "@intutable-org/database": "*",
+        "@intutable-org/mail-plugin": "*",
+        "uuid": "^9.0.0"
+    },
+    "devDependencies": {
+        "@intutable-org/eslint-config": "*",
+        "@types/jest": "^27.0.2",
+        "@types/uuid": "^8.3.4",
+        "prettier": "3.x",
+        "typescript": "^4.4.3"
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "name": "@intutable-org/core",
+    "version": "0.1.0",
+    "description": "The core for the intutable project",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc --build",
+        "clean": "tsc --build --clean",
+        "lint": "npx eslint \"src/**\"",
+        "format": "npx prettier \"src/**\" --check"
+    },
+    "devDependencies": {
+        "eslint": "^8.56.0",
+        "@types/glob": "^7.1.4",
+        "@types/node": "^16.7.13",
+        "@intutable-org/eslint-config": "*"
+    },
+    "dependencies": {
+        "glob": "^7.2.0"
+    }
+}

@@ -1,0 +1,53 @@
+2022-02-21
+- columns belonging to base table simply have NULL in their joinId field
+  - minimal "special case", instead of having the base table be a dummy join
+    with a steadily growing number of nulls and undefineds
+2022-02-24
+- serve data in flat { joins, columns, rows } arch, where columns have a number
+  pointing to the ID of the join
+2022-03-09
+- joins point to other views, not to tables. Reason: hierarchical FKs
+2022-03-13
+- to implement join-to-view queries, we will use a SELECT subquery
+  (as opposed to a flat structure of adding the other view's columns and
+  join condition)
+  Reason: subquery requires only adding the FK's target column (PK) into the
+  query when it's used as a subquery and wrapping it in the outer query. The
+  flat solution requires inserting things into the outer query at multiple
+  points as well as changing the table aliases *within* the subquery. In
+  general, the flat solution is a matter of looking into the target view's
+  guts while the hierarchical solution is a matter of asking the target view
+  for a slightly changed version of its query.
+2022-03-30
+- there are no SQL views, instead we generate a SELECT query from metadata
+  each time. This is because a) we need to keep around so many metadata that
+  we _can_ do this, so creating views is basically needless duplication.
+  Furthermore, the way we're using the views in the GUI definitely needs to
+  allow cycles, which views' immutability makes difficult.
+2022-04-08
+- Introduced the type Selectable to allow views to be based on other views
+  instead of only on tables. Decision: We will use an enum instead of
+  inheritance to distinguish between "table" and "view" type selectables.
+  Reasons:
+    1. the number of cases is not likely to grow
+    2. Everything should be serializable (catering to specific use case? hmm...)
+    3. while adding new cases to enum is awful, adding new behaviors is very
+       neat, compared to having to add a method to each class when using OOP
+  Note: This decision is very much open to discussion, I mainly made it because
+    I needed to start somewhere
+2022-04-27
+- About to revamp the WHERE/condition implementation.
+  Things to take into account: SQL, Knex, AirTable
+  Kinds of conditions to consider:
+    - vanilla infix operator: c1 * val, c1=c2 (how to identify source?)
+      - =, <, >, <>, like, in
+      - val may be an array or subquery in all of these!
+    - not (any),
+    - `is null` (not compatible with `=`)
+    - exists
+    - and/or
+2022-04-29
+- for now: =(value and column), not =, IN(array only for now), and
+2022-06-01
+- if you use group, all columns will be bunched up with array_agg by default.
+  using different/custom aggregate functions TBA

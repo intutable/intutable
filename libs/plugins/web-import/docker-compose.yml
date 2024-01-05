@@ -1,0 +1,17 @@
+version: "3.3"
+services:
+    postgres:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: postgres
+        ports:
+            - "5432:5432"
+
+    node:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: node
+        depends_on:
+            - postgres
