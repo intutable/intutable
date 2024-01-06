@@ -14,3 +14,6 @@ updates:
       day: "sunday"
       time: "22:00"
       timezone: "Europe/Berlin"
+    labels:
+      - "type: housekeeping"
+      - "priority: medium"
