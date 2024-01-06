@@ -36,3 +36,6 @@ If applicable, add screenshots to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.
+
+**Affected Versions**
+Please mention the versions that are affected by this issue or, if none are affected, explicitly describe this.

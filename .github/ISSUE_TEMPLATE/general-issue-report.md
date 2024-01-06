@@ -14,4 +14,4 @@ A clear and concise but detailed description of what this issue is about and wha
 Add any other context about the problem here.
 
 **Affected Versions**
-Please note the versions that are affected by this issue or, if none are affected, explicitly describe this.
+Please mention the versions that are affected by this issue or, if none are affected, explicitly describe this.
