@@ -16,7 +16,7 @@
     ],
     "scripts": {
         "db:start": "docker-compose start dekanat-database",
-        "docs:open": "mdbook serve ./docs/docs --open",
+        "docs:open": "mdbook serve ./docs --open",
         "prepare": "husky install",
         "lint": "npm run lint --workspaces --if-present -- --cache",
         "format": "npm run format --workspaces --if-present -- --cache --fix"
