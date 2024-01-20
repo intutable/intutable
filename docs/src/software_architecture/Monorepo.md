@@ -4,7 +4,7 @@
 
 We utilize [NPM workspaces](https://docs.npmjs.com/cli/using-npm/workspaces) to manage our monorepo.
 
-Such a monorepo has:
+Our monorepo has:
 - one root `package.json`
 - one root `package-lock.json`
 - one root `node_modules/`
@@ -17,24 +17,22 @@ Such a monorepo has:
 ├── package.json                            | root package    
 ├── package-lock.json                       | unified package lock
 ├── node_modules/                           | root node_modules
-├── apps/
+├── apps/                                   | main applications
     └── APPLICATION_1/
         ├── package.json                    | workspace package
         └── node_modules/                   | symlinks to the root folder
-├── libs/
+├── libs/                                   | internal libraries
     └── LIBRARY_1/
         ├── package.json                    | workspace package
         ├── dist/                           | transpiled JavaScript build
         └── node_modules/                   | symlinks to the root folder
-├── tools/
+├── tools/                                  | (development) tools etc.
 └── docs/
 ```
 
-Read more about NPM workspaces [here](https://docs.npmjs.com/cli/using-npm/workspaces).
-
 ### Creating New Workspaces / Managing Existing Ones
 
-To add a new workspace or manage the existing ones, have a look into the root `package.json` file. You will find a new object called `worksapces` that specifies sub-packages as workspaces.
+To add a new workspace or manage the existing ones, have a look into the root `package.json` file. You will find an object called `worksapces` that specifies sub-packages as workspaces.
 
 In `./package.json`:
 ```json
@@ -42,6 +40,7 @@ In `./package.json`:
     "workspaces": [
         "apps/*",
         "libs/*" // or "libs/LIBRARY_1"
+        // […]
     ]
 }
 ```
@@ -65,31 +64,21 @@ In `apps/APPLICATION_1/package.json`:
 ```json
 {
     "dependencies": {
-        "LIBRARY_1": "*" // <- workspace syntax
+        "LIBRARY_1": "*" // <- no need to specify a version for internal packages
     }
 }
 ```
 
-What happens is, when you hit `npm i`, it will create a symlink in the root `node_modules/` to the workspace's folder, which you can then import. For further informatiom, consult the [NPM docs](https://docs.npmjs.com/cli/v10/using-npm/workspaces#using-workspaces).
+What happens is, when you hit `npm i`, it will create a symlink in the root `node_modules/` to the workspace's folder, which you can then import. For further informatiom read the [NPM docs](https://docs.npmjs.com/cli/v10/using-npm/workspaces#using-workspaces).
 
 ## Integrating TypeScript
 
-One TypeScript configuration that
-
-
-
 [Typescript Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) allows logical separation of TypeScript projects into individual components and lets you reference them from each other. 
-
-Therefore the ´--build´ flag was added
-
-´tsc --build´
-
-
 
 ```
 .
 ├── […]
-├── tsconfig.base.json                      | root tsconfig
+├── tsconfig.json                      | root tsconfig
 ├── apps/
     └── APPLICATION_1/
         └── tsconfig.json                   | extends from the root config
@@ -99,3 +88,5 @@ Therefore the ´--build´ flag was added
 ├── tools/
 └── docs/
 ```
+
+Make sure to properly understand TypeScript's Project References. You will have to reference other projects manually in your `tsconfig.json` files and build packages differently.

@@ -1,39 +1,32 @@
 # Summary
 
 [Introduction](./Introduction.md)
-[Resources](./Resources.md)
 
 ---
 
 # General
 
-- [Development Status](general/Development_Status.md)
-- [Installation](general/Installation.md)
-- [Onboarding](general/Onboarding.md)
-    - [Repository Structure](general/Repository_Structure.md)
-    - [Troubleshooting](general/Troubleshooting.md)
-- [Dev Infra](DevOps/Introduction.md)
-    - [Monorepo](DevOps/Monorepo.md)
-    - [Turbo](DevOps/Turbo.md)
-    - [Docker](DevOps/Docker.md)
-    - [CI/CD](DevOps/CI_CD.md)
-    - [nginx](DevOps/NGINX.md)
-    - [Testing](DevOps/Testing.md)
-    - [Releasing Versions](DevOps/Releasing.md)
+- [How To Use These Docs 📖](general/HowToUseTheseDocs.md)
+- [Installation 🔧](general/Installation.md)
+- [FAQs / Troubleshooting 💡](general/Troubleshooting.md)
+
+---
+
+# Contributing
+
+- [Onboarding](contributing/Onboarding.md)
+- [Guidelines](contributing/Contributing.md)
+    - [Consistent Code](contributing/Consistent_Code.md)
+    - [GitHub](contributing/GitHub.md)
+    - [Testing](contributing/Testing.md)
+    - [Documenting](contributing/Documenting.md)
+    - [Versioning](contributing/Versioning.md)
 
 ---
 
 # Software Architecture
 
-- [Frontend](./frontend/Introduction.md)
-- [Backend]()
-    - [Plugin Architecture](backend/PluginArchitecture.md)
-        - [Core]()
-        - [How to create a new plugin](backend/NewPlugins.md)
-- [Database](./Database.md)
-
----
-
-[Contributing](misc/Contributing.md)
-[Contributors](misc/Contributors.md)
-[License]()
+- [Monorepo ⚠️](software_architecture/Monorepo.md)
+- [Introduction](software_architecture/Introduction.md)+
+- [Frontend](software_architecture/frontend/Introduction.md)
+- [Backend](software_architecture/backend/Backend.md)

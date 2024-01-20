@@ -1,9 +1,9 @@
 # Introduction
 
-> **NOTE**: This documentation only addresses developers. As a user, please refer to the built-in user manual. Open Intutable in your browser and navigate to `/wiki`. 
+<i>Intutable</i> is a working group of the [Faculty of Mathematics and Computer Science](https://www.mathinf.uni-heidelberg.de/en) at [Heidelberg University](https://www.uni-heidelberg.de/en) for digital administration tasks.
 
-Welcome to the introduction to the Intutable software project!
+The eponymous application <i>intutable</i> is a web-based tool, developed for the administration of the faculty. It is tailored to the needs of the faculty and its employees.
 
-Intutable is a internal tool developed by students of the University of Heidelberg for the <i>Faculty of Mathematics and Computer Sicence</i>.
+These docs guide you through various development topics. Head over to [How To Use These Docs](general/HowToUseTheseDocs.md) to get started. If you are looking for user documentation, please refer to your local instance and navigate to `/wiki/`.
 
 ![Heidelberg University Logo](assets/logo-en-white.svg)
