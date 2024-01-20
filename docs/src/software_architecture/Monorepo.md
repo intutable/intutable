@@ -11,7 +11,7 @@ Our monorepo has:
 - one `package.json` per workspace, that symlinks to the root `node_modules/`
 - one `node_modules/` per workspace, that symlinks to the root `node_modules/`
 
-```
+```markdown
 .
 ├── […]
 ├── package.json                            | root package    
@@ -75,7 +75,7 @@ What happens is, when you hit `npm i`, it will create a symlink in the root `nod
 
 [Typescript Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) allows logical separation of TypeScript projects into individual components and lets you reference them from each other. 
 
-```
+```markdown
 .
 ├── […]
 ├── tsconfig.json                      | root tsconfig
