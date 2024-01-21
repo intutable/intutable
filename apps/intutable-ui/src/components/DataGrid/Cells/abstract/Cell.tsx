@@ -1,7 +1,8 @@
 /* eslint-disable react/display-name */
 import EditorComponent from "@datagrid/Cells/types/EditorComponent"
 import { FormatterComponent } from "@datagrid/Cells/types/FormatterComponent"
-import { InputUnstyled, InputUnstyledProps } from "@mui/base"
+// import { InputUnstyled, InputUnstyledProps } from "@mui/base"
+import { Input, InputProps } from "@mui/base/Input"
 import { SvgIconComponent } from "@mui/icons-material"
 import AbcIcon from "@mui/icons-material/Abc"
 import { Box } from "@mui/material"
@@ -21,7 +22,7 @@ import {
     ExposedInputProps,
     Serializable,
     SerializableCatchEmpty,
-    Validatable,
+    Validatable
 } from "./protocols"
 
 const StyledInputElement = styled("input")(({ theme }) => ({
@@ -34,8 +35,8 @@ const StyledInputElement = styled("input")(({ theme }) => ({
     padding: "6px 10px",
     color: theme.palette.text.primary,
     "&:focus": {
-        outline: "none",
-    },
+        outline: "none"
+    }
 }))
 
 type EditorOptions = NonNullable<Column.Deserialized["editorOptions"]>
@@ -98,7 +99,7 @@ export class Cell {
         // Gets exposed to rdg internally. Needed for internal 'tab'/arrow key navigation.
         // Indicates what type of KeyboardEvent should be such a navigation event.
         onNavigation: ({ key }: React.KeyboardEvent<HTMLDivElement>): boolean => key === "Tab",
-        editOnClick: this.isReadonlyComponent === false,
+        editOnClick: this.isReadonlyComponent === false
     }
     public get editorOptions() {
         return this._editorOptions
@@ -118,7 +119,7 @@ export class Cell {
     /** default input component */
     protected readonly Input = React.forwardRef(
         (
-            props: InputUnstyledProps & {
+            props: InputProps & {
                 onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
             },
             ref?: React.Ref<HTMLInputElement>
@@ -138,10 +139,10 @@ export class Cell {
 
             return (
                 // default Input component, used in editor/formatter components
-                <InputUnstyled
+                <Input
                     // components={{ Input: StyledInputElement }}
                     slots={{
-                        input: StyledInputElement,
+                        input: StyledInputElement
                     }}
                     ref={ref || inputRef}
                     onKeyDown={props.onKeyDown}
@@ -191,6 +192,7 @@ export class Cell {
                 value == null ||
                 typeof value === "undefined" ||
                 (Array.isArray(value) && value.length === 0) ||
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 (isJSONArray(value) && JSON.parse(value as string).length === 0)
             )
         } catch (error) {
@@ -218,6 +220,7 @@ export class Cell {
             (typeof value === "string" && value === "")
         )
             return null
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return fn(value) as ReturnType<T> // TODO: bind the this-context, so it does not need to be bound elsewhere
     }
 
@@ -245,7 +248,7 @@ export class Cell {
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
             props.onRowChange({
                 ...row,
-                [key]: e.target.value,
+                [key]: e.target.value
             })
 
         return (
