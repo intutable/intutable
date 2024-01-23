@@ -4,6 +4,7 @@ import { loadPlugins, PluginHandle } from "./plugins"
 export * from "./plugins"
 export * from "./events"
 export * from "./middleware"
+export {startHttpServer} from "./http/http"
 
 export class Core {
     events: EventSystem
