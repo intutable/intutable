@@ -1,7 +1,9 @@
 import express, { Express, RequestHandler } from 'express';
 import {getEndpoints} from "../requests";
+import cors from "cors";
 
-const PORT = 8080
+const PORT = process.env.PORT || 8080
+
 export interface Endpoint {
     httpMethod: string; // POST, GET, ...
     route: string;
@@ -10,7 +12,8 @@ export interface Endpoint {
 
 export async function startHttpServer(): Promise<void> {
     const app: Express = express();
-
+    app.use(express.json)
+    app.use(cors())
 
     const endpoints = getEndpoints()
     endpoints.forEach((endpoint) => {
