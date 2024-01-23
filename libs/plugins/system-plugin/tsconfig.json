@@ -10,5 +10,6 @@
   "references": [
     { "path": "../../core" },
     { "path": "../project-management" },
+    { "path": "../user-permissions" },
   ]
 }
