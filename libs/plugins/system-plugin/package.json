@@ -1,0 +1,21 @@
+{
+  "name": "@intutable-org/system-plugin",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "lint": "npx eslint \"src/**\"",
+    "format": "npx prettier \"src/**\" --check",
+    "test-ci": "npm run build && np x jest --runInBand",
+    "test": "docker-compose build --pull && docker-compose up --abort-on-container-exit"
+  },
+  "dependencies": {
+    "@intutable-org/core": "*",
+    "@intutable-org/project-management": "*"
+  },
+  "devDependencies": {
+    "@intutable-org/eslint-config": "*"
+  }
+}
