@@ -2,7 +2,7 @@ import express, { Express, RequestHandler } from 'express';
 import {getEndpoints} from "../requests";
 import cors from "cors";
 
-const PORT = process.env.PORT || 8080
+const PORT = process.env.HTTP_PORT || 8080
 
 export interface Endpoint {
     httpMethod: string; // POST, GET, ...
