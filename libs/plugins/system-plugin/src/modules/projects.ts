@@ -1,5 +1,9 @@
 import {PluginLoader, CoreResponse, CoreRequest} from "../../../../core";
+import {ProjectDescriptor} from "../../../project-management/src/types"
+import * as pm from "../../../project-management/dist/requests"
+import {can, getRoles} from "../../../user-permissions/src/requests"
 import {CHANNEL} from "../config"
+
 let core: PluginLoader;
 
 export async function initProjectEndpoints(pluginLoader: PluginLoader) {
@@ -14,8 +18,28 @@ export async function initProjectEndpoints(pluginLoader: PluginLoader) {
         .on("createProject", createProject, "POST", "/project")
 }
 
-async function getProjects(): Promise<CoreResponse> {
+async function getProjects(request: CoreRequest): Promise<CoreResponse> {
+    const allProjects = (await core.events.request(
+        pm.getProjects(request.connectionId, 0)
+    )) as ProjectDescriptor[]
 
+    const roleId = await core.events.request(getRoles(request.connectionId, "", request.username))
+    const permissions = await core.events.request(
+        can(request.connectionId, roleId[0], "read", "project", "", "")
+    )
+    const checkedProjects: ProjectDescriptor[] = []
+
+    if (permissions["isAllowed"] && permissions["conditions"] == "") {
+        return allProjects
+    }
+
+    for (const project of allProjects) {
+        if (permissions["conditions"].includes(project["name"])) {
+            checkedProjects.push(project)
+        }
+    }
+
+    return checkedProjects
 }
 
 async function getProject(request: CoreRequest): Promise<CoreResponse> {
