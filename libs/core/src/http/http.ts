@@ -1,4 +1,5 @@
 import express, { Express, RequestHandler } from 'express';
+import {getEndpoints} from "../requests";
 
 const PORT = 8080
 export interface Endpoint {
@@ -7,9 +8,11 @@ export interface Endpoint {
     handler: RequestHandler;
 }
 
-export async function startHttpServer(endpoints: Endpoint[]): Promise<void> {
+export async function startHttpServer(): Promise<void> {
     const app: Express = express();
 
+
+    const endpoints = getEndpoints()
     endpoints.forEach((endpoint) => {
         const { httpMethod, route, handler } = endpoint;
 

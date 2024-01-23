@@ -6,13 +6,15 @@ import { Plugin, PluginInfo, PluginModule } from "./Plugin"
 import { PluginHandle } from "./PluginHandle"
 import glob from "glob"
 
+export let pluginLoader: PluginLoader
+
 /**
  * @param paths List of glob patterns
  */
 export async function loadPlugins(patterns: string[], events: EventSystem): Promise<PluginHandle> {
     const plugins: Plugin[] = []
 
-    const pluginLoader = new PluginLoader(events)
+    pluginLoader = new PluginLoader(events)
 
     const pluginFolder = patterns.flatMap(
         pattern => glob.sync(pattern, { cwd: joinPath(__dirname, "../../../.."), absolute: true }) // TODO: do not do it this way
