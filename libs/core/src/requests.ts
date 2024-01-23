@@ -1,10 +1,16 @@
 import { EventSystem, Message } from "./events"
 import { Logger } from "./utils"
+import {Endpoint} from "./http/http"
+import {Request, Response} from "express"
+import {pluginLoader} from "./plugins/loadPlugins"
+
 
 export interface CoreRequest extends Message {}
 export type CoreResponse = any
 
 export type RequestHandlerFunc = (request: CoreRequest) => Promise<CoreResponse>
+
+const endpoints: Endpoint[] = []
 
 export class RequestHandler {
     private handlers: Record<string, Record<string, RequestHandlerFunc>>
@@ -13,7 +19,7 @@ export class RequestHandler {
         this.handlers = {}
     }
 
-    public add(channel: string, method: string, handler: RequestHandlerFunc) {
+    public add(channel: string, method: string, handler: RequestHandlerFunc, httpMethod: string = "", httpRoute:string = "") {
         if (!this.handlers[channel]) {
             this.handlers[channel] = {}
         }
@@ -27,6 +33,24 @@ export class RequestHandler {
         }
 
         this.handlers[channel][method] = handler
+
+        if(httpMethod && httpRoute) {
+            endpoints.push({
+                httpMethod: httpMethod,
+                route: httpRoute,
+                handler: (req: Request, res: Response) => {
+                    pluginLoader
+                        .request({ ...req.body, ...req.params } as CoreRequest)
+                        .then((resp: CoreResponse) => {
+                            res.setHeader("Content-Type", "application/json")
+                            res.send(resp)
+                        })
+                        .catch((rawErr: { constructor: { name: any; }; message: any; stack: any; }) => {
+                            res.status(500).send({ error: rawErr.message })
+                        })
+                },
+            })
+        }
 
         this.logger.log("added request listener for", channel, method)
     }
@@ -45,4 +69,8 @@ export class RequestHandler {
     public handle(request: CoreRequest): Promise<CoreResponse> {
         return this.get(request.channel, request.method)(request)
     }
+}
+
+export function getEndpoints(){
+    return endpoints
 }

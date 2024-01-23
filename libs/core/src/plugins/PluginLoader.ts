@@ -26,8 +26,8 @@ export class PluginLoader {
         // This is necessary for chaining:
         // listenForRequests(...).on(...).on(...)
         const methodRegisterInterface = {
-            on: (method: string, handler: RequestHandlerFunc) => {
-                this.events.listenForRequests(channel, method, handler)
+            on: (method: string, handler: RequestHandlerFunc, httpMethod: string = "", httpRoute:string = "") => {
+                this.events.listenForRequests(channel, method, handler, httpMethod, httpRoute)
                 return methodRegisterInterface
             },
         }
