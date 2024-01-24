@@ -1,1 +1,0 @@
-# Continious Integration (CI) & Continious Delivery/Deployment (CD)

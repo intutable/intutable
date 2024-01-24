@@ -1,6 +1,6 @@
 {
     "name": "intutable-org",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "private": true,
     "engines": {
         "node": ">=18.16.0 <19.0.0",
@@ -16,7 +16,8 @@
     ],
     "scripts": {
         "db:start": "docker-compose start dekanat-database",
-        "docs:open": "mdbook serve ./docs/docs --open",
+        "docs:open": "mdbook serve ./docs --open",
+        "docs:test": "mdbook test ./docs",
         "prepare": "husky install",
         "lint": "npm run lint --workspaces --if-present -- --cache",
         "format": "npm run format --workspaces --if-present -- --cache --fix"

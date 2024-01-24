@@ -1,5 +1,7 @@
 # Changelog
 
+> Note: This document is deprecated and will be removed soon.
+
 All notable frontend changes relevant to the user will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
