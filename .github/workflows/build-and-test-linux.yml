@@ -1,0 +1,90 @@
+name: Build and Test linux
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_core:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: cd libs/core && npm install
+
+    - name: Build core
+      run: cd libs/core && npm run build
+
+    # disabled for now until the proper script exists
+    #- name: Run tests for core
+    # run: cd libs/core && npm run test-ci
+
+  build_plugins:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Iterate through plugins and run steps
+      run: |
+        for dir in libs/plugins/*; do
+          if [ -d "$dir" ]; then
+            echo "Building and testing $dir"
+            cd $dir
+            npm install
+            npm run build
+            npm run test-ci
+            cd -
+          fi
+        done
+
+  build_dekanat_app_plugin:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: cd libs/dekanat-app-plugin && npm install
+
+    - name: Build dekanat-app-plugin
+      run: cd libs/dekanat-app-plugin && npm run build
+
+    - name: Run tests for dekanat-app-plugin
+      run: cd libs/dekanat-app-plugin && npm run test-ci
+
+# Add a workflow_dispatch event to trigger the workflow manually
+  manual_trigger:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Run workflow manually
+      uses: actions/github-script@v4
+      with:
+        script: |
+          console.log("Workflow "Build an Test Linux" manually triggered");
