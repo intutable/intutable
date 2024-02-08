@@ -1,6 +1,6 @@
 # Introduction to the Intutable Software Architecture
 
-Our whole application is built on the node.js and TypeScript stack. The architecture encompasses a Next.js frontend seamlessly connected to the backend via a REST API.
+Our whole application called _intutable_ is built on the node.js and TypeScript stack. The architecture encompasses a Next.js frontend seamlessly connected to the backend via a REST API.
 
 ```diff
 +----------------------+
@@ -59,3 +59,5 @@ Additionally, our system leverages a PostgreSQL database, facilitated by a dedic
 |       (Docker)       |
 +----------------------+
 ```
+
+Learn more about the frontend and the backend architecture in the following sections.
