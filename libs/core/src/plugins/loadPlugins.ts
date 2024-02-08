@@ -6,8 +6,13 @@ import { Plugin, PluginInfo, PluginModule } from "./Plugin"
 import { PluginHandle } from "./PluginHandle"
 import glob from "glob"
 
+// TODO: this needs to be revised, add jsdoc after that
+
 /**
- * @param paths List of glob patterns
+ *
+ * @param patterns
+ * @param events
+ * @returns
  */
 export async function loadPlugins(patterns: string[], events: EventSystem): Promise<PluginHandle> {
     const plugins: Plugin[] = []
@@ -33,6 +38,12 @@ export async function loadPlugins(patterns: string[], events: EventSystem): Prom
     return new PluginHandle(plugins)
 }
 
+/**
+ *
+ * @param pluginPaths
+ * @param events
+ * @returns
+ */
 async function loadPluginInfos(pluginPaths: string[], events: EventSystem): Promise<PluginInfo[]> {
     const results: PluginInfo[] = []
 
@@ -56,6 +67,11 @@ async function loadPluginInfos(pluginPaths: string[], events: EventSystem): Prom
     return results
 }
 
+/**
+ *
+ * @param pluginInfos
+ * @returns
+ */
 function sortByDependencies(pluginInfos: PluginInfo[]): PluginInfo[] {
     return pluginInfos.sort((a, b) => {
         if (!b.dependencies) {
@@ -72,6 +88,12 @@ function sortByDependencies(pluginInfos: PluginInfo[]): PluginInfo[] {
     })
 }
 
+/**
+ *
+ * @param events
+ * @param pluginInfo
+ * @param err
+ */
 function onPluginLoadError(
     events: EventSystem,
     pluginInfo: PluginInfo,
@@ -98,6 +120,12 @@ function onPluginLoadError(
     }
 }
 
+/**
+ *
+ * @param pluginInfo
+ * @param pluginLoader
+ * @returns
+ */
 async function loadPlugin(pluginInfo: PluginInfo, pluginLoader: PluginLoader): Promise<Plugin> {
     const module = await initializePlugin(pluginInfo.path, pluginLoader)
 
@@ -107,6 +135,12 @@ async function loadPlugin(pluginInfo: PluginInfo, pluginLoader: PluginLoader): P
     }
 }
 
+/**
+ *
+ * @param pluginPath
+ * @param pluginLoader
+ * @returns
+ */
 async function initializePlugin(
     pluginPath: string,
     pluginLoader: PluginLoader
