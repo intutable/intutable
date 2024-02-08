@@ -30,3 +30,4 @@
 - [Introduction](software_architecture/Introduction.md)+
 - [Frontend](software_architecture/frontend/Introduction.md)
 - [Backend](software_architecture/backend/Backend.md)
+    - [Core & Plugins](software_architecture/backend/Core_Plugins.md)
